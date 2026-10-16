@@ -1,7 +1,11 @@
+// components/dashboard/CollectionsPanel.tsx
+
 "use client";
 
-import { FolderPlus, Folder, Trash2 } from "lucide-react";
+import { FolderPlus } from "lucide-react";
 import type { LocalCollection } from "@/lib/storage";
+import { CreateCollectionForm } from "./collections/CreateCollectionForm";
+import { CollectionsList } from "./collections/CollectionsList";
 
 interface CollectionsPanelProps {
   collections: LocalCollection[];
@@ -50,92 +54,23 @@ export default function CollectionsPanel({
         </button>
       </div>
 
-      {/* New Collection Form */}
       {isCreatingColl && (
-        <div className="rounded-2xl border border-indigo-500/40 bg-slate-950 p-4 space-y-3">
-          <h4 className="text-sm font-bold text-white flex items-center gap-2">
-            <FolderPlus className="h-4 w-4 text-indigo-400" />
-            Créer une nouvelle collection de jeux
-          </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium text-slate-300">Nom de la collection</label>
-              <input
-                type="text"
-                value={newCollName}
-                onChange={(e) => setNewCollName(e.target.value)}
-                placeholder="Ex: Jeux à platiner 2026, Co-op, Backlog..."
-                className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white outline-none focus:border-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-slate-300">Description (Optionnel)</label>
-              <input
-                type="text"
-                value={newCollDesc}
-                onChange={(e) => setNewCollDesc(e.target.value)}
-                placeholder="Objectifs, critères de sélection..."
-                className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white outline-none focus:border-indigo-500"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-1">
-            <button
-              onClick={() => setIsCreatingColl(false)}
-              className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700"
-            >
-              Annuler
-            </button>
-            <button
-              onClick={handleCreateCollection}
-              disabled={!newCollName.trim()}
-              className="rounded-xl bg-indigo-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-indigo-500 disabled:opacity-50"
-            >
-              Créer
-            </button>
-          </div>
-        </div>
+        <CreateCollectionForm
+          newCollName={newCollName}
+          setNewCollName={setNewCollName}
+          newCollDesc={newCollDesc}
+          setNewCollDesc={setNewCollDesc}
+          handleCreateCollection={handleCreateCollection}
+          onCancel={() => setIsCreatingColl(false)}
+        />
       )}
 
-      {/* Collections Badges / Switcher */}
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          onClick={() => setSelectedCollId(null)}
-          className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
-            selectedCollId === null
-              ? "bg-indigo-600 text-white shadow-md"
-              : "border border-slate-800 bg-slate-900 text-slate-400 hover:text-white"
-          }`}
-        >
-          Toutes les collections ({collections.length})
-        </button>
-
-        {collections.map((coll) => (
-          <div key={coll.id} className="flex items-center gap-1">
-            <button
-              onClick={() => setSelectedCollId(coll.id)}
-              className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
-                selectedCollId === coll.id
-                  ? "bg-indigo-600 text-white shadow-md"
-                  : "border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/50 hover:text-white"
-              }`}
-            >
-              <Folder className="h-3 w-3 text-indigo-400" />
-              <span>{coll.name}</span>
-              <span className="rounded-full bg-slate-800 px-1.5 py-0.2 text-[10px] font-bold">
-                {coll.gameIds.length}
-              </span>
-            </button>
-            <button
-              onClick={() => handleDeleteCollection(coll.id)}
-              title="Supprimer la collection"
-              className="rounded-lg p-1 text-slate-500 hover:bg-slate-800 hover:text-rose-400 transition"
-            >
-              <Trash2 className="h-3 w-3" />
-            </button>
-          </div>
-        ))}
-      </div>
+      <CollectionsList
+        collections={collections}
+        selectedCollId={selectedCollId}
+        setSelectedCollId={setSelectedCollId}
+        handleDeleteCollection={handleDeleteCollection}
+      />
     </div>
   );
 }

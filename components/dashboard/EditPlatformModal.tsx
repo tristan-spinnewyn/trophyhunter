@@ -1,7 +1,10 @@
+// components/dashboard/EditPlatformModal.tsx
+
 "use client";
 
 import type { PlatformType } from "@/lib/types";
 import { PLATFORM_META } from "@/lib/storage";
+import { PlatformStatsInputs } from "./platform-modal/PlatformStatsInputs";
 
 interface EditPlatformModalProps {
   editingPlatform: PlatformType | null;
@@ -58,105 +61,11 @@ export default function EditPlatformModal({
             />
           </div>
 
-          {editingPlatform !== "steam" && (
-            <>
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="text-[11px] text-slate-400">
-                    Jeux possédés
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={platForm.gamesOwned}
-                    onChange={(e) =>
-                      setPlatForm({
-                        ...platForm,
-                        gamesOwned: e.target.value,
-                      })
-                    }
-                    placeholder="Ex: 45"
-                    className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white outline-none focus:border-sky-500"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-slate-400">
-                    Niveau du compte
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={platForm.level}
-                    onChange={(e) =>
-                      setPlatForm({ ...platForm, level: e.target.value })
-                    }
-                    placeholder="Ex: 240"
-                    className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white outline-none focus:border-sky-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="text-[11px] text-slate-400">
-                    {PLATFORM_META[editingPlatform].trophyLabel} débloqués
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={platForm.totalAchievements}
-                    onChange={(e) =>
-                      setPlatForm({
-                        ...platForm,
-                        totalAchievements: e.target.value,
-                      })
-                    }
-                    placeholder="Ex: 1250"
-                    className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white outline-none focus:border-sky-500"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-slate-400">
-                    {PLATFORM_META[editingPlatform].completeLabel}
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={platForm.completedGames}
-                    onChange={(e) =>
-                      setPlatForm({
-                        ...platForm,
-                        completedGames: e.target.value,
-                      })
-                    }
-                    placeholder="Ex: 12"
-                    className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white outline-none focus:border-sky-500"
-                  />
-                </div>
-              </div>
-
-              {editingPlatform === "xbox" && (
-                <div>
-                  <label className="text-[11px] text-slate-400">
-                    Gamerscore total (G)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={platForm.gamerScore}
-                    onChange={(e) =>
-                      setPlatForm({
-                        ...platForm,
-                        gamerScore: e.target.value,
-                      })
-                    }
-                    placeholder="Ex: 42500"
-                    className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white outline-none focus:border-sky-500"
-                  />
-                </div>
-              )}
-            </>
-          )}
+          <PlatformStatsInputs
+            editingPlatform={editingPlatform}
+            platForm={platForm}
+            setPlatForm={setPlatForm}
+          />
         </div>
 
         <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">

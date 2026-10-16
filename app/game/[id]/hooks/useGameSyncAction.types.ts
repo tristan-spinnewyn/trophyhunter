@@ -1,0 +1,25 @@
+// app/game/[id]/hooks/useGameSyncAction.types.ts
+
+import type {
+  GameDetails,
+  OwnedGame,
+  UserGameProgress,
+  UserAccountProfile,
+  User as UserType,
+  PlatformType,
+} from "@/lib/types";
+
+export interface UseGameSyncActionParams {
+  game: GameDetails | null;
+  setGame?: (g: GameDetails) => void;
+  owned?: OwnedGame;
+  activePlatform: PlatformType;
+  progress: UserGameProgress;
+  setProgress: (p: UserGameProgress) => void;
+  accountProfile: UserAccountProfile;
+  steamUser: string;
+  currentUser: UserType | null;
+  upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<any>;
+  setIsSyncing: (s: boolean) => void;
+  setSyncNotice: (n: { type: "success" | "error"; msg: string } | null) => void;
+}

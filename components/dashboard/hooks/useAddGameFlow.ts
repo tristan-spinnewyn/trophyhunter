@@ -1,25 +1,12 @@
+// components/dashboard/hooks/useAddGameFlow.ts
+"use client";
+
 import { useState } from "react";
-import type {
-  OwnedGame,
-  PlatformType,
-  GameSearchResult,
-} from "@/lib/types";
+import type { OwnedGame, PlatformType, GameSearchResult } from "@/lib/types";
 import { PLATFORM_META } from "@/lib/storage";
 import { mergeGamesList } from "@/components/dashboard/utils";
-
-interface UseAddGameFlowProps {
-  ownedGames: OwnedGame[];
-  onOwnedGamesChange: (games: OwnedGame[]) => void;
-  steamUsername?: string;
-  syncSingleSteamGame: (
-    steamUsername: string,
-    game: OwnedGame
-  ) => Promise<OwnedGame>;
-  persistGamesToSQLite: (games: OwnedGame[]) => Promise<void>;
-  setBannerMsg: (
-    msg: { type: "success" | "error"; text: string } | null
-  ) => void;
-}
+import type { UseAddGameFlowProps } from "./useAddGameFlow.types";
+import { useAddGameSearch } from "./useAddGameSearch";
 
 export function useAddGameFlow({
   ownedGames,
@@ -30,32 +17,17 @@ export function useAddGameFlow({
   setBannerMsg,
 }: UseAddGameFlowProps) {
   const [isAddGameOpen, setIsAddGameOpen] = useState(false);
-  const [addGameQuery, setAddGameQuery] = useState("");
-  const [addGameResults, setAddGameResults] = useState<GameSearchResult[]>([]);
-  const [isSearchingAdd, setIsSearchingAdd] = useState(false);
   const [selectedPlatformForAdd, setSelectedPlatformForAdd] =
     useState<PlatformType>("steam");
 
-  const handleSearchAddGame = async (q: string) => {
-    setAddGameQuery(q);
-    if (q.trim().length < 2) {
-      setAddGameResults([]);
-      return;
-    }
-    setIsSearchingAdd(true);
-    try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(q.trim())}`);
-      if (!res.ok) return;
-      const data = await res.json();
-      if (Array.isArray(data.results)) {
-        setAddGameResults(data.results);
-      }
-    } catch {
-      // ignore
-    } finally {
-      setIsSearchingAdd(false);
-    }
-  };
+  const {
+    addGameQuery,
+    setAddGameQuery,
+    addGameResults,
+    setAddGameResults,
+    isSearchingAdd,
+    handleSearchAddGame,
+  } = useAddGameSearch();
 
   const handleAddGameToLibrary = async (item: GameSearchResult) => {
     const nowIso = new Date().toISOString();

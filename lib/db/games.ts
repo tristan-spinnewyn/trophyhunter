@@ -1,6 +1,8 @@
+// lib/db/games.ts
 import crypto from "node:crypto";
 import { getDb, withTransaction } from "./connection";
 import type { OwnedGame, PlatformType } from "../types";
+import { mapUserGameRow, type UserGameRow } from "./games-mapper";
 
 export function getUserOwnedGames(userId: string): OwnedGame[] {
   const db = getDb();
@@ -11,31 +13,9 @@ export function getUserOwnedGames(userId: string): OwnedGame[] {
        WHERE user_id = ?
        ORDER BY added_at DESC`
     )
-    .all(userId) as Array<{
-    app_id: number;
-    name: string;
-    header_img: string | null;
-    platform: PlatformType;
-    total_achievements: number;
-    unlocked_count: number;
-    playtime_hours: number | null;
-    last_played: string | null;
-    added_at: string;
-    source: string | null;
-  }>;
+    .all(userId) as unknown as UserGameRow[];
 
-  return rows.map((r) => ({
-    appId: r.app_id,
-    name: r.name,
-    headerImg: r.header_img || "",
-    platform: r.platform,
-    totalAchievements: r.total_achievements,
-    unlockedCount: r.unlocked_count,
-    playtimeHours: r.playtime_hours ?? undefined,
-    lastPlayed: r.last_played ?? undefined,
-    addedAt: r.added_at,
-    source: (r.source as OwnedGame["source"]) || undefined,
-  }));
+  return rows.map(mapUserGameRow);
 }
 
 export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
@@ -57,9 +37,8 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
 
   withTransaction(db, () => {
     for (const g of games) {
-      const id = crypto.randomUUID();
       insertStmt.run(
-        id,
+        crypto.randomUUID(),
         userId,
         g.appId,
         g.platform,
@@ -76,35 +55,18 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
   });
 }
 
-export function removeUserPlatformGames(
-  userId: string,
-  platform: PlatformType
-): void {
+export function removeUserPlatformGames(userId: string, platform: PlatformType): void {
   const db = getDb();
-  db.prepare(
-    "DELETE FROM user_games WHERE user_id = ? AND platform = ?"
-  ).run(userId, platform);
+  db.prepare("DELETE FROM user_games WHERE user_id = ? AND platform = ?").run(userId, platform);
 }
 
-export function removeUserOwnedGame(
-  userId: string,
-  appId: number,
-  platform?: PlatformType
-): void {
+export function removeUserOwnedGame(userId: string, appId: number, platform?: PlatformType): void {
   const db = getDb();
   if (platform) {
-    db.prepare(
-      "DELETE FROM user_games WHERE user_id = ? AND app_id = ? AND platform = ?"
-    ).run(userId, appId, platform);
-    db.prepare(
-      "DELETE FROM user_game_progress WHERE user_id = ? AND app_id = ? AND platform = ?"
-    ).run(userId, appId, platform);
+    db.prepare("DELETE FROM user_games WHERE user_id = ? AND app_id = ? AND platform = ?").run(userId, appId, platform);
+    db.prepare("DELETE FROM user_game_progress WHERE user_id = ? AND app_id = ? AND platform = ?").run(userId, appId, platform);
   } else {
-    db.prepare(
-      "DELETE FROM user_games WHERE user_id = ? AND app_id = ?"
-    ).run(userId, appId);
-    db.prepare(
-      "DELETE FROM user_game_progress WHERE user_id = ? AND app_id = ?"
-    ).run(userId, appId);
+    db.prepare("DELETE FROM user_games WHERE user_id = ? AND app_id = ?").run(userId, appId);
+    db.prepare("DELETE FROM user_game_progress WHERE user_id = ? AND app_id = ?").run(userId, appId);
   }
 }
