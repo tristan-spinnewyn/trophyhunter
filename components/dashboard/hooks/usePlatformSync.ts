@@ -11,32 +11,7 @@ import type {
 import { PLATFORM_META } from "@/lib/storage";
 import { isUnsplashPlaceholder } from "@/lib/epic-codenames";
 
-function mergeGamesList(base: OwnedGame[], incoming: OwnedGame[]): OwnedGame[] {
-  const map = new Map<string, OwnedGame>();
-  for (const g of base) {
-    map.set(`${g.platform}_${g.appId}`, g);
-  }
-  for (const g of incoming) {
-    const key = `${g.platform}_${g.appId}`;
-    const existing = map.get(key);
-    if (existing) {
-      map.set(key, {
-        ...existing,
-        ...g,
-        totalAchievements:
-          g.totalAchievements > 0
-            ? g.totalAchievements
-            : existing.totalAchievements,
-        unlockedCount: Math.max(g.unlockedCount || 0, existing.unlockedCount || 0),
-        playtimeHours: g.playtimeHours ?? existing.playtimeHours,
-        addedAt: existing.addedAt || g.addedAt,
-      });
-    } else {
-      map.set(key, g);
-    }
-  }
-  return Array.from(map.values());
-}
+import { mergeGamesList } from "@/components/dashboard/utils";
 
 function replacePlatformInList(
   base: OwnedGame[],
