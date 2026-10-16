@@ -470,5 +470,124 @@ describe('GET /api/profile/epic', () => {
     const aven = data.discoveredGames.find((g: any) => g.name === 'Aven Colony');
     expect(aven).toBeDefined();
   });
+
+  it('paginates across multiple pages in library-service via cursor and parses stringified and customAttributes keyImages', async () => {
+    const mockToken = {
+      access_token: 'token_pagination',
+      account_id: 'epic_account_paged',
+      displayName: 'EpicPaginationUser',
+    };
+
+    const mockPage1 = {
+      records: [
+        {
+          appName: 'FallGuys',
+          catalogItemId: 'cat_fall_guys',
+          namespace: 'ns_fallguys',
+          metadata: {
+            title: 'Fall Guys',
+            keyImages: JSON.stringify([
+              { type: 'OfferImageWide', url: 'https://cdn.epic.com/fallguys_wide.jpg' },
+            ]),
+          },
+        },
+        {
+          appName: 'RocketLeague',
+          catalogItemId: 'cat_rl',
+          namespace: 'ns_rl',
+          metadata: {
+            title: 'Rocket League',
+            customAttributes: {
+              DieselStoreFrontWide: { value: 'https://cdn.epic.com/rl_storefront.jpg' },
+            },
+          },
+        },
+      ],
+      responseMetadata: {
+        nextCursor: 'cursor_token_page2',
+      },
+    };
+
+    const mockPage2 = {
+      records: [
+        {
+          appName: 'FortniteGame',
+          catalogItemId: 'cat_fn',
+          namespace: 'fn',
+          metadata: {
+            title: 'Fortnite',
+            keyImages: [
+              { type: 'DieselStoreFrontTall', url: 'https://cdn.epic.com/fn_tall.jpg' },
+            ],
+          },
+        },
+      ],
+    };
+
+    const mockGraphQL = {
+      data: {
+        PlayerAchievement: {
+          playerAchievementGameRecords: {
+            records: [
+              {
+                sandboxId: 'ns_fallguys',
+                totalUnlocked: 10,
+                achievementSets: [
+                  {
+                    achievementSetId: 'fg_base',
+                    isBase: true,
+                    totalUnlocked: 10,
+                    totalXP: 300,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockToken,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockPage1, // Page 1
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockPage2, // Page 2 via nextCursor
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockGraphQL,
+      } as any);
+
+    const req = new Request('http://localhost:3000/api/profile/epic?code=pagination-code');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.discoveredGames).toHaveLength(3);
+
+    const fg = data.discoveredGames.find((g: any) => g.name === 'Fall Guys');
+    expect(fg).toBeDefined();
+    expect(fg.headerImg).toBe('https://cdn.epic.com/fallguys_wide.jpg');
+    expect(fg.unlockedCount).toBe(10);
+
+    const rl = data.discoveredGames.find((g: any) => g.name === 'Rocket League');
+    expect(rl).toBeDefined();
+    expect(rl.headerImg).toBe('https://cdn.epic.com/rl_storefront.jpg');
+
+    const fn = data.discoveredGames.find((g: any) => g.name === 'Fortnite');
+    expect(fn).toBeDefined();
+    expect(fn.headerImg).toBe('https://cdn.epic.com/fn_tall.jpg');
+
+    expect(data.account.stats.gamesOwned).toBe(3);
+    expect(data.account.stats.totalAchievements).toBe(10);
+  });
 });
 

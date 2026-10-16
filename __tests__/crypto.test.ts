@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -12,11 +12,10 @@ import {
 
 describe("lib/crypto", () => {
   const originalEnvKey = process.env.APP_ENCRYPTION_KEY;
-  const testDataDir = path.join(process.cwd(), ".data");
-  const testKeyFile = path.join(testDataDir, ".encryption_key");
 
   afterEach(() => {
     process.env.APP_ENCRYPTION_KEY = originalEnvKey;
+    vi.restoreAllMocks();
   });
 
   describe("Password Hashing & Verification", () => {
@@ -83,39 +82,57 @@ describe("lib/crypto", () => {
 
     it("generates and saves key to file if no env var or file exists", () => {
       delete process.env.APP_ENCRYPTION_KEY;
-      const primary = path.join(process.cwd(), "data", ".encryption_key");
-      const legacy = path.join(process.cwd(), ".data", ".encryption_key");
-      if (fs.existsSync(primary)) fs.unlinkSync(primary);
-      if (fs.existsSync(legacy)) fs.unlinkSync(legacy);
+      let writtenData = "";
+      const spyExists = vi.spyOn(fs, "existsSync").mockReturnValue(false);
+      const spyMkdir = vi.spyOn(fs, "mkdirSync").mockImplementation((() => undefined) as any);
+      const spyWrite = vi.spyOn(fs, "writeFileSync").mockImplementation(((_p: any, data: any) => {
+        writtenData = String(data);
+        return undefined;
+      }) as any);
 
       const key = getMasterEncryptionKey();
       expect(key.length).toBe(32);
-      expect(fs.existsSync(primary)).toBe(true);
+      expect(spyWrite).toHaveBeenCalled();
+      expect(writtenData.length).toBe(64);
+
+      spyExists.mockRestore();
+      spyMkdir.mockRestore();
+      spyWrite.mockRestore();
     });
 
     it("reads existing key from primary file", () => {
       delete process.env.APP_ENCRYPTION_KEY;
-      const keyPath = path.join(process.cwd(), "data", ".encryption_key");
+      const primary = path.join(process.cwd(), "data", ".encryption_key");
       const fakeKey = crypto.randomBytes(32).toString("hex");
-      fs.writeFileSync(keyPath, fakeKey, "utf8");
+      const spyExists = vi.spyOn(fs, "existsSync").mockImplementation((p: any) => p === primary);
+      const spyRead = vi.spyOn(fs, "readFileSync").mockImplementation(((p: any) => {
+        if (p === primary) return fakeKey;
+        throw new Error("File not found");
+      }) as any);
 
       const key = getMasterEncryptionKey();
       expect(key.toString("hex")).toBe(fakeKey);
+
+      spyExists.mockRestore();
+      spyRead.mockRestore();
     });
 
     it("reads from legacy .data location if primary does not exist", () => {
       delete process.env.APP_ENCRYPTION_KEY;
-      const primaryPath = path.join(process.cwd(), "data", ".encryption_key");
-      if (fs.existsSync(primaryPath)) fs.unlinkSync(primaryPath);
-
-      const legacyDir = path.join(process.cwd(), ".data");
-      if (!fs.existsSync(legacyDir)) fs.mkdirSync(legacyDir, { recursive: true });
-      const legacyPath = path.join(legacyDir, ".encryption_key");
+      const primary = path.join(process.cwd(), "data", ".encryption_key");
+      const legacy = path.join(process.cwd(), ".data", ".encryption_key");
       const legacyKey = crypto.randomBytes(32).toString("hex");
-      fs.writeFileSync(legacyPath, legacyKey, "utf8");
+      const spyExists = vi.spyOn(fs, "existsSync").mockImplementation((p: any) => p === legacy);
+      const spyRead = vi.spyOn(fs, "readFileSync").mockImplementation(((p: any) => {
+        if (p === legacy) return legacyKey;
+        throw new Error("File not found");
+      }) as any);
 
       const key = getMasterEncryptionKey();
       expect(key.toString("hex")).toBe(legacyKey);
+
+      spyExists.mockRestore();
+      spyRead.mockRestore();
     });
   });
 });

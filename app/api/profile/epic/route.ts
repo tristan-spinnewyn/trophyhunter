@@ -95,95 +95,165 @@ export async function GET(request: Request) {
           if (libraryRes.ok) {
             const libData = await libraryRes.json();
             const records: any[] = Array.isArray(libData)
-              ? libData
+              ? [...libData]
               : Array.isArray(libData?.records)
-              ? libData.records
+              ? [...libData.records]
               : [];
 
-              for (const item of records) {
-                const appName = item.appName || "";
-                const meta = item.metadata || {};
-
-                // Skip Unreal Engine items, prerequisites, tools, and background services
-                if (
-                  appName.startsWith("UE_") ||
-                  appName.includes("Prerequisites") ||
-                  meta.mainGameItem === false
-                ) {
-                  continue;
-                }
-
-                // Extract real commercial title
-                let gameTitle =
-                  meta.title ||
-                  meta.itemName ||
-                  item.title ||
-                  item.name ||
-                  resolveEpicCodename(appName) ||
-                  "";
-
-                if (!gameTitle && appName && !isJunkHex(appName)) {
-                  gameTitle = appName.replace(/([A-Z])/g, " $1").trim();
-                }
-
-                // Skip raw hex hashes with no resolved name
-                if (!gameTitle || isJunkHex(gameTitle)) {
-                  continue;
-                }
-
-                // Extract best cover image from keyImages
-                let coverUrl = "";
-                if (Array.isArray(meta.keyImages)) {
-                  const preferred = [
-                    "DieselStoreFrontWide",
-                    "OfferImageWide",
-                    "Thumbnail",
-                    "DieselStoreFrontTall",
-                    "DieselGameBox",
-                    "DieselGameBoxTall",
-                    "VaultClosed",
-                  ];
-                  for (const pType of preferred) {
-                    const found = meta.keyImages.find(
-                      (img: any) => img.type === pType && img.url
-                    );
-                    if (found) {
-                      coverUrl = found.url;
-                      break;
-                    }
+            // Follow cursor pagination to retrieve the user's complete library across all pages
+            let nextCursor =
+              libData?.responseMetadata?.nextCursor ||
+              libData?.nextCursor ||
+              libData?.cursor;
+            let pageCount = 0;
+            const MAX_PAGES = 30; // Safety cap (up to ~1500 games)
+            while (nextCursor && pageCount < MAX_PAGES) {
+              pageCount++;
+              try {
+                const nextRes = await fetch(
+                  `https://library-service.live.use1a.on.epicgames.com/library/api/public/items?includeMetadata=true&cursor=${encodeURIComponent(nextCursor)}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${accessToken}`,
+                      "User-Agent":
+                        "UELauncher/11.0.1-14907503+++Portal+Release-Live Windows/10.0.19041.1.256.64bit",
+                    },
                   }
-                  if (!coverUrl && meta.keyImages.length > 0 && meta.keyImages[0].url) {
-                    coverUrl = meta.keyImages[0].url;
-                  }
-                }
-
-                if (!coverUrl) {
-                  coverUrl =
-                    item.headerImg ||
-                    "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80";
-                }
-
-                const idNum = Math.abs(
-                  hashCode(item.catalogItemId || appName || gameTitle)
                 );
-
-                const ns = item.namespace || meta.namespace || item.sandboxId || "";
-                if (ns) {
-                  gameNamespaceMap.set(idNum, ns);
-                }
-
-                discoveredGames.push({
-                  appId: idNum,
-                  name: gameTitle,
-                  headerImg: coverUrl,
-                  platform: "epic",
-                  totalAchievements: 0,
-                  unlockedCount: 0,
-                  addedAt: nowIso,
-                  source: "manual",
-                });
+                if (!nextRes.ok) break;
+                const nextData = await nextRes.json();
+                const nextRecords = Array.isArray(nextData)
+                  ? nextData
+                  : Array.isArray(nextData?.records)
+                  ? nextData.records
+                  : [];
+                if (nextRecords.length === 0) break;
+                records.push(...nextRecords);
+                nextCursor =
+                  nextData?.responseMetadata?.nextCursor ||
+                  nextData?.nextCursor ||
+                  nextData?.cursor;
+              } catch {
+                break;
               }
             }
+
+            for (const item of records) {
+              const appName = item.appName || "";
+              const meta = item.metadata || {};
+
+              // Skip Unreal Engine items, prerequisites, tools, and background services
+              if (
+                appName.startsWith("UE_") ||
+                appName.includes("Prerequisites") ||
+                meta.mainGameItem === false
+              ) {
+                continue;
+              }
+
+              // Extract real commercial title
+              let gameTitle =
+                meta.title ||
+                meta.itemName ||
+                meta.displayName ||
+                item.title ||
+                item.name ||
+                item.displayName ||
+                resolveEpicCodename(appName) ||
+                "";
+
+              if (!gameTitle && appName && !isJunkHex(appName)) {
+                gameTitle = appName.replace(/([A-Z])/g, " $1").trim();
+              }
+
+              // Skip raw hex hashes with no resolved name
+              if (!gameTitle || isJunkHex(gameTitle)) {
+                continue;
+              }
+
+              // Extract best cover image from keyImages (supports array, stringified JSON, and customAttributes)
+              let coverUrl = "";
+              let rawKeyImages = meta.keyImages || item.keyImages || meta.images || item.images;
+              if (typeof rawKeyImages === "string") {
+                try {
+                  rawKeyImages = JSON.parse(rawKeyImages);
+                } catch {}
+              }
+
+              if (Array.isArray(rawKeyImages)) {
+                const preferred = [
+                  "DieselStoreFrontWide",
+                  "OfferImageWide",
+                  "Thumbnail",
+                  "DieselStoreFrontTall",
+                  "DieselGameBox",
+                  "DieselGameBoxTall",
+                  "VaultClosed",
+                ];
+                for (const pType of preferred) {
+                  const found = rawKeyImages.find(
+                    (img: any) =>
+                      (img.type === pType || img.imageType === pType) &&
+                      (img.url || img.link)
+                  );
+                  if (found) {
+                    coverUrl = found.url || found.link;
+                    break;
+                  }
+                }
+                if (!coverUrl && rawKeyImages.length > 0) {
+                  coverUrl = rawKeyImages[0].url || rawKeyImages[0].link || "";
+                }
+              }
+
+              if (!coverUrl && meta.customAttributes) {
+                for (const key of [
+                  "DieselStoreFrontWide",
+                  "OfferImageWide",
+                  "Thumbnail",
+                  "DieselGameBox",
+                  "DieselGameBoxTall",
+                ]) {
+                  const val = meta.customAttributes[key]?.value;
+                  if (val && typeof val === "string" && val.startsWith("http")) {
+                    coverUrl = val;
+                    break;
+                  }
+                }
+              }
+
+              if (!coverUrl) {
+                coverUrl =
+                  item.headerImg ||
+                  "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80";
+              }
+
+              const idNum = Math.abs(
+                hashCode(item.catalogItemId || appName || gameTitle)
+              );
+
+              const ns =
+                item.namespace ||
+                meta.namespace ||
+                item.sandboxId ||
+                meta.sandboxId ||
+                "";
+              if (ns) {
+                gameNamespaceMap.set(idNum, ns);
+              }
+
+              discoveredGames.push({
+                appId: idNum,
+                name: gameTitle,
+                headerImg: coverUrl,
+                platform: "epic",
+                totalAchievements: 0,
+                unlockedCount: 0,
+                addedAt: nowIso,
+                source: "manual",
+              });
+            }
+          }
           } catch {
             // Fallback if library service fails
           }
@@ -347,7 +417,7 @@ export async function GET(request: Request) {
             body: JSON.stringify({
               query: `query PlayerGameAchievementProgress($epicAccountId: String!) {
                 PlayerAchievement {
-                  playerAchievementGameRecords(epicAccountId: $epicAccountId, includeAchievements: true) {
+                  playerAchievementGameRecords(epicAccountId: $epicAccountId, includeAchievements: false) {
                     records {
                       sandboxId
                       totalUnlocked
@@ -357,13 +427,6 @@ export async function GET(request: Request) {
                         isBase
                         totalUnlocked
                         totalXP
-                      }
-                      playerAchievements {
-                        playerAchievement {
-                          achievementName
-                          unlocked
-                          XP
-                        }
                       }
                     }
                   }
