@@ -8,6 +8,8 @@ import DashboardNavTabs, {
   type DashboardTabType,
 } from "@/components/dashboard/DashboardNavTabs";
 import LibrarySection from "@/components/dashboard/LibrarySection";
+import CollectionsPanel from "@/components/dashboard/CollectionsPanel";
+import DuplicatesPanel from "@/components/dashboard/DuplicatesPanel";
 import DashboardModals from "@/components/dashboard/DashboardModals";
 import { LibraryHeaderBanner } from "@/components/library/LibraryHeaderBanner";
 import { FeaturedGamesSection } from "@/components/library/FeaturedGamesSection";
@@ -65,9 +67,18 @@ export default function HomePage() {
   // Collections & Wishlist
   const {
     selectedCollId,
+    setSelectedCollId,
+    newCollName,
+    setNewCollName,
+    newCollDesc,
+    setNewCollDesc,
+    isCreatingColl,
+    setIsCreatingColl,
     gameToAddToColl,
     setGameToAddToColl,
     handleToggleWishlist,
+    handleCreateCollection,
+    handleDeleteCollection,
     handleAddGameToColl,
     handleRemoveGameFromColl,
   } = useDashboardCollections({
@@ -145,7 +156,7 @@ export default function HomePage() {
   });
 
   // Statistics & Duplicate Groups
-  const { duplicateGroups, platformCounts } = useDashboardStats(
+  const { duplicateGroups, globalStats, platformCounts } = useDashboardStats(
     accountProfile,
     ownedGames
   );
@@ -187,10 +198,11 @@ export default function HomePage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner: Direct access to Accounts / Platforms */}
+      {/* Top Banner: Direct access to Accounts / Platforms + KPI Strip */}
       <LibraryHeaderBanner
         ownedGamesCount={ownedGames.length}
         onOpenAddGame={() => setIsAddGameOpen(true)}
+        globalStats={globalStats}
       />
 
       {/* Status & Sync Progress Banners */}
@@ -213,6 +225,32 @@ export default function HomePage() {
         currentUser={currentUser}
         onOpenAuthModal={() => setIsAuthOpen(true)}
       />
+
+      {/* Contextual Panels for Collections & Duplicates */}
+      {activePlatformTab === "collections" && (
+        <CollectionsPanel
+          collections={collections}
+          selectedCollId={selectedCollId}
+          setSelectedCollId={setSelectedCollId}
+          isCreatingColl={isCreatingColl}
+          setIsCreatingColl={setIsCreatingColl}
+          newCollName={newCollName}
+          setNewCollName={setNewCollName}
+          newCollDesc={newCollDesc}
+          setNewCollDesc={setNewCollDesc}
+          handleCreateCollection={handleCreateCollection}
+          handleDeleteCollection={handleDeleteCollection}
+          onBackToAll={() => handleSelectTab("all")}
+        />
+      )}
+
+      {activePlatformTab === "duplicates" && (
+        <DuplicatesPanel
+          duplicateGroups={duplicateGroups}
+          onSelectGame={(appId) => router.push(`/game/${appId}`)}
+          onBackToAll={() => handleSelectTab("all")}
+        />
+      )}
 
       {/* Owned Games Section */}
       <LibrarySection

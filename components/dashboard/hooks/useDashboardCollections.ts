@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { PlatformType, OwnedGame, User as UserType } from "@/lib/types";
 import type { LocalCollection } from "@/lib/storage";
 
@@ -29,6 +29,14 @@ export function useDashboardCollections({
   const [newCollColor] = useState("#6366f1");
   const [isCreatingColl, setIsCreatingColl] = useState(false);
   const [gameToAddToColl, setGameToAddToColl] = useState<OwnedGame | null>(null);
+
+  useEffect(() => {
+    setWishlistIds(initialWishlist);
+  }, [initialWishlist]);
+
+  useEffect(() => {
+    setCollections(initialCollections);
+  }, [initialCollections]);
 
   const handleToggleWishlist = async (appId: number, platform: PlatformType) => {
     const isCurrentlyWishlisted = wishlistIds.includes(appId);

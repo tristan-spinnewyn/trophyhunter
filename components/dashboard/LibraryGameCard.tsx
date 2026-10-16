@@ -60,16 +60,16 @@ export default function LibraryGameCard({
 
   return (
     <div
-      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border transition duration-300 hover:shadow-xl ${
+      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl ${
         isPlatinum
-          ? "border-amber-500/40 bg-gradient-to-br from-amber-950/20 via-slate-900 to-slate-950 hover:border-amber-500/70"
-          : "border-slate-800 bg-slate-900/90 hover:border-sky-500/50"
+          ? "border-amber-500/40 bg-gradient-to-br from-amber-950/20 via-slate-900 to-slate-950 hover:border-amber-500/70 hover:shadow-amber-500/10"
+          : "border-slate-800/90 bg-slate-900/90 hover:border-sky-500/50 hover:shadow-sky-500/10"
       }`}
     >
       {/* Cover Image */}
       <div
         onClick={() => onSelectGame(g.appId)}
-        className="relative h-28 w-full cursor-pointer overflow-hidden bg-slate-900"
+        className="relative h-36 sm:h-40 w-full cursor-pointer overflow-hidden bg-slate-950"
       >
         <img
           src={g.headerImg}

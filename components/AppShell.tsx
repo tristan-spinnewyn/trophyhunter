@@ -33,7 +33,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
       <Suspense fallback={<div className="h-14 bg-slate-950 border-b border-slate-800" />}>
         <Navbar />
       </Suspense>
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-4 sm:py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
         <Suspense fallback={null}>{children}</Suspense>
       </main>
 

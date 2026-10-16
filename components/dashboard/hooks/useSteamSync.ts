@@ -93,8 +93,9 @@ export function useSteamSync({
     }
   };
 
-  const handleConnectAndSyncSteam = async (targetUser?: string) => {
-    const userToSync = (targetUser ?? steamInput).trim();
+  const handleConnectAndSyncSteam = async (targetUser?: string | unknown) => {
+    const rawTarget = typeof targetUser === "string" ? targetUser : steamInput;
+    const userToSync = (rawTarget || "").trim();
     if (!userToSync) return;
 
     setIsSyncingSteam(true);

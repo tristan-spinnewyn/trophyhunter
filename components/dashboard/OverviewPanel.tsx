@@ -121,7 +121,7 @@ export default function OverviewPanel({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {ALL_PLATFORMS.map((plat) => {
             const meta = PLATFORM_META[plat];
             const acc = accountProfile.accounts[plat];

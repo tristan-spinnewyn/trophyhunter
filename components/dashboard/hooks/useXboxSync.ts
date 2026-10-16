@@ -30,8 +30,9 @@ export function useXboxSync({
 }: UseXboxSyncProps) {
   const [isSyncingXbox, setIsSyncingXbox] = useState(false);
 
-  const handleConnectAndSyncXbox = async (overrideUser?: string) => {
-    const targetUser = (overrideUser || xboxInput).trim();
+  const handleConnectAndSyncXbox = async (overrideUser?: string | unknown) => {
+    const rawTarget = typeof overrideUser === "string" ? overrideUser : xboxInput;
+    const targetUser = (rawTarget || "").trim();
     if (!targetUser) return;
     setIsSyncingXbox(true);
     setBannerMsg(null);

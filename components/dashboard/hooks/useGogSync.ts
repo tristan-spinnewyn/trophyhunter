@@ -30,8 +30,9 @@ export function useGogSync({
 }: UseGogSyncProps) {
   const [isSyncingGOG, setIsSyncingGOG] = useState(false);
 
-  const handleConnectAndSyncGOG = async (overrideUser?: string) => {
-    const targetUser = (overrideUser || gogInput).trim();
+  const handleConnectAndSyncGOG = async (overrideUser?: string | unknown) => {
+    const rawTarget = typeof overrideUser === "string" ? overrideUser : gogInput;
+    const targetUser = (rawTarget || "").trim();
     if (!targetUser) return;
     setIsSyncingGOG(true);
     setBannerMsg(null);

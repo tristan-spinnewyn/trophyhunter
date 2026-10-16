@@ -147,7 +147,7 @@ export default function PlatformGogPanel({
                 className="flex-1 min-w-0 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-violet-500"
               />
               <button
-                onClick={onConnectAndSyncGOG}
+                onClick={() => onConnectAndSyncGOG()}
                 disabled={isSyncingGOG || !gogInput.trim()}
                 className="shrink-0 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 px-3.5 py-2 text-xs font-bold text-white hover:brightness-110 disabled:opacity-50 transition flex items-center gap-1.5 shadow-md shadow-violet-500/20"
               >

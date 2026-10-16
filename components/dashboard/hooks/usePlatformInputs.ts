@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { UserAccountProfile } from "@/lib/types";
 
 interface UsePlatformInputsProps {
@@ -30,6 +30,36 @@ export function usePlatformInputs({
   const [gogInput, setGogInput] = useState(gogAccount?.username || "");
   const [gogToken, setGogToken] = useState("");
   const [showGogToken, setShowGogToken] = useState(false);
+
+  useEffect(() => {
+    if (steamAccount?.username && !steamInput) {
+      setSteamInput(steamAccount.username);
+    }
+  }, [steamAccount?.username]);
+
+  useEffect(() => {
+    if (initialSteamApiKey && !steamApiKey) {
+      setSteamApiKey(initialSteamApiKey);
+    }
+  }, [initialSteamApiKey]);
+
+  useEffect(() => {
+    if (xboxAccount?.username && !xboxInput) {
+      setXboxInput(xboxAccount.username);
+    }
+  }, [xboxAccount?.username]);
+
+  useEffect(() => {
+    if (epicAccount?.username && !epicInput) {
+      setEpicInput(epicAccount.username);
+    }
+  }, [epicAccount?.username]);
+
+  useEffect(() => {
+    if (gogAccount?.username && !gogInput) {
+      setGogInput(gogAccount.username);
+    }
+  }, [gogAccount?.username]);
 
   return {
     steamInput,

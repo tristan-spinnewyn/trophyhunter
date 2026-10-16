@@ -34,8 +34,8 @@ export default function Navbar({ onSelectGame }: NavbarProps) {
   const isAccountActive = pathname === "/account";
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/85 backdrop-blur-md">
-      <div className="mx-auto flex max-w-4xl items-center justify-between gap-2.5 px-4 py-3">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 py-3">
         {/* Brand */}
         <Link
           href="/"

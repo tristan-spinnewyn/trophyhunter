@@ -60,7 +60,7 @@ export default function ProgressTracker({
           : "border-slate-800 bg-slate-900/90 shadow-lg"
       }`}
     >
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         {/* Left: Trophy Badge & Tier */}
         <div className="flex items-center gap-3">
           <div
