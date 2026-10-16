@@ -53,12 +53,12 @@ interface AccountDashboardProps {
 
 const ALL_PLATFORMS: PlatformType[] = [
   "steam",
-  "playstation",
   "xbox",
   "epic",
   "gog",
-  "nintendo",
+  "playstation",
   "retroachievements",
+  "nintendo",
 ];
 
 export default function AccountDashboard({
@@ -82,13 +82,27 @@ export default function AccountDashboard({
     text: string;
   } | null>(null);
 
-  // Library Filters
+  // Platform Navigation & Library Filters
+  const [activePlatformTab, setActivePlatformTab] = useState<
+    PlatformType | "all"
+  >("all");
   const [libPlatformFilter, setLibPlatformFilter] = useState<
     PlatformType | "all"
   >("all");
   const [libStatusFilter, setLibStatusFilter] = useState<
     "all" | "completed" | "in-progress" | "unstarted"
   >("all");
+  const [libAchievementFilter, setLibAchievementFilter] = useState<
+    "all" | "with-achievements" | "no-achievements"
+  >("all");
+  const [libSortOrder, setLibSortOrder] = useState<
+    | "default"
+    | "achievements-desc"
+    | "achievements-asc"
+    | "completion-desc"
+    | "name-asc"
+    | "playtime-desc"
+  >("default");
   const [libSearch, setLibSearch] = useState("");
 
   // Add/Edit Platform Modal state
@@ -640,10 +654,36 @@ export default function AccountDashboard({
     };
   }, [accountProfile, ownedGames]);
 
-  // Filtered Owned Games
+  // Per-platform game counts
+  const platformCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: ownedGames.length };
+    for (const p of ALL_PLATFORMS) {
+      counts[p] = 0;
+    }
+    for (const g of ownedGames) {
+      counts[g.platform] = (counts[g.platform] || 0) + 1;
+    }
+    return counts;
+  }, [ownedGames]);
+
+  // Epic-specific achievement breakdown counts
+  const epicCounts = useMemo(() => {
+    const epicGames = ownedGames.filter((g) => g.platform === "epic");
+    const withAch = epicGames.filter((g) => g.totalAchievements > 0).length;
+    return {
+      total: epicGames.length,
+      withAch,
+      noAch: epicGames.length - withAch,
+    };
+  }, [ownedGames]);
+
+  // Filtered & Sorted Owned Games
   const filteredGames = useMemo(() => {
-    return ownedGames.filter((g) => {
-      if (libPlatformFilter !== "all" && g.platform !== libPlatformFilter) {
+    const targetPlatform =
+      activePlatformTab !== "all" ? activePlatformTab : libPlatformFilter;
+
+    const list = ownedGames.filter((g) => {
+      if (targetPlatform !== "all" && g.platform !== targetPlatform) {
         return false;
       }
       const isComplete =
@@ -657,6 +697,20 @@ export default function AccountDashboard({
       if (libStatusFilter === "in-progress" && !isInProgress) return false;
       if (libStatusFilter === "unstarted" && !isUnstarted) return false;
 
+      // Filter by achievement availability (especially crucial for Epic Games)
+      if (
+        libAchievementFilter === "with-achievements" &&
+        g.totalAchievements === 0
+      ) {
+        return false;
+      }
+      if (
+        libAchievementFilter === "no-achievements" &&
+        g.totalAchievements > 0
+      ) {
+        return false;
+      }
+
       if (libSearch.trim()) {
         const q = libSearch.toLowerCase();
         if (!g.name.toLowerCase().includes(q) && !String(g.appId).includes(q)) {
@@ -665,7 +719,51 @@ export default function AccountDashboard({
       }
       return true;
     });
-  }, [ownedGames, libPlatformFilter, libStatusFilter, libSearch]);
+
+    return [...list].sort((a, b) => {
+      if (libSortOrder === "achievements-desc") {
+        if (b.totalAchievements !== a.totalAchievements) {
+          return b.totalAchievements - a.totalAchievements;
+        }
+        return b.unlockedCount - a.unlockedCount;
+      }
+      if (libSortOrder === "achievements-asc") {
+        if (a.totalAchievements !== b.totalAchievements) {
+          return a.totalAchievements - b.totalAchievements;
+        }
+        return a.unlockedCount - b.unlockedCount;
+      }
+      if (libSortOrder === "completion-desc") {
+        const pctA =
+          a.totalAchievements > 0 ? a.unlockedCount / a.totalAchievements : 0;
+        const pctB =
+          b.totalAchievements > 0 ? b.unlockedCount / b.totalAchievements : 0;
+        if (pctB !== pctA) return pctB - pctA;
+        return a.name.localeCompare(b.name, "fr");
+      }
+      if (libSortOrder === "name-asc") {
+        return a.name.localeCompare(b.name, "fr");
+      }
+      if (libSortOrder === "playtime-desc") {
+        return (b.playtimeHours || 0) - (a.playtimeHours || 0);
+      }
+      // default: highest completion % first, then by name
+      const pctA =
+        a.totalAchievements > 0 ? a.unlockedCount / a.totalAchievements : 0;
+      const pctB =
+        b.totalAchievements > 0 ? b.unlockedCount / b.totalAchievements : 0;
+      if (pctB !== pctA) return pctB - pctA;
+      return a.name.localeCompare(b.name, "fr");
+    });
+  }, [
+    ownedGames,
+    activePlatformTab,
+    libPlatformFilter,
+    libStatusFilter,
+    libAchievementFilter,
+    libSortOrder,
+    libSearch,
+  ]);
 
   return (
     <div className="space-y-6">
@@ -695,460 +793,904 @@ export default function AccountDashboard({
         </div>
       )}
 
-      {/* 1. Hero Account Card & Direct Steam ID Connection (Zero API Key) */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900/95 to-sky-950/40 p-5 sm:p-6 shadow-2xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-          {/* Profile Identity */}
-          <div className="flex items-center gap-4">
-            <div className="relative shrink-0">
-              {steamAccount?.avatarUrl ? (
-                <img
-                  src={steamAccount.avatarUrl}
-                  alt={steamAccount.displayName}
-                  className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl object-cover border-2 border-sky-500/50 shadow-lg shadow-sky-500/20"
-                />
-              ) : (
-                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border border-slate-700 bg-slate-800 text-sky-400">
-                  <User className="h-8 w-8" />
-                </div>
-              )}
-              {steamAccount?.level ? (
-                <div
-                  title="Niveau Steam"
-                  className="absolute -bottom-1.5 -right-1.5 flex h-7 min-w-7 items-center justify-center rounded-full border-2 border-slate-950 bg-gradient-to-br from-amber-400 to-amber-600 px-1.5 text-[11px] font-black text-slate-950 shadow"
+      {/* 0. Top Platform Navigation Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs no-scrollbar">
+        <button
+          onClick={() => {
+            setActivePlatformTab("all");
+            setLibPlatformFilter("all");
+          }}
+          className={`flex items-center gap-1.5 rounded-2xl px-4 py-2 font-bold whitespace-nowrap transition shrink-0 ${
+            activePlatformTab === "all"
+              ? "bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20"
+              : "border border-slate-800 bg-slate-900/90 text-slate-300 hover:border-slate-700 hover:text-white"
+          }`}
+        >
+          <Layers className="h-3.5 w-3.5" />
+          <span>Vue Globale</span>
+          <span
+            className={`ml-1 rounded-full px-1.5 py-0.2 text-[10px] ${
+              activePlatformTab === "all"
+                ? "bg-slate-950/30 text-slate-950 font-black"
+                : "bg-slate-800 text-slate-400"
+            }`}
+          >
+            {ownedGames.length}
+          </span>
+        </button>
+
+        {ALL_PLATFORMS.map((plat) => {
+          const meta = PLATFORM_META[plat];
+          const count = platformCounts[plat] || 0;
+          const isConnected = !!accountProfile.accounts[plat];
+          const isActive = activePlatformTab === plat;
+
+          return (
+            <button
+              key={plat}
+              onClick={() => {
+                setActivePlatformTab(plat);
+                setLibPlatformFilter(plat);
+              }}
+              className={`flex items-center gap-1.5 rounded-2xl px-3.5 py-2 font-bold whitespace-nowrap transition shrink-0 ${
+                isActive
+                  ? `${meta.badgeClass} ring-2 ring-current/40 shadow-lg`
+                  : "border border-slate-800 bg-slate-900/80 text-slate-300 hover:border-slate-700 hover:text-white"
+              }`}
+            >
+              <span>{meta.shortName}</span>
+              {count > 0 && (
+                <span
+                  className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                    isActive
+                      ? "bg-black/30 font-black"
+                      : "bg-slate-800 text-slate-400"
+                  }`}
                 >
-                  {steamAccount.level}
-                </div>
-              ) : null}
+                  {count}
+                </span>
+              )}
+              {isConnected && (
+                <span
+                  className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0"
+                  title="Compte lié"
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* VIEW A: GLOBAL OVERVIEW */}
+      {activePlatformTab === "all" && (
+        <>
+          {/* Global Hunter Statistics Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 space-y-1">
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span className="font-semibold">Jeux Possédés</span>
+                <Gamepad2 className="h-4 w-4 text-sky-400" />
+              </div>
+              <div className="text-2xl sm:text-3xl font-black text-white">
+                {globalStats.totalGamesOwned}
+              </div>
+              <div className="text-[11px] text-slate-400">
+                Dont {globalStats.trackedGamesCount} dans la bibliothèque active
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-xl sm:text-2xl font-black text-white">
-                  {steamAccount?.displayName || accountProfile.displayName}
-                </h2>
-                {steamAccount?.onlineState && (
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                      steamAccount.onlineState === "online" ||
-                      steamAccount.onlineState === "in-game"
-                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                        : "bg-slate-800 text-slate-400 border border-slate-700"
+            <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-950/30 to-slate-900 p-4 space-y-1">
+              <div className="flex items-center justify-between text-xs text-amber-300">
+                <span className="font-semibold">Platines / 100%</span>
+                <Trophy className="h-4 w-4 text-amber-400" />
+              </div>
+              <div className="text-2xl sm:text-3xl font-black text-amber-400">
+                {globalStats.totalCompletedGames}
+              </div>
+              <div className="text-[11px] text-slate-400">
+                Jeux terminés à 100% tous comptes
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/25 to-slate-900 p-4 space-y-1">
+              <div className="flex items-center justify-between text-xs text-emerald-300">
+                <span className="font-semibold">Succès & Trophées</span>
+                <Award className="h-4 w-4 text-emerald-400" />
+              </div>
+              <div className="text-2xl sm:text-3xl font-black text-emerald-400">
+                {globalStats.totalAchievementsUnlocked}
+              </div>
+              <div className="text-[11px] text-slate-400">
+                Débloqués sur {globalStats.connectedCount || 1} plateforme(s)
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-950/25 to-slate-900 p-4 space-y-1">
+              <div className="flex items-center justify-between text-xs text-purple-300">
+                <span className="font-semibold">Complétion Moyenne</span>
+                <Sparkles className="h-4 w-4 text-purple-400" />
+              </div>
+              <div className="text-2xl sm:text-3xl font-black text-purple-300">
+                {globalStats.avgCompletion}%
+              </div>
+              <div className="text-[11px] text-slate-400">
+                {steamAccount?.stats.badges
+                  ? `${steamAccount.stats.badges} Badges Steam • ${
+                      steamAccount.stats.dlcCount || 0
+                    } DLC`
+                  : "Sur vos jeux suivis"}
+              </div>
+            </div>
+          </div>
+
+          {/* Multi-Platform Accounts Section */}
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Layers className="h-4 w-4 text-sky-400" />
+                  Mes Plateformes de Jeu ({ALL_PLATFORMS.length})
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Cliquez sur un espace pour accéder à sa vue dédiée (Steam, Xbox, Epic Games, GOG...).
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {ALL_PLATFORMS.map((plat) => {
+                const meta = PLATFORM_META[plat];
+                const acc = accountProfile.accounts[plat];
+                const count = platformCounts[plat] || 0;
+
+                return (
+                  <div
+                    key={plat}
+                    className={`flex flex-col justify-between rounded-2xl border p-3.5 transition ${
+                      acc
+                        ? "border-slate-700 bg-slate-950/80 shadow-md"
+                        : "border-slate-800/80 bg-slate-950/30 opacity-85 hover:opacity-100"
                     }`}
                   >
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        steamAccount.onlineState === "online" ||
-                        steamAccount.onlineState === "in-game"
-                          ? "bg-emerald-400"
-                          : "bg-slate-500"
-                      }`}
-                    />
-                    {steamAccount.onlineState === "online"
-                      ? "En ligne"
-                      : steamAccount.onlineState === "in-game"
-                      ? "En jeu"
-                      : "Hors ligne"}
-                  </span>
-                )}
-              </div>
+                    <div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-lg border px-2 py-0.5 text-xs font-bold ${meta.badgeClass}`}
+                        >
+                          {meta.shortName}
+                        </span>
 
-              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-                {steamAccount ? (
-                  <>
-                    <span>SteamID : {steamAccount.username}</span>
-                    {steamAccount.location && (
-                      <>
-                        <span>•</span>
-                        <span>{steamAccount.location}</span>
-                      </>
-                    )}
-                    {steamAccount.memberSince && (
-                      <>
-                        <span>•</span>
-                        <span>Membre depuis {steamAccount.memberSince}</span>
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <span>
-                    Renseignez votre SteamID ci-dessous pour importer vos jeux
-                    et succès sans clé API.
-                  </span>
-                )}
-              </div>
+                        <div className="flex items-center gap-2">
+                          <span className="rounded bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-300">
+                            {count} jeu(x)
+                          </span>
+                          {acc ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400">
+                              <Check className="h-3 w-3" /> Lié
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-slate-500">
+                              Non lié
+                            </span>
+                          )}
+                        </div>
+                      </div>
 
-              {steamAccount?.profileUrl && (
-                <div className="pt-1">
-                  <a
-                    href={steamAccount.profileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-sky-400 hover:text-sky-300"
-                  >
-                    Voir le profil Steam officiel
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                </div>
-              )}
+                      {acc ? (
+                        <div className="mt-2.5 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="truncate text-sm font-bold text-white">
+                              {acc.displayName}
+                            </div>
+                            {acc.level ? (
+                              <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold text-amber-400">
+                                Niv. {acc.level}
+                              </span>
+                            ) : null}
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-1.5 rounded-xl bg-slate-900/90 p-2 text-center">
+                            <div>
+                              <div className="text-xs font-black text-white">
+                                {acc.stats.gamesOwned}
+                              </div>
+                              <div className="text-[10px] text-slate-400">Jeux</div>
+                            </div>
+                            <div>
+                              <div className="text-xs font-black text-emerald-400">
+                                {acc.stats.totalAchievements}
+                              </div>
+                              <div className="text-[10px] text-slate-400">
+                                {meta.trophyLabel}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-xs font-black text-amber-400">
+                                {acc.stats.completedGames}
+                              </div>
+                              <div className="text-[10px] text-slate-400">
+                                {meta.completeLabel}
+                              </div>
+                            </div>
+                          </div>
+
+                          {acc.stats.gamerScore ? (
+                            <div className="rounded-lg bg-emerald-950/30 border border-emerald-500/20 px-2.5 py-1 text-[11px] font-bold text-emerald-300 text-center">
+                              {acc.stats.gamerScore.toLocaleString("fr-FR")} G
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <p className="mt-2 text-xs text-slate-400">
+                          Accédez à l&apos;espace {meta.name} pour configurer vos identifiants et voir vos succès.
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="mt-3 flex items-center gap-1.5 pt-2 border-t border-slate-800/80">
+                      <button
+                        onClick={() => {
+                          setActivePlatformTab(plat);
+                          setLibPlatformFilter(plat);
+                        }}
+                        className="flex-1 flex items-center justify-center gap-1 rounded-xl bg-slate-800 py-1.5 text-xs font-bold text-sky-400 transition hover:bg-slate-700 hover:text-white"
+                      >
+                        <span>Ouvrir l&apos;espace</span>
+                        <ChevronRight className="h-3 w-3" />
+                      </button>
+
+                      <button
+                        onClick={() => openEditPlatform(plat)}
+                        title="Modifier les statistiques ou l'identifiant"
+                        className="rounded-xl border border-slate-700 bg-slate-900 p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white"
+                      >
+                        <Edit3 className="h-3.5 w-3.5" />
+                      </button>
+
+                      {acc && (
+                        <button
+                          onClick={() => handleDisconnectPlatform(plat)}
+                          title="Supprimer ce compte"
+                          className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-1.5 text-rose-400 hover:bg-rose-500/20"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Steam ID Quick Connect & Full Sync Form */}
-          <div className="w-full md:w-auto md:min-w-[340px] rounded-2xl border border-slate-800/90 bg-slate-950/70 p-3.5 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5" />
-                Connexion Steam
-              </label>
-              <span className="text-[10px] text-emerald-400 font-medium">
-                {steamApiKey ? "Clé API Active ✓" : "Sans Clé ou Avec Clé"}
-              </span>
-            </div>
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={steamInput}
-                onChange={(e) => setSteamInput(e.target.value)}
-                placeholder="SteamID64, pseudo ou URL Steam..."
-                className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-sky-500"
-              />
-              <button
-                onClick={() => handleConnectAndSyncSteam()}
-                disabled={isSyncingSteam || !steamInput.trim()}
-                className="flex items-center gap-1.5 rounded-xl bg-sky-500 px-3.5 py-2 text-xs font-bold text-slate-950 shadow-lg shadow-sky-500/20 transition hover:bg-sky-400 disabled:opacity-50"
-              >
-                <RefreshCw
-                  className={`h-3.5 w-3.5 ${
-                    isSyncingSteam ? "animate-spin" : ""
-                  }`}
-                />
-                <span>
-                  {isSyncingSteam ? "Sync..." : "Importer Jeux & Succès"}
-                </span>
-              </button>
-            </div>
-
-            {/* Optional API key toggle / input */}
-            <div className="pt-1.5 border-t border-slate-800/80">
+          {/* Rare Achievements Showcase */}
+          {steamAccount?.rareShowcase && steamAccount.rareShowcase.length > 0 && (
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <button
-                  type="button"
-                  onClick={() => setShowApiKeyInput(!showApiKeyInput)}
-                  className="text-[11px] font-semibold text-slate-300 hover:text-sky-300 flex items-center gap-1"
-                >
-                  <span>{showApiKeyInput ? "▼" : "▶"} Clé API Steam (Optionnelle)</span>
-                  {steamApiKey ? (
-                    <span className="text-[10px] text-emerald-400 font-bold">• Active</span>
-                  ) : null}
-                </button>
-                <a
-                  href="https://steamcommunity.com/dev/apikey"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[10px] text-sky-400 hover:underline"
-                >
-                  Obtenir ma clé gratuite ↗
-                </a>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                  <Star className="h-4 w-4 fill-amber-400" />
+                  Vitrine de vos succès les plus rares
+                </h3>
+                <span className="text-[11px] text-slate-400">
+                  Cliquez pour ouvrir le jeu
+                </span>
               </div>
-              {(showApiKeyInput || steamApiKey) && (
-                <div className="mt-1.5 space-y-1">
-                  <input
-                    type="password"
-                    value={steamApiKey}
-                    onChange={(e) => setSteamApiKey(e.target.value)}
-                    placeholder="Collez votre clé API Steam pour tous vos jeux..."
-                    className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-sky-500 font-mono"
-                  />
-                  <p className="text-[10px] text-slate-400">
-                    Recommandé pour importer l&apos;intégralité de votre bibliothèque (&gt;200 jeux). Sans clé, seuls les jeux visibles publiquement (badges, vitrines) sont importés.
-                  </p>
-                </div>
-              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                {steamAccount.rareShowcase.map((item, idx) => (
+                  <button
+                    key={`${item.appId}_${idx}`}
+                    onClick={() => onSelectGame(item.appId)}
+                    className="flex items-center gap-3 rounded-2xl border border-amber-500/20 bg-slate-950/70 p-2.5 text-left transition hover:border-amber-500/50 hover:bg-slate-900"
+                  >
+                    <img
+                      src={item.icon}
+                      alt={item.achievementName}
+                      className="h-11 w-11 rounded-xl object-cover border border-amber-400/40 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-xs font-bold text-white">
+                        {item.achievementName}
+                      </div>
+                      <div className="truncate text-[11px] text-slate-400">
+                        {item.gameName}
+                      </div>
+                      <div className="mt-0.5 inline-block rounded bg-amber-500/15 px-1.5 py-0.2 text-[10px] font-semibold text-amber-300">
+                        Ultra Rare • {item.percent}% des joueurs
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
+          )}
+        </>
+      )}
 
-            {syncProgressText ? (
-              <div className="flex items-center gap-2 text-[11px] text-sky-300 pt-1">
-                <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
-                <span className="truncate">{syncProgressText}</span>
-              </div>
-            ) : (
-              <p className="text-[10px] text-slate-400">
-                Récupère votre profil, vos statistiques officielles, vos jeux
-                possédés et coche vos succès débloqués.
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Global Hunter Statistics Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 space-y-1">
-          <div className="flex items-center justify-between text-xs text-slate-400">
-            <span className="font-semibold">Jeux Possédés</span>
-            <Gamepad2 className="h-4 w-4 text-sky-400" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-white">
-            {globalStats.totalGamesOwned}
-          </div>
-          <div className="text-[11px] text-slate-400">
-            Dont {globalStats.trackedGamesCount} dans la bibliothèque active
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-950/30 to-slate-900 p-4 space-y-1">
-          <div className="flex items-center justify-between text-xs text-amber-300">
-            <span className="font-semibold">Platines / 100%</span>
-            <Trophy className="h-4 w-4 text-amber-400" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-amber-400">
-            {globalStats.totalCompletedGames}
-          </div>
-          <div className="text-[11px] text-slate-400">
-            Jeux terminés à 100% tous comptes
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/25 to-slate-900 p-4 space-y-1">
-          <div className="flex items-center justify-between text-xs text-emerald-300">
-            <span className="font-semibold">Succès & Trophées</span>
-            <Award className="h-4 w-4 text-emerald-400" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-emerald-400">
-            {globalStats.totalAchievementsUnlocked}
-          </div>
-          <div className="text-[11px] text-slate-400">
-            Débloqués sur {globalStats.connectedCount || 1} plateforme(s)
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-950/25 to-slate-900 p-4 space-y-1">
-          <div className="flex items-center justify-between text-xs text-purple-300">
-            <span className="font-semibold">Complétion Moyenne</span>
-            <Sparkles className="h-4 w-4 text-purple-400" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-purple-300">
-            {globalStats.avgCompletion}%
-          </div>
-          <div className="text-[11px] text-slate-400">
-            {steamAccount?.stats.badges
-              ? `${steamAccount.stats.badges} Badges Steam • ${
-                  steamAccount.stats.dlcCount || 0
-                } DLC`
-              : "Sur vos jeux suivis"}
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Rare Achievements Showcase (extracted from Steam without API Key) */}
-      {steamAccount?.rareShowcase && steamAccount.rareShowcase.length > 0 && (
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5 space-y-3">
+      {/* VIEW B: STEAM DEDICATED VIEW */}
+      {activePlatformTab === "steam" && (
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-              <Star className="h-4 w-4 fill-amber-400" />
-              Vitrine de vos succès Steam les plus rares
-            </h3>
-            <span className="text-[11px] text-slate-400">
-              Cliquez pour ouvrir le jeu
+            <button
+              onClick={() => {
+                setActivePlatformTab("all");
+                setLibPlatformFilter("all");
+              }}
+              className="text-xs text-sky-400 hover:text-sky-300 font-semibold flex items-center gap-1"
+            >
+              ← Retour à la Vue Globale
+            </button>
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg border border-sky-500/40 bg-sky-500/10 text-sky-300">
+              Espace Dédié Steam
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-            {steamAccount.rareShowcase.map((item, idx) => (
-              <button
-                key={`${item.appId}_${idx}`}
-                onClick={() => onSelectGame(item.appId)}
-                className="flex items-center gap-3 rounded-2xl border border-amber-500/20 bg-slate-950/70 p-2.5 text-left transition hover:border-amber-500/50 hover:bg-slate-900"
-              >
-                <img
-                  src={item.icon}
-                  alt={item.achievementName}
-                  className="h-11 w-11 rounded-xl object-cover border border-amber-400/40 shrink-0"
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-xs font-bold text-white">
-                    {item.achievementName}
-                  </div>
-                  <div className="truncate text-[11px] text-slate-400">
-                    {item.gameName}
-                  </div>
-                  <div className="mt-0.5 inline-block rounded bg-amber-500/15 px-1.5 py-0.2 text-[10px] font-semibold text-amber-300">
-                    Ultra Rare • {item.percent}% des joueurs
-                  </div>
+          {/* Steam Hero Card */}
+          <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900/95 to-sky-950/40 p-5 sm:p-6 shadow-2xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+              <div className="flex items-center gap-4">
+                <div className="relative shrink-0">
+                  {steamAccount?.avatarUrl ? (
+                    <img
+                      src={steamAccount.avatarUrl}
+                      alt={steamAccount.displayName}
+                      className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl object-cover border-2 border-sky-500/50 shadow-lg shadow-sky-500/20"
+                    />
+                  ) : (
+                    <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border border-slate-700 bg-slate-800 text-sky-400">
+                      <User className="h-8 w-8" />
+                    </div>
+                  )}
+                  {steamAccount?.level ? (
+                    <div
+                      title="Niveau Steam"
+                      className="absolute -bottom-1.5 -right-1.5 flex h-7 min-w-7 items-center justify-center rounded-full border-2 border-slate-950 bg-gradient-to-br from-amber-400 to-amber-600 px-1.5 text-[11px] font-black text-slate-950 shadow"
+                    >
+                      {steamAccount.level}
+                    </div>
+                  ) : null}
                 </div>
-              </button>
-            ))}
+
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-xl sm:text-2xl font-black text-white">
+                      {steamAccount?.displayName || accountProfile.displayName}
+                    </h2>
+                    {steamAccount?.onlineState && (
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          steamAccount.onlineState === "online" ||
+                          steamAccount.onlineState === "in-game"
+                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                            : "bg-slate-800 text-slate-400 border border-slate-700"
+                        }`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            steamAccount.onlineState === "online" ||
+                            steamAccount.onlineState === "in-game"
+                              ? "bg-emerald-400"
+                              : "bg-slate-500"
+                          }`}
+                        />
+                        {steamAccount.onlineState === "online"
+                          ? "En ligne"
+                          : steamAccount.onlineState === "in-game"
+                          ? "En jeu"
+                          : "Hors ligne"}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                    {steamAccount ? (
+                      <>
+                        <span>SteamID : {steamAccount.username}</span>
+                        {steamAccount.location && (
+                          <>
+                            <span>•</span>
+                            <span>{steamAccount.location}</span>
+                          </>
+                        )}
+                        {steamAccount.memberSince && (
+                          <>
+                            <span>•</span>
+                            <span>Membre depuis {steamAccount.memberSince}</span>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <span>Renseignez votre SteamID pour synchroniser automatiquement vos succès.</span>
+                    )}
+                  </div>
+
+                  {steamAccount?.profileUrl && (
+                    <div className="pt-1">
+                      <a
+                        href={steamAccount.profileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-sky-400 hover:text-sky-300"
+                      >
+                        Voir le profil Steam officiel
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Steam Sync Input Form */}
+              <div className="w-full md:w-auto md:min-w-[340px] rounded-2xl border border-slate-800/90 bg-slate-950/70 p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Synchronisation Steam
+                  </label>
+                  <span className="text-[10px] text-emerald-400 font-medium">
+                    {steamApiKey ? "Clé API Active ✓" : "Sans Clé ou Avec Clé"}
+                  </span>
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={steamInput}
+                    onChange={(e) => setSteamInput(e.target.value)}
+                    placeholder="SteamID64, pseudo ou URL Steam..."
+                    className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-sky-500"
+                  />
+                  <button
+                    onClick={() => handleConnectAndSyncSteam()}
+                    disabled={isSyncingSteam || !steamInput.trim()}
+                    className="flex items-center gap-1.5 rounded-xl bg-sky-500 px-3.5 py-2 text-xs font-bold text-slate-950 shadow-lg shadow-sky-500/20 transition hover:bg-sky-400 disabled:opacity-50"
+                  >
+                    <RefreshCw
+                      className={`h-3.5 w-3.5 ${
+                        isSyncingSteam ? "animate-spin" : ""
+                      }`}
+                    />
+                    <span>{isSyncingSteam ? "Sync..." : "Importer"}</span>
+                  </button>
+                </div>
+
+                <div className="pt-1.5 border-t border-slate-800/80">
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+                      className="text-[11px] font-semibold text-slate-300 hover:text-sky-300 flex items-center gap-1"
+                    >
+                      <span>{showApiKeyInput ? "▼" : "▶"} Clé API Steam (Optionnelle)</span>
+                      {steamApiKey ? (
+                        <span className="text-[10px] text-emerald-400 font-bold">• Active</span>
+                      ) : null}
+                    </button>
+                    <a
+                      href="https://steamcommunity.com/dev/apikey"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-sky-400 hover:underline"
+                    >
+                      Obtenir ma clé ↗
+                    </a>
+                  </div>
+                  {(showApiKeyInput || steamApiKey) && (
+                    <div className="mt-1.5 space-y-1">
+                      <input
+                        type="password"
+                        value={steamApiKey}
+                        onChange={(e) => setSteamApiKey(e.target.value)}
+                        placeholder="Collez votre clé API Steam..."
+                        className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-sky-500 font-mono"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {syncProgressText ? (
+                  <div className="flex items-center gap-2 text-[11px] text-sky-300 pt-1">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                    <span className="truncate">{syncProgressText}</span>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-slate-400">
+                    Importe automatiquement vos jeux et succès Steam sans mot de passe.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Steam Stats Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 space-y-1">
+              <div className="text-xs font-semibold text-slate-400">Jeux Steam</div>
+              <div className="text-2xl font-black text-white">{platformCounts.steam}</div>
+              <div className="text-[11px] text-slate-400">Dans votre bibliothèque</div>
+            </div>
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/20 p-4 space-y-1">
+              <div className="text-xs font-semibold text-emerald-300">Succès Débloqués</div>
+              <div className="text-2xl font-black text-emerald-400">{steamAccount?.stats.totalAchievements || 0}</div>
+              <div className="text-[11px] text-slate-400">Sur vos jeux Steam</div>
+            </div>
+            <div className="rounded-2xl border border-amber-500/30 bg-amber-950/20 p-4 space-y-1">
+              <div className="text-xs font-semibold text-amber-300">Jeux 100%</div>
+              <div className="text-2xl font-black text-amber-400">{steamAccount?.stats.completedGames || 0}</div>
+              <div className="text-[11px] text-slate-400">Platines Steam</div>
+            </div>
+            <div className="rounded-2xl border border-sky-500/30 bg-sky-950/20 p-4 space-y-1">
+              <div className="text-xs font-semibold text-sky-300">Badges & DLC</div>
+              <div className="text-2xl font-black text-sky-400">{steamAccount?.stats.badges || 0}</div>
+              <div className="text-[11px] text-slate-400">{steamAccount?.stats.dlcCount || 0} DLC possédés</div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* 4. Multi-Platform Accounts Section */}
-      <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Layers className="h-4 w-4 text-sky-400" />
-              Mes Plateformes de Jeu & Statistiques
-            </h3>
-            <p className="text-xs text-slate-400">
-              Ajoutez vos comptes PlayStation (PSN), Xbox, Epic Games, GOG,
-              Nintendo Switch et RetroAchievements sans aucune clé API.
-            </p>
+      {/* VIEW C: XBOX LIVE DEDICATED VIEW */}
+      {activePlatformTab === "xbox" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => {
+                setActivePlatformTab("all");
+                setLibPlatformFilter("all");
+              }}
+              className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
+            >
+              ← Retour à la Vue Globale
+            </button>
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-300">
+              Espace Dédié Xbox Live & PC Game Pass
+            </span>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {ALL_PLATFORMS.map((plat) => {
-            const meta = PLATFORM_META[plat];
-            const acc = accountProfile.accounts[plat];
-
-            return (
-              <div
-                key={plat}
-                className={`flex flex-col justify-between rounded-2xl border p-3.5 transition ${
-                  acc
-                    ? "border-slate-700 bg-slate-950/80 shadow-md"
-                    : "border-slate-800/80 bg-slate-950/30 opacity-85 hover:opacity-100"
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-lg border px-2 py-0.5 text-xs font-bold ${meta.badgeClass}`}
-                    >
-                      {meta.shortName}
-                    </span>
-
-                    {acc ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400">
-                        <Check className="h-3 w-3" /> Lié
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-slate-500">
-                        Non connecté
-                      </span>
-                    )}
-                  </div>
-
-                  {acc ? (
-                    <div className="mt-2.5 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="truncate text-sm font-bold text-white">
-                          {acc.displayName}
-                        </div>
-                        {acc.level ? (
-                          <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold text-amber-400">
-                            Niv. {acc.level}
-                          </span>
-                        ) : null}
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-1.5 rounded-xl bg-slate-900/90 p-2 text-center">
-                        <div>
-                          <div className="text-xs font-black text-white">
-                            {acc.stats.gamesOwned}
-                          </div>
-                          <div className="text-[10px] text-slate-400">Jeux</div>
-                        </div>
-                        <div>
-                          <div className="text-xs font-black text-emerald-400">
-                            {acc.stats.totalAchievements}
-                          </div>
-                          <div className="text-[10px] text-slate-400">
-                            {meta.trophyLabel}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs font-black text-amber-400">
-                            {acc.stats.completedGames}
-                          </div>
-                          <div className="text-[10px] text-slate-400">
-                            {meta.completeLabel}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Platform specific extra badges (PSN Trophies or Xbox Gamerscore) */}
-                      {acc.stats.trophies && (
-                        <div className="flex items-center justify-between rounded-lg bg-slate-900/50 px-2.5 py-1 text-[10px]">
-                          <span className="text-sky-300 font-semibold">
-                            🏆 {acc.stats.trophies.platinum} Plat.
-                          </span>
-                          <span className="text-amber-300 font-semibold">
-                            🥇 {acc.stats.trophies.gold} Or
-                          </span>
-                          <span className="text-slate-300 font-semibold">
-                            🥈 {acc.stats.trophies.silver} Arg.
-                          </span>
-                          <span className="text-amber-600 font-semibold">
-                            🥉 {acc.stats.trophies.bronze} Brz.
-                          </span>
-                        </div>
-                      )}
-
-                      {acc.stats.gamerScore ? (
-                        <div className="rounded-lg bg-emerald-950/30 border border-emerald-500/20 px-2.5 py-1 text-[11px] font-bold text-emerald-300 text-center">
-                          {acc.stats.gamerScore.toLocaleString("fr-FR")} G
-                          (Gamerscore / Points)
-                        </div>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <p className="mt-2 text-xs text-slate-400">
-                      Ajoutez votre compte {meta.name} pour suivre vos jeux et
-                      statistiques globales.
-                    </p>
-                  )}
+          {/* Xbox Hero Card */}
+          <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-slate-900 via-slate-900/95 to-emerald-950/40 p-5 sm:p-6 shadow-2xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 shrink-0">
+                  <Gamepad2 className="h-8 w-8" />
                 </div>
-
-                <div className="mt-3 flex items-center gap-1.5 pt-2 border-t border-slate-800/80">
-                  <button
-                    onClick={() => openEditPlatform(plat)}
-                    className="flex-1 flex items-center justify-center gap-1 rounded-xl border border-slate-700 bg-slate-900 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-800 hover:text-white"
-                  >
-                    {acc ? (
-                      <>
-                        <Edit3 className="h-3 w-3" /> Modifier stats
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="h-3.5 w-3.5" /> Ajouter {meta.shortName}
-                      </>
-                    )}
-                  </button>
-
-                  {plat === "steam" && acc && (
-                    <button
-                      onClick={() => handleConnectAndSyncSteam(acc.username)}
-                      disabled={isSyncingSteam}
-                      title="Actualiser depuis Steam"
-                      className="flex h-7 w-7 items-center justify-center rounded-xl border border-sky-500/40 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20"
-                    >
-                      <RefreshCw
-                        className={`h-3.5 w-3.5 ${
-                          isSyncingSteam ? "animate-spin" : ""
-                        }`}
-                      />
-                    </button>
-                  )}
-
-                  {acc && (
-                    <button
-                      onClick={() => handleDisconnectPlatform(plat)}
-                      title="Supprimer ce compte"
-                      className="flex h-7 w-7 items-center justify-center rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  )}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl sm:text-2xl font-black text-white">
+                      {accountProfile.accounts.xbox?.displayName || "Compte Xbox Live"}
+                    </h2>
+                    <span className="rounded-full bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                      Xbox & PC
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Gamertag : {accountProfile.accounts.xbox?.username || "Non configuré"}
+                  </p>
+                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 px-3 py-1 text-xs font-black text-emerald-300">
+                    <Trophy className="h-3.5 w-3.5" />
+                    {accountProfile.accounts.xbox?.stats.gamerScore
+                      ? `${accountProfile.accounts.xbox.stats.gamerScore.toLocaleString("fr-FR")} G (Gamerscore)`
+                      : "0 G"}
+                  </div>
                 </div>
               </div>
-            );
-          })}
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => openEditPlatform("xbox")}
+                  className="rounded-xl border border-emerald-500/40 bg-emerald-500/20 px-3.5 py-2 text-xs font-bold text-emerald-300 hover:bg-emerald-500/30 transition flex items-center gap-1.5"
+                >
+                  <Edit3 className="h-3.5 w-3.5" />
+                  Modifier Gamertag & Stats
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Xbox Information Card */}
+          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-950/15 p-4 text-xs text-slate-300 flex items-start gap-3">
+            <Sparkles className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="font-bold text-emerald-200">
+                Synchronisation Xbox Live & PC Game Pass par API
+              </p>
+              <p className="text-[11px] text-slate-400">
+                Vous pouvez ajouter vos jeux Xbox (console et PC) ci-dessous. En reliant votre Gamertag via OpenXBL, l&apos;intégralité de vos succès, raretés et Gamerscore sont automatiquement suivis sans entrer de mot de passe.
+              </p>
+            </div>
+          </div>
+
+          {/* Xbox Stats Grid */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 space-y-1">
+              <div className="text-xs font-semibold text-slate-400">Jeux Xbox Suivis</div>
+              <div className="text-2xl font-black text-white">{platformCounts.xbox}</div>
+              <div className="text-[11px] text-slate-400">Console & PC Game Pass</div>
+            </div>
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/20 p-4 space-y-1">
+              <div className="text-xs font-semibold text-emerald-300">Succès Débloqués</div>
+              <div className="text-2xl font-black text-emerald-400">
+                {accountProfile.accounts.xbox?.stats.totalAchievements || 0}
+              </div>
+              <div className="text-[11px] text-slate-400">Succès Xbox</div>
+            </div>
+            <div className="rounded-2xl border border-amber-500/30 bg-amber-950/20 p-4 space-y-1">
+              <div className="text-xs font-semibold text-amber-300">Jeux 1000G / 100%</div>
+              <div className="text-2xl font-black text-amber-400">
+                {accountProfile.accounts.xbox?.stats.completedGames || 0}
+              </div>
+              <div className="text-[11px] text-slate-400">Jeux complétés</div>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* VIEW D: EPIC GAMES DEDICATED VIEW */}
+      {activePlatformTab === "epic" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => {
+                setActivePlatformTab("all");
+                setLibPlatformFilter("all");
+              }}
+              className="text-xs text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1"
+            >
+              ← Retour à la Vue Globale
+            </button>
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg border border-purple-500/40 bg-purple-500/10 text-purple-300">
+              Espace Dédié Epic Games Store
+            </span>
+          </div>
+
+          {/* Epic Hero Card */}
+          <div className="relative overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-slate-900 via-slate-900/95 to-purple-950/40 p-5 sm:p-6 shadow-2xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border border-purple-500/40 bg-purple-500/10 text-purple-400 shrink-0">
+                  <Trophy className="h-8 w-8" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl sm:text-2xl font-black text-white">
+                      {accountProfile.accounts.epic?.displayName || "Compte Epic Games"}
+                    </h2>
+                    <span className="rounded-full bg-purple-500/20 border border-purple-500/40 px-2 py-0.5 text-[10px] font-bold text-purple-300">
+                      Epic XP & Platines
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Pseudo Epic : {accountProfile.accounts.epic?.username || "Non configuré"}
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <div className="inline-flex items-center gap-1.5 rounded-lg bg-purple-950/60 border border-purple-500/30 px-3 py-1 text-xs font-black text-purple-300">
+                      <Trophy className="h-3.5 w-3.5" />
+                      {accountProfile.accounts.epic?.stats.completedGames || 0} Platine(s) Epic
+                    </div>
+                    <div className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 border border-slate-700 px-3 py-1 text-xs font-bold text-slate-200">
+                      {accountProfile.accounts.epic?.stats.totalAchievements || 0} Succès XP
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => openEditPlatform("epic")}
+                  className="rounded-xl border border-purple-500/40 bg-purple-500/20 px-3.5 py-2 text-xs font-bold text-purple-300 hover:bg-purple-500/30 transition flex items-center gap-1.5"
+                >
+                  <Edit3 className="h-3.5 w-3.5" />
+                  Modifier profil Epic & stats
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Epic Achievement System Info & Dedicated Quick Filters */}
+          <div className="rounded-2xl border border-purple-500/30 bg-purple-950/20 p-4 space-y-3">
+            <div className="flex items-start gap-2.5">
+              <Sparkles className="h-5 w-5 text-purple-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-purple-200">
+                  Tri & Filtrage des succès Epic Games
+                </p>
+                <p className="text-[11px] text-slate-300">
+                  Sur l&apos;Epic Games Store, certains jeux intègrent les <strong>Succès Epic Games</strong> (avec points XP et Trophée Platine), tandis que d&apos;autres n&apos;en ont pas. Utilisez ces filtres rapides pour isoler les jeux avec succès :
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Pills for Epic Achievements */}
+            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-purple-500/20">
+              <button
+                onClick={() => setLibAchievementFilter("all")}
+                className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+                  libAchievementFilter === "all"
+                    ? "bg-purple-500 text-slate-950 shadow-md"
+                    : "border border-slate-800 bg-slate-950 text-slate-300 hover:text-white"
+                }`}
+              >
+                Tous les jeux Epic ({epicCounts.total})
+              </button>
+              <button
+                onClick={() => setLibAchievementFilter("with-achievements")}
+                className={`rounded-xl px-3 py-1.5 text-xs font-bold transition flex items-center gap-1.5 ${
+                  libAchievementFilter === "with-achievements"
+                    ? "bg-purple-500 text-slate-950 shadow-md"
+                    : "border border-purple-500/40 bg-purple-950/60 text-purple-300 hover:bg-purple-900/60"
+                }`}
+              >
+                <Trophy className="h-3.5 w-3.5" />
+                Avec succès Epic XP uniquement ({epicCounts.withAch})
+              </button>
+              <button
+                onClick={() => setLibAchievementFilter("no-achievements")}
+                className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+                  libAchievementFilter === "no-achievements"
+                    ? "bg-slate-700 text-white shadow-md"
+                    : "border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                Sans succès ({epicCounts.noAch})
+              </button>
+            </div>
+          </div>
+
+          {/* Epic Stats Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 space-y-1">
+              <div className="text-xs font-semibold text-slate-400">Total Jeux Epic</div>
+              <div className="text-2xl font-black text-white">{epicCounts.total}</div>
+              <div className="text-[11px] text-slate-400">Bibliothèque Epic</div>
+            </div>
+            <div className="rounded-2xl border border-purple-500/30 bg-purple-950/20 p-4 space-y-1">
+              <div className="text-xs font-semibold text-purple-300">Avec Succès XP</div>
+              <div className="text-2xl font-black text-purple-400">{epicCounts.withAch}</div>
+              <div className="text-[11px] text-slate-400">Chasse aux trophées active</div>
+            </div>
+            <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4 space-y-1">
+              <div className="text-xs font-semibold text-slate-500">Sans Succès</div>
+              <div className="text-2xl font-black text-slate-400">{epicCounts.noAch}</div>
+              <div className="text-[11px] text-slate-500">Pas de succès répertoriés</div>
+            </div>
+            <div className="rounded-2xl border border-amber-500/30 bg-amber-950/20 p-4 space-y-1">
+              <div className="text-xs font-semibold text-amber-300">Platines Epic</div>
+              <div className="text-2xl font-black text-amber-400">
+                {accountProfile.accounts.epic?.stats.completedGames || 0}
+              </div>
+              <div className="text-[11px] text-slate-400">Jeux complétés à 100%</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW E: GOG GALAXY DEDICATED VIEW */}
+      {activePlatformTab === "gog" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => {
+                setActivePlatformTab("all");
+                setLibPlatformFilter("all");
+              }}
+              className="text-xs text-violet-400 hover:text-violet-300 font-semibold flex items-center gap-1"
+            >
+              ← Retour à la Vue Globale
+            </button>
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg border border-violet-500/40 bg-violet-500/10 text-violet-300">
+              Espace Dédié GOG Galaxy & Web API
+            </span>
+          </div>
+
+          {/* GOG Hero Card */}
+          <div className="relative overflow-hidden rounded-3xl border border-violet-500/30 bg-gradient-to-br from-slate-900 via-slate-900/95 to-violet-950/40 p-5 sm:p-6 shadow-2xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border border-violet-500/40 bg-violet-500/10 text-violet-400 shrink-0">
+                  <Gamepad2 className="h-8 w-8" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl sm:text-2xl font-black text-white">
+                      {accountProfile.accounts.gog?.displayName || "Compte GOG Galaxy"}
+                    </h2>
+                    <span className="rounded-full bg-violet-500/20 border border-violet-500/40 px-2 py-0.5 text-[10px] font-bold text-violet-300">
+                      GOG.com
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Pseudo GOG : {accountProfile.accounts.gog?.username || "Non configuré"}
+                  </p>
+                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-violet-950/60 border border-violet-500/30 px-3 py-1 text-xs font-black text-violet-300">
+                    <Trophy className="h-3.5 w-3.5" />
+                    {accountProfile.accounts.gog?.stats.completedGames || 0} Jeux 100% GOG
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => openEditPlatform("gog")}
+                  className="rounded-xl border border-violet-500/40 bg-violet-500/20 px-3.5 py-2 text-xs font-bold text-violet-300 hover:bg-violet-500/30 transition flex items-center gap-1.5"
+                >
+                  <Edit3 className="h-3.5 w-3.5" />
+                  Modifier profil GOG & stats
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* GOG Stats Grid */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 space-y-1">
+              <div className="text-xs font-semibold text-slate-400">Jeux GOG</div>
+              <div className="text-2xl font-black text-white">{platformCounts.gog}</div>
+              <div className="text-[11px] text-slate-400">Bibliothèque GOG</div>
+            </div>
+            <div className="rounded-2xl border border-violet-500/30 bg-violet-950/20 p-4 space-y-1">
+              <div className="text-xs font-semibold text-violet-300">Succès Débloqués</div>
+              <div className="text-2xl font-black text-violet-400">
+                {accountProfile.accounts.gog?.stats.totalAchievements || 0}
+              </div>
+              <div className="text-[11px] text-slate-400">Succès GOG</div>
+            </div>
+            <div className="rounded-2xl border border-amber-500/30 bg-amber-950/20 p-4 space-y-1">
+              <div className="text-xs font-semibold text-amber-300">Jeux 100%</div>
+              <div className="text-2xl font-black text-amber-400">
+                {accountProfile.accounts.gog?.stats.completedGames || 0}
+              </div>
+              <div className="text-[11px] text-slate-400">Platines GOG</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW F: PLAYSTATION / RETRO / NINTENDO */}
+      {(activePlatformTab === "playstation" ||
+        activePlatformTab === "retroachievements" ||
+        activePlatformTab === "nintendo") && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => {
+                setActivePlatformTab("all");
+                setLibPlatformFilter("all");
+              }}
+              className="text-xs text-sky-400 hover:text-sky-300 font-semibold flex items-center gap-1"
+            >
+              ← Retour à la Vue Globale
+            </button>
+            <span className={`text-xs font-bold px-2.5 py-0.5 rounded-lg border ${PLATFORM_META[activePlatformTab].badgeClass}`}>
+              Espace Dédié {PLATFORM_META[activePlatformTab].name}
+            </span>
+          </div>
+
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-5 sm:p-6 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-black text-white">
+                {accountProfile.accounts[activePlatformTab]?.displayName || PLATFORM_META[activePlatformTab].name}
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Identifiant : {accountProfile.accounts[activePlatformTab]?.username || "Non configuré"}
+              </p>
+              {accountProfile.accounts[activePlatformTab]?.stats.trophies && (
+                <div className="mt-2 flex items-center gap-2 text-xs font-bold">
+                  <span className="text-sky-300">🏆 {accountProfile.accounts[activePlatformTab]?.stats.trophies?.platinum} Platine</span>
+                  <span className="text-amber-300">🥇 {accountProfile.accounts[activePlatformTab]?.stats.trophies?.gold} Or</span>
+                  <span className="text-slate-300">🥈 {accountProfile.accounts[activePlatformTab]?.stats.trophies?.silver} Argent</span>
+                  <span className="text-amber-600">🥉 {accountProfile.accounts[activePlatformTab]?.stats.trophies?.bronze} Bronze</span>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => openEditPlatform(activePlatformTab)}
+              className="rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-bold text-white hover:bg-slate-700 transition"
+            >
+              Modifier profil & stats
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 5. Owned Games Library ("Mes Jeux Possédés") */}
       <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5 space-y-4">
@@ -1156,7 +1698,9 @@ export default function AccountDashboard({
           <div>
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <Gamepad2 className="h-5 w-5 text-sky-400" />
-              Mes Jeux Possédés ({ownedGames.length})
+              {activePlatformTab === "all"
+                ? `Mes Jeux Possédés (${filteredGames.length}${ownedGames.length !== filteredGames.length ? ` / ${ownedGames.length}` : ""})`
+                : `Mes Jeux ${PLATFORM_META[activePlatformTab].name} (${filteredGames.length}${platformCounts[activePlatformTab] !== filteredGames.length ? ` / ${platformCounts[activePlatformTab]}` : ""})`}
             </h3>
             <p className="text-xs text-slate-400">
               Cliquez sur un jeu pour consulter sa checklist de succès en
@@ -1176,7 +1720,7 @@ export default function AccountDashboard({
         </div>
 
         {/* Informative banner if Steam profile has more games than discovered */}
-        {steamAccount && steamAccount.stats.gamesOwned > ownedGames.length && (
+        {steamAccount && steamAccount.stats.gamesOwned > ownedGames.length && activePlatformTab !== "epic" && activePlatformTab !== "xbox" && activePlatformTab !== "gog" && (
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-sky-500/30 bg-sky-950/30 p-3.5 text-xs">
             <div className="flex items-start gap-2.5">
               <Sparkles className="h-4 w-4 text-sky-400 shrink-0 mt-0.5" />
@@ -1210,8 +1754,8 @@ export default function AccountDashboard({
         )}
 
         {/* Library Filter Bar */}
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="relative flex-1">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+          <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
@@ -1222,18 +1766,20 @@ export default function AccountDashboard({
             />
           </div>
 
-          <select
-            value={libPlatformFilter}
-            onChange={(e) => setLibPlatformFilter(e.target.value as any)}
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none focus:border-sky-500"
-          >
-            <option value="all">Toutes les plateformes</option>
-            {ALL_PLATFORMS.map((p) => (
-              <option key={p} value={p}>
-                {PLATFORM_META[p].name}
-              </option>
-            ))}
-          </select>
+          {activePlatformTab === "all" && (
+            <select
+              value={libPlatformFilter}
+              onChange={(e) => setLibPlatformFilter(e.target.value as any)}
+              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none focus:border-sky-500"
+            >
+              <option value="all">Toutes les plateformes</option>
+              {ALL_PLATFORMS.map((p) => (
+                <option key={p} value={p}>
+                  {PLATFORM_META[p].name}
+                </option>
+              ))}
+            </select>
+          )}
 
           <select
             value={libStatusFilter}
@@ -1244,6 +1790,35 @@ export default function AccountDashboard({
             <option value="completed">🏆 Terminés à 100% (Platine)</option>
             <option value="in-progress">🔥 En cours</option>
             <option value="unstarted">⏳ À commencer (0%)</option>
+          </select>
+
+          {/* Achievement filter - especially helpful for Epic Games */}
+          <select
+            value={libAchievementFilter}
+            onChange={(e) => setLibAchievementFilter(e.target.value as any)}
+            className={`rounded-xl border px-3 py-2 text-xs outline-none transition ${
+              libAchievementFilter !== "all"
+                ? "border-purple-500/50 bg-purple-950/40 text-purple-200 font-bold"
+                : "border-slate-800 bg-slate-950 text-slate-200 focus:border-sky-500"
+            }`}
+          >
+            <option value="all">Tous les succès</option>
+            <option value="with-achievements">🏆 Avec succès uniquement</option>
+            <option value="no-achievements">⚪ Sans succès répertoriés</option>
+          </select>
+
+          {/* Sort order */}
+          <select
+            value={libSortOrder}
+            onChange={(e) => setLibSortOrder(e.target.value as any)}
+            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none focus:border-sky-500"
+          >
+            <option value="default">Tri : Progression</option>
+            <option value="achievements-desc">🏆 Nombre de succès (Décroissant)</option>
+            <option value="achievements-asc">Nombre de succès (Croissant)</option>
+            <option value="completion-desc">📈 Platines / 100% en premier</option>
+            <option value="name-asc">🔤 Nom (A-Z)</option>
+            <option value="playtime-desc">⏱️ Temps de jeu</option>
           </select>
         </div>
 
@@ -1294,11 +1869,20 @@ export default function AccountDashboard({
                       {pMeta.shortName}
                     </span>
 
-                    {/* Platinum Badge */}
-                    {isPlatinum && (
+                    {/* Platinum Badge or Achievement Badge */}
+                    {isPlatinum ? (
                       <span className="absolute right-2.5 top-2.5 flex items-center gap-1 rounded-lg border border-amber-400/50 bg-amber-500/20 px-2 py-0.5 text-[10px] font-black text-amber-300 backdrop-blur-md">
                         <Trophy className="h-3 w-3 fill-amber-400" />
                         100%
+                      </span>
+                    ) : g.totalAchievements > 0 ? (
+                      <span className="absolute right-2.5 top-2.5 flex items-center gap-1 rounded-lg border border-slate-700/80 bg-slate-950/80 px-2 py-0.5 text-[10px] font-bold text-slate-200 backdrop-blur-md">
+                        <Trophy className="h-2.5 w-2.5 text-amber-400" />
+                        {g.totalAchievements} {g.platform === "epic" ? "XP" : "succès"}
+                      </span>
+                    ) : (
+                      <span className="absolute right-2.5 top-2.5 rounded-lg border border-slate-800 bg-slate-950/90 px-2 py-0.5 text-[10px] font-semibold text-slate-400 backdrop-blur-md">
+                        Sans succès
                       </span>
                     )}
 
@@ -1324,7 +1908,7 @@ export default function AccountDashboard({
                         <span>
                           {g.totalAchievements > 0
                             ? `${g.unlockedCount} / ${g.totalAchievements} succès`
-                            : `${g.unlockedCount} succès cochés`}
+                            : "⚪ Aucun succès répertorié"}
                         </span>
                         <span
                           className={`font-bold ${
@@ -1335,7 +1919,7 @@ export default function AccountDashboard({
                               : "text-slate-500"
                           }`}
                         >
-                          {g.totalAchievements > 0 ? `${pct}%` : "Voir"}
+                          {g.totalAchievements > 0 ? `${pct}%` : "—"}
                         </span>
                       </div>
 
