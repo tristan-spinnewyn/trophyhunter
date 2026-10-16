@@ -287,6 +287,26 @@ export function removeOwnedGame(appId: number, platform?: PlatformType): OwnedGa
   return filtered;
 }
 
+export function removePlatformOwnedGames(platform: PlatformType): OwnedGame[] {
+  const current = getOwnedGames();
+  const filtered = current.filter((g) => g.platform !== platform);
+  saveOwnedGames(filtered);
+  return filtered;
+}
+
+export function replacePlatformOwnedGames(platform: PlatformType, newGames: OwnedGame[]): OwnedGame[] {
+  const current = getOwnedGames();
+  const others = current.filter((g) => g.platform !== platform);
+  const combined = [...others, ...newGames].sort((a, b) => {
+    const pctA = a.totalAchievements > 0 ? a.unlockedCount / a.totalAchievements : 0;
+    const pctB = b.totalAchievements > 0 ? b.unlockedCount / b.totalAchievements : 0;
+    if (pctB !== pctA) return pctB - pctA;
+    return a.name.localeCompare(b.name, "fr");
+  });
+  saveOwnedGames(combined);
+  return combined;
+}
+
 export function isGameOwned(appId: number): boolean {
   return getOwnedGames().some((g) => g.appId === appId);
 }

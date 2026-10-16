@@ -41,6 +41,8 @@ import {
   saveGameProgress,
   getSavedSteamApiKey,
   saveSteamApiKey,
+  removePlatformOwnedGames,
+  replacePlatformOwnedGames,
 } from "@/lib/storage";
 
 interface AccountDashboardProps {
@@ -370,7 +372,7 @@ export default function AccountDashboard({
       const updatedProfile = savePlatformAccount(data.account);
       onAccountChange(updatedProfile);
       if (Array.isArray(data.discoveredGames) && data.discoveredGames.length > 0) {
-        const merged = upsertOwnedGames(data.discoveredGames);
+        const merged = replacePlatformOwnedGames("epic", data.discoveredGames);
         onOwnedGamesChange(merged);
       }
       setBannerMsg({
@@ -1865,6 +1867,29 @@ export default function AccountDashboard({
               >
                 Sans succès ({epicCounts.noAch})
               </button>
+              {epicCounts.total > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        `Voulez-vous supprimer les ${epicCounts.total} jeux Epic Games actuels de votre bibliothèque locale pour nettoyer les hashs bruts ?`
+                      )
+                    ) {
+                      const updated = removePlatformOwnedGames("epic");
+                      onOwnedGamesChange(updated);
+                      setBannerMsg({
+                        type: "success",
+                        text: `Bibliothèque Epic nettoyée (${epicCounts.total} entrées retirées). Vous pouvez relancer l'import propre.`,
+                      });
+                    }
+                  }}
+                  className="rounded-xl border border-rose-500/30 bg-rose-950/30 px-3 py-1.5 text-xs font-bold text-rose-300 hover:bg-rose-900/40 hover:text-rose-200 transition flex items-center gap-1.5 sm:ml-auto"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Nettoyer les jeux Epic ({epicCounts.total})
+                </button>
+              )}
             </div>
           </div>
 
