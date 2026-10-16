@@ -1,5 +1,5 @@
 // lib/types/auth.ts
-import type { UserAccountProfile, PlatformAccount } from "./platform";
+import type { UserAccountProfile } from "./platform";
 import type { OwnedGame, UserGameProgress } from "./game";
 
 export interface User {

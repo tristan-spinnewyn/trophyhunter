@@ -13,7 +13,7 @@ export function hashCode(str: string): number {
 }
 
 export function parseOpenXblProfile(profile?: OpenXblProfile, fallbackUser = "") {
-  let xuid = profile?.id || fallbackUser;
+  const xuid = profile?.id || fallbackUser;
   let gamerTag = fallbackUser;
   let avatarUrl = "";
   let gamerScore = 0;
