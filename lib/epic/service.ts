@@ -3,6 +3,7 @@ import {
   saveUserPlatformAccount,
   saveUserOwnedGames,
   saveUserGameProgress,
+  saveEpicGameSandboxes,
 } from "@/lib/db";
 import {
   resolveEpicCodename,
@@ -20,6 +21,8 @@ import { fetchEpicLibraryItems } from "./library";
 import { batchResolveCatalogTitlesAndImages } from "./catalog";
 import { fetchEpicAchievementsGraphQL } from "./achievements";
 import { enrichEpicGamesWithSteamMetadata } from "./enrichment";
+import { parseEpicAuthInput } from "./credentials";
+import { epicAchievementId } from "./game-achievements";
 
 export async function syncEpicProfileWithOAuth(
   code: string,
@@ -31,23 +34,7 @@ export async function syncEpicProfileWithOAuth(
 > {
   const nowIso = new Date().toISOString();
 
-  let cleanCode = code.trim();
-  if (cleanCode.startsWith("{")) {
-    try {
-      const parsed = JSON.parse(cleanCode);
-      cleanCode = (
-        parsed.authorizationCode ||
-        parsed.authorizationToken ||
-        parsed.code ||
-        parsed.token ||
-        parsed.access_token ||
-        cleanCode
-      ).trim();
-    } catch {}
-  } else if (cleanCode.includes("code=")) {
-    const m = cleanCode.match(/[?&]code=([a-f0-9]+)/i);
-    if (m) cleanCode = m[1];
-  }
+  const cleanCode = parseEpicAuthInput(code);
 
   let accessToken = "";
   let accountId = "";
@@ -383,24 +370,25 @@ export async function syncEpicProfileWithOAuth(
         saveUserPlatformAccount(authUser.id, account, plainKey);
         if (discoveredGames.length > 0) {
           saveUserOwnedGames(authUser.id, discoveredGames);
+          saveEpicGameSandboxes(
+            authUser.id,
+            Array.from(gameNamespaceMap.entries()).map(([appId, sandboxId]) => ({
+              appId,
+              sandboxId,
+            }))
+          );
 
           for (const g of discoveredGames) {
             if ((g.unlockedCount || 0) > 0) {
               const sId = gameNamespaceMap.get(g.appId)?.toLowerCase();
               const rec = sId ? achBySandbox.get(sId) : null;
               const playerAchs = rec?.playerAchievements || [];
-              const unlockedNames = playerAchs
-                .filter((p: any) => p.unlocked)
+              const unlockedNames: string[] = playerAchs
+                .filter((p: any) => p.unlocked && p.achievementName)
                 .map((p: any) => p.achievementName);
               const unlockedIds =
                 unlockedNames.length > 0
-                  ? unlockedNames.map(
-                      (t: string, idx: number) =>
-                        `ach_${idx + 1}_${t
-                          .toLowerCase()
-                          .replace(/[^a-z0-9]/g, "_")
-                          .slice(0, 30)}`
-                    )
+                  ? unlockedNames.map(epicAchievementId)
                   : Array.from(
                       { length: g.unlockedCount },
                       (_, idx) => `ach_${idx + 1}`

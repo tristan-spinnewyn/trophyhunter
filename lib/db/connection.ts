@@ -133,6 +133,14 @@ export function initDatabase(dbPath?: string): DatabaseSync {
       added_at TEXT NOT NULL,
       PRIMARY KEY(collection_id, user_game_id)
     );
+
+    CREATE TABLE IF NOT EXISTS epic_game_sandboxes (
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      app_id INTEGER NOT NULL,
+      sandbox_id TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      PRIMARY KEY(user_id, app_id)
+    );
   `);
 
   return db;

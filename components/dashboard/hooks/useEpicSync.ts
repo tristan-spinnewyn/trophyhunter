@@ -5,6 +5,7 @@ import {
   mergeGamesList,
   replacePlatformInList,
 } from "@/components/dashboard/utils";
+import { parseEpicAuthInput } from "@/lib/epic/auth-parser";
 
 interface UseEpicSyncProps {
   ownedGames: OwnedGame[];
@@ -132,19 +133,7 @@ export function useEpicSync({
   const handleConnectAndSyncEpic = async (overrideUser?: string | unknown) => {
     const rawTarget = typeof overrideUser === "string" ? overrideUser : epicInput;
     const targetUser = (rawTarget || "").trim();
-    let cleanCode = (epicCode || "").trim();
-    if (cleanCode.startsWith("{")) {
-      try {
-        const parsed = JSON.parse(cleanCode);
-        cleanCode = (
-          parsed.authorizationCode ||
-          parsed.authorizationToken ||
-          parsed.code ||
-          parsed.token ||
-          cleanCode
-        ).trim();
-      } catch {}
-    }
+    const cleanCode = parseEpicAuthInput(epicCode);
 
     if (!targetUser && !cleanCode) return;
     setIsSyncingEpic(true);

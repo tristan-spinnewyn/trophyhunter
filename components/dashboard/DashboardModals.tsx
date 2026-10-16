@@ -3,6 +3,7 @@
 import EditPlatformModal from "@/components/dashboard/EditPlatformModal";
 import AddGameModal from "@/components/dashboard/AddGameModal";
 import AddToCollectionModal from "@/components/dashboard/AddToCollectionModal";
+import EpicAuthModal from "@/components/EpicAuthModal";
 import type { GameSearchResult, OwnedGame, PlatformType } from "@/lib/types";
 import type { LocalCollection } from "@/lib/storage";
 
@@ -35,6 +36,14 @@ interface DashboardModalsProps {
   collections: LocalCollection[];
   onCloseAddToColl: () => void;
   onAddToCollection: (collId: string, game: OwnedGame) => void;
+
+  // Epic Auth Modal (Optional)
+  isEpicAuthModalOpen?: boolean;
+  epicAuthModalGame?: OwnedGame | null;
+  epicAuthModalError?: string | null;
+  isEpicModalSyncing?: boolean;
+  onCloseEpicAuthModal?: () => void;
+  onSubmitEpicAuthModal?: (token: string) => Promise<void> | void;
 }
 
 export default function DashboardModals({
@@ -61,6 +70,12 @@ export default function DashboardModals({
   collections,
   onCloseAddToColl,
   onAddToCollection,
+  isEpicAuthModalOpen = false,
+  epicAuthModalGame = null,
+  epicAuthModalError = null,
+  isEpicModalSyncing = false,
+  onCloseEpicAuthModal,
+  onSubmitEpicAuthModal,
 }: DashboardModalsProps) {
   return (
     <>
@@ -101,6 +116,17 @@ export default function DashboardModals({
         onClose={onCloseAddToColl}
         onAddToCollection={onAddToCollection}
       />
+
+      {onCloseEpicAuthModal && onSubmitEpicAuthModal && (
+        <EpicAuthModal
+          isOpen={isEpicAuthModalOpen}
+          onClose={onCloseEpicAuthModal}
+          onSubmit={onSubmitEpicAuthModal}
+          gameName={epicAuthModalGame?.name}
+          isLoading={isEpicModalSyncing}
+          error={epicAuthModalError}
+        />
+      )}
     </>
   );
 }
