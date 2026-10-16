@@ -103,6 +103,7 @@ export interface EpicSyncResult {
   unlockedTitles: string[];
   unlockedIds: string[];
   error?: string;
+  requiresToken?: boolean;
 }
 
 export async function syncEpicGame(
@@ -114,19 +115,119 @@ export async function syncEpicGame(
   const numAppId = typeof appId === "string" ? parseInt(appId, 10) : appId;
   const normTitle = normalizeGameTitle(gameName || "");
 
+  const { searchParams } = new URL(request.url);
+  const authHeader = request.headers.get("authorization");
+  const bearerToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7).trim()
+    : null;
+
+  const rawAuthToken = (
+    searchParams.get("authorizationToken") ||
+    searchParams.get("authorization_token") ||
+    searchParams.get("authorizationCode") ||
+    searchParams.get("authorization_code") ||
+    searchParams.get("code") ||
+    searchParams.get("token") ||
+    request.headers.get("x-authorization-token") ||
+    bearerToken ||
+    ""
+  ).trim();
+
+  let cleanToken = rawAuthToken;
+  if (cleanToken.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(cleanToken);
+      cleanToken = (
+        parsed.authorizationCode ||
+        parsed.authorizationToken ||
+        parsed.code ||
+        parsed.token ||
+        parsed.access_token ||
+        cleanToken
+      ).trim();
+    } catch {}
+  } else if (cleanToken.includes("code=")) {
+    const m = cleanToken.match(/[?&]code=([a-f0-9]+)/i);
+    if (m) cleanToken = m[1];
+  }
+
   let totalUnlocked = 0;
   let totalAchievements = 0;
   let unlockedTitles: string[] = [];
   let unlockedIds: string[] = [];
 
   let matchedRecord: any = null;
+  let accessToken: string | null = null;
+  let refreshToken: string | null = null;
+  let accountId: string | null = null;
 
-  if (authUser) {
+  // 1. If authorizationToken is provided in the request, exchange or verify it
+  if (cleanToken) {
+    if (cleanToken.startsWith("eg1~")) {
+      // Direct access token
+      try {
+        const verifyRes = await fetch(
+          "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/verify",
+          { headers: { Authorization: `Bearer ${cleanToken}` } }
+        );
+        if (verifyRes.ok) {
+          const verifyData = await verifyRes.json();
+          accessToken = cleanToken;
+          accountId = verifyData.account_id;
+        }
+      } catch {}
+    }
+
+    if (!accessToken) {
+      // Try authorization code exchange
+      try {
+        const tokenRes = await fetch(
+          "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              Authorization: `Basic ${EPIC_BASIC_AUTH}`,
+            },
+            body: new URLSearchParams({
+              grant_type: "authorization_code",
+              code: cleanToken,
+              token_type: "eg1",
+            }).toString(),
+          }
+        );
+        if (tokenRes.ok) {
+          const tokenData = await tokenRes.json();
+          accessToken = tokenData.access_token;
+          refreshToken = tokenData.refresh_token;
+          accountId = tokenData.account_id;
+        }
+      } catch {}
+    }
+
+    // Persist new token in SQLite if user is logged in
+    if (authUser && accessToken && accountId) {
+      try {
+        const accounts = getUserPlatformAccounts(authUser.id);
+        const existingEpic = accounts.epic || {
+          platform: "epic",
+          username: accountId,
+          displayName: "Joueur Epic",
+          connectedAt: new Date().toISOString(),
+          stats: { gamesOwned: 1, totalAchievements: 0, completedGames: 0 },
+        };
+        saveUserPlatformAccount(
+          authUser.id,
+          existingEpic,
+          JSON.stringify({ accessToken, refreshToken, accountId })
+        );
+      } catch {}
+    }
+  }
+
+  // 2. Fall back to SQLite stored token if not in request
+  if (!accessToken && authUser) {
     const rawApiKey = getUserPlatformApiKey(authUser.id, "epic");
-    let accessToken: string | null = null;
-    let refreshToken: string | null = null;
-    let accountId: string | null = null;
-
     if (rawApiKey) {
       try {
         const parsed = JSON.parse(rawApiKey);
@@ -134,22 +235,22 @@ export async function syncEpicGame(
         refreshToken = parsed.refreshToken || null;
         accountId = parsed.accountId || null;
       } catch {
-        // raw token without JSON
         accessToken = rawApiKey;
       }
     }
+  }
 
-    if (accountId && accessToken) {
-      let records = await fetchEpicPlayerAchievements(accountId, accessToken);
-      if (records.length === 0 && refreshToken) {
-        // Attempt refresh
-        const refreshed = await refreshEpicAccessToken(refreshToken);
-        if (refreshed?.accessToken) {
-          accessToken = refreshed.accessToken;
-          refreshToken = refreshed.refreshToken || refreshToken;
-          records = await fetchEpicPlayerAchievements(accountId, accessToken);
+  // 3. Query Epic GraphQL achievements if token and accountId are available
+  if (accountId && accessToken) {
+    let records = await fetchEpicPlayerAchievements(accountId, accessToken);
+    if (records.length === 0 && refreshToken) {
+      const refreshed = await refreshEpicAccessToken(refreshToken);
+      if (refreshed?.accessToken) {
+        accessToken = refreshed.accessToken;
+        refreshToken = refreshed.refreshToken || refreshToken;
+        records = await fetchEpicPlayerAchievements(accountId, accessToken);
 
-          // Update saved credentials
+        if (authUser) {
           const accounts = getUserPlatformAccounts(authUser.id);
           if (accounts.epic) {
             saveUserPlatformAccount(
@@ -160,88 +261,90 @@ export async function syncEpicGame(
           }
         }
       }
-
-      // Find matching game record by sandbox or title
-      for (const rec of records) {
-        const sId = (rec.sandboxId || "").toLowerCase();
-        const cleanSid = sId
-          .replace(/^ns_?/, "")
-          .replace(/_?sandbox$/, "")
-          .replace(/[^a-z0-9]/g, "");
-
-        if (
-          cleanSid === normTitle ||
-          (normTitle.length >= 4 && cleanSid.startsWith(normTitle)) ||
-          (cleanSid.length >= 4 && normTitle.startsWith(cleanSid))
-        ) {
-          matchedRecord = rec;
-          break;
-        }
-      }
     }
 
-    // Extract achievements from matched record if found
-    if (matchedRecord) {
-      totalUnlocked = matchedRecord.totalUnlocked || 0;
-      const playerAchs = Array.isArray(matchedRecord.playerAchievements)
-        ? matchedRecord.playerAchievements
-        : [];
-      unlockedTitles = playerAchs
-        .filter((p: any) => p.unlocked)
-        .map((p: any) => p.achievementName);
+    for (const rec of records) {
+      const sId = (rec.sandboxId || "").toLowerCase();
+      const cleanSid = sId
+        .replace(/^ns_?/, "")
+        .replace(/_?sandbox$/, "")
+        .replace(/[^a-z0-9]/g, "");
 
-      const sets = Array.isArray(matchedRecord.achievementSets)
-        ? matchedRecord.achievementSets
-        : [];
-      const setTotal = sets.reduce(
-        (acc: number, s: any) => acc + (s.totalAchievements || 0),
-        0
-      );
-      totalAchievements = Math.max(
-        setTotal,
-        playerAchs.length,
-        totalUnlocked
-      );
-    } else {
-      // Fallback: check SQLite owned games & progress
-      const owned = getUserOwnedGames(authUser.id).find(
-        (g) => g.appId === numAppId && g.platform === "epic"
-      );
-      const existingProgress = getUserGameProgress(
-        authUser.id,
-        numAppId,
-        "epic"
-      );
-
-      if (owned) {
-        totalUnlocked = owned.unlockedCount || 0;
-        totalAchievements = owned.totalAchievements || 0;
-      }
-      if (existingProgress?.unlockedIds) {
-        unlockedIds = existingProgress.unlockedIds;
+      if (
+        cleanSid === normTitle ||
+        (normTitle.length >= 4 && cleanSid.startsWith(normTitle)) ||
+        (cleanSid.length >= 4 && normTitle.startsWith(cleanSid))
+      ) {
+        matchedRecord = rec;
+        break;
       }
     }
+  }
 
-    // If unlockedTitles exists, generate slugs
-    if (unlockedTitles.length > 0) {
-      unlockedIds = unlockedTitles.map(
-        (t, idx) =>
-          `ach_${idx + 1}_${t.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 30)}`
-      );
-    } else if (unlockedIds.length === 0 && totalUnlocked > 0) {
-      // Create indexed achievement slugs matching unlocked count
-      for (let i = 1; i <= totalUnlocked; i++) {
-        unlockedIds.push(`ach_${i}`);
-      }
+  // Extract achievements from matched record if found
+  if (matchedRecord) {
+    totalUnlocked = matchedRecord.totalUnlocked || 0;
+    const playerAchs = Array.isArray(matchedRecord.playerAchievements)
+      ? matchedRecord.playerAchievements
+      : [];
+    unlockedTitles = playerAchs
+      .filter((p: any) => p.unlocked)
+      .map((p: any) => p.achievementName);
+
+    const sets = Array.isArray(matchedRecord.achievementSets)
+      ? matchedRecord.achievementSets
+      : [];
+    const setTotal = sets.reduce(
+      (acc: number, s: any) => acc + (s.totalAchievements || 0),
+      0
+    );
+    totalAchievements = Math.max(
+      setTotal,
+      playerAchs.length,
+      totalUnlocked
+    );
+  } else if (authUser) {
+    // Fallback: check SQLite owned games & progress
+    const owned = getUserOwnedGames(authUser.id).find(
+      (g) => g.appId === numAppId && g.platform === "epic"
+    );
+    const existingProgress = getUserGameProgress(
+      authUser.id,
+      numAppId,
+      "epic"
+    );
+
+    if (owned) {
+      totalUnlocked = owned.unlockedCount || 0;
+      totalAchievements = owned.totalAchievements || 0;
     }
+    if (existingProgress?.unlockedIds) {
+      unlockedIds = existingProgress.unlockedIds;
+    }
+  }
 
-    // Persist progress to SQLite
+  // If unlockedTitles exists, generate slugs
+  if (unlockedTitles.length > 0) {
+    unlockedIds = unlockedTitles.map(
+      (t, idx) =>
+        `ach_${idx + 1}_${t.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 30)}`
+    );
+  } else if (unlockedIds.length === 0 && totalUnlocked > 0) {
+    for (let i = 1; i <= totalUnlocked; i++) {
+      unlockedIds.push(`ach_${i}`);
+    }
+  }
+
+  // Persist progress to SQLite if authenticated
+  if (authUser && unlockedIds.length > 0) {
     saveUserGameProgress(authUser.id, numAppId, "epic", {
       unlockedIds,
       lastPlayed: new Date().toISOString(),
       notes: {},
     });
   }
+
+  const hasCredentials = Boolean(accessToken && accountId);
 
   return {
     success: true,
@@ -251,5 +354,12 @@ export async function syncEpicGame(
     count: totalUnlocked || unlockedIds.length,
     unlockedTitles,
     unlockedIds,
+    ...(!hasCredentials && !matchedRecord
+      ? {
+          requiresToken: true,
+          error:
+            "Un code ou token d'autorisation Epic Games (authorizationToken) est requis pour synchroniser ce jeu.",
+        }
+      : {}),
   };
 }

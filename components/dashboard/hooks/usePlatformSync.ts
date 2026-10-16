@@ -166,16 +166,31 @@ export function usePlatformSync({
       });
     } else if (g.platform === "epic") {
       try {
-        const res = await fetch(
-          `/api/sync?platform=epic&appId=${g.appId}&gameName=${encodeURIComponent(
+        let res = await fetch(
+          `/api/sync?platform=epic&appId=${g.appId}&name=${encodeURIComponent(
             g.name
           )}`
         );
-        if (res.ok) {
-          const data = await res.json();
+        let data = res.ok ? await res.json() : null;
+
+        if (data?.requiresToken) {
+          const userToken = window.prompt(
+            `Pour synchroniser les succès Epic Games de "${g.name}", collez votre authorizationToken ou code d'échange Epic :`
+          );
+          if (userToken && userToken.trim()) {
+            res = await fetch(
+              `/api/sync?platform=epic&appId=${g.appId}&name=${encodeURIComponent(
+                g.name
+              )}&authorizationToken=${encodeURIComponent(userToken.trim())}`
+            );
+            data = res.ok ? await res.json() : null;
+          }
+        }
+
+        if (data && data.success) {
           const updatedGame: OwnedGame = {
             ...g,
-            unlockedCount: data.unlockedCount ?? g.unlockedCount,
+            unlockedCount: data.count ?? data.unlockedCount ?? g.unlockedCount,
             totalAchievements: data.totalAchievements ?? g.totalAchievements,
           };
           const next = mergeGamesList(ownedGames, [updatedGame]);

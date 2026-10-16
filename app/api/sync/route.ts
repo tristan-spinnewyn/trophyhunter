@@ -7,7 +7,9 @@ export async function GET(request: Request) {
   const rawUser = searchParams.get("user")?.trim();
   const appId = searchParams.get("appId")?.trim();
   const platform = (searchParams.get("platform") || "steam").toLowerCase();
-  const gameName = searchParams.get("name")?.trim();
+  const gameName = (
+    searchParams.get("name") || searchParams.get("gameName")
+  )?.trim();
 
   if (platform === "epic") {
     if (!appId) {

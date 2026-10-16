@@ -31,37 +31,80 @@ export async function syncEpicProfileWithOAuth(
 > {
   const nowIso = new Date().toISOString();
 
-  const tokenRes = await fetch(
-    "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Basic ${EPIC_BASIC_AUTH}`,
-      },
-      body: new URLSearchParams({
-        grant_type: "authorization_code",
-        code: code,
-        token_type: "eg1",
-      }).toString(),
-    }
-  );
-
-  if (!tokenRes.ok) {
-    const errText = await tokenRes.text();
-    return {
-      success: false,
-      status: 401,
-      error:
-        "Code d'autorisation Epic Games expiré ou invalide. Rendez-vous sur https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code pour obtenir un nouveau code.",
-      details: errText,
-    };
+  let cleanCode = code.trim();
+  if (cleanCode.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(cleanCode);
+      cleanCode = (
+        parsed.authorizationCode ||
+        parsed.authorizationToken ||
+        parsed.code ||
+        parsed.token ||
+        parsed.access_token ||
+        cleanCode
+      ).trim();
+    } catch {}
+  } else if (cleanCode.includes("code=")) {
+    const m = cleanCode.match(/[?&]code=([a-f0-9]+)/i);
+    if (m) cleanCode = m[1];
   }
 
-  const tokenData = await tokenRes.json();
-  const accessToken = tokenData.access_token;
-  const accountId = tokenData.account_id;
-  const displayName = tokenData.displayName || rawUser || "Joueur Epic";
+  let accessToken = "";
+  let accountId = "";
+  let refreshToken = "";
+  let displayName = rawUser || "Joueur Epic";
+
+  if (cleanCode.startsWith("eg1~")) {
+    try {
+      const verifyRes = await fetch(
+        "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/verify",
+        {
+          headers: { Authorization: `Bearer ${cleanCode}` },
+        }
+      );
+      if (verifyRes.ok) {
+        const verifyData = await verifyRes.json();
+        accessToken = cleanCode;
+        accountId = verifyData.account_id;
+        displayName = verifyData.display_name || displayName;
+      }
+    } catch {}
+  }
+
+  if (!accessToken) {
+    const tokenRes = await fetch(
+      "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${EPIC_BASIC_AUTH}`,
+        },
+        body: new URLSearchParams({
+          grant_type: "authorization_code",
+          code: cleanCode,
+          token_type: "eg1",
+        }).toString(),
+      }
+    );
+
+    if (!tokenRes.ok) {
+      const errText = await tokenRes.text();
+      return {
+        success: false,
+        status: 401,
+        error:
+          "Code d'autorisation Epic Games expiré ou invalide (authorizationToken). Rendez-vous sur https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code pour obtenir un nouveau code.",
+        details: errText,
+      };
+    }
+
+    const tokenData = await tokenRes.json();
+    accessToken = tokenData.access_token;
+    accountId = tokenData.account_id;
+    refreshToken = tokenData.refresh_token;
+    displayName = tokenData.displayName || rawUser || "Joueur Epic";
+  }
 
   const discoveredGames: OwnedGame[] = [];
   const gameNamespaceMap = new Map<number, string>();
@@ -321,7 +364,7 @@ export async function syncEpicProfileWithOAuth(
       try {
         const plainKey = JSON.stringify({
           accessToken,
-          refreshToken: tokenData?.refresh_token,
+          refreshToken,
           accountId,
         });
         const account: PlatformAccount = {
