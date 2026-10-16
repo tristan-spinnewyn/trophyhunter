@@ -84,7 +84,7 @@ export function parseSteamProfile(
   let completedGames = 0;
   let dlcCount = 0;
   let wishlistCount = 0;
-  let badgesCount = countMap["badges"] || 0;
+  const badgesCount = countMap["badges"] || 0;
 
   // 2. Parse showcase counters
   for (const m of html.matchAll(
