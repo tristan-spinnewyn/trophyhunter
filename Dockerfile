@@ -1,5 +1,7 @@
 FROM node:25-alpine AS base
-RUN npm install -g corepack@latest && corepack enable && corepack prepare pnpm@latest --activate
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN npm install -g pnpm@latest
 
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
