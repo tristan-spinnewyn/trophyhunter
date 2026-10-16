@@ -32,18 +32,18 @@ describe('GET /api/profile/steam', () => {
   it('parses steam profile XML, HTML showcases, stats, and filters seasonal badges', async () => {
     const mockXml = `
       <profile>
-        <steamID64>76561198083390097</steamID64>
-        <steamID><![CDATA[Shin [FR]]]></steamID>
+        <steamID64>76561198000000000</steamID64>
+        <steamID><![CDATA[TestGamer [FR]]]></steamID>
         <onlineState>online</onlineState>
         <memberSince>February 6, 2013</memberSince>
         <location><![CDATA[France]]></location>
         <hoursPlayed2Wk>1.5</hoursPlayed2Wk>
-        <avatarFull><![CDATA[https://avatars.example.com/shin.jpg]]></avatarFull>
+        <avatarFull><![CDATA[https://avatars.example.com/testgamer.jpg]]></avatarFull>
       </profile>
     `;
 
     const mockHtml = `
-      <div class="actual_persona_name">Shin [FR]</div>
+      <div class="actual_persona_name">TestGamer [FR]</div>
       <div class="friendPlayerLevelNum">32</div>
       <span class="count_link_label">Jeux</span>
       <span class="profile_count_link_total">219</span>
@@ -57,7 +57,7 @@ describe('GET /api/profile/steam', () => {
       <div class="label">Dans votre liste de souhaits</div>
 
       <div class="showcase_achievement" data-tooltip-html="Hollow Knight<br>Purification<br>0,9 % des joueurs">
-        <a href="https://steamcommunity.com/profiles/76561198083390097/achievements/367520">
+        <a href="https://steamcommunity.com/profiles/76561198000000000/achievements/367520">
           <img src="https://cdn.example.com/hk_icon.jpg">
         </a>
       </div>
@@ -70,7 +70,7 @@ describe('GET /api/profile/steam', () => {
       </div>
 
       <div class="showcase_achievementscompletionist_game ">
-        <a href="https://steamcommunity.com/profiles/76561198083390097/achievements/50300">
+        <a href="https://steamcommunity.com/profiles/76561198000000000/achievements/50300">
           <div class="num_achievements">50</div>
         </a>
       </div>
@@ -78,11 +78,11 @@ describe('GET /api/profile/steam', () => {
 
     const mockBadgesHtml = `
       <div class="badge_row ">
-        <a href="https://steamcommunity.com/profiles/76561198083390097/gamecards/412020/"></a>
+        <a href="https://steamcommunity.com/profiles/76561198000000000/gamecards/412020/"></a>
         <div class="badge_title">Metro Exodus</div>
       </div>
       <div class="badge_row ">
-        <a href="https://steamcommunity.com/profiles/76561198083390097/gamecards/2861720/"></a>
+        <a href="https://steamcommunity.com/profiles/76561198000000000/gamecards/2861720/"></a>
         <div class="badge_title">Soldes d'hiver 2024</div>
       </div>
     `;
@@ -110,7 +110,7 @@ describe('GET /api/profile/steam', () => {
         json: async () => ({ '50300': { data: { name: 'Spec Ops: The Line' } } }),
       } as any);
 
-    const req = new Request('http://localhost:3000/api/profile/steam?user=76561198083390097');
+    const req = new Request('http://localhost:3000/api/profile/steam?user=76561198000000000');
     const res = await GET(req);
     expect(res.status).toBe(200);
 
@@ -118,7 +118,7 @@ describe('GET /api/profile/steam', () => {
     expect(data.success).toBe(true);
 
     // Profile details
-    expect(data.account.displayName).toBe('Shin [FR]');
+    expect(data.account.displayName).toBe('TestGamer [FR]');
     expect(data.account.level).toBe(32);
     expect(data.account.stats.gamesOwned).toBe(219);
     expect(data.account.stats.totalAchievements).toBe(768);
@@ -164,13 +164,13 @@ describe('GET /api/profile/steam', () => {
   it('imports complete owned games list when Steam API key is provided', async () => {
     const mockXml = `
       <profile>
-        <steamID64>76561198083390097</steamID64>
-        <steamID><![CDATA[Shin [FR]]]></steamID>
+        <steamID64>76561198000000000</steamID64>
+        <steamID><![CDATA[TestGamer [FR]]]></steamID>
       </profile>
     `;
 
     const mockHtml = `
-      <div class="actual_persona_name">Shin [FR]</div>
+      <div class="actual_persona_name">TestGamer [FR]</div>
       <span class="count_link_label">Jeux</span>
       <span class="profile_count_link_total">219</span>
     `;
@@ -209,7 +209,7 @@ describe('GET /api/profile/steam', () => {
         json: async () => mockOwnedGamesJson,
       } as any); // GetOwnedGames
 
-    const req = new Request('http://localhost:3000/api/profile/steam?user=76561198083390097&key=MY_API_KEY_123');
+    const req = new Request('http://localhost:3000/api/profile/steam?user=76561198000000000&key=MY_API_KEY_123');
     const res = await GET(req);
     expect(res.status).toBe(200);
 
@@ -234,7 +234,7 @@ describe('GET /api/profile/steam', () => {
       user.id,
       {
         platform: 'steam',
-        username: '76561198083390097',
+        username: '76561198000000000',
         displayName: 'SteamUserAuth',
         connectedAt: new Date().toISOString(),
         stats: { gamesOwned: 0, totalAchievements: 0, completedGames: 0 },
@@ -242,8 +242,8 @@ describe('GET /api/profile/steam', () => {
       'STORED_SECRET_KEY'
     );
 
-    const mockXml = `<profile><steamID64>76561198083390097</steamID64><steamID>Shin</steamID></profile>`;
-    const mockHtml = `<div class="actual_persona_name">Shin</div>`;
+    const mockXml = `<profile><steamID64>76561198000000000</steamID64><steamID>TestGamer</steamID></profile>`;
+    const mockHtml = `<div class="actual_persona_name">TestGamer</div>`;
     const mockOwned = {
       response: {
         game_count: 1,
@@ -258,7 +258,7 @@ describe('GET /api/profile/steam', () => {
       .mockResolvedValueOnce({ ok: false } as any)
       .mockResolvedValueOnce({ ok: true, json: async () => mockOwned } as any);
 
-    const req = new Request('http://localhost:3000/api/profile/steam?user=76561198083390097');
+    const req = new Request('http://localhost:3000/api/profile/steam?user=76561198000000000');
     const res = await GET(req);
     expect(res.status).toBe(200);
 

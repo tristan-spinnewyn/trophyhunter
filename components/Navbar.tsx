@@ -12,6 +12,7 @@ import {
   Gamepad2,
   Database,
   ShieldCheck,
+  LogOut,
 } from "lucide-react";
 import type { GameSearchResult, UserAccountProfile, User as UserType } from "@/lib/types";
 
@@ -25,6 +26,7 @@ interface NavbarProps {
   ownedCount?: number;
   currentUser?: UserType | null;
   onOpenAuth?: () => void;
+  onLogout?: () => void;
 }
 
 
@@ -81,6 +83,7 @@ export default function Navbar({
   ownedCount = 0,
   currentUser,
   onOpenAuth,
+  onLogout,
 }: NavbarProps) {
 
   const [query, setQuery] = useState("");
@@ -329,6 +332,17 @@ export default function Navbar({
               <span className="hidden sm:inline max-w-[90px] truncate">
                 {currentUser ? `@${currentUser.username}` : "Connexion"}
               </span>
+            </button>
+          )}
+
+          {currentUser && onLogout && (
+            <button
+              onClick={onLogout}
+              title="Se déconnecter"
+              className="flex items-center gap-1 rounded-xl border border-rose-500/30 bg-rose-500/10 px-2 py-1.5 text-xs font-semibold text-rose-300 hover:bg-rose-500/20 transition"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">Quitter</span>
             </button>
           )}
 

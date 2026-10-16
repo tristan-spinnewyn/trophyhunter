@@ -82,10 +82,10 @@ export const PLATFORM_META: Record<
 };
 
 export function getSavedSteamUser(): string {
-  if (typeof window === "undefined") return "76561198083390097";
+  if (typeof window === "undefined") return "";
   const saved = localStorage.getItem(STEAM_USER_KEY);
   if (saved !== null) return saved;
-  return "76561198083390097";
+  return "";
 }
 
 export function saveSteamUser(user: string): void {

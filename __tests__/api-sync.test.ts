@@ -31,11 +31,11 @@ describe('GET /api/sync', () => {
     const res1 = await GET(req1);
     expect(res1.status).toBe(400);
 
-    const req2 = new Request('http://localhost:3000/api/sync?user=shin');
+    const req2 = new Request('http://localhost:3000/api/sync?user=testuser');
     const res2 = await GET(req2);
     expect(res2.status).toBe(400);
 
-    const req3 = new Request('http://localhost:3000/api/sync?user=shin&appId=invalid_app_id');
+    const req3 = new Request('http://localhost:3000/api/sync?user=testuser&appId=invalid_app_id');
     const res3 = await GET(req3);
     expect(res3.status).toBe(400);
 
@@ -53,7 +53,7 @@ describe('GET /api/sync', () => {
       text: async () => '',
     } as any);
 
-    const req = new Request('http://localhost:3000/api/sync?user=76561198083390097&appId=367520');
+    const req = new Request('http://localhost:3000/api/sync?user=76561198000000000&appId=367520');
     const res = await GET(req);
     expect(res.status).toBe(403);
 
@@ -64,7 +64,7 @@ describe('GET /api/sync', () => {
   it('extracts unlocked achievement titles and deterministic unlockedIds', async () => {
     const playerHtml = `
       <html>
-        <head><title>Communauté Steam :: Hollow Knight :: Shin :: Succès</title></head>
+        <head><title>Communauté Steam :: Hollow Knight :: TestGamer :: Succès</title></head>
         <body>
           <div class="achieveRow">
             <h3>Éveil</h3>
@@ -100,7 +100,7 @@ describe('GET /api/sync', () => {
         text: async () => globalHtml,
       } as any);
 
-    const req = new Request('http://localhost:3000/api/sync?user=76561198083390097&appId=367520');
+    const req = new Request('http://localhost:3000/api/sync?user=76561198000000000&appId=367520');
     const res = await GET(req);
     expect(res.status).toBe(200);
 
@@ -170,7 +170,7 @@ describe('GET /api/sync', () => {
         text: async () => JSON.stringify(mockSchemaJson),
       } as any);
 
-    const req = new Request('http://localhost:3000/api/sync?user=76561198083390097&appId=1517290');
+    const req = new Request('http://localhost:3000/api/sync?user=76561198000000000&appId=1517290');
     const res = await GET(req);
     expect(res.status).toBe(200);
 
@@ -219,7 +219,7 @@ describe('GET /api/sync', () => {
         text: async () => globalHtml,
       } as any);
 
-    const req = new Request('http://localhost:3000/api/sync?user=76561198083390097&appId=500');
+    const req = new Request('http://localhost:3000/api/sync?user=76561198000000000&appId=500');
     const res = await GET(req);
     expect(res.status).toBe(200);
 
