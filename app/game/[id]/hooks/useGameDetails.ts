@@ -1,25 +1,12 @@
+// app/game/[id]/hooks/useGameDetails.ts
 "use client";
 
 import { useState, useEffect } from "react";
-import type {
-  GameDetails,
-  OwnedGame,
-  UserGameProgress,
-  UserAccountProfile,
-  User as UserType,
-  PlatformType,
-} from "@/lib/types";
+import type { GameDetails, UserGameProgress } from "@/lib/types";
 import { isUnsplashPlaceholder } from "@/lib/epic-codenames";
-
-interface UseGameDetailsParams {
-  appId: number;
-  owned?: OwnedGame;
-  activePlatform: PlatformType;
-  currentUser: UserType | null;
-  accountProfile: UserAccountProfile;
-  steamUser: string;
-  upsertOwnedGameInMemoryAndDb: (game: OwnedGame) => Promise<any>;
-}
+import type { UseGameDetailsParams } from "./useGameDetails.types";
+import { triggerSteamAutoSync } from "./gameAutoSyncSteam";
+import { fetchRemoteUserProgress, fetchGameDetailsApi } from "./fetchGameData";
 
 export function useGameDetails({
   appId,
@@ -33,16 +20,9 @@ export function useGameDetails({
   const [game, setGame] = useState<GameDetails | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [progress, setProgress] = useState<UserGameProgress>({
-    unlockedIds: [],
-    notes: {},
-  });
+  const [progress, setProgress] = useState<UserGameProgress>({ unlockedIds: [], notes: {} });
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [syncNotice, setSyncNotice] = useState<{
-    type: "success" | "error";
-    msg: string;
-  } | null>(null);
+  const [syncNotice, setSyncNotice] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
   useEffect(() => {
     if (isNaN(appId)) {
@@ -50,157 +30,58 @@ export function useGameDetails({
       setIsLoading(false);
       return;
     }
-
     let isCancelled = false;
     setIsLoading(true);
     setError(null);
 
     async function fetchData() {
-      let currentProgress: UserGameProgress = { unlockedIds: [], notes: {} };
-
-      if (currentUser) {
-        try {
-          const progRes = await fetch(
-            `/api/user/progress?appId=${appId}&platform=${activePlatform}`
-          );
-          if (progRes.ok) {
-            const progData = await progRes.json();
-            if (progData?.progress) {
-              currentProgress = progData.progress;
-            }
-          }
-        } catch {}
-      }
+      const currentProgress = currentUser
+        ? (await fetchRemoteUserProgress(appId, activePlatform)) || { unlockedIds: [], notes: {} }
+        : { unlockedIds: [], notes: {} };
 
       if (isCancelled) return;
       setProgress(currentProgress);
 
-      const query = new URLSearchParams();
-      if (owned?.name) query.set("name", owned.name);
-      if (owned?.platform) query.set("platform", owned.platform);
-      const queryString = query.toString() ? `?${query.toString()}` : "";
-
       try {
-        const res = await fetch(`/api/game/${appId}${queryString}`);
-        if (!res.ok) {
-          throw new Error("Impossible de récupérer les succès du jeu.");
-        }
-        const data: GameDetails = await res.json();
+        const data = await fetchGameDetailsApi(appId, owned?.name, owned?.platform);
         if (isCancelled) return;
         setGame(data);
 
-        // Update total achievements if owned
         if (owned) {
-          const unlockedCount = Math.max(
-            owned.unlockedCount || 0,
-            currentProgress.unlockedIds.length
-          );
+          const unlockedCount = Math.max(owned.unlockedCount || 0, currentProgress.unlockedIds.length);
           await upsertOwnedGameInMemoryAndDb({
             ...owned,
             appId: data.id,
             name: owned.name || data.name,
-            headerImg:
-              !isUnsplashPlaceholder(owned.headerImg)
-                ? owned.headerImg
-                : data.headerImg || owned.headerImg,
+            headerImg: !isUnsplashPlaceholder(owned.headerImg) ? owned.headerImg : data.headerImg || owned.headerImg,
             platform: activePlatform,
             totalAchievements: data.totalAchievements,
             unlockedCount,
           });
         }
 
-        // Auto-sync Steam if Steam game and 0 checked achievements
         const user = accountProfile.accounts.steam?.username || steamUser;
-        if (
-          activePlatform === "steam" &&
-          user &&
-          currentProgress.unlockedIds.length === 0
-        ) {
-          fetch(`/api/sync?user=${encodeURIComponent(user)}&appId=${appId}`)
-            .then((r) => r.json())
-            .then(async (syncData) => {
-              if (syncData.success && syncData.unlockedTitles) {
-                const normalize = (s: string) =>
-                  s.replace(/[’']/g, "'").trim().toLowerCase();
-                const matched =
-                  syncData.unlockedIds && syncData.unlockedIds.length > 0
-                    ? syncData.unlockedIds
-                    : data.achievements
-                        .filter((a) =>
-                          syncData.unlockedTitles.some(
-                            (t: string) => normalize(t) === normalize(a.name)
-                          )
-                        )
-                        .map((a) => a.id);
-
-                if (matched.length > 0 && !isCancelled) {
-                  const updated: UserGameProgress = {
-                    ...currentProgress,
-                    unlockedIds: matched,
-                    lastPlayed: new Date().toISOString(),
-                  };
-                  setProgress(updated);
-
-                  await upsertOwnedGameInMemoryAndDb({
-                    appId,
-                    name: data.name,
-                    headerImg: data.headerImg,
-                    platform: "steam",
-                    totalAchievements: data.totalAchievements,
-                    unlockedCount: matched.length,
-                    addedAt: owned?.addedAt || new Date().toISOString(),
-                  });
-
-                  if (currentUser) {
-                    fetch("/api/user/progress", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        appId,
-                        platform: "steam",
-                        progress: updated,
-                      }),
-                    }).catch(() => {});
-                  }
-
-                  setSyncNotice({
-                    type: "success",
-                    msg: `${matched.length} succès synchronisés automatiquement depuis Steam !`,
-                  });
-                  setTimeout(() => setSyncNotice(null), 5000);
-                }
-              }
-            })
-            .catch(() => {});
+        if (activePlatform === "steam" && user && currentProgress.unlockedIds.length === 0) {
+          triggerSteamAutoSync({
+            appId, user, gameData: data, owned, currentProgress, currentUser, upsertOwnedGameInMemoryAndDb,
+            onSynced: (updated, count) => {
+              if (isCancelled) return;
+              setProgress(updated);
+              setSyncNotice({ type: "success", msg: `${count} succès synchronisés automatiquement depuis Steam !` });
+              setTimeout(() => setSyncNotice(null), 5000);
+            },
+          });
         }
       } catch (err: any) {
-        if (!isCancelled) {
-          setError(err.message || "Erreur lors du chargement.");
-        }
+        if (!isCancelled) setError(err.message || "Erreur lors du chargement.");
       } finally {
-        if (!isCancelled) {
-          setIsLoading(false);
-        }
+        if (!isCancelled) setIsLoading(false);
       }
     }
 
     fetchData();
-
-    return () => {
-      isCancelled = true;
-    };
+    return () => { isCancelled = true; };
   }, [appId, activePlatform, currentUser?.id]);
 
-  return {
-    game,
-    setGame,
-    progress,
-    setProgress,
-    isLoading,
-    error,
-    isSyncing,
-    setIsSyncing,
-    syncNotice,
-    setSyncNotice,
-  };
+  return { game, setGame, progress, setProgress, isLoading, error, isSyncing, setIsSyncing, syncNotice, setSyncNotice };
 }

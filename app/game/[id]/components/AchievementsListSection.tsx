@@ -1,0 +1,57 @@
+// app/game/[id]/components/AchievementsListSection.tsx
+"use client";
+
+import AchievementItem from "@/components/AchievementItem";
+import type { Achievement, GameDetails, UserGameProgress } from "@/lib/types";
+
+interface ListSectionProps {
+  displayedAchievements: Achievement[];
+  game: GameDetails;
+  progress: UserGameProgress;
+  revealSecrets: boolean;
+  onToggleAchievement: (id: string) => void;
+  onSaveNotes: (id: string, notes: string) => void;
+  onResetFilters: () => void;
+}
+
+export function AchievementsListSection({
+  displayedAchievements,
+  game,
+  progress,
+  revealSecrets,
+  onToggleAchievement,
+  onSaveNotes,
+  onResetFilters,
+}: ListSectionProps) {
+  if (displayedAchievements.length === 0) {
+    return (
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center text-slate-400 space-y-2">
+        <p className="text-sm font-medium">Aucun succès ne correspond à ce filtre.</p>
+        <button
+          onClick={onResetFilters}
+          className="text-xs text-sky-400 underline hover:text-sky-300"
+        >
+          Réinitialiser les filtres
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2.5">
+      {displayedAchievements.map((ach) => (
+        <AchievementItem
+          key={ach.id}
+          achievement={ach}
+          gameName={game.name}
+          gameId={game.id}
+          isUnlocked={progress.unlockedIds.includes(ach.id)}
+          notes={progress.notes[ach.id] || ""}
+          revealSecret={revealSecrets}
+          onToggleUnlocked={() => onToggleAchievement(ach.id)}
+          onSaveNotes={(noteText) => onSaveNotes(ach.id, noteText)}
+        />
+      ))}
+    </div>
+  );
+}
