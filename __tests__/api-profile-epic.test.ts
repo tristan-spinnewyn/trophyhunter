@@ -1,10 +1,31 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '@/app/api/profile/epic/route';
+import {
+  initDatabase,
+  setDbForTesting,
+  createUser,
+  createSession,
+  getUserOwnedGames,
+  getUserPlatformAccounts,
+} from '@/lib/db';
+
+const mockCookieStore = new Map<string, any>();
+vi.mock("next/headers", () => ({
+  cookies: async () => ({
+    get: (name: string) => mockCookieStore.get(name),
+    set: (name: string, value: string, options: any) => mockCookieStore.set(name, { name, value, ...options }),
+    delete: (name: string) => mockCookieStore.delete(name),
+  }),
+}));
 
 describe('GET /api/profile/epic', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    const db = initDatabase(':memory:');
+    setDbForTesting(db);
+    mockCookieStore.clear();
   });
+
 
   it('returns 400 when both user and code parameters are missing', async () => {
     const req = new Request('http://localhost:3000/api/profile/epic');
@@ -262,4 +283,63 @@ describe('GET /api/profile/epic', () => {
     expect(data.error).toBe("Impossible de joindre l'API Epic Games.");
     expect(data.details).toBe('Connection timed out');
   });
+
+  it('auto-persists account and discovered games to SQLite when user is authenticated with code', async () => {
+    const user = createUser('epicuser', 'hashedpassword123');
+    const sessionId = createSession(user.id);
+    mockCookieStore.set('trophyhunter_session', { value: sessionId });
+
+    const mockToken = {
+      access_token: 'auth_epic_token',
+      account_id: 'epic_account_777',
+      displayName: 'EpicHero',
+    };
+
+    const mockAssets = [
+      {
+        appName: 'HadesGame',
+        catalogItemId: 'cat_hades_item',
+      },
+    ];
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockToken,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockAssets,
+      } as any);
+
+    const req = new Request('http://localhost:3000/api/profile/epic?code=oauth-hero-code');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const accounts = getUserPlatformAccounts(user.id);
+    expect(accounts.epic).toBeDefined();
+    expect(accounts.epic?.platform).toBe('epic');
+    expect(accounts.epic?.displayName).toBe('EpicHero');
+
+    const games = getUserOwnedGames(user.id);
+    expect(games.length).toBeGreaterThan(0);
+    expect(games[0].platform).toBe('epic');
+    expect(games[0].name).toBe('Hades Game');
+  });
+
+  it('auto-persists account to SQLite in username-only mode when user is authenticated', async () => {
+    const user = createUser('epicuser2', 'hashedpassword123');
+    const sessionId = createSession(user.id);
+    mockCookieStore.set('trophyhunter_session', { value: sessionId });
+
+    const req = new Request('http://localhost:3000/api/profile/epic?user=EpicSoloPlayer');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const accounts = getUserPlatformAccounts(user.id);
+    expect(accounts.epic).toBeDefined();
+    expect(accounts.epic?.platform).toBe('epic');
+    expect(accounts.epic?.username).toBe('EpicSoloPlayer');
+  });
 });
+

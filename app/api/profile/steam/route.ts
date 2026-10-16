@@ -31,10 +31,28 @@ function decodeHtmlEntities(str: string): string {
     .trim();
 }
 
+import { getAuthenticatedUser } from "@/lib/auth";
+import {
+  getUserPlatformApiKey,
+  saveUserPlatformAccount,
+  saveUserOwnedGames,
+} from "@/lib/db";
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const rawUser = searchParams.get("user")?.trim();
-  const apiKey = searchParams.get("key")?.trim() || process.env.STEAM_API_KEY?.trim() || "";
+  let apiKey = searchParams.get("key")?.trim() || process.env.STEAM_API_KEY?.trim() || "";
+
+  let authUser = null;
+  try {
+    authUser = await getAuthenticatedUser();
+    if (!apiKey && authUser) {
+      const storedKey = getUserPlatformApiKey(authUser.id, "steam");
+      if (storedKey) apiKey = storedKey;
+    }
+  } catch {
+    // Non-blocking auth lookup
+  }
 
   if (!rawUser) {
     return NextResponse.json(
@@ -42,6 +60,7 @@ export async function GET(request: Request) {
       { status: 400 }
     );
   }
+
 
   let userIdentifier = rawUser;
   let isVanity = true;
@@ -471,11 +490,23 @@ export async function GET(request: Request) {
       rareShowcase: rareShowcase.slice(0, 6),
     };
 
+    if (authUser) {
+      try {
+        saveUserPlatformAccount(authUser.id, account, apiKey || undefined);
+        if (discoveredGames.length > 0) {
+          saveUserOwnedGames(authUser.id, discoveredGames);
+        }
+      } catch (saveErr) {
+        console.warn("Could not auto-persist Steam data to database:", saveErr);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       account,
       discoveredGames,
     });
+
   } catch (error: any) {
     console.error("Steam Profile API error:", error);
     return NextResponse.json(

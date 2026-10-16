@@ -1,10 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '@/app/api/profile/steam/route';
+import { initDatabase, setDbForTesting, createUser, createSession, saveUserPlatformAccount, getUserOwnedGames } from '@/lib/db';
+
+const mockCookieStore = new Map<string, any>();
+vi.mock("next/headers", () => ({
+  cookies: async () => ({
+    get: (name: string) => mockCookieStore.get(name),
+    set: (name: string, value: string, options: any) => mockCookieStore.set(name, { name, value, ...options }),
+    delete: (name: string) => mockCookieStore.delete(name),
+  }),
+}));
 
 describe('GET /api/profile/steam', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    const db = initDatabase(':memory:');
+    setDbForTesting(db);
+    mockCookieStore.clear();
   });
+
 
   it('returns 400 when user param is missing', async () => {
     const req = new Request('http://localhost:3000/api/profile/steam');
@@ -210,4 +224,47 @@ describe('GET /api/profile/steam', () => {
     expect(data.discoveredGames[1].name).toBe('Cyberpunk 2077');
     expect(data.discoveredGames[1].playtimeHours).toBe(20);
   });
+
+  it('automatically resolves encrypted API key and persists games to SQLite for authenticated user', async () => {
+    const user = createUser('SteamUserAuth', 'password123');
+    const sessionId = createSession(user.id);
+    mockCookieStore.set('trophyhunter_session', { value: sessionId });
+
+    saveUserPlatformAccount(
+      user.id,
+      {
+        platform: 'steam',
+        username: '76561198083390097',
+        displayName: 'SteamUserAuth',
+        connectedAt: new Date().toISOString(),
+        stats: { gamesOwned: 0, totalAchievements: 0, completedGames: 0 },
+      },
+      'STORED_SECRET_KEY'
+    );
+
+    const mockXml = `<profile><steamID64>76561198083390097</steamID64><steamID>Shin</steamID></profile>`;
+    const mockHtml = `<div class="actual_persona_name">Shin</div>`;
+    const mockOwned = {
+      response: {
+        game_count: 1,
+        games: [{ appid: 42, name: 'Stored Game', playtime_forever: 120 }],
+      },
+    };
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({ ok: true, text: async () => mockXml } as any)
+      .mockResolvedValueOnce({ ok: true, text: async () => mockHtml } as any)
+      .mockResolvedValueOnce({ ok: false } as any)
+      .mockResolvedValueOnce({ ok: false } as any)
+      .mockResolvedValueOnce({ ok: true, json: async () => mockOwned } as any);
+
+    const req = new Request('http://localhost:3000/api/profile/steam?user=76561198083390097');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const savedGames = getUserOwnedGames(user.id);
+    expect(savedGames.length).toBe(1);
+    expect(savedGames[0].name).toBe('Stored Game');
+  });
 });
+

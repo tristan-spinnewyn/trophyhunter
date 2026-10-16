@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   getSavedSteamUser,
@@ -27,6 +28,11 @@ import {
   PLATFORM_META,
   removePlatformOwnedGames,
   replacePlatformOwnedGames,
+  normalizeGameTitle,
+  getLocalWishlist,
+  toggleLocalWishlist,
+  getLocalCollections,
+  saveLocalCollections,
 } from '@/lib/storage';
 import type { PlatformAccount, OwnedGame, UserAccountProfile } from '@/lib/types';
 
@@ -350,4 +356,29 @@ describe('lib/storage', () => {
       expect(Object.keys(PLATFORM_META)).toEqual(['steam', 'xbox', 'epic', 'gog']);
     });
   });
+
+  describe('normalizeGameTitle, Wishlist & Collections', () => {
+    it('normalizes titles by stripping editions and non-alphanumeric chars', () => {
+      expect(normalizeGameTitle("The Witcher 3: Wild Hunt - Game of the Year Edition")).toBe("thewitcher3wildhunt");
+      expect(normalizeGameTitle("Cyberpunk 2077 (Remastered)")).toBe("cyberpunk2077");
+    });
+
+    it('toggles and retrieves local wishlist', () => {
+      expect(getLocalWishlist()).toEqual([]);
+      const added = toggleLocalWishlist(100);
+      expect(added).toBe(true);
+      expect(getLocalWishlist()).toEqual([100]);
+      const removed = toggleLocalWishlist(100);
+      expect(removed).toBe(false);
+      expect(getLocalWishlist()).toEqual([]);
+    });
+
+    it('saves and retrieves local collections', () => {
+      expect(getLocalCollections()).toEqual([]);
+      const coll = [{ id: "c1", name: "Favorites", gameIds: [100, 200] }];
+      saveLocalCollections(coll);
+      expect(getLocalCollections()).toEqual(coll);
+    });
+  });
 });
+

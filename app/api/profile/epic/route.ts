@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import type { OwnedGame, PlatformAccount } from "@/lib/types";
 
+import { getAuthenticatedUser } from "@/lib/auth";
+import { saveUserPlatformAccount, saveUserOwnedGames } from "@/lib/db";
+
 const EPIC_CLIENT_ID = "34a02cf8f4414e29b15921876da36f9a";
 const EPIC_CLIENT_SECRET = "daafbccc737745039dffe53d94fc76cf";
 const EPIC_BASIC_AUTH = Buffer.from(
@@ -12,6 +15,11 @@ function isJunkHex(str: string): boolean {
 }
 
 export async function GET(request: Request) {
+  let authUser = null;
+  try {
+    authUser = await getAuthenticatedUser();
+  } catch {}
+
   const { searchParams } = new URL(request.url);
   const rawUser = searchParams.get("user")?.trim();
   const code = searchParams.get("code")?.trim();
@@ -338,6 +346,17 @@ export async function GET(request: Request) {
         },
       };
 
+      if (authUser) {
+        try {
+          saveUserPlatformAccount(authUser.id, account);
+          if (discoveredGames.length > 0) {
+            saveUserOwnedGames(authUser.id, discoveredGames);
+          }
+        } catch (saveErr) {
+          console.warn("Could not auto-persist Epic data to database:", saveErr);
+        }
+      }
+
       return NextResponse.json({
         success: true,
         account,
@@ -366,6 +385,14 @@ export async function GET(request: Request) {
     },
   };
 
+  if (authUser) {
+    try {
+      saveUserPlatformAccount(authUser.id, account);
+    } catch (saveErr) {
+      console.warn("Could not auto-persist Epic account to database:", saveErr);
+    }
+  }
+
   return NextResponse.json({
     success: true,
     account,
@@ -373,6 +400,7 @@ export async function GET(request: Request) {
     notice:
       "Compte Epic Games configuré. Vous pouvez synchroniser vos jeux avec un code temporaire ou ajouter manuellement vos jeux Epic.",
   });
+
 }
 
 function hashCode(str: string): number {

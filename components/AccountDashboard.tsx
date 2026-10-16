@@ -23,6 +23,12 @@ import {
   ChevronRight,
   Star,
   Unlink,
+  Copy,
+  Heart,
+  Folder,
+  FolderPlus,
+  Database,
+  ShieldCheck,
 } from "lucide-react";
 import type {
   UserAccountProfile,
@@ -30,6 +36,7 @@ import type {
   PlatformAccount,
   OwnedGame,
   GameSearchResult,
+  User as UserType,
 } from "@/lib/types";
 import {
   PLATFORM_META,
@@ -43,6 +50,12 @@ import {
   saveSteamApiKey,
   removePlatformOwnedGames,
   replacePlatformOwnedGames,
+  normalizeGameTitle,
+  getLocalWishlist,
+  toggleLocalWishlist,
+  getLocalCollections,
+  saveLocalCollections,
+  LocalCollection,
 } from "@/lib/storage";
 
 interface AccountDashboardProps {
@@ -52,7 +65,10 @@ interface AccountDashboardProps {
   onOwnedGamesChange: (games: OwnedGame[]) => void;
   onSelectGame: (appId: number) => void;
   onSteamUserChange: (steamUser: string) => void;
+  currentUser?: UserType | null;
+  onOpenAuthModal?: () => void;
 }
+
 
 const ALL_PLATFORMS: PlatformType[] = [
   "steam",
@@ -68,6 +84,8 @@ export default function AccountDashboard({
   onOwnedGamesChange,
   onSelectGame,
   onSteamUserChange,
+  currentUser,
+  onOpenAuthModal,
 }: AccountDashboardProps) {
   const steamAccount = accountProfile.accounts.steam;
   const [steamInput, setSteamInput] = useState(
@@ -84,11 +102,20 @@ export default function AccountDashboard({
 
   // Platform Navigation & Library Filters
   const [activePlatformTab, setActivePlatformTab] = useState<
-    PlatformType | "all"
+    PlatformType | "all" | "duplicates" | "collections" | "wishlist"
   >("all");
   const [libPlatformFilter, setLibPlatformFilter] = useState<
     PlatformType | "all"
   >("all");
+  const [wishlistIds, setWishlistIds] = useState<number[]>(() => getLocalWishlist());
+  const [collections, setCollections] = useState<LocalCollection[]>(() => getLocalCollections());
+  const [selectedCollId, setSelectedCollId] = useState<string | null>(null);
+  const [newCollName, setNewCollName] = useState("");
+  const [newCollDesc, setNewCollDesc] = useState("");
+  const [newCollColor, setNewCollColor] = useState("#6366f1");
+  const [isCreatingColl, setIsCreatingColl] = useState(false);
+  const [gameToAddToColl, setGameToAddToColl] = useState<OwnedGame | null>(null);
+
   const [libStatusFilter, setLibStatusFilter] = useState<
     "all" | "completed" | "in-progress" | "unstarted"
   >("all");
@@ -684,8 +711,143 @@ export default function AccountDashboard({
     }
   };
 
+  // Cross-Platform Duplicate Games
+  const duplicateGroups = useMemo(() => {
+    const groups = new Map<string, OwnedGame[]>();
+    for (const g of ownedGames) {
+      const norm = normalizeGameTitle(g.name);
+      if (!norm) continue;
+      const list = groups.get(norm) || [];
+      list.push(g);
+      groups.set(norm, list);
+    }
+    const result: { title: string; games: OwnedGame[] }[] = [];
+    for (const [, list] of groups.entries()) {
+      const platforms = new Set(list.map((g) => g.platform));
+      if (platforms.size > 1) {
+        result.push({
+          title: list[0].name,
+          games: list,
+        });
+      }
+    }
+    return result;
+  }, [ownedGames]);
+
+  // Wishlist toggle handler
+  const handleToggleWishlist = async (appId: number, platform: PlatformType) => {
+    const nextAdded = toggleLocalWishlist(appId);
+    setWishlistIds(getLocalWishlist());
+    if (currentUser) {
+      try {
+        await fetch("/api/user/wishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ appId, platform, isWishlist: nextAdded }),
+        });
+      } catch {}
+    }
+    setBannerMsg({
+      type: "success",
+      text: nextAdded
+        ? "Jeu ajouté à votre liste d'envies !"
+        : "Jeu retiré de votre liste d'envies.",
+    });
+  };
+
+  // Collections handlers
+  const handleCreateCollection = async () => {
+    const trimmed = newCollName.trim();
+    if (!trimmed) return;
+
+    if (currentUser) {
+      try {
+        await fetch("/api/collections", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: trimmed,
+            description: newCollDesc.trim() || undefined,
+            color: newCollColor,
+          }),
+        });
+      } catch {}
+    }
+
+    const newColl: LocalCollection = {
+      id: "coll_" + Date.now(),
+      name: trimmed,
+      description: newCollDesc.trim() || undefined,
+      color: newCollColor,
+      gameIds: [],
+    };
+    const next = [...collections, newColl];
+    setCollections(next);
+    saveLocalCollections(next);
+    setNewCollName("");
+    setNewCollDesc("");
+    setIsCreatingColl(false);
+    setSelectedCollId(newColl.id);
+    setBannerMsg({ type: "success", text: `Collection "${trimmed}" créée !` });
+  };
+
+  const handleDeleteCollection = async (collId: string) => {
+    if (currentUser) {
+      try {
+        await fetch(`/api/collections/${collId}`, { method: "DELETE" });
+      } catch {}
+    }
+    const next = collections.filter((c) => c.id !== collId);
+    setCollections(next);
+    saveLocalCollections(next);
+    if (selectedCollId === collId) setSelectedCollId(null);
+    setBannerMsg({ type: "success", text: "Collection supprimée." });
+  };
+
+  const handleAddGameToColl = async (collId: string, game: OwnedGame) => {
+    if (currentUser) {
+      try {
+        await fetch(`/api/collections/${collId}/games`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ appId: game.appId, platform: game.platform }),
+        });
+      } catch {}
+    }
+    const next = collections.map((c) => {
+      if (c.id === collId && !c.gameIds.includes(game.appId)) {
+        return { ...c, gameIds: [...c.gameIds, game.appId] };
+      }
+      return c;
+    });
+    setCollections(next);
+    saveLocalCollections(next);
+    setGameToAddToColl(null);
+    setBannerMsg({ type: "success", text: `"${game.name}" ajouté à la collection !` });
+  };
+
+  const handleRemoveGameFromColl = async (collId: string, appId: number, platform: PlatformType) => {
+    if (currentUser) {
+      try {
+        await fetch(`/api/collections/${collId}/games?appId=${appId}&platform=${platform}`, {
+          method: "DELETE",
+        });
+      } catch {}
+    }
+    const next = collections.map((c) => {
+      if (c.id === collId) {
+        return { ...c, gameIds: c.gameIds.filter((id) => id !== appId) };
+      }
+      return c;
+    });
+    setCollections(next);
+    saveLocalCollections(next);
+    setBannerMsg({ type: "success", text: "Jeu retiré de la collection." });
+  };
+
   // Global Aggregated Statistics across all connected platforms + local library
   const globalStats = useMemo(() => {
+
     const connectedAccounts = Object.values(accountProfile.accounts).filter(
       Boolean
     ) as PlatformAccount[];
@@ -808,14 +970,24 @@ export default function AccountDashboard({
       activePlatformTab !== "all" ? activePlatformTab : libPlatformFilter;
 
     const list = ownedGames.filter((g) => {
-      if (targetPlatform !== "all" && g.platform !== targetPlatform) {
-        return false;
+      if (activePlatformTab === "wishlist") {
+        if (!wishlistIds.includes(g.appId)) return false;
+      } else if (activePlatformTab === "collections") {
+        if (selectedCollId) {
+          const coll = collections.find((c) => c.id === selectedCollId);
+          if (!coll || !coll.gameIds.includes(g.appId)) return false;
+        }
+      } else if (targetPlatform !== "all" && activePlatformTab !== "duplicates") {
+        if (g.platform !== targetPlatform) {
+          return false;
+        }
       }
       const isComplete =
         g.totalAchievements > 0 && g.unlockedCount >= g.totalAchievements;
       const isInProgress =
         g.unlockedCount > 0 &&
         (g.totalAchievements === 0 || g.unlockedCount < g.totalAchievements);
+
       const isUnstarted = g.unlockedCount === 0;
 
       if (libStatusFilter === "completed" && !isComplete) return false;
@@ -888,7 +1060,11 @@ export default function AccountDashboard({
     libAchievementFilter,
     libSortOrder,
     libSearch,
+    wishlistIds,
+    collections,
+    selectedCollId,
   ]);
+
 
   return (
     <div className="space-y-6">
@@ -984,7 +1160,109 @@ export default function AccountDashboard({
             </button>
           );
         })}
+
+        {/* Doublons Multiplateformes Tab */}
+        <button
+          onClick={() => setActivePlatformTab("duplicates")}
+          className={`flex items-center gap-1.5 rounded-2xl px-3.5 py-2 font-bold whitespace-nowrap transition shrink-0 ${
+            activePlatformTab === "duplicates"
+              ? "border border-purple-500/50 bg-purple-500/20 text-purple-300 ring-2 ring-purple-500/40 shadow-lg"
+              : "border border-slate-800 bg-slate-900/80 text-slate-300 hover:border-slate-700 hover:text-white"
+          }`}
+        >
+          <Copy className="h-3.5 w-3.5 text-purple-400" />
+          <span>Doublons</span>
+          {duplicateGroups.length > 0 && (
+            <span
+              className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                activePlatformTab === "duplicates"
+                  ? "bg-purple-900 text-purple-200 font-black"
+                  : "bg-slate-800 text-slate-400"
+              }`}
+            >
+              {duplicateGroups.length}
+            </span>
+          )}
+        </button>
+
+        {/* Wishlist Tab */}
+        <button
+          onClick={() => {
+            setActivePlatformTab("wishlist");
+            setLibPlatformFilter("all");
+          }}
+          className={`flex items-center gap-1.5 rounded-2xl px-3.5 py-2 font-bold whitespace-nowrap transition shrink-0 ${
+            activePlatformTab === "wishlist"
+              ? "border border-rose-500/50 bg-rose-500/20 text-rose-300 ring-2 ring-rose-500/40 shadow-lg"
+              : "border border-slate-800 bg-slate-900/80 text-slate-300 hover:border-slate-700 hover:text-white"
+          }`}
+        >
+          <Heart className="h-3.5 w-3.5 text-rose-400" />
+          <span>Liste d&apos;envies</span>
+          {wishlistIds.length > 0 && (
+            <span
+              className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                activePlatformTab === "wishlist"
+                  ? "bg-rose-900 text-rose-200 font-black"
+                  : "bg-slate-800 text-slate-400"
+              }`}
+            >
+              {wishlistIds.length}
+            </span>
+          )}
+        </button>
+
+        {/* Collections Tab */}
+        <button
+          onClick={() => {
+            setActivePlatformTab("collections");
+            setLibPlatformFilter("all");
+          }}
+          className={`flex items-center gap-1.5 rounded-2xl px-3.5 py-2 font-bold whitespace-nowrap transition shrink-0 ${
+            activePlatformTab === "collections"
+              ? "border border-indigo-500/50 bg-indigo-500/20 text-indigo-300 ring-2 ring-indigo-500/40 shadow-lg"
+              : "border border-slate-800 bg-slate-900/80 text-slate-300 hover:border-slate-700 hover:text-white"
+          }`}
+        >
+          <Folder className="h-3.5 w-3.5 text-indigo-400" />
+          <span>Collections</span>
+          {collections.length > 0 && (
+            <span
+              className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                activePlatformTab === "collections"
+                  ? "bg-indigo-900 text-indigo-200 font-black"
+                  : "bg-slate-800 text-slate-400"
+              }`}
+            >
+              {collections.length}
+            </span>
+          )}
+        </button>
+
+        {/* SQLite Auth status badge */}
+        <div className="ml-auto flex items-center gap-1.5 pl-2 shrink-0">
+          {currentUser ? (
+            <button
+              onClick={onOpenAuthModal}
+              title="Session SQLite active • Clés API chiffrées AES-256-GCM"
+              className="flex items-center gap-1.5 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-bold text-emerald-300 hover:bg-emerald-500/20"
+            >
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+              <span>SQLite : @{currentUser.username}</span>
+            </button>
+          ) : (
+            <button
+              onClick={onOpenAuthModal}
+              title="Activer la base SQLite pour sécuriser vos clés API et synchroniser vos données"
+              className="flex items-center gap-1.5 rounded-2xl border border-sky-500/40 bg-sky-500/10 px-3 py-1.5 text-[11px] font-bold text-sky-300 hover:bg-sky-500/20"
+            >
+              <Database className="h-3.5 w-3.5 text-sky-400" />
+              <span>Base SQLite (Sécurisée)</span>
+            </button>
+          )}
+        </div>
       </div>
+
 
       {/* VIEW A: GLOBAL OVERVIEW */}
       {activePlatformTab === "all" && (
@@ -2108,7 +2386,231 @@ export default function AccountDashboard({
         </div>
       )}
 
+      {/* VIEW F: CROSS-PLATFORM DUPLICATES VIEW */}
+      {activePlatformTab === "duplicates" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => {
+                setActivePlatformTab("all");
+                setLibPlatformFilter("all");
+              }}
+              className="text-xs text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1"
+            >
+              ← Retour à la Vue Globale
+            </button>
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg border border-purple-500/40 bg-purple-500/10 text-purple-300 flex items-center gap-1.5">
+              <Copy className="h-3.5 w-3.5" />
+              {duplicateGroups.length} doublon(s) détecté(s)
+            </span>
+          </div>
 
+          <div className="rounded-3xl border border-purple-500/30 bg-gradient-to-br from-slate-900 via-slate-900/95 to-purple-950/40 p-5 sm:p-6 shadow-2xl space-y-2">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <Copy className="h-5 w-5 text-purple-400" />
+              Détection des Doublons Multiplateformes
+            </h3>
+            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+              Trophy Hunter identifie automatiquement les jeux identiques que vous possédez sur plusieurs stores différents (Steam, Xbox Live / Game Pass, Epic Games, GOG Galaxy).
+              Comparez votre état de complétion ci-dessous et privilégiez la plateforme sur laquelle vous souhaitez chasser vos succès !
+            </p>
+          </div>
+
+          {duplicateGroups.length === 0 ? (
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-8 text-center space-y-2">
+              <p className="text-sm font-bold text-white">Aucun doublon trouvé</p>
+              <p className="text-xs text-slate-400">
+                Tous vos jeux actuels sont uniques à une seule plateforme.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {duplicateGroups.map((group, gIdx) => (
+                <div
+                  key={gIdx}
+                  className="rounded-2xl border border-slate-800 bg-slate-950/90 p-4 space-y-3 shadow-lg"
+                >
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
+                    <h4 className="text-sm font-black text-white truncate">
+                      {group.title}
+                    </h4>
+                    <span className="rounded-full bg-purple-500/20 border border-purple-500/40 px-2 py-0.5 text-[10px] font-bold text-purple-300 shrink-0">
+                      {group.games.length} plateformes
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {group.games.map((g) => {
+                      const pMeta = PLATFORM_META[g.platform] || PLATFORM_META.steam;
+                      const pct =
+                        g.totalAchievements > 0
+                          ? Math.min(
+                              100,
+                              Math.round((g.unlockedCount / g.totalAchievements) * 100)
+                            )
+                          : 0;
+
+                      return (
+                        <div
+                          key={`${g.platform}_${g.appId}`}
+                          onClick={() => onSelectGame(g.appId)}
+                          className="flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-900/90 p-3 hover:border-purple-500/50 cursor-pointer transition"
+                        >
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span
+                                className={`rounded px-1.5 py-0.5 text-[10px] font-bold border ${pMeta.badgeClass}`}
+                              >
+                                {pMeta.shortName}
+                              </span>
+                              {g.totalAchievements > 0 ? (
+                                <span className="text-[10px] font-black text-emerald-400">
+                                  {pct}% ({g.unlockedCount}/{g.totalAchievements})
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-slate-500">
+                                  Sans succès
+                                </span>
+                              )}
+                            </div>
+
+                            <img
+                              src={g.headerImg}
+                              alt={g.name}
+                              className="h-16 w-full object-cover rounded-lg bg-slate-950"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = "none";
+                              }}
+                            />
+                          </div>
+
+                          <div className="mt-2 pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400">
+                            <span>{g.playtimeHours ? `${g.playtimeHours} h` : "0 h"}</span>
+                            <span className="text-sky-400 hover:underline font-semibold">
+                              Ouvrir →
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* VIEW G: COLLECTIONS VIEW */}
+      {activePlatformTab === "collections" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => {
+                setActivePlatformTab("all");
+                setLibPlatformFilter("all");
+              }}
+              className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
+            >
+              ← Retour à la Vue Globale
+            </button>
+            <button
+              onClick={() => setIsCreatingColl(!isCreatingColl)}
+              className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-500 shadow-md transition"
+            >
+              <FolderPlus className="h-4 w-4" />
+              Nouvelle Collection
+            </button>
+          </div>
+
+          {/* New Collection Form */}
+          {isCreatingColl && (
+            <div className="rounded-2xl border border-indigo-500/40 bg-slate-950 p-4 space-y-3">
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                <FolderPlus className="h-4 w-4 text-indigo-400" />
+                Créer une nouvelle collection de jeux
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-slate-300">Nom de la collection</label>
+                  <input
+                    type="text"
+                    value={newCollName}
+                    onChange={(e) => setNewCollName(e.target.value)}
+                    placeholder="Ex: Jeux à platiner 2026, Co-op, Backlog..."
+                    className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-300">Description (Optionnel)</label>
+                  <input
+                    type="text"
+                    value={newCollDesc}
+                    onChange={(e) => setNewCollDesc(e.target.value)}
+                    placeholder="Objectifs, critères de sélection..."
+                    className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white outline-none focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  onClick={() => setIsCreatingColl(false)}
+                  className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleCreateCollection}
+                  disabled={!newCollName.trim()}
+                  className="rounded-xl bg-indigo-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-indigo-500 disabled:opacity-50"
+                >
+                  Créer
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Collections Badges / Switcher */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setSelectedCollId(null)}
+              className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+                selectedCollId === null
+                  ? "bg-indigo-600 text-white shadow-md"
+                  : "border border-slate-800 bg-slate-900 text-slate-400 hover:text-white"
+              }`}
+            >
+              Toutes les collections ({collections.length})
+            </button>
+
+            {collections.map((coll) => (
+              <div key={coll.id} className="flex items-center gap-1">
+                <button
+                  onClick={() => setSelectedCollId(coll.id)}
+                  className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+                    selectedCollId === coll.id
+                      ? "bg-indigo-600 text-white shadow-md"
+                      : "border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/50 hover:text-white"
+                  }`}
+                >
+                  <Folder className="h-3 w-3 text-indigo-400" />
+                  <span>{coll.name}</span>
+                  <span className="rounded-full bg-slate-800 px-1.5 py-0.2 text-[10px] font-bold">
+                    {coll.gameIds.length}
+                  </span>
+                </button>
+                <button
+                  onClick={() => handleDeleteCollection(coll.id)}
+                  title="Supprimer la collection"
+                  className="rounded-lg p-1 text-slate-500 hover:bg-slate-800 hover:text-rose-400 transition"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 5. Owned Games Library ("Mes Jeux Possédés") */}
       <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5 space-y-4">
@@ -2118,6 +2620,12 @@ export default function AccountDashboard({
               <Gamepad2 className="h-5 w-5 text-sky-400" />
               {activePlatformTab === "all"
                 ? `Mes Jeux Possédés (${filteredGames.length}${ownedGames.length !== filteredGames.length ? ` / ${ownedGames.length}` : ""})`
+                : activePlatformTab === "wishlist"
+                ? `Ma Liste d'envies (${filteredGames.length})`
+                : activePlatformTab === "collections"
+                ? `Jeux de la collection (${filteredGames.length})`
+                : activePlatformTab === "duplicates"
+                ? `Tous les jeux détectés en doublons (${filteredGames.length})`
                 : `Mes Jeux ${PLATFORM_META[activePlatformTab].name} (${filteredGames.length}${platformCounts[activePlatformTab] !== filteredGames.length ? ` / ${platformCounts[activePlatformTab]}` : ""})`}
             </h3>
             <p className="text-xs text-slate-400">
@@ -2125,6 +2633,7 @@ export default function AccountDashboard({
               français et ses guides.
             </p>
           </div>
+
 
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -2365,6 +2874,55 @@ export default function AccountDashboard({
                       </button>
 
                       <div className="flex items-center gap-1">
+                        {/* Wishlist Toggle Button */}
+                        <button
+                          onClick={() => handleToggleWishlist(g.appId, g.platform)}
+                          title={
+                            wishlistIds.includes(g.appId)
+                              ? "Retirer de ma liste d'envies"
+                              : "Ajouter à ma liste d'envies"
+                          }
+                          className={`rounded-lg p-1 transition ${
+                            wishlistIds.includes(g.appId)
+                              ? "text-rose-400 bg-rose-500/10"
+                              : "text-slate-500 hover:bg-slate-800 hover:text-rose-400"
+                          }`}
+                        >
+                          <Heart
+                            className={`h-3.5 w-3.5 ${
+                              wishlistIds.includes(g.appId) ? "fill-current" : ""
+                            }`}
+                          />
+                        </button>
+
+                        {/* Add to Collection Button */}
+                        {collections.length > 0 && (
+                          <button
+                            onClick={() => setGameToAddToColl(g)}
+                            title="Ajouter à une collection"
+                            className="rounded-lg p-1 text-slate-500 hover:bg-slate-800 hover:text-indigo-400 transition"
+                          >
+                            <FolderPlus className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+
+                        {/* Remove from Collection Button if inside a specific collection */}
+                        {activePlatformTab === "collections" && selectedCollId && (
+                          <button
+                            onClick={() =>
+                              handleRemoveGameFromColl(
+                                selectedCollId,
+                                g.appId,
+                                g.platform
+                              )
+                            }
+                            title="Retirer de cette collection"
+                            className="rounded-lg p-1 text-slate-500 hover:bg-slate-800 hover:text-amber-400 transition"
+                          >
+                            <Unlink className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+
                         {g.platform === "steam" && steamAccount?.username && (
                           <button
                             onClick={async () => {
@@ -2399,6 +2957,7 @@ export default function AccountDashboard({
                     </div>
                   </div>
                 </div>
+
               );
             })}
           </div>
@@ -2729,6 +3288,48 @@ export default function AccountDashboard({
           </div>
         </div>
       )}
+
+      {/* Modal: Add Game to Collection */}
+      {gameToAddToColl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl border border-slate-800 bg-slate-900 p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <FolderPlus className="h-4 w-4 text-indigo-400" />
+                Ajouter à une collection
+              </h3>
+              <button
+                onClick={() => setGameToAddToColl(null)}
+                className="text-slate-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-xs text-slate-300">
+              Choisir une collection pour <strong>{gameToAddToColl.name}</strong> :
+            </p>
+            <div className="space-y-1.5 max-h-60 overflow-y-auto">
+              {collections.map((c) => {
+                const alreadyIn = c.gameIds.includes(gameToAddToColl.appId);
+                return (
+                  <button
+                    key={c.id}
+                    disabled={alreadyIn}
+                    onClick={() => handleAddGameToColl(c.id, gameToAddToColl)}
+                    className="flex w-full items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-2.5 text-xs text-left transition hover:border-indigo-500/50 disabled:opacity-50"
+                  >
+                    <span className="font-semibold text-white">{c.name}</span>
+                    <span className="text-[10px] text-slate-400">
+                      {alreadyIn ? "Déjà présent ✓" : "Ajouter +"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+
 }

@@ -1,9 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '@/app/api/profile/gog/route';
+import {
+  initDatabase,
+  setDbForTesting,
+  createUser,
+  createSession,
+  getUserOwnedGames,
+  getUserPlatformAccounts,
+} from '@/lib/db';
+
+const mockCookieStore = new Map<string, any>();
+vi.mock("next/headers", () => ({
+  cookies: async () => ({
+    get: (name: string) => mockCookieStore.get(name),
+    set: (name: string, value: string, options: any) => mockCookieStore.set(name, { name, value, ...options }),
+    delete: (name: string) => mockCookieStore.delete(name),
+  }),
+}));
 
 describe('GET /api/profile/gog', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    const db = initDatabase(':memory:');
+    setDbForTesting(db);
+    mockCookieStore.clear();
   });
 
   it('returns 400 when user parameter is missing', async () => {
@@ -71,5 +91,29 @@ describe('GET /api/profile/gog', () => {
     expect(data.discoveredGames).toHaveLength(3);
     expect(data.discoveredGames[0].platform).toBe('gog');
     expect(data.discoveredGames[0].appId).toBe(1207658924);
+  });
+
+  it('persists GOG account and games to SQLite for authenticated user', async () => {
+    const user = createUser('GogAuthUser', 'password123');
+    const sessionId = createSession(user.id);
+    mockCookieStore.set('trophyhunter_session', { value: sessionId });
+
+    const mockHtml = `<div>Profile</div>`;
+    const mockLibrary = { owned: [1001, 1002] };
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({ ok: true, text: async () => mockHtml } as any)
+      .mockResolvedValueOnce({ ok: true, json: async () => mockLibrary } as any);
+
+    const req = new Request('http://localhost:3000/api/profile/gog?user=GogMaster&token=valid-token');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const accounts = getUserPlatformAccounts(user.id);
+    expect(accounts.gog).toBeDefined();
+    expect(accounts.gog?.username).toBe('GogMaster');
+
+    const games = getUserOwnedGames(user.id);
+    expect(games.length).toBe(2);
   });
 });

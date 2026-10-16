@@ -8,6 +8,7 @@ import FilterToolbar from "@/components/FilterToolbar";
 import AchievementItem from "@/components/AchievementItem";
 import SettingsModal from "@/components/SettingsModal";
 import AccountDashboard from "@/components/AccountDashboard";
+import AuthModal from "@/components/AuthModal";
 import type {
   GameDetails,
   FilterStatus,
@@ -16,7 +17,9 @@ import type {
   UserAccountProfile,
   OwnedGame,
   PlatformAccount,
+  User as UserType,
 } from "@/lib/types";
+
 import {
   getGameProgress,
   saveGameProgress,
@@ -123,6 +126,8 @@ export default function Home() {
   });
   const [ownedGames, setOwnedGames] = useState<OwnedGame[]>([]);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<UserType | null>(null);
+  const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
   const [syncNotice, setSyncNotice] = useState<{
     type: "success" | "error";
     msg: string;
@@ -139,6 +144,28 @@ export default function Home() {
     setOwnedGames(savedOwned);
     const recents = getRecentGames();
     setRecentIds(recents);
+
+    // Check SQLite user session
+    fetch("/api/auth/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.user) {
+          setCurrentUser(data.user);
+          // Hydrate with SQLite data
+          fetch("/api/user/sync")
+            .then((r) => (r.ok ? r.json() : null))
+            .then((syncData) => {
+              if (syncData?.games && syncData.games.length > 0) {
+                setOwnedGames(syncData.games);
+              }
+              if (syncData?.profile) {
+                setAccountProfile(syncData.profile);
+              }
+            })
+            .catch(() => {});
+        }
+      })
+      .catch(() => {});
 
     // Auto-populate Steam profile & owned games on first load if not yet synced
     if (
@@ -163,6 +190,46 @@ export default function Home() {
         .catch(() => {});
     }
   }, []);
+
+  const handleSyncLocalToSQLite = async () => {
+    const localProfile = getUserAccount();
+    const localGames = getOwnedGames();
+    const localApiKey = getSavedSteamApiKey();
+    const progressMap: Record<string, any> = {};
+    if (typeof window !== "undefined") {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("trophyhunter_game_")) {
+          try {
+            progressMap[k] = JSON.parse(localStorage.getItem(k) || "{}");
+          } catch {}
+        }
+      }
+    }
+
+    const payload = {
+      profile: localProfile,
+      games: localGames,
+      steamApiKey: localApiKey || undefined,
+      progress: progressMap,
+    };
+
+    const res = await fetch("/api/user/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      throw new Error("Erreur de synchronisation SQLite");
+    }
+
+    const data = await res.json();
+    if (data?.profile) {
+      setAccountProfile(data.profile);
+    }
+  };
+
 
   // Sync achievements from public Steam profile for the active game
   const handleSync = async () => {
@@ -444,7 +511,10 @@ export default function Home() {
         onChangeView={setActiveView}
         accountProfile={accountProfile}
         ownedCount={ownedGames.length}
+        currentUser={currentUser}
+        onOpenAuth={() => setIsAuthOpen(true)}
       />
+
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-4 sm:py-6 space-y-5">
         {/* Top Mode Switch Tabs */}
@@ -489,7 +559,10 @@ export default function Home() {
               onOwnedGamesChange={setOwnedGames}
               onSelectGame={loadGame}
               onSteamUserChange={setSteamUser}
+              currentUser={currentUser}
+              onOpenAuthModal={() => setIsAuthOpen(true)}
             />
+
 
             {/* Quick Selection Grid for Popular Games */}
             <div className="space-y-3">
@@ -690,6 +763,21 @@ export default function Home() {
         }}
         onSteamUserSaved={(u) => setSteamUser(u)}
       />
+
+      {/* Auth Modal (SQLite) */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        currentUser={currentUser}
+        onAuthSuccess={(u) => {
+          setCurrentUser(u);
+        }}
+        onLogout={() => {
+          setCurrentUser(null);
+        }}
+        onSyncLocalData={handleSyncLocalToSQLite}
+      />
     </div>
   );
+
 }

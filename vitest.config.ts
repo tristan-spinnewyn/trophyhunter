@@ -3,8 +3,13 @@ import path from 'path';
 
 export default defineConfig({
   test: {
-    environment: 'jsdom',
+    environment: 'node',
     globals: true,
+    server: {
+      deps: {
+        external: ['node:sqlite'],
+      },
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'text-summary', 'json-summary', 'lcov'],

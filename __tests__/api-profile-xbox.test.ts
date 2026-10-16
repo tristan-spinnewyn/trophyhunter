@@ -1,9 +1,30 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '@/app/api/profile/xbox/route';
+import {
+  initDatabase,
+  setDbForTesting,
+  createUser,
+  createSession,
+  saveUserPlatformAccount,
+  getUserOwnedGames,
+  getUserPlatformAccounts,
+} from '@/lib/db';
+
+const mockCookieStore = new Map<string, any>();
+vi.mock("next/headers", () => ({
+  cookies: async () => ({
+    get: (name: string) => mockCookieStore.get(name),
+    set: (name: string, value: string, options: any) => mockCookieStore.set(name, { name, value, ...options }),
+    delete: (name: string) => mockCookieStore.delete(name),
+  }),
+}));
 
 describe('GET /api/profile/xbox', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    const db = initDatabase(':memory:');
+    setDbForTesting(db);
+    mockCookieStore.clear();
   });
 
   it('returns 400 when user parameter is missing', async () => {
@@ -93,5 +114,85 @@ describe('GET /api/profile/xbox', () => {
     expect(data.discoveredGames[0].name).toBe('Halo Infinite');
     expect(data.discoveredGames[0].totalAchievements).toBe(50);
     expect(data.discoveredGames[0].unlockedCount).toBe(50);
+  });
+
+  it('resolves encrypted key and auto-persists to SQLite for authenticated user', async () => {
+    const user = createUser('XboxAuthUser', 'password123');
+    const sessionId = createSession(user.id);
+    mockCookieStore.set('trophyhunter_session', { value: sessionId });
+
+    saveUserPlatformAccount(
+      user.id,
+      {
+        platform: 'xbox',
+        username: 'Chief117',
+        displayName: 'Master Chief',
+        connectedAt: new Date().toISOString(),
+        stats: { gamesOwned: 0, totalAchievements: 0, completedGames: 0 },
+      },
+      'ENCRYPTED_OPENXBL_KEY'
+    );
+
+    const mockProfileResponse = {
+      profileUsers: [
+        {
+          id: '117117117',
+          settings: [
+            { id: 'Gamertag', value: 'Master Chief' },
+            { id: 'Gamerscore', value: '50000' },
+          ],
+        },
+      ],
+    };
+
+    const mockTitlesResponse = {
+      titles: [
+        {
+          titleId: '555',
+          name: 'Halo 3',
+          displayImage: 'halo3.jpg',
+          achievement: {
+            currentAchievements: 40,
+            totalAchievements: 40,
+          },
+        },
+      ],
+    };
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockProfileResponse,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockTitlesResponse,
+      } as any);
+
+    // No key passed in query string -> fallback to stored encrypted key
+    const req = new Request('http://localhost:3000/api/profile/xbox?user=Chief117');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const savedGames = getUserOwnedGames(user.id);
+    expect(savedGames.length).toBe(1);
+    expect(savedGames[0].name).toBe('Halo 3');
+
+    const accounts = getUserPlatformAccounts(user.id);
+    expect(accounts.xbox).toBeDefined();
+  });
+
+  it('persists fallback account to SQLite when authenticated without live key', async () => {
+    const user = createUser('XboxFallbackUser', 'password123');
+    const sessionId = createSession(user.id);
+    mockCookieStore.set('trophyhunter_session', { value: sessionId });
+
+    const req = new Request('http://localhost:3000/api/profile/xbox?user=NoKeyGamer');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const accounts = getUserPlatformAccounts(user.id);
+    expect(accounts.xbox).toBeDefined();
+    expect(accounts.xbox?.username).toBe('NoKeyGamer');
   });
 });

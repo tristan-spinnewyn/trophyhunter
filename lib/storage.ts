@@ -14,6 +14,18 @@ const STEAM_API_KEY = "trophyhunter_steam_api_key";
 const ACCOUNT_KEY = "trophyhunter_user_account";
 const OWNED_GAMES_KEY = "trophyhunter_owned_games";
 
+export function normalizeGameTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(
+      /\b(game of the year edition|goty edition|definitive edition|director's cut|remastered|enhanced edition|special edition|standard edition|deluxe edition)\b/gi,
+      ""
+    )
+    .replace(/[^a-z0-9]/gi, "")
+    .trim();
+}
+
+
 export const PLATFORM_META: Record<
   PlatformType,
   {
@@ -490,3 +502,50 @@ export function importAllData(jsonStr: string): boolean {
     return false;
   }
 }
+
+const WISHLIST_KEY = "trophyhunter_wishlist";
+const COLLECTIONS_KEY = "trophyhunter_collections";
+
+export function getLocalWishlist(): number[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(WISHLIST_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function toggleLocalWishlist(appId: number): boolean {
+  if (typeof window === "undefined") return false;
+  const current = getLocalWishlist();
+  const exists = current.includes(appId);
+  const next = exists ? current.filter((id) => id !== appId) : [...current, appId];
+  localStorage.setItem(WISHLIST_KEY, JSON.stringify(next));
+  return !exists;
+}
+
+export interface LocalCollection {
+  id: string;
+  name: string;
+  description?: string;
+  color?: string;
+  icon?: string;
+  gameIds: number[];
+}
+
+export function getLocalCollections(): LocalCollection[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(COLLECTIONS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveLocalCollections(colls: LocalCollection[]): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(colls));
+}
+

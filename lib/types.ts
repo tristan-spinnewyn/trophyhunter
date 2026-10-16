@@ -103,3 +103,42 @@ export interface UserAccountProfile {
   avatarUrl?: string;
   accounts: Partial<Record<PlatformType, PlatformAccount>>;
 }
+
+export interface User {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarUrl?: string;
+  createdAt: string;
+}
+
+export interface UserSession {
+  id: string;
+  userId: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
+export interface Collection {
+  id: string;
+  userId: string;
+  name: string;
+  description?: string;
+  color?: string;
+  icon?: string;
+  createdAt: string;
+  gameCount?: number;
+}
+
+export interface DuplicateGameGroup {
+  normalizedTitle: string;
+  games: OwnedGame[];
+}
+
+export interface DatabaseSyncPayload {
+  profile?: UserAccountProfile;
+  games?: OwnedGame[];
+  steamApiKey?: string;
+  progress?: Record<string, UserGameProgress>;
+}
+
