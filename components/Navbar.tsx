@@ -10,8 +10,10 @@ import {
   Sparkles,
   User,
   Gamepad2,
+  Database,
+  ShieldCheck,
 } from "lucide-react";
-import type { GameSearchResult, UserAccountProfile } from "@/lib/types";
+import type { GameSearchResult, UserAccountProfile, User as UserType } from "@/lib/types";
 
 interface NavbarProps {
   onSelectGame: (appId: number) => void;
@@ -21,7 +23,10 @@ interface NavbarProps {
   onChangeView: (view: "game" | "account") => void;
   accountProfile?: UserAccountProfile;
   ownedCount?: number;
+  currentUser?: UserType | null;
+  onOpenAuth?: () => void;
 }
+
 
 // Popular games for achievement hunters as quick launch suggestions
 const POPULAR_GAMES: GameSearchResult[] = [
@@ -74,7 +79,10 @@ export default function Navbar({
   onChangeView,
   accountProfile,
   ownedCount = 0,
+  currentUser,
+  onOpenAuth,
 }: NavbarProps) {
+
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GameSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -299,6 +307,31 @@ export default function Navbar({
             )}
           </button>
 
+          {onOpenAuth && (
+            <button
+              onClick={onOpenAuth}
+              title={
+                currentUser
+                  ? `Connecté en tant que @${currentUser.username} (Base SQLite)`
+                  : "Connexion / Inscription SQLite (Sécurisé)"
+              }
+              className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-semibold transition ${
+                currentUser
+                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
+                  : "border-slate-800 bg-slate-900 text-slate-300 hover:border-sky-500/50 hover:text-white"
+              }`}
+            >
+              {currentUser ? (
+                <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
+              ) : (
+                <Database className="h-4 w-4 text-sky-400 shrink-0" />
+              )}
+              <span className="hidden sm:inline max-w-[90px] truncate">
+                {currentUser ? `@${currentUser.username}` : "Connexion"}
+              </span>
+            </button>
+          )}
+
           <button
             onClick={onOpenSettings}
             title="Paramètres & Sauvegarde"
@@ -306,6 +339,7 @@ export default function Navbar({
           >
             <Settings className="h-4 w-4" />
           </button>
+
         </div>
       </div>
     </header>

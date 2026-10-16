@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { getUserGameProgress, saveUserGameProgress } from "@/lib/db";
+
 
 const normalize = (s: string) => s.replace(/[’']/g, "'").trim().toLowerCase();
 
@@ -266,6 +269,25 @@ export async function GET(request: Request) {
       }
     }
 
+    try {
+      const authUser = await getAuthenticatedUser();
+      if (authUser && unlockedIds.length > 0) {
+        const appIdNum = parseInt(appId, 10);
+        const existingProg = getUserGameProgress(authUser.id, appIdNum, "steam") || {
+          unlockedIds: [],
+          notes: {},
+        };
+        const mergedIds = Array.from(new Set([...existingProg.unlockedIds, ...unlockedIds]));
+        saveUserGameProgress(authUser.id, appIdNum, "steam", {
+          ...existingProg,
+          unlockedIds: mergedIds,
+          lastPlayed: new Date().toISOString(),
+        });
+      }
+    } catch (saveErr) {
+      console.warn("Could not auto-persist sync progress to SQLite:", saveErr);
+    }
+
     return NextResponse.json({
       success: true,
       user: userIdentifier,
@@ -277,6 +299,7 @@ export async function GET(request: Request) {
       unlockedIds,
       count: unlockedTitles.length,
     });
+
   } catch (error: any) {
     console.error("Sync API error:", error);
     return NextResponse.json(

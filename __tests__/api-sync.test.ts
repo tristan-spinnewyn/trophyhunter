@@ -1,10 +1,30 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '@/app/api/sync/route';
+import {
+  initDatabase,
+  setDbForTesting,
+  createUser,
+  createSession,
+  getUserGameProgress,
+} from '@/lib/db';
+
+const mockCookieStore = new Map<string, any>();
+vi.mock("next/headers", () => ({
+  cookies: async () => ({
+    get: (name: string) => mockCookieStore.get(name),
+    set: (name: string, value: string, options: any) => mockCookieStore.set(name, { name, value, ...options }),
+    delete: (name: string) => mockCookieStore.delete(name),
+  }),
+}));
 
 describe('GET /api/sync', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    const db = initDatabase(':memory:');
+    setDbForTesting(db);
+    mockCookieStore.clear();
   });
+
 
   it('returns 400 when user or appId is missing or invalid', async () => {
     const req1 = new Request('http://localhost:3000/api/sync?appId=367520');
@@ -162,4 +182,50 @@ describe('GET /api/sync', () => {
     expect(data.unlockedTitles).toEqual(["S'adapter pour triompher"]);
     expect(data.unlockedIds).toEqual(['ach_1_s_adapter_pour_triompher']);
   });
+
+  it('persists game progress to SQLite when user is authenticated', async () => {
+    const user = createUser('syncuser', 'hashedpassword123');
+    const sessionId = createSession(user.id);
+    mockCookieStore.set('trophyhunter_session', { value: sessionId });
+
+    const playerHtml = `
+      <html>
+        <head><title>Steam :: Game :: Succès</title></head>
+        <body>
+          <div class="achieveRow">
+            <h3>Premier Pas</h3>
+            <div class="achieveUnlockTime">Débloqué</div>
+          </div>
+        </body>
+      </html>
+    `;
+    const globalHtml = `
+      <html>
+        <body>
+          <div class="achieveRow">
+            <h3>Premier Pas</h3>
+          </div>
+        </body>
+      </html>
+    `;
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => playerHtml,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => globalHtml,
+      } as any);
+
+    const req = new Request('http://localhost:3000/api/sync?user=76561198083390097&appId=500');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const progress = getUserGameProgress(user.id, 500, 'steam');
+    expect(progress).not.toBeNull();
+    expect(progress?.unlockedIds.length).toBeGreaterThan(0);
+  });
 });
+

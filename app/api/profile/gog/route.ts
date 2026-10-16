@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import type { OwnedGame, PlatformAccount } from "@/lib/types";
 
+import { getAuthenticatedUser } from "@/lib/auth";
+import { saveUserPlatformAccount, saveUserOwnedGames } from "@/lib/db";
+
 export async function GET(request: Request) {
+  let authUser = null;
+  try {
+    authUser = await getAuthenticatedUser();
+  } catch {}
+
   const { searchParams } = new URL(request.url);
   const rawUser = searchParams.get("user")?.trim();
   const token = searchParams.get("token")?.trim();
@@ -12,6 +20,7 @@ export async function GET(request: Request) {
       { status: 400 }
     );
   }
+
 
   const nowIso = new Date().toISOString();
   const baseUrl = `https://www.gog.com/u/${encodeURIComponent(rawUser)}`;
@@ -101,11 +110,23 @@ export async function GET(request: Request) {
       },
     };
 
+    if (authUser) {
+      try {
+        saveUserPlatformAccount(authUser.id, account, token || undefined);
+        if (discoveredGames.length > 0) {
+          saveUserOwnedGames(authUser.id, discoveredGames);
+        }
+      } catch (saveErr) {
+        console.warn("Could not auto-persist GOG data to database:", saveErr);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       account,
       discoveredGames,
     });
+
   } catch (err: any) {
     console.error("GOG profile API error:", err);
     return NextResponse.json(
