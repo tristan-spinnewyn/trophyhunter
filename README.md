@@ -56,3 +56,13 @@ pnpm start
   * Lien direct vers le guide **PSTHC** du jeu (la référence FR), **YouTube FR** et **Steam Guides**.
 * **🎉 Célébration 100%, Notes & Sauvegarde JSON** :
   * Pluie de confettis au Platine, notes personnelles par succès et sauvegarde/restauration locale (`localStorage` + export JSON).
+
+---
+
+## 🛡️ Qualité de Code, CI & Protection de Branche
+
+* **Protection de la branche `main`** : Aucun push direct autorisé. Tout changement passe obligatoirement par une Pull Request.
+* **Intégration Continue (CI)** : Obligation d'avoir le check `ci` vert (`lint`, `tsc`, `test:coverage`, `test:diff-coverage`, `build`) avant tout merge.
+* **Couverture de code >= 80%** : Vitest et le script de diff coverage vérifient qu'au moins 80% des lignes/instructions/fonctions sont couvertes par les tests unitaires.
+* **Dependabot & Auto-Merge** : Surveillance automatique quotidienne des dépendances (npm/pnpm, GitHub Actions, Docker) avec approbation et merge automatique dès que la CI est verte.
+
