@@ -17,9 +17,7 @@ import DashboardNavTabs, {
 } from "@/components/dashboard/DashboardNavTabs";
 
 // Modals
-import EditPlatformModal from "@/components/dashboard/EditPlatformModal";
-import AddGameModal from "@/components/dashboard/AddGameModal";
-import AddToCollectionModal from "@/components/dashboard/AddToCollectionModal";
+import DashboardModals from "@/components/dashboard/DashboardModals";
 
 // Custom Hooks
 import { usePlatformInputs } from "@/components/dashboard/hooks/usePlatformInputs";
@@ -377,19 +375,15 @@ export default function AccountDashboard({
         isSyncingSteam={isSyncingSteam}
       />
 
-      {/* Modal: Edit/Add Platform Account & Stats */}
-      <EditPlatformModal
+      {/* Dashboard Modals */}
+      <DashboardModals
         editingPlatform={editingPlatform}
-        onClose={() => setEditingPlatform(null)}
+        onCloseEditPlatform={() => setEditingPlatform(null)}
         platForm={platForm}
         setPlatForm={setPlatForm}
-        onSave={handleSavePlatformModal}
-      />
-
-      {/* Modal: Add Game to Owned Library or Bulk Import */}
-      <AddGameModal
-        isOpen={isAddGameOpen}
-        onClose={() => setIsAddGameOpen(false)}
+        onSavePlatformModal={handleSavePlatformModal}
+        isAddGameOpen={isAddGameOpen}
+        onCloseAddGame={() => setIsAddGameOpen(false)}
         selectedPlatformForAdd={selectedPlatformForAdd}
         setSelectedPlatformForAdd={setSelectedPlatformForAdd}
         addGameQuery={addGameQuery}
@@ -402,13 +396,9 @@ export default function AccountDashboard({
         setBulkImportText={setBulkImportText}
         handleBulkImport={handleBulkImport}
         isBulkImporting={isBulkImporting}
-      />
-
-      {/* Modal: Add Game to Collection */}
-      <AddToCollectionModal
-        game={gameToAddToColl}
+        gameToAddToColl={gameToAddToColl}
         collections={collections}
-        onClose={() => setGameToAddToColl(null)}
+        onCloseAddToColl={() => setGameToAddToColl(null)}
         onAddToCollection={handleAddGameToColl}
       />
     </div>

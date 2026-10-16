@@ -1,0 +1,106 @@
+"use client";
+
+import EditPlatformModal from "@/components/dashboard/EditPlatformModal";
+import AddGameModal from "@/components/dashboard/AddGameModal";
+import AddToCollectionModal from "@/components/dashboard/AddToCollectionModal";
+import type { GameSearchResult, OwnedGame, PlatformType } from "@/lib/types";
+import type { LocalCollection } from "@/lib/storage";
+
+interface DashboardModalsProps {
+  // Edit Platform Modal (Optional)
+  editingPlatform?: PlatformType | null;
+  onCloseEditPlatform?: () => void;
+  platForm?: any;
+  setPlatForm?: (val: any) => void;
+  onSavePlatformModal?: () => void;
+
+  // Add Game Modal
+  isAddGameOpen: boolean;
+  onCloseAddGame: () => void;
+  selectedPlatformForAdd: PlatformType;
+  setSelectedPlatformForAdd: (p: PlatformType) => void;
+  addGameQuery: string;
+  handleSearchAddGame: (query: string) => void;
+  isSearchingAdd: boolean;
+  addGameResults: GameSearchResult[];
+  ownedGames: OwnedGame[];
+  handleAddGameToLibrary: (item: GameSearchResult) => void;
+  bulkImportText: string;
+  setBulkImportText: (t: string) => void;
+  handleBulkImport: () => void;
+  isBulkImporting: boolean;
+
+  // Add to Collection Modal
+  gameToAddToColl: OwnedGame | null;
+  collections: LocalCollection[];
+  onCloseAddToColl: () => void;
+  onAddToCollection: (collId: string, game: OwnedGame) => void;
+}
+
+export default function DashboardModals({
+  editingPlatform,
+  onCloseEditPlatform,
+  platForm,
+  setPlatForm,
+  onSavePlatformModal,
+  isAddGameOpen,
+  onCloseAddGame,
+  selectedPlatformForAdd,
+  setSelectedPlatformForAdd,
+  addGameQuery,
+  handleSearchAddGame,
+  isSearchingAdd,
+  addGameResults,
+  ownedGames,
+  handleAddGameToLibrary,
+  bulkImportText,
+  setBulkImportText,
+  handleBulkImport,
+  isBulkImporting,
+  gameToAddToColl,
+  collections,
+  onCloseAddToColl,
+  onAddToCollection,
+}: DashboardModalsProps) {
+  return (
+    <>
+      {editingPlatform !== undefined &&
+        onCloseEditPlatform &&
+        platForm &&
+        setPlatForm &&
+        onSavePlatformModal && (
+          <EditPlatformModal
+            editingPlatform={editingPlatform}
+            onClose={onCloseEditPlatform}
+            platForm={platForm}
+            setPlatForm={setPlatForm}
+            onSave={onSavePlatformModal}
+          />
+        )}
+
+      <AddGameModal
+        isOpen={isAddGameOpen}
+        onClose={onCloseAddGame}
+        selectedPlatformForAdd={selectedPlatformForAdd}
+        setSelectedPlatformForAdd={setSelectedPlatformForAdd}
+        addGameQuery={addGameQuery}
+        handleSearchAddGame={handleSearchAddGame}
+        isSearchingAdd={isSearchingAdd}
+        addGameResults={addGameResults}
+        ownedGames={ownedGames}
+        handleAddGameToLibrary={handleAddGameToLibrary}
+        bulkImportText={bulkImportText}
+        setBulkImportText={setBulkImportText}
+        handleBulkImport={handleBulkImport}
+        isBulkImporting={isBulkImporting}
+      />
+
+      <AddToCollectionModal
+        game={gameToAddToColl}
+        collections={collections}
+        onClose={onCloseAddToColl}
+        onAddToCollection={onAddToCollection}
+      />
+    </>
+  );
+}
