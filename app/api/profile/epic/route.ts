@@ -3,7 +3,11 @@ import type { OwnedGame, PlatformAccount } from "@/lib/types";
 
 import { getAuthenticatedUser } from "@/lib/auth";
 import { saveUserPlatformAccount, saveUserOwnedGames } from "@/lib/db";
-import { resolveEpicCodename } from "@/lib/epic-codenames";
+import {
+  resolveEpicCodename,
+  isUnsplashPlaceholder,
+  DEFAULT_EPIC_COVER,
+} from "@/lib/epic-codenames";
 
 const EPIC_CLIENT_ID = "34a02cf8f4414e29b15921876da36f9a";
 const EPIC_CLIENT_SECRET = "daafbccc737745039dffe53d94fc76cf";
@@ -362,7 +366,7 @@ export async function GET(request: Request) {
               meta.customAttributes
             ) ||
             item.headerImg ||
-            "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80";
+            DEFAULT_EPIC_COVER;
 
           const idNum = Math.abs(hashCode(catId || appName || gameTitle));
           const normKey = normalizeTitle(gameTitle);
@@ -371,7 +375,7 @@ export async function GET(request: Request) {
             const existing = discoveredGames.find(
               (g) => normalizeTitle(g.name) === normKey
             );
-            if (existing && coverUrl && existing.headerImg.includes("unsplash")) {
+            if (existing && coverUrl && isUnsplashPlaceholder(existing.headerImg)) {
               existing.headerImg = coverUrl;
             }
             continue;
@@ -567,7 +571,7 @@ export async function GET(request: Request) {
             if (ach) {
               g.totalAchievements = ach.totalAchievements;
               g.unlockedCount = ach.totalUnlocked;
-              if (ach.coverUrl && (!g.headerImg || g.headerImg.includes("unsplash"))) {
+              if (ach.coverUrl && (!g.headerImg || isUnsplashPlaceholder(g.headerImg))) {
                 g.headerImg = ach.coverUrl;
               }
             }
@@ -599,7 +603,7 @@ export async function GET(request: Request) {
                 name: gameName,
                 headerImg:
                   ach.coverUrl ||
-                  "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80",
+                  DEFAULT_EPIC_COVER,
                 platform: "epic",
                 totalAchievements: ach.totalAchievements,
                 unlockedCount: ach.totalUnlocked,
@@ -627,9 +631,10 @@ export async function GET(request: Request) {
               await Promise.all(
                 batch.map(async (game) => {
                   try {
-                    const cleanSearch = game.name
+                    const rawName = (game.name || "").slice(0, 300);
+                    const cleanSearch = rawName
                       .replace(/[®™©]/g, "")
-                      .replace(/(\(.*?\)|\[.*?\])/g, "")
+                      .replace(/\([^()]*\)|\[[^[\]]*\]/g, "")
                       .replace(/ - Definitive Edition/gi, "")
                       .replace(/ - Game of the Year Edition/gi, "")
                       .replace(/ - Standard Edition/gi, "")
@@ -702,7 +707,7 @@ export async function GET(request: Request) {
                     }
 
                     if (
-                      game.headerImg.includes("images.unsplash.com") &&
+                      isUnsplashPlaceholder(game.headerImg) &&
                       bestItem.tiny_image
                     ) {
                       game.headerImg = `https://cdn.akamai.steamstatic.com/steam/apps/${steamAppId}/header.jpg`;

@@ -43,6 +43,7 @@ import {
   normalizeGameTitle,
   LocalCollection,
 } from "@/lib/storage";
+import { isUnsplashPlaceholder } from "@/lib/epic-codenames";
 
 interface AccountDashboardProps {
   accountProfile: UserAccountProfile;
@@ -115,7 +116,7 @@ function replacePlatformInList(
         g.totalAchievements > 0 ? g.totalAchievements : prev.totalAchievements,
       unlockedCount: Math.max(g.unlockedCount || 0, prev.unlockedCount || 0),
       headerImg:
-        g.headerImg && !g.headerImg.includes("images.unsplash.com")
+        !isUnsplashPlaceholder(g.headerImg)
           ? g.headerImg
           : prev.headerImg || g.headerImg,
     };
@@ -443,7 +444,7 @@ export default function AccountDashboard({
               const details = await r.json();
               const resolvedTotal = details?.totalAchievements || 0;
               const resolvedHeader =
-                g.headerImg && !g.headerImg.includes("images.unsplash.com")
+                !isUnsplashPlaceholder(g.headerImg)
                   ? g.headerImg
                   : details?.headerImg || g.headerImg;
               if (resolvedTotal > 0 || resolvedHeader !== g.headerImg) {

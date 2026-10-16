@@ -30,6 +30,7 @@ import {
   clearLegacyLocalStorage,
   LocalCollection,
 } from "@/lib/storage";
+import { isUnsplashPlaceholder } from "@/lib/epic-codenames";
 import {
   Trophy,
   Loader2,
@@ -456,7 +457,7 @@ export default function Home() {
           appId: data.id,
           name: owned.name || data.name,
           headerImg:
-            owned.headerImg && !owned.headerImg.includes("images.unsplash.com")
+            !isUnsplashPlaceholder(owned.headerImg)
               ? owned.headerImg
               : data.headerImg || owned.headerImg,
           platform: activePlatform,

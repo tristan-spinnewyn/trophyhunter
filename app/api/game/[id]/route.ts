@@ -32,9 +32,11 @@ function isLikelyMissable(title: string, desc: string): boolean {
 
 // Clean game titles for better external search (e.g., removing "(TM)", "®", "Game of the Year", etc.)
 function cleanTitleForSearch(title: string): string {
-  return title
+  if (!title) return "";
+  const trimmed = title.slice(0, 300);
+  return trimmed
     .replace(/[®™©]/g, "")
-    .replace(/(\(.*?\)|\[.*?\])/g, "")
+    .replace(/\([^()]*\)|\[[^[\]]*\]/g, "")
     .replace(/ - Definitive Edition/gi, "")
     .replace(/ - Game of the Year Edition/gi, "")
     .replace(/ - Standard Edition/gi, "")
