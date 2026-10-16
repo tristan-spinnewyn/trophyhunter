@@ -10,6 +10,7 @@ const PREFIX = "trophyhunter_game_";
 const FAV_KEY = "trophyhunter_favorites";
 const RECENT_KEY = "trophyhunter_recent_games";
 const STEAM_USER_KEY = "trophyhunter_steam_user";
+const STEAM_API_KEY = "trophyhunter_steam_api_key";
 const ACCOUNT_KEY = "trophyhunter_user_account";
 const OWNED_GAMES_KEY = "trophyhunter_owned_games";
 
@@ -111,6 +112,20 @@ export function saveSteamUser(user: string): void {
     localStorage.removeItem(STEAM_USER_KEY);
   } else {
     localStorage.setItem(STEAM_USER_KEY, user.trim());
+  }
+}
+
+export function getSavedSteamApiKey(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem(STEAM_API_KEY) || "";
+}
+
+export function saveSteamApiKey(key: string): void {
+  if (typeof window === "undefined") return;
+  if (!key.trim()) {
+    localStorage.removeItem(STEAM_API_KEY);
+  } else {
+    localStorage.setItem(STEAM_API_KEY, key.trim());
   }
 }
 

@@ -94,4 +94,64 @@ describe('GET /api/sync', () => {
     const res = await GET(req);
     expect(res.status).toBe(404);
   });
+
+  it('syncs achievements from playerstats XML and GetGameAchievements schema (Battlefield 2042)', async () => {
+    const mockPlayerXml = `
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <playerstats>
+        <privacyState>public</privacyState>
+        <visibilityState>3</visibilityState>
+        <game>
+          <gameName><![CDATA[Battlefield™ 2042]]></gameName>
+        </game>
+        <achievements>
+          <achievement closed="1">
+            <apiname><![CDATA[achievement_goscc_1]]></apiname>
+            <name><![CDATA[Adapt and Overcome]]></name>
+          </achievement>
+          <achievement closed="0">
+            <apiname><![CDATA[achievement_goscc_2]]></apiname>
+            <name><![CDATA[Making Dunn Proud]]></name>
+          </achievement>
+        </achievements>
+      </playerstats>
+    `;
+
+    const mockSchemaJson = {
+      response: {
+        achievements: [
+          {
+            internal_name: 'Achievement_GOSCC_1',
+            localized_name: "S'adapter pour triompher",
+          },
+          {
+            internal_name: 'Achievement_GOSCC_2',
+            localized_name: 'Dunn serait fier',
+          },
+        ],
+      },
+    };
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => mockPlayerXml,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => JSON.stringify(mockSchemaJson),
+      } as any);
+
+    const req = new Request('http://localhost:3000/api/sync?user=76561198083390097&appId=1517290');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.gameName).toBe('Battlefield™ 2042');
+    expect(data.totalAchievements).toBe(2);
+    expect(data.count).toBe(1);
+    expect(data.unlockedTitles).toEqual(["S'adapter pour triompher"]);
+    expect(data.unlockedIds).toEqual(['ach_1_s_adapter_pour_triompher']);
+  });
 });

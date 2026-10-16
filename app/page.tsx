@@ -27,6 +27,7 @@ import {
   toggleFavoriteGame,
   getRecentGames,
   getSavedSteamUser,
+  getSavedSteamApiKey,
   getUserAccount,
   savePlatformAccount,
   getOwnedGames,
@@ -144,7 +145,9 @@ export default function Home() {
       savedSteam &&
       (!savedAccount.accounts.steam?.avatarUrl || savedOwned.length === 0)
     ) {
-      fetch(`/api/profile/steam?user=${encodeURIComponent(savedSteam)}`)
+      const savedKey = getSavedSteamApiKey();
+      const keyParam = savedKey ? `&key=${encodeURIComponent(savedKey)}` : "";
+      fetch(`/api/profile/steam?user=${encodeURIComponent(savedSteam)}${keyParam}`)
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (data?.success && data.account) {

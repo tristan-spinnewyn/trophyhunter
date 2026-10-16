@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   getSavedSteamUser,
   saveSteamUser,
+  getSavedSteamApiKey,
+  saveSteamApiKey,
   getUserAccount,
   saveUserAccount,
   savePlatformAccount,
@@ -46,6 +48,19 @@ describe('lib/storage', () => {
       expect(getSavedSteamUser()).toBe('temp');
       saveSteamUser('  ');
       expect(getSavedSteamUser()).toBe('76561198083390097');
+    });
+  });
+
+  describe('Steam API Key', () => {
+    it('returns empty string when no API key saved', () => {
+      expect(getSavedSteamApiKey()).toBe('');
+    });
+
+    it('saves, retrieves and removes API key', () => {
+      saveSteamApiKey('ABC123XYZ456');
+      expect(getSavedSteamApiKey()).toBe('ABC123XYZ456');
+      saveSteamApiKey('  ');
+      expect(getSavedSteamApiKey()).toBe('');
     });
   });
 

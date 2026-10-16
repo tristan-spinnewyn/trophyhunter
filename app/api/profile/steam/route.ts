@@ -30,6 +30,7 @@ function decodeHtmlEntities(str: string): string {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const rawUser = searchParams.get("user")?.trim();
+  const apiKey = searchParams.get("key")?.trim() || process.env.STEAM_API_KEY?.trim() || "";
 
   if (!rawUser) {
     return NextResponse.json(
@@ -337,6 +338,66 @@ export async function GET(request: Request) {
         /href="https:\/\/steamcommunity\.com\/app\/(\d+)"/g
       )) {
         upsertDiscovered(parseInt(m[1], 10), {});
+      }
+    }
+
+    // 4g. From Most Played Games in Profile XML
+    if (xml) {
+      const mostPlayedBlocks = xml.split(/<mostPlayedGame>/).slice(1);
+      for (const block of mostPlayedBlocks) {
+        const appMatch =
+          block.match(/<gameLink>.*?\/app\/(\d+)<\/gameLink>/) ||
+          block.match(/<statsName><!\[CDATA\[(\d+)\]\]><\/statsName>/);
+        const nameMatch = block.match(
+          /<gameName><!\[CDATA\[(.*?)\]\]><\/gameName>/
+        );
+        const hrsMatch = block.match(
+          /<hoursOnRecord>([\d,.]+)<\/hoursOnRecord>/
+        );
+        if (appMatch) {
+          const appId = parseInt(appMatch[1], 10);
+          const name = nameMatch ? decodeHtmlEntities(nameMatch[1]) : undefined;
+          const hrs = hrsMatch
+            ? parseFloat(hrsMatch[1].replace(",", "."))
+            : undefined;
+          upsertDiscovered(appId, { name, playtimeHours: hrs });
+        }
+      }
+    }
+
+    // 4h. From Steam Web API GetOwnedGames (if optional API key provided)
+    if (apiKey && steamId64) {
+      try {
+        const ownedRes = await fetch(
+          `https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${encodeURIComponent(
+            apiKey
+          )}&steamid=${encodeURIComponent(
+            steamId64
+          )}&include_appinfo=1&include_played_free_games=1`,
+          { next: { revalidate: 300 } }
+        );
+        if (ownedRes.ok) {
+          const ownedData = await ownedRes.json();
+          const gameList = ownedData?.response?.games;
+          if (Array.isArray(gameList)) {
+            gamesOwned = Math.max(
+              gamesOwned,
+              ownedData.response.game_count || gameList.length
+            );
+            for (const g of gameList) {
+              if (g.appid) {
+                upsertDiscovered(g.appid, {
+                  name: g.name,
+                  playtimeHours: g.playtime_forever
+                    ? Math.round((g.playtime_forever / 60) * 10) / 10
+                    : 0,
+                });
+              }
+            }
+          }
+        }
+      } catch {
+        // Continue gracefully if Steam API key request fails
       }
     }
 

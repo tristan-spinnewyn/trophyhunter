@@ -38,6 +38,8 @@ import {
   removeOwnedGame,
   getGameProgress,
   saveGameProgress,
+  getSavedSteamApiKey,
+  saveSteamApiKey,
 } from "@/lib/storage";
 
 interface AccountDashboardProps {
@@ -71,6 +73,8 @@ export default function AccountDashboard({
   const [steamInput, setSteamInput] = useState(
     steamAccount?.username || "76561198083390097"
   );
+  const [steamApiKey, setSteamApiKey] = useState(() => getSavedSteamApiKey());
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [isSyncingSteam, setIsSyncingSteam] = useState(false);
   const [syncProgressText, setSyncProgressText] = useState<string | null>(null);
   const [bannerMsg, setBannerMsg] = useState<{
@@ -173,18 +177,25 @@ export default function AccountDashboard({
     }
   };
 
-  // Full Steam Profile + Owned Games + Achievements Sync (Zero API Key)
+  // Full Steam Profile + Owned Games + Achievements Sync
   const handleConnectAndSyncSteam = async (targetUser?: string) => {
     const userToSync = (targetUser ?? steamInput).trim();
     if (!userToSync) return;
 
+    if (steamApiKey.trim()) {
+      saveSteamApiKey(steamApiKey.trim());
+    }
+
     setIsSyncingSteam(true);
     setBannerMsg(null);
-    setSyncProgressText("Connexion au profil public Steam...");
+    setSyncProgressText("Connexion au profil Steam...");
 
     try {
+      const keyParam = steamApiKey.trim()
+        ? `&key=${encodeURIComponent(steamApiKey.trim())}`
+        : "";
       const res = await fetch(
-        `/api/profile/steam?user=${encodeURIComponent(userToSync)}`
+        `/api/profile/steam?user=${encodeURIComponent(userToSync)}${keyParam}`
       );
       const data = await res.json();
 
@@ -784,14 +795,14 @@ export default function AccountDashboard({
           </div>
 
           {/* Steam ID Quick Connect & Full Sync Form */}
-          <div className="w-full md:w-auto md:min-w-[330px] rounded-2xl border border-slate-800/90 bg-slate-950/70 p-3.5 space-y-2.5">
+          <div className="w-full md:w-auto md:min-w-[340px] rounded-2xl border border-slate-800/90 bg-slate-950/70 p-3.5 space-y-2.5">
             <div className="flex items-center justify-between">
               <label className="text-[11px] font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5" />
-                Connexion Steam (Sans Clé API)
+                Connexion Steam
               </label>
               <span className="text-[10px] text-emerald-400 font-medium">
-                100% Gratuit & Direct
+                {steamApiKey ? "Clé API Active ✓" : "Sans Clé ou Avec Clé"}
               </span>
             </div>
 
@@ -819,13 +830,51 @@ export default function AccountDashboard({
               </button>
             </div>
 
+            {/* Optional API key toggle / input */}
+            <div className="pt-1.5 border-t border-slate-800/80">
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+                  className="text-[11px] font-semibold text-slate-300 hover:text-sky-300 flex items-center gap-1"
+                >
+                  <span>{showApiKeyInput ? "▼" : "▶"} Clé API Steam (Optionnelle)</span>
+                  {steamApiKey ? (
+                    <span className="text-[10px] text-emerald-400 font-bold">• Active</span>
+                  ) : null}
+                </button>
+                <a
+                  href="https://steamcommunity.com/dev/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-sky-400 hover:underline"
+                >
+                  Obtenir ma clé gratuite ↗
+                </a>
+              </div>
+              {(showApiKeyInput || steamApiKey) && (
+                <div className="mt-1.5 space-y-1">
+                  <input
+                    type="password"
+                    value={steamApiKey}
+                    onChange={(e) => setSteamApiKey(e.target.value)}
+                    placeholder="Collez votre clé API Steam pour tous vos jeux..."
+                    className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-sky-500 font-mono"
+                  />
+                  <p className="text-[10px] text-slate-400">
+                    Recommandé pour importer l&apos;intégralité de votre bibliothèque (&gt;200 jeux). Sans clé, seuls les jeux visibles publiquement (badges, vitrines) sont importés.
+                  </p>
+                </div>
+              )}
+            </div>
+
             {syncProgressText ? (
-              <div className="flex items-center gap-2 text-[11px] text-sky-300">
+              <div className="flex items-center gap-2 text-[11px] text-sky-300 pt-1">
                 <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
                 <span className="truncate">{syncProgressText}</span>
               </div>
             ) : (
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[10px] text-slate-400">
                 Récupère votre profil, vos statistiques officielles, vos jeux
                 possédés et coche vos succès débloqués.
               </p>
@@ -1125,6 +1174,40 @@ export default function AccountDashboard({
             </button>
           </div>
         </div>
+
+        {/* Informative banner if Steam profile has more games than discovered */}
+        {steamAccount && steamAccount.stats.gamesOwned > ownedGames.length && (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-sky-500/30 bg-sky-950/30 p-3.5 text-xs">
+            <div className="flex items-start gap-2.5">
+              <Sparkles className="h-4 w-4 text-sky-400 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <p className="font-semibold text-sky-200">
+                  Steam indique que vous possédez {steamAccount.stats.gamesOwned} jeux ({ownedGames.length} jeux publics synchronisés).
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  Valve restreint la liste complète des jeux possédés aux requêtes authentifiées. Pour importer l&apos;ensemble de vos {steamAccount.stats.gamesOwned} jeux d&apos;un coup, ajoutez votre clé API Steam gratuite ci-dessus ou collez-les via l&apos;import en masse.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => {
+                  setShowApiKeyInput(true);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="rounded-xl border border-sky-500/40 bg-sky-500/20 px-3 py-1.5 text-xs font-bold text-sky-300 hover:bg-sky-500/30 transition"
+              >
+                Ajouter clé API
+              </button>
+              <button
+                onClick={() => setIsAddGameOpen(true)}
+                className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700 transition"
+              >
+                Import en masse
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Library Filter Bar */}
         <div className="flex flex-col sm:flex-row gap-2">

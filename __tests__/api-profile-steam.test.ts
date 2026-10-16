@@ -146,4 +146,68 @@ describe('GET /api/profile/steam', () => {
     const data = await res.json();
     expect(data.error).toContain('introuvable');
   });
+
+  it('imports complete owned games list when Steam API key is provided', async () => {
+    const mockXml = `
+      <profile>
+        <steamID64>76561198083390097</steamID64>
+        <steamID><![CDATA[Shin [FR]]]></steamID>
+      </profile>
+    `;
+
+    const mockHtml = `
+      <div class="actual_persona_name">Shin [FR]</div>
+      <span class="count_link_label">Jeux</span>
+      <span class="profile_count_link_total">219</span>
+    `;
+
+    const mockOwnedGamesJson = {
+      response: {
+        game_count: 219,
+        games: [
+          {
+            appid: 1517290,
+            name: 'Battlefield™ 2042',
+            playtime_forever: 360,
+          },
+          {
+            appid: 1091500,
+            name: 'Cyberpunk 2077',
+            playtime_forever: 1200,
+          },
+        ],
+      },
+    };
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => mockXml,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => mockHtml,
+      } as any)
+      .mockResolvedValueOnce({ ok: false } as any) // badges
+      .mockResolvedValueOnce({ ok: false } as any) // recommended
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockOwnedGamesJson,
+      } as any); // GetOwnedGames
+
+    const req = new Request('http://localhost:3000/api/profile/steam?user=76561198083390097&key=MY_API_KEY_123');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.account.stats.gamesOwned).toBe(219);
+    expect(data.discoveredGames.length).toBe(2);
+    expect(data.discoveredGames[0].appId).toBe(1517290);
+    expect(data.discoveredGames[0].name).toBe('Battlefield™ 2042');
+    expect(data.discoveredGames[0].playtimeHours).toBe(6);
+    expect(data.discoveredGames[1].appId).toBe(1091500);
+    expect(data.discoveredGames[1].name).toBe('Cyberpunk 2077');
+    expect(data.discoveredGames[1].playtimeHours).toBe(20);
+  });
 });
