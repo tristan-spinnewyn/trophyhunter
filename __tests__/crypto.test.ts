@@ -80,5 +80,42 @@ describe("lib/crypto", () => {
       const key = getMasterEncryptionKey();
       expect(key.length).toBe(32);
     });
+
+    it("generates and saves key to file if no env var or file exists", () => {
+      delete process.env.APP_ENCRYPTION_KEY;
+      const primary = path.join(process.cwd(), "data", ".encryption_key");
+      const legacy = path.join(process.cwd(), ".data", ".encryption_key");
+      if (fs.existsSync(primary)) fs.unlinkSync(primary);
+      if (fs.existsSync(legacy)) fs.unlinkSync(legacy);
+
+      const key = getMasterEncryptionKey();
+      expect(key.length).toBe(32);
+      expect(fs.existsSync(primary)).toBe(true);
+    });
+
+    it("reads existing key from primary file", () => {
+      delete process.env.APP_ENCRYPTION_KEY;
+      const keyPath = path.join(process.cwd(), "data", ".encryption_key");
+      const fakeKey = crypto.randomBytes(32).toString("hex");
+      fs.writeFileSync(keyPath, fakeKey, "utf8");
+
+      const key = getMasterEncryptionKey();
+      expect(key.toString("hex")).toBe(fakeKey);
+    });
+
+    it("reads from legacy .data location if primary does not exist", () => {
+      delete process.env.APP_ENCRYPTION_KEY;
+      const primaryPath = path.join(process.cwd(), "data", ".encryption_key");
+      if (fs.existsSync(primaryPath)) fs.unlinkSync(primaryPath);
+
+      const legacyDir = path.join(process.cwd(), ".data");
+      if (!fs.existsSync(legacyDir)) fs.mkdirSync(legacyDir, { recursive: true });
+      const legacyPath = path.join(legacyDir, ".encryption_key");
+      const legacyKey = crypto.randomBytes(32).toString("hex");
+      fs.writeFileSync(legacyPath, legacyKey, "utf8");
+
+      const key = getMasterEncryptionKey();
+      expect(key.toString("hex")).toBe(legacyKey);
+    });
   });
 });
