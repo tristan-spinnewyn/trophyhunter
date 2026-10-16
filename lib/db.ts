@@ -1080,5 +1080,14 @@ export function syncFromLocalStorage(
         }
       }
     }
+
+    // 4. Sync Favorites
+    if (payload.favorites && Array.isArray(payload.favorites)) {
+      for (const appId of payload.favorites) {
+        db.prepare(
+          "UPDATE user_games SET is_favorite = 1 WHERE user_id = ? AND app_id = ?"
+        ).run(userId, Number(appId));
+      }
+    }
   });
 }

@@ -138,6 +138,8 @@ export interface DuplicateGameGroup {
 export interface DatabaseSyncPayload {
   profile?: UserAccountProfile;
   games?: OwnedGame[];
+  favorites?: number[];
+  recentAppIds?: number[];
   steamApiKey?: string;
   progress?: Record<string, UserGameProgress>;
 }
