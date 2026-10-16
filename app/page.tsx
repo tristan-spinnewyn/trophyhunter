@@ -320,8 +320,14 @@ export default function Home() {
     const currentProgress = getGameProgress(appId);
     setProgress(currentProgress);
 
+    const owned = ownedGames.find((g) => g.appId === appId);
+    const query = new URLSearchParams();
+    if (owned?.name) query.set("name", owned.name);
+    if (owned?.platform) query.set("platform", owned.platform);
+    const queryString = query.toString() ? `?${query.toString()}` : "";
+
     try {
-      const res = await fetch(`/api/game/${appId}`);
+      const res = await fetch(`/api/game/${appId}${queryString}`);
       if (!res.ok) {
         throw new Error("Impossible de récupérer les succès du jeu.");
       }
@@ -330,13 +336,13 @@ export default function Home() {
       setRecentIds(getRecentGames());
 
       // Update totalAchievements in ownedGames if this game is owned
-      if (ownedGames.some((g) => g.appId === appId)) {
+      if (owned) {
         const nextOwned = upsertOwnedGames([
           {
             appId: data.id,
             name: data.name,
-            headerImg: data.headerImg,
-            platform: "steam",
+            headerImg: data.headerImg || owned.headerImg,
+            platform: owned.platform || "steam",
             totalAchievements: data.totalAchievements,
             unlockedCount: currentProgress.unlockedIds.length,
             addedAt: new Date().toISOString(),

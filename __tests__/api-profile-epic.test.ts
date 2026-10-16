@@ -341,5 +341,134 @@ describe('GET /api/profile/epic', () => {
     expect(accounts.epic?.platform).toBe('epic');
     expect(accounts.epic?.username).toBe('EpicSoloPlayer');
   });
+
+  it('resolves internal Epic codenames and maps sandbox achievements from GraphQL', async () => {
+    const mockToken = {
+      access_token: 'token_codenames',
+      account_id: 'epic_account_codenames',
+      displayName: 'EpicExplorer',
+    };
+
+    const mockAssets = [
+      {
+        appName: 'Angelonia', // Watch Dogs 2
+        catalogItemId: 'cat_angelonia',
+        namespace: 'ns_watchdogs2',
+      },
+      {
+        appName: 'Barbet', // Dishonored: Death of the Outsider
+        catalogItemId: 'cat_barbet',
+        namespace: 'ns_dishonored',
+      },
+      {
+        appName: 'Catnip', // Control
+        catalogItemId: 'cat_catnip',
+        namespace: 'ns_control',
+      },
+      {
+        appName: 'aa', // Aven Colony
+        catalogItemId: 'cat_aa',
+        namespace: 'ns_aa',
+      },
+    ];
+
+    // GraphQL mock returning player achievements matching ns_watchdogs2 and ns_control
+    const mockGraphQL = {
+      data: {
+        PlayerAchievement: {
+          playerAchievementGameRecords: {
+            records: [
+              {
+                sandboxId: 'ns_watchdogs2',
+                totalUnlocked: 15,
+                achievementSets: [
+                  {
+                    achievementSetId: 'set_wd2',
+                    isBase: true,
+                    totalUnlocked: 15,
+                    totalXP: 500,
+                  },
+                ],
+                playerAchievements: [
+                  { playerAchievement: { achievementName: 'ach1', unlocked: true } },
+                  { playerAchievement: { achievementName: 'ach2', unlocked: true } },
+                  { playerAchievement: { achievementName: 'ach3', unlocked: false } },
+                ],
+              },
+              {
+                sandboxId: 'ns_control',
+                totalUnlocked: 30,
+                achievementSets: [
+                  {
+                    achievementSetId: 'set_control',
+                    isBase: true,
+                    totalUnlocked: 30,
+                    totalXP: 1000,
+                  },
+                ],
+                playerAchievements: new Array(30).fill(null).map((_, i) => ({
+                  playerAchievement: { achievementName: `ach_${i}`, unlocked: true },
+                })),
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockToken,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ records: [] }), // library-service empty, triggers fallback
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockAssets, // assets returned
+      } as any)
+      .mockResolvedValueOnce({
+        ok: false, // catalog query fails, falling back to codenames dictionary
+      } as any)
+      .mockResolvedValueOnce({
+        ok: false,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: false,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: false,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockGraphQL, // GraphQL achievements returned
+      } as any);
+
+    const req = new Request('http://localhost:3000/api/profile/epic?code=codenames-code');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.discoveredGames).toHaveLength(4);
+
+    const wd2 = data.discoveredGames.find((g: any) => g.name === 'Watch Dogs 2');
+    expect(wd2).toBeDefined();
+    expect(wd2.totalAchievements).toBe(3);
+    expect(wd2.unlockedCount).toBe(15);
+
+    const dishonored = data.discoveredGames.find((g: any) => g.name === 'Dishonored: Death of the Outsider');
+    expect(dishonored).toBeDefined();
+
+    const control = data.discoveredGames.find((g: any) => g.name === 'Control');
+    expect(control).toBeDefined();
+    expect(control.totalAchievements).toBe(30);
+    expect(control.unlockedCount).toBe(30);
+
+    const aven = data.discoveredGames.find((g: any) => g.name === 'Aven Colony');
+    expect(aven).toBeDefined();
+  });
 });
 

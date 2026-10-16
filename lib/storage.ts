@@ -5,6 +5,7 @@ import type {
   PlatformType,
   OwnedGame,
 } from "./types";
+import { resolveEpicCodename } from "./epic-codenames";
 
 const PREFIX = "trophyhunter_game_";
 const FAV_KEY = "trophyhunter_favorites";
@@ -226,16 +227,30 @@ export function getOwnedGames(): OwnedGame[] {
     const raw = localStorage.getItem(OWNED_GAMES_KEY);
     if (!raw) return [];
     const list: OwnedGame[] = JSON.parse(raw);
-    // Keep unlockedCount synchronized with local progress if local progress has more recent data
-    return list.map((g) => {
+    let mutated = false;
+    // Keep unlockedCount synchronized with local progress and auto-resolve any Epic codenames
+    const resolvedList = list.map((g) => {
       const prog = getGameProgress(g.appId);
       const localUnlocked = prog.unlockedIds.length;
+      let name = g.name;
+      if (g.platform === "epic") {
+        const resolved = resolveEpicCodename(g.name);
+        if (resolved && resolved !== g.name) {
+          name = resolved;
+          mutated = true;
+        }
+      }
       return {
         ...g,
+        name,
         unlockedCount: localUnlocked > 0 ? localUnlocked : g.unlockedCount,
         lastPlayed: prog.lastPlayed || g.lastPlayed,
       };
     });
+    if (mutated) {
+      saveOwnedGames(resolvedList);
+    }
+    return resolvedList;
   } catch {
     return [];
   }

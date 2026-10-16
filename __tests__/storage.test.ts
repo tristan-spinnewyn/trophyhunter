@@ -379,6 +379,39 @@ describe('lib/storage', () => {
       saveLocalCollections(coll);
       expect(getLocalCollections()).toEqual(coll);
     });
+
+    it('automatically resolves Epic codenames in getOwnedGames and persists the update', () => {
+      const rawGames = [
+        {
+          appId: 1001,
+          name: "Angelonia",
+          headerImg: "https://example.com/cover.jpg",
+          platform: "epic",
+          totalAchievements: 10,
+          unlockedCount: 2,
+          addedAt: new Date().toISOString(),
+        },
+        {
+          appId: 1002,
+          name: "Catnip",
+          headerImg: "https://example.com/cover2.jpg",
+          platform: "epic",
+          totalAchievements: 25,
+          unlockedCount: 5,
+          addedAt: new Date().toISOString(),
+        },
+      ];
+      saveOwnedGames(rawGames as any);
+
+      const resolved = getOwnedGames();
+      expect(resolved[0].name).toBe("Watch Dogs 2");
+      expect(resolved[1].name).toBe("Control");
+
+      // Verify that persistence updated the stored value
+      const rawAfter = JSON.parse(localStorage.getItem("trophyhunter_owned_games") || "[]");
+      expect(rawAfter[0].name).toBe("Watch Dogs 2");
+      expect(rawAfter[1].name).toBe("Control");
+    });
   });
 });
 

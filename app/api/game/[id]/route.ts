@@ -101,10 +101,76 @@ export async function GET(
       })
       .catch(() => null);
 
-    const [storeData, achResult] = await Promise.all([storePromise, achPromise]);
+    const { searchParams } = new URL(request.url);
+    const nameParam = searchParams.get("name")?.trim();
 
-    const gameInfo = storeData?.[appId]?.data;
-    const gameName = gameInfo?.name || `Jeu Steam (#${appId})`;
+    const [storeData, initialAchResult] = await Promise.all([storePromise, achPromise]);
+    let achResult = initialAchResult;
+    let gameInfo = storeData?.[appId]?.data;
+    let effectiveAppId = appId;
+
+    // If game was not found directly by appId (e.g. non-Steam appId from Epic, GOG, or Xbox),
+    // search Steam by name to resolve its French achievement checklist!
+    if (!gameInfo && nameParam) {
+      try {
+        const cleanSearchName = cleanTitleForSearch(nameParam);
+        const searchRes = await fetch(
+          `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(
+            cleanSearchName
+          )}&l=french&cc=fr`,
+          {
+            headers: { "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8" },
+          }
+        );
+        if (searchRes.ok) {
+          const searchData = await searchRes.json();
+          const firstMatch = searchData?.items?.[0];
+          if (firstMatch?.id) {
+            effectiveAppId = String(firstMatch.id);
+            const [matchedStoreRes, matchedAchRes] = await Promise.all([
+              fetch(
+                `https://store.steampowered.com/api/appdetails?appids=${effectiveAppId}&l=french&cc=fr`,
+                {
+                  headers: { "Accept-Language": "fr-FR,fr;q=0.9" },
+                  next: { revalidate: 3600 },
+                }
+              ).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+              fetch(
+                `https://api.steampowered.com/IPlayerService/GetGameAchievements/v1/?appid=${effectiveAppId}&language=french`,
+                {
+                  headers: {
+                    Cookie: "Steam_Language=french; mature_content=1; birthtime=568022401; lastagecheckage=1-January-1990",
+                    "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
+                    "User-Agent":
+                      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                  },
+                  next: { revalidate: 600 },
+                }
+              ).then(async (r) => {
+                if (!r.ok) return null;
+                const text = await r.text();
+                try {
+                  const json = JSON.parse(text);
+                  if (Array.isArray(json?.response?.achievements)) {
+                    return { type: "schema" as const, list: json.response.achievements };
+                  }
+                } catch {}
+                return { type: "html" as const, html: text };
+              }).catch(() => null),
+            ]);
+
+            if (matchedStoreRes?.[effectiveAppId]?.data) {
+              gameInfo = matchedStoreRes[effectiveAppId].data;
+              achResult = matchedAchRes;
+            }
+          }
+        }
+      } catch (searchErr) {
+        console.warn("Failed to search Steam fallback:", searchErr);
+      }
+    }
+
+    const gameName = gameInfo?.name || nameParam || `Jeu (#${appId})`;
     const headerImg =
       gameInfo?.header_image ||
       `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/header.jpg`;
@@ -188,7 +254,9 @@ export async function GET(
       totalAchievements: achievements.length,
       achievements,
       guideLinks: {
-        steamGuidesUrl: `https://steamcommunity.com/app/${appId}/guides/?requiredtags[]=Achievements`,
+        steamGuidesUrl: effectiveAppId
+          ? `https://steamcommunity.com/app/${effectiveAppId}/guides/?requiredtags[]=Achievements`
+          : "",
         psthcUrl: `https://www.psthc.fr/recherche.html?q=${encodeURIComponent(cleanName)}`,
         youtubeUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanName + " succes trophée fr")}`,
       },
