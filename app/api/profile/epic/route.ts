@@ -7,6 +7,10 @@ const EPIC_BASIC_AUTH = Buffer.from(
   `${EPIC_CLIENT_ID}:${EPIC_CLIENT_SECRET}`
 ).toString("base64");
 
+function isJunkHex(str: string): boolean {
+  return /^[0-9a-f]{20,}$/i.test(str.trim());
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const rawUser = searchParams.get("user")?.trim();
@@ -61,43 +65,264 @@ export async function GET(request: Request) {
       const displayName = tokenData.displayName || rawUser || "Joueur Epic";
 
       const discoveredGames: OwnedGame[] = [];
-      const totalAchievements = 0;
-      const completedGames = 0;
+      let totalAchievements = 0;
+      let completedGames = 0;
 
-      // Fetch user's owned games from Epic Launcher assets endpoint
       if (accessToken && accountId) {
+        // Step 1: Query official Epic Library service for user's real game inventory
         try {
-          const assetsRes = await fetch(
-            `https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/public/assets/Windows?label=Live`,
+          const libraryRes = await fetch(
+            "https://library-service.live.use1a.on.epicgames.com/library/api/public/items?includeMetadata=true",
             {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
+                "User-Agent":
+                  "EpicGamesLauncher/11.0.1.-28318625+++Portal+Release-Live Windows/10.0.19041.1.256.64bit",
               },
             }
           );
 
-          if (assetsRes.ok) {
-            const assets = await assetsRes.json();
-            if (Array.isArray(assets)) {
-              for (const asset of assets) {
-                if (!asset.appName || asset.appName.startsWith("UE_")) continue;
-                const idNum = Math.abs(hashCode(asset.appName));
-                discoveredGames.push({
-                  appId: idNum,
-                  name: asset.appName.replace(/([A-Z])/g, " $1").trim(),
-                  headerImg: `https://cdn1.epicgames.com/item/${asset.catalogItemId}/header.jpg`,
-                  platform: "epic",
-                  totalAchievements: 0,
-                  unlockedCount: 0,
-                  addedAt: nowIso,
-                  source: "manual",
-                });
+          if (libraryRes.ok) {
+            const libData = await libraryRes.json();
+            const records: any[] = Array.isArray(libData)
+              ? libData
+              : Array.isArray(libData?.records)
+              ? libData.records
+              : [];
+
+            for (const item of records) {
+              const appName = item.appName || "";
+              const meta = item.metadata || {};
+
+              // Skip Unreal Engine items, prerequisites, tools, and background services
+              if (
+                appName.startsWith("UE_") ||
+                appName.includes("Prerequisites") ||
+                item.recordType === "OTHERS" ||
+                meta.mainGameItem === false
+              ) {
+                continue;
               }
+
+              // Extract real commercial title
+              let gameTitle =
+                meta.title ||
+                meta.itemName ||
+                item.title ||
+                item.name ||
+                "";
+
+              if (!gameTitle && appName && !isJunkHex(appName)) {
+                gameTitle = appName.replace(/([A-Z])/g, " $1").trim();
+              }
+
+              // Skip raw hex hashes with no resolved name
+              if (!gameTitle || isJunkHex(gameTitle)) {
+                continue;
+              }
+
+              // Extract best cover image from keyImages
+              let coverUrl = "";
+              if (Array.isArray(meta.keyImages)) {
+                const preferred = [
+                  "DieselStoreFrontWide",
+                  "OfferImageWide",
+                  "Thumbnail",
+                  "DieselStoreFrontTall",
+                  "VaultClosed",
+                ];
+                for (const pType of preferred) {
+                  const found = meta.keyImages.find(
+                    (img: any) => img.type === pType && img.url
+                  );
+                  if (found) {
+                    coverUrl = found.url;
+                    break;
+                  }
+                }
+                if (!coverUrl && meta.keyImages.length > 0 && meta.keyImages[0].url) {
+                  coverUrl = meta.keyImages[0].url;
+                }
+              }
+
+              if (!coverUrl) {
+                coverUrl =
+                  item.headerImg ||
+                  "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80";
+              }
+
+              const idNum = Math.abs(
+                hashCode(item.catalogItemId || appName || gameTitle)
+              );
+
+              discoveredGames.push({
+                appId: idNum,
+                name: gameTitle,
+                headerImg: coverUrl,
+                platform: "epic",
+                totalAchievements: 0,
+                unlockedCount: 0,
+                addedAt: nowIso,
+                source: "manual",
+              });
             }
           }
         } catch {
-          // Graceful fallback if asset inventory endpoint fails
+          // Fallback if library service fails
         }
+
+        // Step 2: Fallback to launcher assets if library service returned nothing
+        if (discoveredGames.length === 0) {
+          try {
+            const assetsRes = await fetch(
+              "https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/public/assets/Windows?label=Live",
+              {
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                },
+              }
+            );
+
+            if (assetsRes.ok) {
+              const assets = await assetsRes.json();
+              if (Array.isArray(assets)) {
+                // Collect namespaces for hex-named items to resolve commercial title
+                const namespaceMap = new Map<string, string[]>();
+                for (const a of assets) {
+                  if (!a.appName || a.appName.startsWith("UE_") || a.appName.includes("Prerequisites")) continue;
+                  if (a.namespace && a.catalogItemId && isJunkHex(a.appName)) {
+                    const list = namespaceMap.get(a.namespace) || [];
+                    if (list.length < 50 && !list.includes(a.catalogItemId)) {
+                      list.push(a.catalogItemId);
+                      namespaceMap.set(a.namespace, list);
+                    }
+                  }
+                }
+
+                const catalogTitles = new Map<string, { title: string; image: string }>();
+                const nsEntries = Array.from(namespaceMap.entries()).slice(0, 5);
+                await Promise.all(
+                  nsEntries.map(async ([ns, ids]) => {
+                    try {
+                      const queryIds = ids.map((id) => `id=${encodeURIComponent(id)}`).join("&");
+                      const cRes = await fetch(
+                        `https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/namespace/${ns}/bulk/items?${queryIds}&locale=fr-FR`,
+                        {
+                          headers: { Authorization: `Bearer ${accessToken}` },
+                        }
+                      );
+                      if (cRes.ok) {
+                        const cData = await cRes.json();
+                        const items = Array.isArray(cData) ? cData : Object.values(cData);
+                        for (const it of items as any[]) {
+                          if (it?.id && it?.title) {
+                            let imgUrl = "";
+                            if (Array.isArray(it.keyImages)) {
+                              const found = it.keyImages.find(
+                                (im: any) =>
+                                  (im.type === "DieselStoreFrontWide" ||
+                                    im.type === "OfferImageWide" ||
+                                    im.type === "Thumbnail") &&
+                                  im.url
+                              );
+                              imgUrl = found?.url || it.keyImages[0]?.url || "";
+                            }
+                            catalogTitles.set(it.id, { title: it.title, image: imgUrl });
+                          }
+                        }
+                      }
+                    } catch {}
+                  })
+                );
+
+                for (const asset of assets) {
+                  if (!asset.appName || asset.appName.startsWith("UE_") || asset.appName.includes("Prerequisites")) continue;
+
+                  let cleanName = "";
+                  let cover = "";
+
+                  if (asset.catalogItemId && catalogTitles.has(asset.catalogItemId)) {
+                    const resolved = catalogTitles.get(asset.catalogItemId)!;
+                    cleanName = resolved.title;
+                    cover = resolved.image;
+                  }
+
+                  if (!cleanName) {
+                    if (isJunkHex(asset.appName)) {
+                      continue; // Skip headless build hashes that cannot be resolved
+                    }
+                    cleanName = asset.appName.replace(/([A-Z])/g, " $1").trim();
+                  }
+
+                  const idNum = Math.abs(hashCode(asset.appName));
+                  discoveredGames.push({
+                    appId: idNum,
+                    name: cleanName,
+                    headerImg:
+                      cover ||
+                      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80",
+                    platform: "epic",
+                    totalAchievements: 0,
+                    unlockedCount: 0,
+                    addedAt: nowIso,
+                    source: "manual",
+                  });
+                }
+              }
+            }
+          } catch {}
+        }
+
+        // Step 3: Fetch player achievement records via Epic GraphQL
+        try {
+          const gqlRes = await fetch("https://graphql.epicgames.com/graphql", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+              query: `query PlayerGameAchievementProgress($epicAccountId: String!) {
+                PlayerAchievement {
+                  playerAchievementGameRecords(epicAccountId: $epicAccountId, includeAchievements: false) {
+                    records {
+                      sandboxId
+                      totalUnlocked
+                      achievementSets {
+                        isBase
+                        totalUnlocked
+                        totalXP
+                      }
+                    }
+                  }
+                }
+              }`,
+              variables: { epicAccountId: accountId },
+            }),
+          });
+
+          if (gqlRes?.ok) {
+            const gqlData = await gqlRes.json();
+            const achRecords =
+              gqlData?.data?.PlayerAchievement?.playerAchievementGameRecords?.records;
+
+            if (Array.isArray(achRecords) && achRecords.length > 0) {
+              for (const achRec of achRecords) {
+                const unlocked = achRec.totalUnlocked || 0;
+                totalAchievements += unlocked;
+
+                const sets = achRec.achievementSets || [];
+                const totalInSets = sets.reduce(
+                  (acc: number, s: any) => acc + (s.totalUnlocked || 0),
+                  0
+                );
+                if (unlocked > 0 && totalInSets > 0 && unlocked >= totalInSets) {
+                  completedGames += 1;
+                }
+              }
+            }
+          }
+        } catch {}
       }
 
       const account: PlatformAccount = {
