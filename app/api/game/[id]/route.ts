@@ -39,6 +39,17 @@ function cleanTitleForSearch(title: string): string {
     .trim();
 }
 
+// Safely sanitize HTML tags iteratively to prevent incomplete multi-character sanitization
+function stripHtmlTags(input: string): string {
+  let prev = input;
+  let curr = input;
+  do {
+    prev = curr;
+    curr = curr.replace(/<[^>]*>/g, "");
+  } while (curr !== prev);
+  return curr.trim();
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -142,8 +153,8 @@ export async function GET(
         const descMatch = block.match(/<h5[^>]*>(.*?)<\/h5>/);
         const percentMatch = block.match(/<div class="achievePercent">([^<]+)<\/div>/);
 
-        const title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, "").trim() : `Succès #${i}`;
-        const rawDesc = descMatch ? descMatch[1].replace(/<[^>]+>/g, "").trim() : "";
+        const title = titleMatch ? stripHtmlTags(titleMatch[1]) : `Succès #${i}`;
+        const rawDesc = descMatch ? stripHtmlTags(descMatch[1]) : "";
         const percentStr = percentMatch ? percentMatch[1].replace("%", "").trim() : "0";
         const percent = parseFloat(percentStr) || 0;
         const icon = imgMatch ? imgMatch[1] : "";

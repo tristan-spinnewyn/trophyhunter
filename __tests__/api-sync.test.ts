@@ -6,7 +6,7 @@ describe('GET /api/sync', () => {
     vi.restoreAllMocks();
   });
 
-  it('returns 400 when user or appId is missing', async () => {
+  it('returns 400 when user or appId is missing or invalid', async () => {
     const req1 = new Request('http://localhost:3000/api/sync?appId=367520');
     const res1 = await GET(req1);
     expect(res1.status).toBe(400);
@@ -14,6 +14,14 @@ describe('GET /api/sync', () => {
     const req2 = new Request('http://localhost:3000/api/sync?user=shin');
     const res2 = await GET(req2);
     expect(res2.status).toBe(400);
+
+    const req3 = new Request('http://localhost:3000/api/sync?user=shin&appId=invalid_app_id');
+    const res3 = await GET(req3);
+    expect(res3.status).toBe(400);
+
+    const req4 = new Request('http://localhost:3000/api/sync?user=invalid$%^user&appId=367520');
+    const res4 = await GET(req4);
+    expect(res4.status).toBe(400);
   });
 
   it('detects private profile and returns 403', async () => {
