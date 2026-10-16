@@ -58,6 +58,7 @@ export default function GameClientPage({ id }: { id: string }) {
     handleSync,
     isEpicAuthModalOpen,
     setIsEpicAuthModalOpen,
+    openEpicAuthModal,
     epicAuthModalError,
     handleEpicAuthSubmit,
     handleToggleAchievement,
@@ -131,6 +132,7 @@ export default function GameClientPage({ id }: { id: string }) {
                 : !!steamUser
             }
             hasSteamUser={!!steamUser}
+            onOpenEpicModal={openEpicAuthModal}
           />
 
           <GameSyncNotice notice={syncNotice} />

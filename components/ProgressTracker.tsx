@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Trophy, CheckCircle2, RotateCcw, Award, Flame, RefreshCw } from "lucide-react";
+import { Trophy, CheckCircle2, RotateCcw, Award, Flame, RefreshCw, KeyRound } from "lucide-react";
 import confetti from "canvas-confetti";
 
 interface ProgressTrackerProps {
@@ -13,6 +13,7 @@ interface ProgressTrackerProps {
   hasSteamUser?: boolean;
   platform?: "steam" | "epic" | "xbox" | "gog";
   platformConnected?: boolean;
+  onOpenEpicModal?: () => void;
 }
 
 export default function ProgressTracker({
@@ -24,6 +25,7 @@ export default function ProgressTracker({
   hasSteamUser = false,
   platform = "steam",
   platformConnected,
+  onOpenEpicModal,
 }: ProgressTrackerProps) {
   const percent = total > 0 ? Math.round((unlockedCount / total) * 100) : 0;
   const isComplete = total > 0 && unlockedCount === total;
@@ -143,6 +145,18 @@ export default function ProgressTracker({
               </button>
             );
           })()}
+
+          {platform === "epic" && onOpenEpicModal && (
+            <button
+              type="button"
+              onClick={onOpenEpicModal}
+              title="Saisir ou renouveler votre code d'autorisation Epic Games (authorizationToken)"
+              className="flex items-center gap-1.5 rounded-xl border border-purple-500/40 bg-purple-500/10 px-2.5 py-1.5 text-xs font-medium text-purple-300 hover:bg-purple-500/20 transition"
+            >
+              <KeyRound className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Code Epic</span>
+            </button>
+          )}
 
           {unlockedCount > 0 && (
             <button

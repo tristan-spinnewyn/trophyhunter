@@ -1,5 +1,6 @@
 export async function fetchEpicLibraryItems(
-  accessToken: string
+  accessToken: string,
+  accountId?: string
 ): Promise<any[]> {
   const rawItems: any[] = [];
 
@@ -100,6 +101,37 @@ export async function fetchEpicLibraryItems(
         const assetsData = await assetsRes.json();
         if (Array.isArray(assetsData)) {
           rawItems.push(...assetsData);
+        }
+      }
+    } catch {}
+  }
+
+  // 3. Fallback to Epic Entitlements API if available and items are empty
+  if (rawItems.length === 0 && accountId) {
+    try {
+      const entRes = await fetch(
+        `https://entitlement-public-service-prod08.ol.epicgames.com/entitlement/api/account/${accountId}/entitlements?start=0&count=5000`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "User-Agent":
+              "UELauncher/11.0.1-14907503+++Portal+Release-Live Windows/10.0.19041.1.256.64bit",
+          },
+        }
+      );
+      if (entRes.ok) {
+        const entData = await entRes.json();
+        const list = Array.isArray(entData) ? entData : [];
+        for (const ent of list) {
+          if (ent.entitlementName && ent.namespace) {
+            rawItems.push({
+              appName: ent.entitlementName,
+              catalogItemId: ent.catalogItemId,
+              catalogNamespace: ent.namespace,
+              namespace: ent.namespace,
+              title: ent.entitlementName,
+            });
+          }
         }
       }
     } catch {}

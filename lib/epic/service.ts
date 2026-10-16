@@ -21,7 +21,12 @@ import { fetchEpicLibraryItems } from "./library";
 import { batchResolveCatalogTitlesAndImages } from "./catalog";
 import { fetchEpicAchievementsGraphQL } from "./achievements";
 import { enrichEpicGamesWithSteamMetadata } from "./enrichment";
-import { parseEpicAuthInput } from "./credentials";
+import {
+  parseEpicAuthInput,
+  loadStoredEpicCredentials,
+  storeEpicCredentials,
+  refreshEpicAccessToken,
+} from "./credentials";
 import { epicAchievementId } from "./game-achievements";
 
 export async function syncEpicProfileWithOAuth(
@@ -58,7 +63,53 @@ export async function syncEpicProfileWithOAuth(
     } catch {}
   }
 
+  // If no direct access token and no code was passed, try using stored credentials in SQLite
+  if (!accessToken && !cleanCode && authUser) {
+    const stored = loadStoredEpicCredentials(authUser.id);
+    if (stored?.accessToken) {
+      try {
+        const verifyRes = await fetch(
+          "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/verify",
+          {
+            headers: { Authorization: `Bearer ${stored.accessToken}` },
+          }
+        );
+        if (verifyRes.ok) {
+          const verifyData = await verifyRes.json();
+          accessToken = stored.accessToken;
+          accountId = verifyData.account_id || stored.accountId;
+          refreshToken = stored.refreshToken || "";
+          displayName = verifyData.display_name || displayName;
+        }
+      } catch {}
+    }
+    // If accessToken expired, attempt refresh
+    if (!accessToken && stored?.refreshToken) {
+      const refreshed = await refreshEpicAccessToken(stored.refreshToken);
+      if (refreshed?.accessToken) {
+        accessToken = refreshed.accessToken;
+        accountId = refreshed.accountId || stored.accountId;
+        refreshToken = refreshed.refreshToken || stored.refreshToken;
+        storeEpicCredentials(authUser.id, {
+          accessToken,
+          refreshToken,
+          accountId,
+          displayName,
+        });
+      }
+    }
+  }
+
   if (!accessToken) {
+    if (!cleanCode) {
+      return {
+        success: false,
+        status: 401,
+        error:
+          "Code d'autorisation Epic Games expiré ou invalide (authorizationToken). Rendez-vous sur https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code pour obtenir un nouveau code.",
+      };
+    }
+
     const tokenRes = await fetch(
       "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token",
       {
@@ -99,7 +150,7 @@ export async function syncEpicProfileWithOAuth(
   let completedGames = 0;
 
   if (accessToken && accountId) {
-    const rawItems = await fetchEpicLibraryItems(accessToken);
+    const rawItems = await fetchEpicLibraryItems(accessToken, accountId);
 
     // Build namespace map for catalog queries
     const namespaceMap = new Map<string, string[]>();
@@ -305,7 +356,7 @@ export async function syncEpicProfileWithOAuth(
 
       if (!alreadyInGames && (ach.totalAchievements > 0 || ach.totalUnlocked > 0)) {
         const syntheticId = Math.abs(hashCode(`epic_ach_${sId}`));
-        const resolvedTitle =
+        let resolvedTitle =
           ach.gameTitle ||
           sId
             .replace(/^ns_?/, "")
@@ -313,19 +364,21 @@ export async function syncEpicProfileWithOAuth(
             .replace(/([a-z])([A-Z])/g, "$1 $2")
             .trim();
 
-        if (resolvedTitle && !isJunkHex(resolvedTitle)) {
-          gameNamespaceMap.set(syntheticId, sId);
-          discoveredGames.push({
-            appId: syntheticId,
-            name: resolvedTitle,
-            headerImg: ach.coverUrl || DEFAULT_EPIC_COVER,
-            platform: "epic",
-            totalAchievements: ach.totalAchievements,
-            unlockedCount: ach.totalUnlocked,
-            addedAt: nowIso,
-            source: "manual",
-          });
+        if (!resolvedTitle || isJunkHex(resolvedTitle)) {
+          resolvedTitle = resolveEpicCodename(sId) || `Jeu Epic (${sId.slice(0, 8).toUpperCase()})`;
         }
+
+        gameNamespaceMap.set(syntheticId, sId);
+        discoveredGames.push({
+          appId: syntheticId,
+          name: resolvedTitle,
+          headerImg: ach.coverUrl || DEFAULT_EPIC_COVER,
+          platform: "epic",
+          totalAchievements: ach.totalAchievements,
+          unlockedCount: ach.totalUnlocked,
+          addedAt: nowIso,
+          source: "manual",
+        });
       }
     }
 

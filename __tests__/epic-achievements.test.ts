@@ -421,4 +421,200 @@ describe("Epic Achievements & Credentials", () => {
       expect(achs![0].name).toBe("Premier Trophée");
     });
   });
+
+  describe("lib/epic/library entitlements fallback", () => {
+    it("falls back to entitlements API when library items and assets are empty", async () => {
+      const { fetchEpicLibraryItems } = await import("@/lib/epic/library");
+
+      // 1. library-service fails
+      // 2. assets fails
+      // 3. entitlements succeeds
+      vi.spyOn(global, "fetch")
+        .mockResolvedValueOnce({ ok: false, status: 404 } as any)
+        .mockResolvedValueOnce({ ok: false, status: 404 } as any)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              entitlementName: "AlanWake2",
+              catalogItemId: "cat_aw2",
+              namespace: "b30adba602494921b77cbff2f0a82ac0",
+            },
+          ],
+        } as any);
+
+      const items = await fetchEpicLibraryItems("fake_token", "acc_123");
+      expect(items).toHaveLength(1);
+      expect(items[0].appName).toBe("AlanWake2");
+      expect(items[0].namespace).toBe("b30adba602494921b77cbff2f0a82ac0");
+    });
+  });
+
+  describe("lib/epic/service with stored credentials and hex sandbox resolution", () => {
+    it("syncs with stored credentials when no code is provided and token is valid", async () => {
+      const { syncEpicProfileWithOAuth } = await import("@/lib/epic/service");
+      const user = createUser("epic_stored_user", "pass123");
+      storeEpicCredentials(user.id, {
+        accessToken: "stored_access_valid",
+        refreshToken: "stored_refresh_val",
+        accountId: "stored_acc_123",
+      });
+
+      // 1. /verify succeeds
+      // 2. library-service returns 1 game
+      // 3. GraphQL achievements query
+      vi.spyOn(global, "fetch")
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ account_id: "stored_acc_123", display_name: "StoredPro" }),
+        } as any)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            records: [
+              {
+                appName: "Hades",
+                title: "Hades",
+                namespace: "ns_hades",
+                catalogItemId: "cat_hades",
+              },
+            ],
+          }),
+        } as any)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              PlayerAchievement: {
+                playerAchievementGameRecords: { records: [] },
+              },
+            },
+          }),
+        } as any);
+
+      const res = await syncEpicProfileWithOAuth("", undefined, user);
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.discoveredGames).toHaveLength(1);
+        expect(res.discoveredGames[0].name).toBe("Hades");
+      }
+    });
+
+    it("syncs with stored credentials refreshing token when access token is expired", async () => {
+      const { syncEpicProfileWithOAuth } = await import("@/lib/epic/service");
+      const user = createUser("epic_refresh_user", "pass123");
+      storeEpicCredentials(user.id, {
+        accessToken: "expired_access",
+        refreshToken: "valid_refresh_code",
+        accountId: "acc_refresh_123",
+      });
+
+      // 1. /verify fails (expired)
+      // 2. refresh token call succeeds
+      // 3. library-service returns game
+      // 4. GraphQL achievements query
+      vi.spyOn(global, "fetch")
+        .mockResolvedValueOnce({ ok: false, status: 401 } as any)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            access_token: "new_refreshed_access",
+            refresh_token: "new_refresh_tok",
+            account_id: "acc_refresh_123",
+          }),
+        } as any)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            records: [
+              {
+                appName: "Celeste",
+                title: "Celeste",
+                namespace: "ns_celeste",
+                catalogItemId: "cat_celeste",
+              },
+            ],
+          }),
+        } as any)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              PlayerAchievement: {
+                playerAchievementGameRecords: { records: [] },
+              },
+            },
+          }),
+        } as any);
+
+      const res = await syncEpicProfileWithOAuth("", undefined, user);
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.discoveredGames).toHaveLength(1);
+        expect(res.discoveredGames[0].name).toBe("Celeste");
+      }
+    });
+
+    it("resolves hex sandbox title gracefully from achievements records", async () => {
+      const { syncEpicProfileWithOAuth } = await import("@/lib/epic/service");
+      const user = createUser("epic_hex_user", "pass123");
+
+      // Direct eg1~ token:
+      // 1. /verify succeeds
+      // 2. library-service returns empty
+      // 3. assets returns empty
+      // 4. entitlements returns empty
+      // 5. GraphQL achievements returns a hex sandbox game with unlocked trophies
+      vi.spyOn(global, "fetch")
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ account_id: "acc_hex", display_name: "HexGamer" }),
+        } as any)
+        .mockResolvedValueOnce({ ok: true, json: async () => [] } as any)
+        .mockResolvedValueOnce({ ok: false, status: 404 } as any)
+        .mockResolvedValueOnce({ ok: false, status: 404 } as any)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              PlayerAchievement: {
+                playerAchievementGameRecords: {
+                  records: [
+                    {
+                      sandboxId: "b30adba602494921b77cbff2f0a82ac0",
+                      totalUnlocked: 3,
+                      playerAchievements: [
+                        { playerAchievement: { achievementName: "ACH_1", unlocked: true } },
+                      ],
+                    },
+                  ],
+                },
+              },
+              PlayerProfile: {
+                playerProfile: {
+                  achievementsSummaries: {
+                    data: [
+                      {
+                        sandboxId: "b30adba602494921b77cbff2f0a82ac0",
+                        totalUnlocked: 3,
+                        product: { name: "Alan Wake 2" },
+                        productAchievements: { totalAchievements: 10 },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          }),
+        } as any);
+
+      const res = await syncEpicProfileWithOAuth("eg1~direct_valid", undefined, user);
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.discoveredGames.length).toBeGreaterThan(0);
+        expect(res.discoveredGames[0].name).toBe("Alan Wake 2");
+        expect(res.discoveredGames[0].unlockedCount).toBe(3);
+      }
+    });
+  });
 });

@@ -124,11 +124,9 @@ export function useGameSyncAction({
   const executeEpicSync = async (userToken?: string) => {
     if (!game) return;
     const epicAccount = accountProfile.accounts.epic;
-    if (!epicAccount) {
-      setSyncNotice({
-        type: "error",
-        msg: "Veuillez lier votre compte Epic Games dans l'onglet Comptes.",
-      });
+    if (!epicAccount && !userToken) {
+      setEpicAuthModalError(null);
+      setIsEpicAuthModalOpen(true);
       return;
     }
 
@@ -139,10 +137,13 @@ export function useGameSyncAction({
       const tokenParam = userToken
         ? `&authorizationToken=${encodeURIComponent(userToken.trim())}`
         : "";
+      const userParam = epicAccount?.username
+        ? `&user=${encodeURIComponent(epicAccount.username)}`
+        : "";
       const res = await fetch(
         `/api/sync?platform=epic&appId=${game.id}&name=${encodeURIComponent(
           game.name
-        )}&user=${encodeURIComponent(epicAccount.username || "")}${tokenParam}`
+        )}${userParam}${tokenParam}`
       );
       const data = await res.json();
 
@@ -170,6 +171,11 @@ export function useGameSyncAction({
     } finally {
       setIsSyncing(false);
     }
+  };
+
+  const openEpicAuthModal = () => {
+    setEpicAuthModalError(null);
+    setIsEpicAuthModalOpen(true);
   };
 
   const handleEpicAuthSubmit = async (token: string) => {
@@ -264,6 +270,7 @@ export function useGameSyncAction({
     handleSync,
     isEpicAuthModalOpen,
     setIsEpicAuthModalOpen,
+    openEpicAuthModal,
     epicAuthModalError,
     handleEpicAuthSubmit,
   };

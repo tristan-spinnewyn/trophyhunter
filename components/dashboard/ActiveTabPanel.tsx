@@ -78,6 +78,7 @@ interface ActiveTabPanelProps {
   handleConnectAndSyncEpic: () => Promise<void>;
   handleScanEpicAchievements: () => Promise<void>;
   handleCleanEpicGames: () => Promise<void>;
+  onOpenEpicModal?: () => void;
 
   // GOG
   gogInput: string;
@@ -142,6 +143,7 @@ export default function ActiveTabPanel({
   handleConnectAndSyncEpic,
   handleScanEpicAchievements,
   handleCleanEpicGames,
+  onOpenEpicModal,
   gogInput,
   setGogInput,
   gogToken,
@@ -226,6 +228,7 @@ export default function ActiveTabPanel({
           openEditPlatform={openEditPlatform}
           handleDisconnectPlatform={handleDisconnectPlatform}
           onBackToAll={() => onSelectTab("all")}
+          onOpenEpicModal={onOpenEpicModal}
         />
       );
 

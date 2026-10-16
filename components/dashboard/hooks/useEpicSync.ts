@@ -23,6 +23,7 @@ interface UseEpicSyncProps {
     games: OwnedGame[],
     replacePlatform?: "epic"
   ) => Promise<void>;
+  onRequireToken?: () => void;
 }
 
 export function useEpicSync({
@@ -36,6 +37,7 @@ export function useEpicSync({
   updateAccountProfileInMemory,
   persistAccountToSQLite,
   persistGamesToSQLite,
+  onRequireToken,
 }: UseEpicSyncProps) {
   const [isSyncingEpic, setIsSyncingEpic] = useState(false);
   const hasAutoEnrichedEpicRef = useRef(false);
@@ -130,12 +132,20 @@ export function useEpicSync({
     }
   }, [ownedGames]);
 
-  const handleConnectAndSyncEpic = async (overrideUser?: string | unknown) => {
+  const handleConnectAndSyncEpic = async (
+    overrideUser?: string | unknown,
+    codeOverride?: string
+  ) => {
     const rawTarget = typeof overrideUser === "string" ? overrideUser : epicInput;
     const targetUser = (rawTarget || "").trim();
-    const cleanCode = parseEpicAuthInput(epicCode);
+    const cleanCode = parseEpicAuthInput(codeOverride || epicCode);
 
-    if (!targetUser && !cleanCode) return;
+    if (!targetUser && !cleanCode) {
+      if (onRequireToken) {
+        onRequireToken();
+      }
+      return;
+    }
     setIsSyncingEpic(true);
     setBannerMsg(null);
     setSyncProgressText("Importation de la bibliothèque Epic Games...");
@@ -152,6 +162,10 @@ export function useEpicSync({
       const res = await fetch(`/api/profile/epic?${query}`);
       const data = await res.json();
       if (!res.ok || !data.success) {
+        if (data?.requiresToken && onRequireToken) {
+          onRequireToken();
+          return;
+        }
         throw new Error(
           data.error || "Impossible de synchroniser avec Epic Games."
         );
