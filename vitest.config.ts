@@ -3,7 +3,8 @@ import path from 'path';
 
 export default defineConfig({
   test: {
-    environment: 'jsdom',
+    environment: 'node',
+    setupFiles: ['./__tests__/helpers/localStorage.ts'],
     globals: true,
     server: {
       deps: {
