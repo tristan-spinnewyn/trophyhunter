@@ -3,6 +3,7 @@ import type { OwnedGame, PlatformAccount } from "@/lib/types";
 
 import { getAuthenticatedUser } from "@/lib/auth";
 import { saveUserPlatformAccount, saveUserOwnedGames } from "@/lib/db";
+import { resolveEpicCodename } from "@/lib/epic-codenames";
 
 const EPIC_CLIENT_ID = "34a02cf8f4414e29b15921876da36f9a";
 const EPIC_CLIENT_SECRET = "daafbccc737745039dffe53d94fc76cf";
@@ -73,6 +74,7 @@ export async function GET(request: Request) {
       const displayName = tokenData.displayName || rawUser || "Joueur Epic";
 
       const discoveredGames: OwnedGame[] = [];
+      const gameNamespaceMap = new Map<number, string>();
       let totalAchievements = 0;
       let completedGames = 0;
 
@@ -85,7 +87,7 @@ export async function GET(request: Request) {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
                 "User-Agent":
-                  "EpicGamesLauncher/11.0.1.-28318625+++Portal+Release-Live Windows/10.0.19041.1.256.64bit",
+                  "UELauncher/11.0.1-14907503+++Portal+Release-Live Windows/10.0.19041.1.256.64bit",
               },
             }
           );
@@ -106,7 +108,6 @@ export async function GET(request: Request) {
               if (
                 appName.startsWith("UE_") ||
                 appName.includes("Prerequisites") ||
-                item.recordType === "OTHERS" ||
                 meta.mainGameItem === false
               ) {
                 continue;
@@ -118,6 +119,7 @@ export async function GET(request: Request) {
                 meta.itemName ||
                 item.title ||
                 item.name ||
+                resolveEpicCodename(appName) ||
                 "";
 
               if (!gameTitle && appName && !isJunkHex(appName)) {
@@ -137,6 +139,8 @@ export async function GET(request: Request) {
                   "OfferImageWide",
                   "Thumbnail",
                   "DieselStoreFrontTall",
+                  "DieselGameBox",
+                  "DieselGameBoxTall",
                   "VaultClosed",
                 ];
                 for (const pType of preferred) {
@@ -163,6 +167,11 @@ export async function GET(request: Request) {
                 hashCode(item.catalogItemId || appName || gameTitle)
               );
 
+              const ns = item.namespace || meta.namespace || item.sandboxId || "";
+              if (ns) {
+                gameNamespaceMap.set(idNum, ns);
+              }
+
               discoveredGames.push({
                 appId: idNum,
                 name: gameTitle,
@@ -187,6 +196,8 @@ export async function GET(request: Request) {
               {
                 headers: {
                   Authorization: `Bearer ${accessToken}`,
+                  "User-Agent":
+                    "UELauncher/11.0.1-14907503+++Portal+Release-Live Windows/10.0.19041.1.256.64bit",
                 },
               }
             );
@@ -194,13 +205,13 @@ export async function GET(request: Request) {
             if (assetsRes.ok) {
               const assets = await assetsRes.json();
               if (Array.isArray(assets)) {
-                // Collect namespaces for hex-named items to resolve commercial title
+                // Collect namespaces and catalogItemIds to resolve commercial titles and covers
                 const namespaceMap = new Map<string, string[]>();
                 for (const a of assets) {
                   if (!a.appName || a.appName.startsWith("UE_") || a.appName.includes("Prerequisites")) continue;
-                  if (a.namespace && a.catalogItemId && isJunkHex(a.appName)) {
+                  if (a.namespace && a.catalogItemId) {
                     const list = namespaceMap.get(a.namespace) || [];
-                    if (list.length < 50 && !list.includes(a.catalogItemId)) {
+                    if (!list.includes(a.catalogItemId)) {
                       list.push(a.catalogItemId);
                       namespaceMap.set(a.namespace, list);
                     }
@@ -208,40 +219,65 @@ export async function GET(request: Request) {
                 }
 
                 const catalogTitles = new Map<string, { title: string; image: string }>();
-                const nsEntries = Array.from(namespaceMap.entries()).slice(0, 5);
-                await Promise.all(
-                  nsEntries.map(async ([ns, ids]) => {
-                    try {
-                      const queryIds = ids.map((id) => `id=${encodeURIComponent(id)}`).join("&");
-                      const cRes = await fetch(
-                        `https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/namespace/${ns}/bulk/items?${queryIds}&locale=fr-FR`,
-                        {
-                          headers: { Authorization: `Bearer ${accessToken}` },
-                        }
-                      );
-                      if (cRes.ok) {
-                        const cData = await cRes.json();
-                        const items = Array.isArray(cData) ? cData : Object.values(cData);
-                        for (const it of items as any[]) {
-                          if (it?.id && it?.title) {
-                            let imgUrl = "";
-                            if (Array.isArray(it.keyImages)) {
-                              const found = it.keyImages.find(
-                                (im: any) =>
-                                  (im.type === "DieselStoreFrontWide" ||
-                                    im.type === "OfferImageWide" ||
-                                    im.type === "Thumbnail") &&
-                                  im.url
-                              );
-                              imgUrl = found?.url || it.keyImages[0]?.url || "";
+                const nsEntries = Array.from(namespaceMap.entries());
+
+                // Query in parallel batches of 8 namespaces
+                const BATCH_SIZE = 8;
+                for (let i = 0; i < nsEntries.length; i += BATCH_SIZE) {
+                  const chunk = nsEntries.slice(i, i + BATCH_SIZE);
+                  await Promise.all(
+                    chunk.map(async ([ns, ids]) => {
+                      try {
+                        const queryIds = ids.map((id) => `id=${encodeURIComponent(id)}`).join("&");
+                        const cRes = await fetch(
+                          `https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/namespace/${ns}/bulk/items?${queryIds}&includeDLCDetails=true&includeMainGameDetails=true&country=FR&locale=fr-FR`,
+                          {
+                            headers: {
+                              Authorization: `Bearer ${accessToken}`,
+                              "User-Agent":
+                                "EpicGamesLauncher/14.0.8-22004686+++Portal+Release-Live",
+                            },
+                          }
+                        );
+                        if (cRes.ok) {
+                          const cData = await cRes.json();
+                          const items = Array.isArray(cData) ? cData : Object.values(cData);
+                          for (const it of items as any[]) {
+                            const itId = it?.id;
+                            const itTitle = it?.title || it?.name;
+                            if (itId && itTitle) {
+                              let imgUrl = "";
+                              if (Array.isArray(it.keyImages)) {
+                                const preferred = [
+                                  "DieselStoreFrontWide",
+                                  "OfferImageWide",
+                                  "Thumbnail",
+                                  "DieselStoreFrontTall",
+                                  "DieselGameBox",
+                                  "DieselGameBoxTall",
+                                  "VaultClosed",
+                                ];
+                                for (const pType of preferred) {
+                                  const found = it.keyImages.find(
+                                    (im: any) => im.type === pType && im.url
+                                  );
+                                  if (found) {
+                                    imgUrl = found.url;
+                                    break;
+                                  }
+                                }
+                                if (!imgUrl && it.keyImages[0]?.url) {
+                                  imgUrl = it.keyImages[0].url;
+                                }
+                              }
+                              catalogTitles.set(itId, { title: itTitle, image: imgUrl });
                             }
-                            catalogTitles.set(it.id, { title: it.title, image: imgUrl });
                           }
                         }
-                      }
-                    } catch {}
-                  })
-                );
+                      } catch {}
+                    })
+                  );
+                }
 
                 for (const asset of assets) {
                   if (!asset.appName || asset.appName.startsWith("UE_") || asset.appName.includes("Prerequisites")) continue;
@@ -249,12 +285,22 @@ export async function GET(request: Request) {
                   let cleanName = "";
                   let cover = "";
 
+                  // 1. Check catalog lookup
                   if (asset.catalogItemId && catalogTitles.has(asset.catalogItemId)) {
                     const resolved = catalogTitles.get(asset.catalogItemId)!;
                     cleanName = resolved.title;
                     cover = resolved.image;
                   }
 
+                  // 2. Check static known Epic codenames dictionary
+                  if (!cleanName || isJunkHex(cleanName)) {
+                    const codenameMatch = resolveEpicCodename(asset.appName);
+                    if (codenameMatch) {
+                      cleanName = codenameMatch;
+                    }
+                  }
+
+                  // 3. Fallback to formatted appName if not raw junk hex
                   if (!cleanName) {
                     if (isJunkHex(asset.appName)) {
                       continue; // Skip headless build hashes that cannot be resolved
@@ -262,7 +308,15 @@ export async function GET(request: Request) {
                     cleanName = asset.appName.replace(/([A-Z])/g, " $1").trim();
                   }
 
-                  const idNum = Math.abs(hashCode(asset.appName));
+                  if (isJunkHex(cleanName)) {
+                    continue;
+                  }
+
+                  const idNum = Math.abs(hashCode(asset.catalogItemId || asset.appName || cleanName));
+                  if (asset.namespace) {
+                    gameNamespaceMap.set(idNum, asset.namespace);
+                  }
+
                   discoveredGames.push({
                     appId: idNum,
                     name: cleanName,
@@ -288,18 +342,28 @@ export async function GET(request: Request) {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${accessToken}`,
+              "User-Agent": "EpicGamesLauncher/14.0.8-22004686+++Portal+Release-Live",
             },
             body: JSON.stringify({
               query: `query PlayerGameAchievementProgress($epicAccountId: String!) {
                 PlayerAchievement {
-                  playerAchievementGameRecords(epicAccountId: $epicAccountId, includeAchievements: false) {
+                  playerAchievementGameRecords(epicAccountId: $epicAccountId, includeAchievements: true) {
                     records {
                       sandboxId
                       totalUnlocked
+                      totalXP
                       achievementSets {
+                        achievementSetId
                         isBase
                         totalUnlocked
                         totalXP
+                      }
+                      playerAchievements {
+                        playerAchievement {
+                          achievementName
+                          unlocked
+                          XP
+                        }
                       }
                     }
                   }
@@ -315,17 +379,48 @@ export async function GET(request: Request) {
               gqlData?.data?.PlayerAchievement?.playerAchievementGameRecords?.records;
 
             if (Array.isArray(achRecords) && achRecords.length > 0) {
+              const achBySandbox = new Map<string, { total: number; unlocked: number }>();
+
               for (const achRec of achRecords) {
                 const unlocked = achRec.totalUnlocked || 0;
                 totalAchievements += unlocked;
 
-                const sets = achRec.achievementSets || [];
-                const totalInSets = sets.reduce(
-                  (acc: number, s: any) => acc + (s.totalUnlocked || 0),
-                  0
-                );
-                if (unlocked > 0 && totalInSets > 0 && unlocked >= totalInSets) {
+                const playerAchs = Array.isArray(achRec.playerAchievements)
+                  ? achRec.playerAchievements
+                  : [];
+                const sets = Array.isArray(achRec.achievementSets) ? achRec.achievementSets : [];
+
+                let totalInGame = playerAchs.length;
+                if (totalInGame === 0) {
+                  totalInGame = Math.max(
+                    unlocked,
+                    sets.reduce(
+                      (acc: number, s: any) =>
+                        acc + (s.totalAchievements || s.totalUnlocked || 0),
+                      0
+                    )
+                  );
+                }
+
+                if (achRec.sandboxId) {
+                  achBySandbox.set(achRec.sandboxId.toLowerCase(), {
+                    total: totalInGame,
+                    unlocked: unlocked,
+                  });
+                }
+
+                if (unlocked > 0 && totalInGame > 0 && unlocked >= totalInGame) {
                   completedGames += 1;
+                }
+              }
+
+              // Update discoveredGames with their real achievement counts
+              for (const g of discoveredGames) {
+                const ns = gameNamespaceMap.get(g.appId)?.toLowerCase();
+                if (ns && achBySandbox.has(ns)) {
+                  const ach = achBySandbox.get(ns)!;
+                  g.totalAchievements = ach.total;
+                  g.unlockedCount = ach.unlocked;
                 }
               }
             }

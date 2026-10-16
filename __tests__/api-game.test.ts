@@ -131,4 +131,80 @@ describe('GET /api/game/[id]', () => {
     expect(data.achievements[1].hidden).toBe(true);
     expect(data.achievements[1].desc).toBe('Succès secret (Masqué par le jeu)');
   });
+
+  it('searches Steam by name and resolves achievements when appId is not on Steam directly', async () => {
+    // 1. Initial direct lookup on Steam fails
+    const mockEmptyStore = {};
+
+    // 2. Search by name returns Celeste on Steam (appId 504230)
+    const mockSearchResults = {
+      items: [
+        {
+          id: 504230,
+          name: 'Celeste',
+        },
+      ],
+    };
+
+    // 3. Secondary store lookup for matched appId 504230
+    const mockSecondaryStore = {
+      '504230': {
+        data: {
+          name: 'Celeste',
+          header_image: 'https://cdn.example.com/celeste_header.jpg',
+          short_description: 'Help Madeline survive her inner demons.',
+          developers: ['Extremely OK Games'],
+          publishers: ['Extremely OK Games'],
+        },
+      },
+    };
+
+    const mockSchemaJson = {
+      response: {
+        achievements: [
+          {
+            internal_name: 'CH1_COMPLETE',
+            localized_name: 'Cité abandonnée',
+            localized_desc: 'Terminer le Chapitre 1.',
+            icon: 'icon_ch1.jpg',
+            hidden: false,
+            player_percent_unlocked: '80.0',
+          },
+        ],
+      },
+    };
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockEmptyStore,
+      } as any) // direct store lookup -> empty
+      .mockResolvedValueOnce({
+        ok: false,
+      } as any) // direct ach lookup -> fails
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockSearchResults,
+      } as any) // storesearch -> matched Celeste 504230
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockSecondaryStore,
+      } as any) // secondary store details
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => JSON.stringify(mockSchemaJson),
+      } as any); // secondary achievements
+
+    const req = new Request('http://localhost:3000/api/game/99999999?name=Celeste&platform=epic');
+    const params = Promise.resolve({ id: '99999999' });
+    const res = await GET(req, { params });
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.id).toBe(99999999);
+    expect(data.name).toBe('Celeste');
+    expect(data.totalAchievements).toBe(1);
+    expect(data.achievements[0].name).toBe('Cité abandonnée');
+    expect(data.guideLinks.steamGuidesUrl).toContain('/app/504230/guides');
+  });
 });
