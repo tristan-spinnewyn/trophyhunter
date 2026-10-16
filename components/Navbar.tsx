@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Trophy,
   Search,
@@ -15,20 +17,7 @@ import {
   LogOut,
 } from "lucide-react";
 import type { GameSearchResult, UserAccountProfile, User as UserType } from "@/lib/types";
-
-interface NavbarProps {
-  onSelectGame: (appId: number) => void;
-  onOpenSettings: () => void;
-  favorites: number[];
-  activeView: "game" | "account";
-  onChangeView: (view: "game" | "account") => void;
-  accountProfile?: UserAccountProfile;
-  ownedCount?: number;
-  currentUser?: UserType | null;
-  onOpenAuth?: () => void;
-  onLogout?: () => void;
-}
-
+import { useUserData } from "@/context/UserDataContext";
 
 // Popular games for achievement hunters as quick launch suggestions
 const POPULAR_GAMES: GameSearchResult[] = [
@@ -74,17 +63,21 @@ const POPULAR_GAMES: GameSearchResult[] = [
   },
 ];
 
-export default function Navbar({
-  onSelectGame,
-  onOpenSettings,
-  activeView,
-  onChangeView,
-  accountProfile,
-  ownedCount = 0,
-  currentUser,
-  onOpenAuth,
-  onLogout,
-}: NavbarProps) {
+interface NavbarProps {
+  onSelectGame?: (appId: number) => void;
+}
+
+export default function Navbar({ onSelectGame }: NavbarProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const {
+    accountProfile,
+    ownedGames,
+    currentUser,
+    handleLogout,
+    setIsAuthOpen,
+    setIsSettingsOpen,
+  } = useUserData();
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GameSearchResult[]>([]);
@@ -123,10 +116,7 @@ export default function Navbar({
   // Click outside to close
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (
-        searchRef.current &&
-        !searchRef.current.contains(e.target as Node)
-      ) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
     }
@@ -134,15 +124,27 @@ export default function Navbar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handlePickGame = (appId: number) => {
+    setIsOpen(false);
+    setQuery("");
+    if (onSelectGame) {
+      onSelectGame(appId);
+    }
+    router.push(`/game/${appId}`);
+  };
+
+  const isLibraryActive = pathname === "/";
+  const isAccountActive = pathname === "/account";
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/85 backdrop-blur-md">
       <div className="mx-auto flex max-w-4xl items-center justify-between gap-2.5 px-4 py-3">
         {/* Brand */}
-        <div
+        <Link
+          href="/"
           onClick={() => {
             setQuery("");
             setIsOpen(false);
-            onChangeView("game");
           }}
           className="flex cursor-pointer items-center gap-2 select-none shrink-0"
         >
@@ -160,10 +162,48 @@ export default function Navbar({
               Chasseur de Succès Multi-Plateforme
             </p>
           </div>
+        </Link>
+
+        {/* Navigation tabs */}
+        <div className="hidden md:flex items-center gap-1">
+          <Link
+            href="/"
+            className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+              isLibraryActive
+                ? "bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20"
+                : "text-slate-400 hover:text-white hover:bg-slate-900"
+            }`}
+          >
+            <Gamepad2 className="h-4 w-4" />
+            <span>Bibliothèque</span>
+            {ownedGames.length > 0 && (
+              <span
+                className={`rounded-md px-1.5 py-0.2 text-[10px] ${
+                  isLibraryActive
+                    ? "bg-slate-950/20 text-slate-950 font-black"
+                    : "bg-slate-800 text-slate-400"
+                }`}
+              >
+                {ownedGames.length}
+              </span>
+            )}
+          </Link>
+
+          <Link
+            href="/account"
+            className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+              isAccountActive
+                ? "bg-purple-600 text-white shadow-md shadow-purple-600/20"
+                : "text-slate-400 hover:text-white hover:bg-slate-900"
+            }`}
+          >
+            <User className="h-4 w-4" />
+            <span>Comptes & Plateformes</span>
+          </Link>
         </div>
 
         {/* Search input container */}
-        <div ref={searchRef} className="relative flex-1 max-w-md">
+        <div ref={searchRef} className="relative flex-1 max-w-xs sm:max-w-md">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
@@ -174,7 +214,7 @@ export default function Navbar({
                 setIsOpen(true);
               }}
               onFocus={() => setIsOpen(true)}
-              placeholder="Chercher un jeu (ex: Cyberpunk, Elden Ring...)"
+              placeholder="Chercher un jeu (ex: Cyberpunk...)"
               className="w-full rounded-xl border border-slate-700/80 bg-slate-900/90 py-2 pl-9 pr-8 text-xs sm:text-sm text-white placeholder-slate-500 shadow-inner outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
             />
             {query && (
@@ -192,7 +232,7 @@ export default function Navbar({
 
           {/* Autocomplete dropdown */}
           {isOpen && (
-            <div className="absolute left-0 right-0 top-full mt-2 max-h-[75vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900/95 p-2 shadow-2xl backdrop-blur-xl">
+            <div className="absolute left-0 right-0 top-full mt-2 max-h-[75vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900/95 p-2 shadow-2xl backdrop-blur-xl z-50">
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2 py-6 text-sm text-slate-400">
                   <Loader2 className="h-4 w-4 animate-spin text-sky-400" />
@@ -206,12 +246,7 @@ export default function Navbar({
                   {results.map((game) => (
                     <button
                       key={game.id}
-                      onClick={() => {
-                        onSelectGame(game.id);
-                        onChangeView("game");
-                        setIsOpen(false);
-                        setQuery("");
-                      }}
+                      onClick={() => handlePickGame(game.id)}
                       className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-slate-800"
                     >
                       <img
@@ -247,12 +282,7 @@ export default function Navbar({
                     {POPULAR_GAMES.map((game) => (
                       <button
                         key={game.id}
-                        onClick={() => {
-                          onSelectGame(game.id);
-                          onChangeView("game");
-                          setIsOpen(false);
-                          setQuery("");
-                        }}
+                        onClick={() => handlePickGame(game.id)}
                         className="flex items-center gap-2.5 rounded-xl p-2 text-left transition hover:bg-slate-800"
                       >
                         <img
@@ -272,72 +302,54 @@ export default function Navbar({
           )}
         </div>
 
-        {/* Right Actions: Account/Library Button & Settings */}
+        {/* Right Actions: Account Link, Auth & Settings */}
         <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            onClick={() =>
-              onChangeView(activeView === "account" ? "game" : "account")
-            }
-            className={`flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs font-semibold transition ${
-              activeView === "account"
-                ? "border-sky-500 bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20"
+          <Link
+            href="/account"
+            className={`flex md:hidden items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-semibold transition ${
+              isAccountActive
+                ? "border-purple-500 bg-purple-500 text-white shadow-md shadow-purple-500/20"
                 : "border-slate-700/80 bg-slate-900 text-slate-200 hover:border-sky-500/50 hover:text-white"
             }`}
-            title="Mon Compte, Plateformes & Jeux Possédés"
+            title="Mon Compte & Plateformes"
           >
             {steamAcc?.avatarUrl ? (
               <img
                 src={steamAcc.avatarUrl}
                 alt={steamAcc.displayName}
-                className="h-5 w-5 rounded-full object-cover"
+                className="h-4 w-4 rounded-full object-cover"
               />
             ) : (
-              <User className="h-4 w-4 text-sky-400" />
+              <User className="h-4 w-4 text-purple-400" />
             )}
-            <span className="hidden md:inline max-w-[110px] truncate">
-              {steamAcc?.displayName || "Mon Compte"}
+          </Link>
+
+          <button
+            onClick={() => setIsAuthOpen(true)}
+            title={
+              currentUser
+                ? `Connecté en tant que @${currentUser.username} (Base SQLite)`
+                : "Connexion / Inscription SQLite (Sécurisé)"
+            }
+            className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-semibold transition ${
+              currentUser
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
+                : "border-slate-800 bg-slate-900 text-slate-300 hover:border-sky-500/50 hover:text-white"
+            }`}
+          >
+            {currentUser ? (
+              <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
+            ) : (
+              <Database className="h-4 w-4 text-sky-400 shrink-0" />
+            )}
+            <span className="hidden sm:inline max-w-[90px] truncate">
+              {currentUser ? `@${currentUser.username}` : "Connexion"}
             </span>
-            {ownedCount > 0 && (
-              <span
-                className={`rounded-md px-1.5 py-0.2 text-[10px] font-bold ${
-                  activeView === "account"
-                    ? "bg-slate-950/20 text-slate-950"
-                    : "bg-sky-500/20 text-sky-300"
-                }`}
-              >
-                {ownedCount}
-              </span>
-            )}
           </button>
 
-          {onOpenAuth && (
+          {currentUser && (
             <button
-              onClick={onOpenAuth}
-              title={
-                currentUser
-                  ? `Connecté en tant que @${currentUser.username} (Base SQLite)`
-                  : "Connexion / Inscription SQLite (Sécurisé)"
-              }
-              className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-semibold transition ${
-                currentUser
-                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
-                  : "border-slate-800 bg-slate-900 text-slate-300 hover:border-sky-500/50 hover:text-white"
-              }`}
-            >
-              {currentUser ? (
-                <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
-              ) : (
-                <Database className="h-4 w-4 text-sky-400 shrink-0" />
-              )}
-              <span className="hidden sm:inline max-w-[90px] truncate">
-                {currentUser ? `@${currentUser.username}` : "Connexion"}
-              </span>
-            </button>
-          )}
-
-          {currentUser && onLogout && (
-            <button
-              onClick={onLogout}
+              onClick={handleLogout}
               title="Se déconnecter"
               className="flex items-center gap-1 rounded-xl border border-rose-500/30 bg-rose-500/10 px-2 py-1.5 text-xs font-semibold text-rose-300 hover:bg-rose-500/20 transition"
             >
@@ -347,13 +359,12 @@ export default function Navbar({
           )}
 
           <button
-            onClick={onOpenSettings}
+            onClick={() => setIsSettingsOpen(true)}
             title="Paramètres & Sauvegarde"
             className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-slate-400 transition hover:bg-slate-800 hover:text-white"
           >
             <Settings className="h-4 w-4" />
           </button>
-
         </div>
       </div>
     </header>
