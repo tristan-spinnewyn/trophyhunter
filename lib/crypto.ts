@@ -2,12 +2,13 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
-const KEY_FILE_PATH = path.join(process.cwd(), ".data", ".encryption_key");
+const PRIMARY_KEY_PATH = path.join(process.cwd(), "data", ".encryption_key");
+const LEGACY_KEY_PATH = path.join(process.cwd(), ".data", ".encryption_key");
 
 /**
  * Retrieves or generates the 32-byte master encryption key.
  * If APP_ENCRYPTION_KEY environment variable is defined, it is used.
- * Otherwise, a random key is generated and saved in .data/.encryption_key.
+ * Otherwise, a random key is generated and saved in data/.encryption_key.
  */
 export function getMasterEncryptionKey(): Buffer {
   if (process.env.APP_ENCRYPTION_KEY) {
@@ -18,31 +19,39 @@ export function getMasterEncryptionKey(): Buffer {
     return crypto.createHash("sha256").update(raw).digest();
   }
 
-  try {
-    if (fs.existsSync(KEY_FILE_PATH)) {
-      const stored = fs.readFileSync(KEY_FILE_PATH, "utf8").trim();
-      if (stored.length === 64 && /^[0-9a-fA-F]+$/.test(stored)) {
-        return Buffer.from(stored, "hex");
+  for (const keyPath of [PRIMARY_KEY_PATH, LEGACY_KEY_PATH]) {
+    try {
+      if (fs.existsSync(/* turbopackIgnore: true */ keyPath)) {
+        const stored = fs.readFileSync(/* turbopackIgnore: true */ keyPath, "utf8").trim();
+        if (stored.length === 64 && /^[0-9a-fA-F]+$/.test(stored)) {
+          return Buffer.from(stored, "hex");
+        }
       }
+    } catch {
+      // Ignore read errors and regenerate
     }
-  } catch {
-    // Ignore read errors and regenerate
   }
 
   const generatedKey = crypto.randomBytes(32);
-  try {
-    const dir = path.dirname(KEY_FILE_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+  const hexKey = generatedKey.toString("hex");
+
+  for (const keyPath of [PRIMARY_KEY_PATH, LEGACY_KEY_PATH]) {
+    try {
+      const dir = path.dirname(keyPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      fs.writeFileSync(keyPath, hexKey, {
+        encoding: "utf8",
+        mode: 0o600,
+      });
+      return generatedKey;
+    } catch {
+      // Try next location
     }
-    fs.writeFileSync(KEY_FILE_PATH, generatedKey.toString("hex"), {
-      encoding: "utf8",
-      mode: 0o600,
-    });
-  } catch (err) {
-    console.warn("Could not persist encryption key to disk, using in-memory key:", err);
   }
 
+  console.warn("Could not persist encryption key to disk, using in-memory key");
   return generatedKey;
 }
 
