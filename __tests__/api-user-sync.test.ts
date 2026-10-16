@@ -51,7 +51,7 @@ describe("User Sync API (/api/user/sync)", () => {
         accounts: {
           steam: {
             platform: "steam",
-            username: "76561198083390097",
+            username: "76561198000000000",
             displayName: "SyncSteam",
             connectedAt: new Date().toISOString(),
             stats: {

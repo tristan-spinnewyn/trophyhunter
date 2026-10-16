@@ -644,6 +644,54 @@ export function saveUserGameProgress(
     lastPlayed,
     now
   );
+
+  // Keep user_games unlocked count and last played in sync if game is present
+  try {
+    db.prepare(
+      `UPDATE user_games
+       SET unlocked_count = ?, last_played = ?
+       WHERE user_id = ? AND app_id = ? AND platform = ?`
+    ).run(progress.unlockedIds?.length || 0, lastPlayed, userId, appId, platform);
+  } catch {
+    // Non-fatal if game is not yet in user_games
+  }
+}
+
+export function resetUserGameProgress(
+  userId: string,
+  appId: number,
+  platform: PlatformType = "steam"
+): void {
+  const db = getDb();
+  db.prepare(
+    "DELETE FROM user_game_progress WHERE user_id = ? AND app_id = ? AND platform = ?"
+  ).run(userId, appId, platform);
+  db.prepare(
+    "UPDATE user_games SET unlocked_count = 0 WHERE user_id = ? AND app_id = ? AND platform = ?"
+  ).run(userId, appId, platform);
+}
+
+export function removeUserOwnedGame(
+  userId: string,
+  appId: number,
+  platform?: PlatformType
+): void {
+  const db = getDb();
+  if (platform) {
+    db.prepare(
+      "DELETE FROM user_games WHERE user_id = ? AND app_id = ? AND platform = ?"
+    ).run(userId, appId, platform);
+    db.prepare(
+      "DELETE FROM user_game_progress WHERE user_id = ? AND app_id = ? AND platform = ?"
+    ).run(userId, appId, platform);
+  } else {
+    db.prepare(
+      "DELETE FROM user_games WHERE user_id = ? AND app_id = ?"
+    ).run(userId, appId);
+    db.prepare(
+      "DELETE FROM user_game_progress WHERE user_id = ? AND app_id = ?"
+    ).run(userId, appId);
+  }
 }
 
 export function getAllUserGameProgress(
@@ -881,6 +929,16 @@ export function setGameFavorite(
   db.prepare(
     "UPDATE user_games SET is_favorite = ? WHERE user_id = ? AND app_id = ? AND platform = ?"
   ).run(isFavorite ? 1 : 0, userId, appId, platform);
+}
+
+export function getUserFavoriteAppIds(userId: string): number[] {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      "SELECT DISTINCT app_id FROM user_games WHERE user_id = ? AND is_favorite = 1"
+    )
+    .all(userId) as Array<{ app_id: number }>;
+  return rows.map((r) => r.app_id);
 }
 
 export function getUserWishlist(userId: string): OwnedGame[] {

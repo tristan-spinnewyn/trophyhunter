@@ -98,7 +98,7 @@ describe("lib/db (SQLite layer)", () => {
       const user = createUser("KeyUser", "password123");
       const account: PlatformAccount = {
         platform: "steam",
-        username: "76561198083390097",
+        username: "76561198000000000",
         displayName: "MySteamProfile",
         avatarUrl: "https://example.com/avatar.jpg",
         connectedAt: new Date().toISOString(),
@@ -286,7 +286,7 @@ describe("lib/db (SQLite layer)", () => {
           accounts: {
             steam: {
               platform: "steam",
-              username: "76561198083390097",
+              username: "76561198000000000",
               displayName: "OldSteam",
               connectedAt: new Date().toISOString(),
               stats: {

@@ -89,7 +89,7 @@ export default function AccountDashboard({
 }: AccountDashboardProps) {
   const steamAccount = accountProfile.accounts.steam;
   const [steamInput, setSteamInput] = useState(
-    steamAccount?.username || "76561198083390097"
+    steamAccount?.username || ""
   );
   const [steamApiKey, setSteamApiKey] = useState(() => getSavedSteamApiKey());
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
@@ -2034,7 +2034,7 @@ export default function AccountDashboard({
                     value={epicInput}
                     onChange={(e) => setEpicInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleConnectAndSyncEpic()}
-                    placeholder="Pseudo Epic Games (ex: Shin)"
+                    placeholder="Pseudo Epic Games (ex: Alex)"
                     className="flex-1 min-w-0 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-purple-500"
                   />
                   <button

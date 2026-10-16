@@ -6,6 +6,7 @@ import {
   getAllUserGameProgress,
   syncFromLocalStorage,
   getUserPlatformApiKey,
+  getUserFavoriteAppIds,
 } from "@/lib/db";
 
 export async function GET() {
@@ -18,6 +19,7 @@ export async function GET() {
   const games = getUserOwnedGames(user.id);
   const progress = getAllUserGameProgress(user.id);
   const steamApiKey = getUserPlatformApiKey(user.id, "steam");
+  const favorites = getUserFavoriteAppIds(user.id);
 
   return NextResponse.json({
     user,
@@ -28,6 +30,7 @@ export async function GET() {
     },
     games,
     progress,
+    favorites,
     steamApiKey: steamApiKey || undefined,
   });
 }

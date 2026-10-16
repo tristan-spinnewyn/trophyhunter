@@ -43,7 +43,7 @@ describe('lib/storage', () => {
 
   describe('Steam User', () => {
     it('returns default steam user if none saved', () => {
-      expect(getSavedSteamUser()).toBe('76561198083390097');
+      expect(getSavedSteamUser()).toBe('');
     });
 
     it('saves and retrieves custom steam user', () => {
@@ -55,7 +55,7 @@ describe('lib/storage', () => {
       saveSteamUser('temp');
       expect(getSavedSteamUser()).toBe('temp');
       saveSteamUser('  ');
-      expect(getSavedSteamUser()).toBe('76561198083390097');
+      expect(getSavedSteamUser()).toBe('');
     });
   });
 
@@ -84,7 +84,7 @@ describe('lib/storage', () => {
     it('returns default user account profile when storage is empty', () => {
       const account = getUserAccount();
       expect(account.displayName).toBe('Chasseur de Trophées');
-      expect(account.accounts.steam?.username).toBe('76561198083390097');
+      expect(account.accounts.steam).toBeUndefined();
     });
 
     it('saves user account and updates steam user in local storage', () => {
@@ -111,16 +111,16 @@ describe('lib/storage', () => {
       const steamAccount: PlatformAccount = {
         platform: 'steam',
         username: 'steam_id_123',
-        displayName: 'Shin Steam',
+        displayName: 'TestPlayer Steam',
         avatarUrl: 'https://example.com/avatar.jpg',
         connectedAt: new Date().toISOString(),
         stats: { gamesOwned: 25, totalAchievements: 100, completedGames: 5 },
       };
 
       const updated = savePlatformAccount(steamAccount);
-      expect(updated.displayName).toBe('Shin Steam');
+      expect(updated.displayName).toBe('TestPlayer Steam');
       expect(updated.avatarUrl).toBe('https://example.com/avatar.jpg');
-      expect(updated.accounts.steam?.displayName).toBe('Shin Steam');
+      expect(updated.accounts.steam?.displayName).toBe('TestPlayer Steam');
     });
 
     it('saves non-steam platform accounts without overwriting main profile display name', () => {
@@ -160,7 +160,7 @@ describe('lib/storage', () => {
     it('removes steam user from storage when steam platform is removed', () => {
       saveSteamUser('temp_steam_user');
       removePlatformAccount('steam');
-      expect(getSavedSteamUser()).toBe('76561198083390097');
+      expect(getSavedSteamUser()).toBe('');
     });
   });
 
