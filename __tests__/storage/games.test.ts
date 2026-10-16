@@ -20,7 +20,7 @@ describe("Storage Owned Games", () => {
     expect(getOwnedGames()).toEqual([]);
     expect(isGameOwned(123)).toBe(false);
 
-    const games: readonly OwnedGame[] = [
+    const games: OwnedGame[] = [
       {
         appId: 10,
         name: "Game A",
@@ -49,7 +49,7 @@ describe("Storage Owned Games", () => {
   });
 
   it("removes individual game and removes games by platform", () => {
-    const games: readonly OwnedGame[] = [
+    const games: OwnedGame[] = [
       { appId: 1, name: "Steam Game", headerImg: "", platform: "steam", totalAchievements: 10, unlockedCount: 0, addedAt: "" },
       { appId: 2, name: "Epic Game", headerImg: "", platform: "epic", totalAchievements: 10, unlockedCount: 0, addedAt: "" },
     ];
@@ -64,13 +64,13 @@ describe("Storage Owned Games", () => {
   });
 
   it("replaces platform games and resolves epic codenames on retrieval", () => {
-    const initial: readonly OwnedGame[] = [
+    const initial: OwnedGame[] = [
       { appId: 1, name: "Steam Game", headerImg: "", platform: "steam", totalAchievements: 10, unlockedCount: 0, addedAt: "" },
       { appId: 2, name: "Old Epic Game", headerImg: "", platform: "epic", totalAchievements: 10, unlockedCount: 0, addedAt: "" },
     ];
     upsertOwnedGames(initial);
 
-    const newEpicGames: readonly OwnedGame[] = [
+    const newEpicGames: OwnedGame[] = [
       { appId: 3, name: "New Game", headerImg: "", platform: "epic", totalAchievements: 20, unlockedCount: 5, addedAt: "" },
     ];
     const replaced = replacePlatformOwnedGames("epic", newEpicGames);
@@ -78,7 +78,7 @@ describe("Storage Owned Games", () => {
     expect(replaced.some((g) => g.appId === 1 && g.platform === "steam")).toBe(true);
     expect(replaced.some((g) => g.appId === 3 && g.platform === "epic")).toBe(true);
 
-    const rawGames: readonly OwnedGame[] = [
+    const rawGames: OwnedGame[] = [
       { appId: 1001, name: "Angelonia", headerImg: "", platform: "epic", totalAchievements: 10, unlockedCount: 2, addedAt: "" },
       { appId: 1002, name: "Catnip", headerImg: "", platform: "epic", totalAchievements: 25, unlockedCount: 5, addedAt: "" },
     ];
