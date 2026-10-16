@@ -189,7 +189,7 @@ export async function GET(request: Request) {
                 // Collect namespaces for hex-named items to resolve commercial title
                 const namespaceMap = new Map<string, string[]>();
                 for (const a of assets) {
-                  if (!a.appName || a.appName.startsWith("UE_")) continue;
+                  if (!a.appName || a.appName.startsWith("UE_") || a.appName.includes("Prerequisites")) continue;
                   if (a.namespace && a.catalogItemId && isJunkHex(a.appName)) {
                     const list = namespaceMap.get(a.namespace) || [];
                     if (list.length < 50 && !list.includes(a.catalogItemId)) {
@@ -236,7 +236,7 @@ export async function GET(request: Request) {
                 );
 
                 for (const asset of assets) {
-                  if (!asset.appName || asset.appName.startsWith("UE_")) continue;
+                  if (!asset.appName || asset.appName.startsWith("UE_") || asset.appName.includes("Prerequisites")) continue;
 
                   let cleanName = "";
                   let cover = "";

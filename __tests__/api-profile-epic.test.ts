@@ -42,7 +42,7 @@ describe('GET /api/profile/epic', () => {
     expect(data.error).toContain("Code d'autorisation Epic Games expiré ou invalide");
   });
 
-  it('authenticates with OAuth code and fetches owned games from Epic assets endpoint', async () => {
+  it('authenticates with OAuth code and fetches owned games from array of assets', async () => {
     const mockToken = {
       access_token: 'valid_access_token_abc',
       account_id: 'epic_account_123',
@@ -85,5 +85,181 @@ describe('GET /api/profile/epic', () => {
     expect(data.account.stats.gamesOwned).toBe(2);
     expect(data.discoveredGames).toHaveLength(2);
     expect(data.discoveredGames[0].platform).toBe('epic');
+  });
+
+  it('authenticates and fetches games from official library-service with metadata, images and GraphQL achievements', async () => {
+    const mockToken = {
+      access_token: 'valid_token_library',
+      account_id: 'epic_user_456',
+      displayName: 'TrophyHunterEpic',
+    };
+
+    const mockLibrary = {
+      records: [
+        {
+          appName: 'AlanWake2',
+          catalogItemId: 'cat_alan_wake',
+          metadata: {
+            title: 'Alan Wake 2',
+            keyImages: [
+              { type: 'DieselStoreFrontWide', url: 'https://cdn.epic.com/alanwake2.jpg' },
+            ],
+          },
+        },
+        {
+          appName: 'UE_5.5',
+          metadata: { title: 'Unreal Engine 5.5' },
+        },
+        {
+          appName: 'Prerequisites_x64',
+          metadata: { title: 'Epic Prerequisites' },
+        },
+        {
+          appName: '002b00085aeb49b1a3f3c42e3f918f2f', // Pure hex with no title -> should be skipped
+          metadata: {},
+        },
+        {
+          appName: 'CelesteGame',
+          metadata: {
+            title: 'Celeste',
+            keyImages: [],
+          },
+        },
+      ],
+    };
+
+    const mockGraphQL = {
+      data: {
+        PlayerAchievement: {
+          playerAchievementGameRecords: {
+            records: [
+              {
+                sandboxId: 'alan_wake_sandbox',
+                totalUnlocked: 25,
+                achievementSets: [
+                  {
+                    isBase: true,
+                    totalUnlocked: 25,
+                    totalXP: 1000,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockToken,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockLibrary,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockGraphQL,
+      } as any);
+
+    const req = new Request('http://localhost:3000/api/profile/epic?code=lib-code-123');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.discoveredGames).toHaveLength(2);
+    expect(data.discoveredGames[0].name).toBe('Alan Wake 2');
+    expect(data.discoveredGames[0].headerImg).toBe('https://cdn.epic.com/alanwake2.jpg');
+    expect(data.discoveredGames[1].name).toBe('Celeste');
+    expect(data.account.stats.totalAchievements).toBe(25);
+    expect(data.account.stats.completedGames).toBe(1);
+  });
+
+  it('falls back to assets and resolves titles from catalog-public-service when library-service returns empty', async () => {
+    const mockToken = {
+      access_token: 'fallback_token',
+      account_id: 'epic_fallback_user',
+      displayName: 'FallbackUser',
+    };
+
+    const mockLibraryEmpty = { records: [] };
+
+    const mockAssets = [
+      {
+        appName: '002b00085aeb49b1a3f3c42e3f918f2f', // 32 hex hash to resolve via catalog
+        catalogItemId: 'cat_hades',
+        namespace: 'supergiant',
+      },
+      {
+        appName: 'DirectX_Prerequisites',
+        catalogItemId: 'prereq',
+      },
+      {
+        appName: 'ffffffffffffffffffffffffffffffff', // Hex hash that cannot be resolved
+        catalogItemId: 'cat_missing',
+        namespace: 'unknown_ns',
+      },
+      {
+        appName: 'ControlGame',
+        catalogItemId: 'cat_control',
+        namespace: 'remedy',
+      },
+    ];
+
+    const mockCatalogBulk = [
+      {
+        id: 'cat_hades',
+        title: 'Hades',
+        keyImages: [
+          { type: 'OfferImageWide', url: 'https://cdn.epic.com/hades_wide.jpg' },
+        ],
+      },
+    ];
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockToken,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockLibraryEmpty,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockAssets,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockCatalogBulk,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: false,
+      } as any); // GraphQL fails gracefully
+
+    const req = new Request('http://localhost:3000/api/profile/epic?code=fallback-code');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.discoveredGames).toHaveLength(2);
+    expect(data.discoveredGames.some((g: any) => g.name === 'Hades')).toBe(true);
+    expect(data.discoveredGames.some((g: any) => g.name === 'Control Game')).toBe(true);
+  });
+
+  it('handles external fetch failure gracefully with status 500', async () => {
+    vi.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('Connection timed out'));
+
+    const req = new Request('http://localhost:3000/api/profile/epic?code=crash-code');
+    const res = await GET(req);
+    expect(res.status).toBe(500);
+
+    const data = await res.json();
+    expect(data.error).toBe("Impossible de joindre l'API Epic Games.");
+    expect(data.details).toBe('Connection timed out');
   });
 });

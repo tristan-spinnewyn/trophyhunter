@@ -25,6 +25,8 @@ import {
   exportAllData,
   importAllData,
   PLATFORM_META,
+  removePlatformOwnedGames,
+  replacePlatformOwnedGames,
 } from '@/lib/storage';
 import type { PlatformAccount, OwnedGame, UserAccountProfile } from '@/lib/types';
 
@@ -207,6 +209,37 @@ describe('lib/storage', () => {
 
       removeOwnedGame(99, 'steam');
       expect(isGameOwned(99)).toBe(false);
+    });
+
+    it('removes all games belonging to a specific platform', () => {
+      const games: OwnedGame[] = [
+        { appId: 1, name: 'Steam Game', headerImg: '', platform: 'steam', totalAchievements: 10, unlockedCount: 0, addedAt: '' },
+        { appId: 2, name: 'Epic Game', headerImg: '', platform: 'epic', totalAchievements: 10, unlockedCount: 0, addedAt: '' },
+      ];
+      upsertOwnedGames(games);
+      expect(getOwnedGames().length).toBe(2);
+
+      const afterRemove = removePlatformOwnedGames('epic');
+      expect(afterRemove.length).toBe(1);
+      expect(afterRemove[0].platform).toBe('steam');
+    });
+
+    it('replaces all games for a specific platform while preserving other platforms', () => {
+      const initial: OwnedGame[] = [
+        { appId: 1, name: 'Steam Game', headerImg: '', platform: 'steam', totalAchievements: 10, unlockedCount: 0, addedAt: '' },
+        { appId: 2, name: 'Old Epic Game', headerImg: '', platform: 'epic', totalAchievements: 10, unlockedCount: 0, addedAt: '' },
+      ];
+      upsertOwnedGames(initial);
+
+      const newEpicGames: OwnedGame[] = [
+        { appId: 3, name: 'New Epic Game', headerImg: '', platform: 'epic', totalAchievements: 20, unlockedCount: 5, addedAt: '' },
+      ];
+
+      const replaced = replacePlatformOwnedGames('epic', newEpicGames);
+      expect(replaced.length).toBe(2);
+      expect(replaced.some((g) => g.appId === 1 && g.platform === 'steam')).toBe(true);
+      expect(replaced.some((g) => g.appId === 2)).toBe(false);
+      expect(replaced.some((g) => g.appId === 3 && g.platform === 'epic')).toBe(true);
     });
   });
 
