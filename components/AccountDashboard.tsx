@@ -22,6 +22,7 @@ import {
   Loader2,
   ChevronRight,
   Star,
+  Unlink,
 } from "lucide-react";
 import type {
   UserAccountProfile,
@@ -56,9 +57,6 @@ const ALL_PLATFORMS: PlatformType[] = [
   "xbox",
   "epic",
   "gog",
-  "playstation",
-  "retroachievements",
-  "nintendo",
 ];
 
 export default function AccountDashboard({
@@ -104,6 +102,27 @@ export default function AccountDashboard({
     | "playtime-desc"
   >("default");
   const [libSearch, setLibSearch] = useState("");
+
+  // Xbox Sync State
+  const xboxAccount = accountProfile.accounts.xbox;
+  const [xboxInput, setXboxInput] = useState(xboxAccount?.username || "");
+  const [xboxApiKey, setXboxApiKey] = useState("");
+  const [showXboxApiKey, setShowXboxApiKey] = useState(false);
+  const [isSyncingXbox, setIsSyncingXbox] = useState(false);
+
+  // Epic Sync State
+  const epicAccount = accountProfile.accounts.epic;
+  const [epicInput, setEpicInput] = useState(epicAccount?.username || "");
+  const [epicCode, setEpicCode] = useState("");
+  const [showEpicCode, setShowEpicCode] = useState(false);
+  const [isSyncingEpic, setIsSyncingEpic] = useState(false);
+
+  // GOG Sync State
+  const gogAccount = accountProfile.accounts.gog;
+  const [gogInput, setGogInput] = useState(gogAccount?.username || "");
+  const [gogToken, setGogToken] = useState("");
+  const [showGogToken, setShowGogToken] = useState(false);
+  const [isSyncingGOG, setIsSyncingGOG] = useState(false);
 
   // Add/Edit Platform Modal state
   const [editingPlatform, setEditingPlatform] = useState<PlatformType | null>(
@@ -299,6 +318,110 @@ export default function AccountDashboard({
     }
   };
 
+  const handleConnectAndSyncXbox = async (overrideUser?: string) => {
+    const targetUser = (overrideUser || xboxInput).trim();
+    if (!targetUser) return;
+    setIsSyncingXbox(true);
+    setBannerMsg(null);
+    try {
+      const keyParam = xboxApiKey ? `&key=${encodeURIComponent(xboxApiKey)}` : "";
+      const res = await fetch(
+        `/api/profile/xbox?user=${encodeURIComponent(targetUser)}${keyParam}`
+      );
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Impossible de synchroniser avec Xbox.");
+      }
+      const updatedProfile = savePlatformAccount(data.account);
+      onAccountChange(updatedProfile);
+      if (Array.isArray(data.discoveredGames) && data.discoveredGames.length > 0) {
+        const merged = upsertOwnedGames(data.discoveredGames);
+        onOwnedGamesChange(merged);
+      }
+      setBannerMsg({
+        type: "success",
+        text: data.notice || `Compte Xbox Live "${data.account.displayName}" synchronisé (${data.discoveredGames?.length || 0} jeux découverts) !`,
+      });
+    } catch (err: any) {
+      setBannerMsg({
+        type: "error",
+        text: err.message || "Erreur de connexion Xbox Live.",
+      });
+    } finally {
+      setIsSyncingXbox(false);
+    }
+  };
+
+  const handleConnectAndSyncEpic = async (overrideUser?: string) => {
+    const targetUser = (overrideUser || epicInput).trim();
+    const targetCode = epicCode.trim();
+    if (!targetUser && !targetCode) return;
+    setIsSyncingEpic(true);
+    setBannerMsg(null);
+    try {
+      const userParam = targetUser ? `user=${encodeURIComponent(targetUser)}` : "";
+      const codeParam = targetCode ? `code=${encodeURIComponent(targetCode)}` : "";
+      const query = [userParam, codeParam].filter(Boolean).join("&");
+      const res = await fetch(`/api/profile/epic?${query}`);
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Impossible de synchroniser avec Epic Games.");
+      }
+      const updatedProfile = savePlatformAccount(data.account);
+      onAccountChange(updatedProfile);
+      if (Array.isArray(data.discoveredGames) && data.discoveredGames.length > 0) {
+        const merged = upsertOwnedGames(data.discoveredGames);
+        onOwnedGamesChange(merged);
+      }
+      setBannerMsg({
+        type: "success",
+        text: data.notice || `Compte Epic Games "${data.account.displayName}" connecté avec succès (${data.discoveredGames?.length || 0} jeux découverts) !`,
+      });
+      setEpicCode("");
+    } catch (err: any) {
+      setBannerMsg({
+        type: "error",
+        text: err.message || "Erreur de connexion Epic Games.",
+      });
+    } finally {
+      setIsSyncingEpic(false);
+    }
+  };
+
+  const handleConnectAndSyncGOG = async (overrideUser?: string) => {
+    const targetUser = (overrideUser || gogInput).trim();
+    if (!targetUser) return;
+    setIsSyncingGOG(true);
+    setBannerMsg(null);
+    try {
+      const tokenParam = gogToken ? `&token=${encodeURIComponent(gogToken)}` : "";
+      const res = await fetch(
+        `/api/profile/gog?user=${encodeURIComponent(targetUser)}${tokenParam}`
+      );
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Impossible de joindre GOG.");
+      }
+      const updatedProfile = savePlatformAccount(data.account);
+      onAccountChange(updatedProfile);
+      if (Array.isArray(data.discoveredGames) && data.discoveredGames.length > 0) {
+        const merged = upsertOwnedGames(data.discoveredGames);
+        onOwnedGamesChange(merged);
+      }
+      setBannerMsg({
+        type: "success",
+        text: `Compte GOG "${data.account.displayName}" connecté (${data.discoveredGames?.length || 0} jeux synchronisés) !`,
+      });
+    } catch (err: any) {
+      setBannerMsg({
+        type: "error",
+        text: err.message || "Erreur de connexion GOG.",
+      });
+    } finally {
+      setIsSyncingGOG(false);
+    }
+  };
+
   // Open modal to add/edit another platform account
   const openEditPlatform = (platform: PlatformType) => {
     const existing = accountProfile.accounts[platform];
@@ -373,7 +496,7 @@ export default function AccountDashboard({
         hoursPlayed: parseFloat(platForm.hoursPlayed) || undefined,
         gamerScore: parseInt(platForm.gamerScore, 10) || undefined,
         trophies:
-          editingPlatform === "playstation" || editingPlatform === "epic"
+          editingPlatform === "epic"
             ? {
                 platinum: platCount,
                 gold: goldCount,
@@ -1348,40 +1471,143 @@ export default function AccountDashboard({
 
           {/* Xbox Hero Card */}
           <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-slate-900 via-slate-900/95 to-emerald-950/40 p-5 sm:p-6 shadow-2xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 shrink-0">
-                  <Gamepad2 className="h-8 w-8" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              {/* Left Column: Xbox Identity & Stats */}
+              <div className="lg:col-span-7 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="relative shrink-0">
+                  <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border-2 border-emerald-500/40 bg-emerald-500/10 text-emerald-400 shadow-lg shadow-emerald-500/20">
+                    <Gamepad2 className="h-8 w-8 sm:h-10 sm:w-10" />
+                  </div>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl sm:text-2xl font-black text-white">
+
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-xl sm:text-2xl font-black text-white truncate">
                       {accountProfile.accounts.xbox?.displayName || "Compte Xbox Live"}
                     </h2>
                     <span className="rounded-full bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
-                      Xbox & PC
+                      Xbox & PC Game Pass
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Gamertag : {accountProfile.accounts.xbox?.username || "Non configuré"}
+
+                  <p className="text-xs text-slate-400 truncate">
+                    Gamertag :{" "}
+                    <span className="font-semibold text-slate-200">
+                      {accountProfile.accounts.xbox?.username || "Non configuré"}
+                    </span>
                   </p>
-                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 px-3 py-1 text-xs font-black text-emerald-300">
-                    <Trophy className="h-3.5 w-3.5" />
-                    {accountProfile.accounts.xbox?.stats.gamerScore
-                      ? `${accountProfile.accounts.xbox.stats.gamerScore.toLocaleString("fr-FR")} G (Gamerscore)`
-                      : "0 G"}
+
+                  <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                    <div className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 px-3 py-1 text-xs font-black text-emerald-300">
+                      <Trophy className="h-3.5 w-3.5" />
+                      {accountProfile.accounts.xbox?.stats.gamerScore
+                        ? `${accountProfile.accounts.xbox.stats.gamerScore.toLocaleString("fr-FR")} G`
+                        : "0 G"}
+                    </div>
+                    {accountProfile.accounts.xbox?.lastSyncedAt && (
+                      <span className="text-[10px] text-slate-500">
+                        Dernière sync :{" "}
+                        {new Date(accountProfile.accounts.xbox.lastSyncedAt).toLocaleDateString("fr-FR")}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      onClick={() => openEditPlatform("xbox")}
+                      className="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+                    >
+                      <Edit3 className="h-3 w-3" />
+                      Édition manuelle
+                    </button>
+                    {accountProfile.accounts.xbox && (
+                      <>
+                        <span className="text-slate-600">•</span>
+                        <button
+                          onClick={() => handleDisconnectPlatform("xbox")}
+                          className="text-[11px] font-semibold text-red-400/80 hover:text-red-300 flex items-center gap-1"
+                        >
+                          <Unlink className="h-3 w-3" />
+                          Déconnecter
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => openEditPlatform("xbox")}
-                  className="rounded-xl border border-emerald-500/40 bg-emerald-500/20 px-3.5 py-2 text-xs font-bold text-emerald-300 hover:bg-emerald-500/30 transition flex items-center gap-1.5"
-                >
-                  <Edit3 className="h-3.5 w-3.5" />
-                  Modifier Gamertag & Stats
-                </button>
+              {/* Right Column: Xbox Live Sync Box */}
+              <div className="lg:col-span-5 rounded-2xl border border-emerald-500/30 bg-slate-950/70 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+                    Synchronisation Xbox API
+                  </span>
+                  <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                    OpenXBL
+                  </span>
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={xboxInput}
+                    onChange={(e) => setXboxInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleConnectAndSyncXbox()}
+                    placeholder="Gamertag (ex: Major Nelson)"
+                    className="flex-1 min-w-0 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500"
+                  />
+                  <button
+                    onClick={() => handleConnectAndSyncXbox()}
+                    disabled={isSyncingXbox || !xboxInput.trim()}
+                    className="shrink-0 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-3.5 py-2 text-xs font-bold text-slate-950 hover:brightness-110 disabled:opacity-50 transition flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
+                  >
+                    <RefreshCw
+                      className={`h-3.5 w-3.5 ${
+                        isSyncingXbox ? "animate-spin" : ""
+                      }`}
+                    />
+                    <span>{isSyncingXbox ? "Sync..." : "Importer"}</span>
+                  </button>
+                </div>
+
+                <div className="pt-1.5 border-t border-slate-800/80">
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setShowXboxApiKey(!showXboxApiKey)}
+                      className="text-[11px] font-semibold text-slate-300 hover:text-emerald-300 flex items-center gap-1"
+                    >
+                      <span>{showXboxApiKey ? "▼" : "▶"} Clé OpenXBL (Optionnelle)</span>
+                      {xboxApiKey ? (
+                        <span className="text-[10px] text-emerald-400 font-bold">• Active</span>
+                      ) : null}
+                    </button>
+                    <a
+                      href="https://xbl.io"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-emerald-400 hover:underline"
+                    >
+                      Obtenir sur xbl.io ↗
+                    </a>
+                  </div>
+                  {(showXboxApiKey || xboxApiKey) && (
+                    <div className="mt-1.5 space-y-1">
+                      <input
+                        type="password"
+                        value={xboxApiKey}
+                        onChange={(e) => setXboxApiKey(e.target.value)}
+                        placeholder="Collez votre clé API OpenXBL (xbl.io)..."
+                        className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500 font-mono"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <p className="text-[10px] text-slate-400">
+                  Importe vos jeux Xbox & PC Game Pass ainsi que vos succès et Gamerscore sans mot de passe.
+                </p>
               </div>
             </div>
           </div>
@@ -1444,43 +1670,150 @@ export default function AccountDashboard({
 
           {/* Epic Hero Card */}
           <div className="relative overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-slate-900 via-slate-900/95 to-purple-950/40 p-5 sm:p-6 shadow-2xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border border-purple-500/40 bg-purple-500/10 text-purple-400 shrink-0">
-                  <Trophy className="h-8 w-8" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              {/* Left Column: Epic Identity & Stats */}
+              <div className="lg:col-span-7 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="relative shrink-0">
+                  <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border-2 border-purple-500/40 bg-purple-500/10 text-purple-400 shadow-lg shadow-purple-500/20">
+                    <Trophy className="h-8 w-8 sm:h-10 sm:w-10" />
+                  </div>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl sm:text-2xl font-black text-white">
+
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-xl sm:text-2xl font-black text-white truncate">
                       {accountProfile.accounts.epic?.displayName || "Compte Epic Games"}
                     </h2>
                     <span className="rounded-full bg-purple-500/20 border border-purple-500/40 px-2 py-0.5 text-[10px] font-bold text-purple-300">
-                      Epic XP & Platines
+                      Epic Games Store
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Pseudo Epic : {accountProfile.accounts.epic?.username || "Non configuré"}
+
+                  <p className="text-xs text-slate-400 truncate">
+                    Pseudo Epic :{" "}
+                    <span className="font-semibold text-slate-200">
+                      {accountProfile.accounts.epic?.username || "Non configuré"}
+                    </span>
                   </p>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
+
+                  <div className="flex flex-wrap items-center gap-2 pt-0.5">
                     <div className="inline-flex items-center gap-1.5 rounded-lg bg-purple-950/60 border border-purple-500/30 px-3 py-1 text-xs font-black text-purple-300">
                       <Trophy className="h-3.5 w-3.5" />
-                      {accountProfile.accounts.epic?.stats.completedGames || 0} Platine(s) Epic
+                      {accountProfile.accounts.epic?.stats.completedGames || 0} Platine(s)
                     </div>
                     <div className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 border border-slate-700 px-3 py-1 text-xs font-bold text-slate-200">
                       {accountProfile.accounts.epic?.stats.totalAchievements || 0} Succès XP
                     </div>
+                    {accountProfile.accounts.epic?.lastSyncedAt && (
+                      <span className="text-[10px] text-slate-500">
+                        Dernière sync :{" "}
+                        {new Date(accountProfile.accounts.epic.lastSyncedAt).toLocaleDateString("fr-FR")}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      onClick={() => openEditPlatform("epic")}
+                      className="text-[11px] font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                    >
+                      <Edit3 className="h-3 w-3" />
+                      Édition manuelle
+                    </button>
+                    {accountProfile.accounts.epic && (
+                      <>
+                        <span className="text-slate-600">•</span>
+                        <button
+                          onClick={() => handleDisconnectPlatform("epic")}
+                          className="text-[11px] font-semibold text-red-400/80 hover:text-red-300 flex items-center gap-1"
+                        >
+                          <Unlink className="h-3 w-3" />
+                          Déconnecter
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => openEditPlatform("epic")}
-                  className="rounded-xl border border-purple-500/40 bg-purple-500/20 px-3.5 py-2 text-xs font-bold text-purple-300 hover:bg-purple-500/30 transition flex items-center gap-1.5"
-                >
-                  <Edit3 className="h-3.5 w-3.5" />
-                  Modifier profil Epic & stats
-                </button>
+              {/* Right Column: Epic Games Sync Box */}
+              <div className="lg:col-span-5 rounded-2xl border border-purple-500/30 bg-slate-950/70 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+                    Connexion Epic Games (Zero mot de passe)
+                  </span>
+                  <span className="text-[10px] font-semibold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-md">
+                    OAuth Epic
+                  </span>
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={epicInput}
+                    onChange={(e) => setEpicInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleConnectAndSyncEpic()}
+                    placeholder="Pseudo Epic Games (ex: Shin)"
+                    className="flex-1 min-w-0 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-purple-500"
+                  />
+                  <button
+                    onClick={() => handleConnectAndSyncEpic()}
+                    disabled={isSyncingEpic || (!epicInput.trim() && !epicCode.trim())}
+                    className="shrink-0 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 px-3.5 py-2 text-xs font-bold text-white hover:brightness-110 disabled:opacity-50 transition flex items-center gap-1.5 shadow-md shadow-purple-500/20"
+                  >
+                    <RefreshCw
+                      className={`h-3.5 w-3.5 ${
+                        isSyncingEpic ? "animate-spin" : ""
+                      }`}
+                    />
+                    <span>{isSyncingEpic ? "Sync..." : "Importer"}</span>
+                  </button>
+                </div>
+
+                <div className="pt-1.5 border-t border-slate-800/80">
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setShowEpicCode(!showEpicCode)}
+                      className="text-[11px] font-semibold text-slate-300 hover:text-purple-300 flex items-center gap-1"
+                    >
+                      <span>{showEpicCode ? "▼" : "▶"} Code d&apos;échange officiel Epic</span>
+                      {epicCode ? (
+                        <span className="text-[10px] text-purple-400 font-bold">• Code saisi</span>
+                      ) : null}
+                    </button>
+                    <a
+                      href="https://www.epicgames.com/id/api/redirect"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-purple-400 hover:underline flex items-center gap-0.5"
+                    >
+                      Obtenir le code ↗
+                    </a>
+                  </div>
+                  {(showEpicCode || epicCode) && (
+                    <div className="mt-2 space-y-1.5 text-[11px] text-slate-400 bg-purple-950/20 border border-purple-500/20 rounded-xl p-2.5">
+                      <p className="text-[10px] text-slate-300">
+                        1. Cliquez sur <a href="https://www.epicgames.com/id/api/redirect" target="_blank" rel="noopener noreferrer" className="text-purple-400 underline font-semibold">ce lien Epic officiel</a> (authentification sécurisée sur epicgames.com).
+                      </p>
+                      <p className="text-[10px] text-slate-300">
+                        2. Copiez la valeur de <code>authorizationCode</code> affichée en JSON et collez-la ci-dessous :
+                      </p>
+                      <input
+                        type="password"
+                        value={epicCode}
+                        onChange={(e) => setEpicCode(e.target.value)}
+                        placeholder="Collez le code d'échange OAuth (ex: 78a5b...)"
+                        className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-purple-500 font-mono"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <p className="text-[10px] text-slate-400">
+                  Zero mot de passe partagé. Importe automatiquement vos jeux et succès Epic Games.
+                </p>
               </div>
             </div>
           </div>
@@ -1583,38 +1916,144 @@ export default function AccountDashboard({
 
           {/* GOG Hero Card */}
           <div className="relative overflow-hidden rounded-3xl border border-violet-500/30 bg-gradient-to-br from-slate-900 via-slate-900/95 to-violet-950/40 p-5 sm:p-6 shadow-2xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border border-violet-500/40 bg-violet-500/10 text-violet-400 shrink-0">
-                  <Gamepad2 className="h-8 w-8" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              {/* Left Column: GOG Identity & Stats */}
+              <div className="lg:col-span-7 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="relative shrink-0">
+                  <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border-2 border-violet-500/40 bg-violet-500/10 text-violet-400 shadow-lg shadow-violet-500/20">
+                    <Gamepad2 className="h-8 w-8 sm:h-10 sm:w-10" />
+                  </div>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl sm:text-2xl font-black text-white">
+
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-xl sm:text-2xl font-black text-white truncate">
                       {accountProfile.accounts.gog?.displayName || "Compte GOG Galaxy"}
                     </h2>
                     <span className="rounded-full bg-violet-500/20 border border-violet-500/40 px-2 py-0.5 text-[10px] font-bold text-violet-300">
                       GOG.com
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Pseudo GOG : {accountProfile.accounts.gog?.username || "Non configuré"}
+
+                  <p className="text-xs text-slate-400 truncate">
+                    Pseudo GOG :{" "}
+                    <span className="font-semibold text-slate-200">
+                      {accountProfile.accounts.gog?.username || "Non configuré"}
+                    </span>
                   </p>
-                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-violet-950/60 border border-violet-500/30 px-3 py-1 text-xs font-black text-violet-300">
-                    <Trophy className="h-3.5 w-3.5" />
-                    {accountProfile.accounts.gog?.stats.completedGames || 0} Jeux 100% GOG
+
+                  <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                    <div className="inline-flex items-center gap-1.5 rounded-lg bg-violet-950/60 border border-violet-500/30 px-3 py-1 text-xs font-black text-violet-300">
+                      <Trophy className="h-3.5 w-3.5" />
+                      {accountProfile.accounts.gog?.stats.completedGames || 0} Jeux 100% GOG
+                    </div>
+                    <div className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 border border-slate-700 px-3 py-1 text-xs font-bold text-slate-200">
+                      {accountProfile.accounts.gog?.stats.totalAchievements || 0} Succès
+                    </div>
+                    {accountProfile.accounts.gog?.lastSyncedAt && (
+                      <span className="text-[10px] text-slate-500">
+                        Dernière sync :{" "}
+                        {new Date(accountProfile.accounts.gog.lastSyncedAt).toLocaleDateString("fr-FR")}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      onClick={() => openEditPlatform("gog")}
+                      className="text-[11px] font-semibold text-violet-400 hover:text-violet-300 flex items-center gap-1"
+                    >
+                      <Edit3 className="h-3 w-3" />
+                      Édition manuelle
+                    </button>
+                    {accountProfile.accounts.gog && (
+                      <>
+                        <span className="text-slate-600">•</span>
+                        <button
+                          onClick={() => handleDisconnectPlatform("gog")}
+                          className="text-[11px] font-semibold text-red-400/80 hover:text-red-300 flex items-center gap-1"
+                        >
+                          <Unlink className="h-3 w-3" />
+                          Déconnecter
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => openEditPlatform("gog")}
-                  className="rounded-xl border border-violet-500/40 bg-violet-500/20 px-3.5 py-2 text-xs font-bold text-violet-300 hover:bg-violet-500/30 transition flex items-center gap-1.5"
-                >
-                  <Edit3 className="h-3.5 w-3.5" />
-                  Modifier profil GOG & stats
-                </button>
+              {/* Right Column: GOG Sync Box */}
+              <div className="lg:col-span-5 rounded-2xl border border-violet-500/30 bg-slate-950/70 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+                    Synchronisation GOG Web API
+                  </span>
+                  <span className="text-[10px] font-semibold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-md">
+                    Web API
+                  </span>
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={gogInput}
+                    onChange={(e) => setGogInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleConnectAndSyncGOG()}
+                    placeholder="Pseudo public GOG (ex: GOGUser)"
+                    className="flex-1 min-w-0 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-violet-500"
+                  />
+                  <button
+                    onClick={() => handleConnectAndSyncGOG()}
+                    disabled={isSyncingGOG || !gogInput.trim()}
+                    className="shrink-0 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 px-3.5 py-2 text-xs font-bold text-white hover:brightness-110 disabled:opacity-50 transition flex items-center gap-1.5 shadow-md shadow-violet-500/20"
+                  >
+                    <RefreshCw
+                      className={`h-3.5 w-3.5 ${
+                        isSyncingGOG ? "animate-spin" : ""
+                      }`}
+                    />
+                    <span>{isSyncingGOG ? "Sync..." : "Importer"}</span>
+                  </button>
+                </div>
+
+                <div className="pt-1.5 border-t border-slate-800/80">
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setShowGogToken(!showGogToken)}
+                      className="text-[11px] font-semibold text-slate-300 hover:text-violet-300 flex items-center gap-1"
+                    >
+                      <span>{showGogToken ? "▼" : "▶"} Jeton Web GOG (Optionnel)</span>
+                      {gogToken ? (
+                        <span className="text-[10px] text-violet-400 font-bold">• Actif</span>
+                      ) : null}
+                    </button>
+                    <a
+                      href="https://embed.gog.com/userData.json"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-violet-400 hover:underline"
+                    >
+                      Profil GOG ↗
+                    </a>
+                  </div>
+                  {(showGogToken || gogToken) && (
+                    <div className="mt-1.5 space-y-1">
+                      <input
+                        type="password"
+                        value={gogToken}
+                        onChange={(e) => setGogToken(e.target.value)}
+                        placeholder="Collez votre jeton de session embed.gog.com..."
+                        className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-violet-500 font-mono"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <p className="text-[10px] text-slate-400">
+                  Scrape et synchronise directement votre profil public GOG sans nécessiter l&apos;application client GOG Galaxy.
+                </p>
               </div>
             </div>
           </div>
@@ -1644,53 +2083,7 @@ export default function AccountDashboard({
         </div>
       )}
 
-      {/* VIEW F: PLAYSTATION / RETRO / NINTENDO */}
-      {(activePlatformTab === "playstation" ||
-        activePlatformTab === "retroachievements" ||
-        activePlatformTab === "nintendo") && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => {
-                setActivePlatformTab("all");
-                setLibPlatformFilter("all");
-              }}
-              className="text-xs text-sky-400 hover:text-sky-300 font-semibold flex items-center gap-1"
-            >
-              ← Retour à la Vue Globale
-            </button>
-            <span className={`text-xs font-bold px-2.5 py-0.5 rounded-lg border ${PLATFORM_META[activePlatformTab].badgeClass}`}>
-              Espace Dédié {PLATFORM_META[activePlatformTab].name}
-            </span>
-          </div>
 
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-5 sm:p-6 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-black text-white">
-                {accountProfile.accounts[activePlatformTab]?.displayName || PLATFORM_META[activePlatformTab].name}
-              </h2>
-              <p className="text-xs text-slate-400 mt-1">
-                Identifiant : {accountProfile.accounts[activePlatformTab]?.username || "Non configuré"}
-              </p>
-              {accountProfile.accounts[activePlatformTab]?.stats.trophies && (
-                <div className="mt-2 flex items-center gap-2 text-xs font-bold">
-                  <span className="text-sky-300">🏆 {accountProfile.accounts[activePlatformTab]?.stats.trophies?.platinum} Platine</span>
-                  <span className="text-amber-300">🥇 {accountProfile.accounts[activePlatformTab]?.stats.trophies?.gold} Or</span>
-                  <span className="text-slate-300">🥈 {accountProfile.accounts[activePlatformTab]?.stats.trophies?.silver} Argent</span>
-                  <span className="text-amber-600">🥉 {accountProfile.accounts[activePlatformTab]?.stats.trophies?.bronze} Bronze</span>
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={() => openEditPlatform(activePlatformTab)}
-              className="rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-bold text-white hover:bg-slate-700 transition"
-            >
-              Modifier profil & stats
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* 5. Owned Games Library ("Mes Jeux Possédés") */}
       <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5 space-y-4">
@@ -2126,67 +2519,10 @@ export default function AccountDashboard({
                     </div>
                   </div>
 
-                  {(editingPlatform === "playstation" ||
-                    editingPlatform === "epic") && (
-                    <div className="space-y-1.5 pt-1">
-                      <label className="text-[11px] font-semibold text-slate-300">
-                        Détail des Trophées (Platine, Or, Argent, Bronze)
-                      </label>
-                      <div className="grid grid-cols-4 gap-2">
-                        <input
-                          type="number"
-                          min="0"
-                          value={platForm.platinum}
-                          onChange={(e) =>
-                            setPlatForm({
-                              ...platForm,
-                              platinum: e.target.value,
-                            })
-                          }
-                          placeholder="🏆 Plat"
-                          className="rounded-xl border border-slate-800 bg-slate-950 p-2 text-xs text-white outline-none focus:border-sky-500"
-                        />
-                        <input
-                          type="number"
-                          min="0"
-                          value={platForm.gold}
-                          onChange={(e) =>
-                            setPlatForm({ ...platForm, gold: e.target.value })
-                          }
-                          placeholder="🥇 Or"
-                          className="rounded-xl border border-slate-800 bg-slate-950 p-2 text-xs text-white outline-none focus:border-sky-500"
-                        />
-                        <input
-                          type="number"
-                          min="0"
-                          value={platForm.silver}
-                          onChange={(e) =>
-                            setPlatForm({ ...platForm, silver: e.target.value })
-                          }
-                          placeholder="🥈 Arg"
-                          className="rounded-xl border border-slate-800 bg-slate-950 p-2 text-xs text-white outline-none focus:border-sky-500"
-                        />
-                        <input
-                          type="number"
-                          min="0"
-                          value={platForm.bronze}
-                          onChange={(e) =>
-                            setPlatForm({ ...platForm, bronze: e.target.value })
-                          }
-                          placeholder="🥉 Brz"
-                          className="rounded-xl border border-slate-800 bg-slate-950 p-2 text-xs text-white outline-none focus:border-sky-500"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {(editingPlatform === "xbox" ||
-                    editingPlatform === "retroachievements") && (
+                  {editingPlatform === "xbox" && (
                     <div>
                       <label className="text-[11px] text-slate-400">
-                        {editingPlatform === "xbox"
-                          ? "Gamerscore total (G)"
-                          : "Points RetroAchievements"}
+                        Gamerscore total (G)
                       </label>
                       <input
                         type="number"

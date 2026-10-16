@@ -42,14 +42,7 @@ export interface UserGameProgress {
   lastPlayed?: string;
 }
 
-export type PlatformType =
-  | 'steam'
-  | 'playstation'
-  | 'xbox'
-  | 'epic'
-  | 'gog'
-  | 'nintendo'
-  | 'retroachievements';
+export type PlatformType = "steam" | "xbox" | "epic" | "gog";
 
 export interface PlatformStats {
   gamesOwned: number;

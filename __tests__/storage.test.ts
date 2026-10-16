@@ -116,37 +116,37 @@ describe('lib/storage', () => {
     });
 
     it('saves non-steam platform accounts without overwriting main profile display name', () => {
-      const psnAccount: PlatformAccount = {
-        platform: 'playstation',
-        username: 'psn_gamer',
-        displayName: 'PSN Gamer',
+      const xboxAccount: PlatformAccount = {
+        platform: 'xbox',
+        username: 'xbox_gamer',
+        displayName: 'Xbox Gamer',
         connectedAt: new Date().toISOString(),
         stats: {
           gamesOwned: 12,
           totalAchievements: 80,
           completedGames: 3,
-          trophies: { platinum: 3, gold: 10, silver: 20, bronze: 47 },
+          gamerScore: 1250,
         },
       };
 
-      const updated = savePlatformAccount(psnAccount);
-      expect(updated.accounts.playstation?.username).toBe('psn_gamer');
-      expect(updated.accounts.playstation?.stats.trophies?.platinum).toBe(3);
+      const updated = savePlatformAccount(xboxAccount);
+      expect(updated.accounts.xbox?.username).toBe('xbox_gamer');
+      expect(updated.accounts.xbox?.stats.gamerScore).toBe(1250);
     });
 
     it('removes a platform account', () => {
-      const psnAccount: PlatformAccount = {
-        platform: 'playstation',
-        username: 'psn_gamer',
-        displayName: 'PSN Gamer',
+      const xboxAccount: PlatformAccount = {
+        platform: 'xbox',
+        username: 'xbox_gamer',
+        displayName: 'Xbox Gamer',
         connectedAt: new Date().toISOString(),
         stats: { gamesOwned: 5, totalAchievements: 10, completedGames: 1 },
       };
-      savePlatformAccount(psnAccount);
-      expect(getUserAccount().accounts.playstation).toBeDefined();
+      savePlatformAccount(xboxAccount);
+      expect(getUserAccount().accounts.xbox).toBeDefined();
 
-      const afterRemove = removePlatformAccount('playstation');
-      expect(afterRemove.accounts.playstation).toBeUndefined();
+      const afterRemove = removePlatformAccount('xbox');
+      expect(afterRemove.accounts.xbox).toBeUndefined();
     });
 
     it('removes steam user from storage when steam platform is removed', () => {
@@ -309,14 +309,12 @@ describe('lib/storage', () => {
   });
 
   describe('PLATFORM_META', () => {
-    it('defines metadata for all 7 platforms', () => {
+    it('defines metadata for all 4 supported platforms', () => {
       expect(PLATFORM_META.steam.name).toBe('Steam');
-      expect(PLATFORM_META.playstation.shortName).toBe('PSN');
       expect(PLATFORM_META.xbox.name).toBe('Xbox Live');
       expect(PLATFORM_META.epic.shortName).toBe('Epic');
       expect(PLATFORM_META.gog.name).toBe('GOG Galaxy');
-      expect(PLATFORM_META.nintendo.name).toBe('Nintendo Switch');
-      expect(PLATFORM_META.retroachievements.name).toBe('RetroAchievements');
+      expect(Object.keys(PLATFORM_META)).toEqual(['steam', 'xbox', 'epic', 'gog']);
     });
   });
 });
