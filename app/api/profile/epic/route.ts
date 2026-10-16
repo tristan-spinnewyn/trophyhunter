@@ -48,7 +48,7 @@ export async function GET(request: Request) {
         return NextResponse.json(
           {
             error:
-              "Code d'autorisation Epic Games expiré ou invalide. Rendez-vous sur https://www.epicgames.com/id/api/redirect pour obtenir un nouveau code.",
+              "Code d'autorisation Epic Games expiré ou invalide. Rendez-vous sur https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b159218764c3fa0a&responseType=code pour obtenir un nouveau code.",
             details: errText,
           },
           { status: 401 }
