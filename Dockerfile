@@ -1,5 +1,5 @@
 FROM node:25-alpine AS base
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN npm install -g corepack@latest && corepack enable && corepack prepare pnpm@latest --activate
 
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
