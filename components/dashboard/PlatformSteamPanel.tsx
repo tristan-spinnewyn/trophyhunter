@@ -170,7 +170,7 @@ export default function PlatformSteamPanel({
                 className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-sky-500"
               />
               <button
-                onClick={onConnectAndSyncSteam}
+                onClick={() => onConnectAndSyncSteam()}
                 disabled={isSyncingSteam || !steamInput.trim()}
                 className="flex items-center gap-1.5 rounded-xl bg-sky-500 px-3.5 py-2 text-xs font-bold text-slate-950 shadow-lg shadow-sky-500/20 transition hover:bg-sky-400 disabled:opacity-50"
               >

@@ -129,9 +129,10 @@ export function useEpicSync({
     }
   }, [ownedGames]);
 
-  const handleConnectAndSyncEpic = async (overrideUser?: string) => {
-    const targetUser = (overrideUser || epicInput).trim();
-    const targetCode = epicCode.trim();
+  const handleConnectAndSyncEpic = async (overrideUser?: string | unknown) => {
+    const rawTarget = typeof overrideUser === "string" ? overrideUser : epicInput;
+    const targetUser = (rawTarget || "").trim();
+    const targetCode = (epicCode || "").trim();
     if (!targetUser && !targetCode) return;
     setIsSyncingEpic(true);
     setBannerMsg(null);

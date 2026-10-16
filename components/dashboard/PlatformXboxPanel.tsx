@@ -146,7 +146,7 @@ export default function PlatformXboxPanel({
                 className="flex-1 min-w-0 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500"
               />
               <button
-                onClick={onConnectAndSyncXbox}
+                onClick={() => onConnectAndSyncXbox()}
                 disabled={isSyncingXbox || !xboxInput.trim()}
                 className="shrink-0 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-3.5 py-2 text-xs font-bold text-slate-950 hover:brightness-110 disabled:opacity-50 transition flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
               >

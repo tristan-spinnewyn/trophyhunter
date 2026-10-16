@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Check,
   ChevronDown,
@@ -38,6 +38,10 @@ export default function AchievementItem({
 }: AchievementItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentNotes, setCurrentNotes] = useState(notes || "");
+
+  useEffect(() => {
+    setCurrentNotes(notes || "");
+  }, [notes]);
 
   // Rarity color and label
   const getRarityBadge = (percent: number) => {
