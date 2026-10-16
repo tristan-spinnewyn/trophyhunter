@@ -158,6 +158,50 @@ export default function Home() {
     }
   };
 
+  const handleSyncLocalToSQLite = async () => {
+    const localProfile = getUserAccount();
+    const localGames = getOwnedGames();
+    const localFavorites = getFavoriteGames();
+    const localApiKey = getSavedSteamApiKey();
+    const progressMap: Record<string, any> = {};
+    if (typeof window !== "undefined") {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("trophyhunter_game_")) {
+          try {
+            progressMap[k] = JSON.parse(localStorage.getItem(k) || "{}");
+          } catch {}
+        }
+      }
+    }
+
+    const payload = {
+      profile: localProfile,
+      games: localGames,
+      favorites: localFavorites,
+      steamApiKey: localApiKey || undefined,
+      progress: progressMap,
+    };
+
+    const res = await fetch("/api/user/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      throw new Error("Erreur de synchronisation SQLite");
+    }
+
+    const data = await res.json();
+    if (data?.profile) {
+      setAccountProfile(data.profile);
+    }
+
+    // Purge legacy localStorage entries now that data is persisted in SQLite
+    clearLegacyLocalStorage();
+  };
+
   // Check user session & load database data
   useEffect(() => {
     fetch("/api/auth/me")
@@ -230,50 +274,6 @@ export default function Home() {
       console.error("Auto-sync local data to SQLite failed:", e);
     }
     await refreshUserData();
-  };
-
-  const handleSyncLocalToSQLite = async () => {
-    const localProfile = getUserAccount();
-    const localGames = getOwnedGames();
-    const localFavorites = getFavoriteGames();
-    const localApiKey = getSavedSteamApiKey();
-    const progressMap: Record<string, any> = {};
-    if (typeof window !== "undefined") {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.startsWith("trophyhunter_game_")) {
-          try {
-            progressMap[k] = JSON.parse(localStorage.getItem(k) || "{}");
-          } catch {}
-        }
-      }
-    }
-
-    const payload = {
-      profile: localProfile,
-      games: localGames,
-      favorites: localFavorites,
-      steamApiKey: localApiKey || undefined,
-      progress: progressMap,
-    };
-
-    const res = await fetch("/api/user/sync", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      throw new Error("Erreur de synchronisation SQLite");
-    }
-
-    const data = await res.json();
-    if (data?.profile) {
-      setAccountProfile(data.profile);
-    }
-
-    // Purge legacy localStorage entries now that data is persisted in SQLite
-    clearLegacyLocalStorage();
   };
 
 
