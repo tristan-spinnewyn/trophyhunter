@@ -118,6 +118,11 @@ export function usePlatformSync({
     updateAccountProfileInMemory,
     persistAccountToSQLite,
     persistGamesToSQLite,
+    onRequireToken: () => {
+      setEpicAuthModalGame(null);
+      setEpicAuthModalError(null);
+      setIsEpicAuthModalOpen(true);
+    },
   });
 
   const { isSyncingGOG, handleConnectAndSyncGOG } = useGogSync({
@@ -223,9 +228,21 @@ export function usePlatformSync({
   };
 
   const handleEpicModalSubmit = async (token: string) => {
-    if (!epicAuthModalGame) return;
     setIsEpicModalSyncing(true);
     setEpicAuthModalError(null);
+
+    if (!epicAuthModalGame) {
+      try {
+        await handleConnectAndSyncEpic(undefined, token);
+        setIsEpicAuthModalOpen(false);
+      } catch (err: any) {
+        setEpicAuthModalError(err.message || "Erreur de synchronisation Epic Games.");
+      } finally {
+        setIsEpicModalSyncing(false);
+      }
+      return;
+    }
+
     try {
       const res = await fetch(
         `/api/sync?platform=epic&appId=${epicAuthModalGame.appId}&name=${encodeURIComponent(
@@ -244,6 +261,12 @@ export function usePlatformSync({
     } finally {
       setIsEpicModalSyncing(false);
     }
+  };
+
+  const openEpicAuthModalForLibrary = () => {
+    setEpicAuthModalGame(null);
+    setEpicAuthModalError(null);
+    setIsEpicAuthModalOpen(true);
   };
 
   return {
@@ -276,6 +299,7 @@ export function usePlatformSync({
     epicAuthModalGame,
     epicAuthModalError,
     isEpicModalSyncing,
+    openEpicAuthModalForLibrary,
     closeEpicAuthModal: () => {
       setIsEpicAuthModalOpen(false);
       setEpicAuthModalGame(null);

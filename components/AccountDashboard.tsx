@@ -154,6 +154,7 @@ export default function AccountDashboard({
     epicAuthModalGame,
     epicAuthModalError,
     isEpicModalSyncing,
+    openEpicAuthModalForLibrary,
     closeEpicAuthModal,
     handleEpicModalSubmit,
   } = usePlatformSync({
@@ -336,6 +337,7 @@ export default function AccountDashboard({
         handleCleanEpicGames={() =>
           handleCleanEpicGames(epicCounts.noAch, epicCounts.withAch)
         }
+        onOpenEpicModal={openEpicAuthModalForLibrary}
         gogInput={gogInput}
         setGogInput={setGogInput}
         gogToken={gogToken}

@@ -55,6 +55,20 @@ export async function fetchEpicPlayerAchievements(
         }
       }
     }
+    PlayerProfile {
+      playerProfile(epicAccountId: $epicAccountId) {
+        achievementsSummaries {
+          data {
+            sandboxId
+            totalUnlocked
+            totalXP
+            product {
+              name
+            }
+          }
+        }
+      }
+    }
   }`;
 
   try {
@@ -72,9 +86,31 @@ export async function fetchEpicPlayerAchievements(
     });
     if (!res.ok) return [];
     const json = await res.json();
-    return (
-      json?.data?.PlayerAchievement?.playerAchievementGameRecords?.records || []
-    );
+    const records: any[] =
+      json?.data?.PlayerAchievement?.playerAchievementGameRecords?.records || [];
+
+    const summaries: any[] =
+      json?.data?.PlayerProfile?.playerProfile?.achievementsSummaries?.data ||
+      json?.data?.PlayerProfile?.playerProfile?.achievementsSummaries ||
+      [];
+
+    const nameBySandbox = new Map<string, string>();
+    for (const s of summaries) {
+      const sId = (s.sandboxId || "").toLowerCase();
+      const pName = s.product?.name || "";
+      if (sId && pName) {
+        nameBySandbox.set(sId, pName);
+      }
+    }
+
+    for (const r of records) {
+      const sId = (r.sandboxId || "").toLowerCase();
+      if (sId && nameBySandbox.has(sId)) {
+        r.productName = nameBySandbox.get(sId);
+      }
+    }
+
+    return records;
   } catch {
     return [];
   }
@@ -185,11 +221,17 @@ export async function syncEpicGame(
         .replace(/_?sandbox$/, "")
         .replace(/[^a-z0-9]/g, "");
 
+      const recProductName = (rec.productName || "").trim();
+      const normRecProduct = normalizeGameTitle(recProductName);
+
       if (
         (knownSandbox && sId === knownSandbox.toLowerCase()) ||
         cleanSid === normTitle ||
         (normTitle.length >= 4 && cleanSid.startsWith(normTitle)) ||
-        (cleanSid.length >= 4 && normTitle.startsWith(cleanSid))
+        (cleanSid.length >= 4 && normTitle.startsWith(cleanSid)) ||
+        (normRecProduct && normRecProduct === normTitle) ||
+        (normRecProduct.length >= 4 && normTitle.includes(normRecProduct)) ||
+        (normTitle.length >= 4 && normRecProduct.includes(normTitle))
       ) {
         matchedRecord = rec;
         if (authUser && sId && sId !== knownSandbox?.toLowerCase()) {
@@ -288,6 +330,10 @@ export async function syncEpicGame(
   }
 
   const hasCredentials = Boolean(creds?.accessToken && creds?.accountId);
+  const shouldRequireToken =
+    providedInvalidCode ||
+    (!hasCredentials && !matchedRecord) ||
+    (Boolean(rawInput) && !hasCredentials);
 
   return {
     success: true,
@@ -298,7 +344,7 @@ export async function syncEpicGame(
     unlockedTitles,
     unlockedIds,
     ...(productAchievements ? { achievements: productAchievements } : {}),
-    ...(!hasCredentials && !matchedRecord
+    ...(shouldRequireToken
       ? {
           requiresToken: true,
           error: providedInvalidCode ? TOKEN_INVALID_MESSAGE : TOKEN_REQUIRED_MESSAGE,

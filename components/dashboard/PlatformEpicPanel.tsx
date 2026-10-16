@@ -8,6 +8,7 @@ import {
   RefreshCw,
   Loader2,
   Trash2,
+  KeyRound,
 } from "lucide-react";
 import type { UserAccountProfile, PlatformType } from "@/lib/types";
 import { parseEpicAuthInput } from "@/lib/epic/auth-parser";
@@ -31,6 +32,7 @@ interface PlatformEpicPanelProps {
   openEditPlatform: (plat: PlatformType) => void;
   handleDisconnectPlatform: (plat: PlatformType) => void;
   onBackToAll: () => void;
+  onOpenEpicModal?: () => void;
 }
 
 export default function PlatformEpicPanel({
@@ -52,6 +54,7 @@ export default function PlatformEpicPanel({
   openEditPlatform,
   handleDisconnectPlatform,
   onBackToAll,
+  onOpenEpicModal,
 }: PlatformEpicPanelProps) {
   const epicAccount = accountProfile.accounts.epic;
 
@@ -209,6 +212,17 @@ export default function PlatformEpicPanel({
                     className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-purple-500 font-mono"
                   />
                 </div>
+              )}
+
+              {onOpenEpicModal && (
+                <button
+                  type="button"
+                  onClick={onOpenEpicModal}
+                  className="mt-2.5 w-full rounded-xl border border-purple-500/40 bg-purple-500/10 px-3 py-2 text-xs font-bold text-purple-300 hover:bg-purple-500/20 transition flex items-center justify-center gap-2"
+                >
+                  <KeyRound className="h-3.5 w-3.5 text-purple-400" />
+                  <span>Saisir un code d&apos;autorisation (Modal guidée)</span>
+                </button>
               )}
             </div>
 

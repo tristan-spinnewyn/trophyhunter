@@ -49,6 +49,7 @@ export function useGameProgressActions({
     handleSync,
     isEpicAuthModalOpen,
     setIsEpicAuthModalOpen,
+    openEpicAuthModal,
     epicAuthModalError,
     handleEpicAuthSubmit,
   } = useGameSyncAction({
@@ -220,6 +221,7 @@ export function useGameProgressActions({
     handleSync,
     isEpicAuthModalOpen,
     setIsEpicAuthModalOpen,
+    openEpicAuthModal,
     epicAuthModalError,
     handleEpicAuthSubmit,
     handleToggleAchievement,
