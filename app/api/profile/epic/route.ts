@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import type { OwnedGame, PlatformAccount } from "@/lib/types";
 
-const EPIC_CLIENT_ID = "34a02cf8f4414e29b159218764c3fa0a";
-const EPIC_CLIENT_SECRET = "daafbccc737745039d07ba88e3044597";
+const EPIC_CLIENT_ID = "34a02cf8f4414e29b15921876da36f9a";
+const EPIC_CLIENT_SECRET = "daafbccc737745039dffe53d94fc76cf";
 const EPIC_BASIC_AUTH = Buffer.from(
   `${EPIC_CLIENT_ID}:${EPIC_CLIENT_SECRET}`
 ).toString("base64");
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
         return NextResponse.json(
           {
             error:
-              "Code d'autorisation Epic Games expiré ou invalide. Rendez-vous sur https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b159218764c3fa0a&responseType=code pour obtenir un nouveau code.",
+              "Code d'autorisation Epic Games expiré ou invalide. Rendez-vous sur https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code pour obtenir un nouveau code.",
             details: errText,
           },
           { status: 401 }
