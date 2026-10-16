@@ -1,0 +1,255 @@
+import { getAuthenticatedUser } from "./auth";
+import {
+  getUserPlatformAccounts,
+  getUserPlatformApiKey,
+  saveUserPlatformAccount,
+  getUserOwnedGames,
+  getUserGameProgress,
+  saveUserGameProgress,
+} from "./db";
+import { normalizeGameTitle } from "./db/collections";
+
+const EPIC_CLIENT_ID = "34a02cf8f4414e29b15921876da36f9a";
+const EPIC_CLIENT_SECRET = "daafbccc737745039dffe53d94fc76cf";
+const EPIC_BASIC_AUTH = Buffer.from(
+  `${EPIC_CLIENT_ID}:${EPIC_CLIENT_SECRET}`
+).toString("base64");
+
+export async function refreshEpicAccessToken(
+  refreshToken: string
+): Promise<{ accessToken: string; refreshToken?: string; accountId?: string } | null> {
+  try {
+    const res = await fetch(
+      "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${EPIC_BASIC_AUTH}`,
+        },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: refreshToken,
+        }).toString(),
+      }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      accountId: data.account_id,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchEpicPlayerAchievements(
+  accountId: string,
+  accessToken: string
+): Promise<any[]> {
+  const gqlQuery = `query PlayerProfileAchievements($epicAccountId: String!) {
+    PlayerAchievement {
+      playerAchievementGameRecords(epicAccountId: $epicAccountId) {
+        records {
+          sandboxId
+          totalUnlocked
+          totalXP
+          achievementSets {
+            achievementSetId
+            totalAchievements
+            totalUnlocked
+          }
+          playerAchievements {
+            achievementName
+            unlocked
+            XP
+          }
+        }
+      }
+    }
+  }`;
+
+  try {
+    const res = await fetch("https://graphql.epicgames.com/graphql", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        "User-Agent": "EpicGamesLauncher/14.0.8-22004686+++Portal+Release-Live",
+      },
+      body: JSON.stringify({
+        query: gqlQuery,
+        variables: { epicAccountId: accountId },
+      }),
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return (
+      json?.data?.PlayerAchievement?.playerAchievementGameRecords?.records || []
+    );
+  } catch {
+    return [];
+  }
+}
+
+export interface EpicSyncResult {
+  success: boolean;
+  platform: "epic";
+  gameName: string;
+  totalAchievements: number;
+  count: number;
+  unlockedTitles: string[];
+  unlockedIds: string[];
+  error?: string;
+}
+
+export async function syncEpicGame(
+  request: Request,
+  appId: string | number,
+  gameName?: string
+): Promise<EpicSyncResult> {
+  const authUser = await getAuthenticatedUser();
+  const numAppId = typeof appId === "string" ? parseInt(appId, 10) : appId;
+  const normTitle = normalizeGameTitle(gameName || "");
+
+  let totalUnlocked = 0;
+  let totalAchievements = 0;
+  let unlockedTitles: string[] = [];
+  let unlockedIds: string[] = [];
+
+  let matchedRecord: any = null;
+
+  if (authUser) {
+    const rawApiKey = getUserPlatformApiKey(authUser.id, "epic");
+    let accessToken: string | null = null;
+    let refreshToken: string | null = null;
+    let accountId: string | null = null;
+
+    if (rawApiKey) {
+      try {
+        const parsed = JSON.parse(rawApiKey);
+        accessToken = parsed.accessToken || null;
+        refreshToken = parsed.refreshToken || null;
+        accountId = parsed.accountId || null;
+      } catch {
+        // raw token without JSON
+        accessToken = rawApiKey;
+      }
+    }
+
+    if (accountId && accessToken) {
+      let records = await fetchEpicPlayerAchievements(accountId, accessToken);
+      if (records.length === 0 && refreshToken) {
+        // Attempt refresh
+        const refreshed = await refreshEpicAccessToken(refreshToken);
+        if (refreshed?.accessToken) {
+          accessToken = refreshed.accessToken;
+          refreshToken = refreshed.refreshToken || refreshToken;
+          records = await fetchEpicPlayerAchievements(accountId, accessToken);
+
+          // Update saved credentials
+          const accounts = getUserPlatformAccounts(authUser.id);
+          if (accounts.epic) {
+            saveUserPlatformAccount(
+              authUser.id,
+              accounts.epic,
+              JSON.stringify({ accessToken, refreshToken, accountId })
+            );
+          }
+        }
+      }
+
+      // Find matching game record by sandbox or title
+      for (const rec of records) {
+        const sId = (rec.sandboxId || "").toLowerCase();
+        const cleanSid = sId
+          .replace(/^ns_?/, "")
+          .replace(/_?sandbox$/, "")
+          .replace(/[^a-z0-9]/g, "");
+
+        if (
+          cleanSid === normTitle ||
+          (normTitle.length >= 4 && cleanSid.startsWith(normTitle)) ||
+          (cleanSid.length >= 4 && normTitle.startsWith(cleanSid))
+        ) {
+          matchedRecord = rec;
+          break;
+        }
+      }
+    }
+
+    // Extract achievements from matched record if found
+    if (matchedRecord) {
+      totalUnlocked = matchedRecord.totalUnlocked || 0;
+      const playerAchs = Array.isArray(matchedRecord.playerAchievements)
+        ? matchedRecord.playerAchievements
+        : [];
+      unlockedTitles = playerAchs
+        .filter((p: any) => p.unlocked)
+        .map((p: any) => p.achievementName);
+
+      const sets = Array.isArray(matchedRecord.achievementSets)
+        ? matchedRecord.achievementSets
+        : [];
+      const setTotal = sets.reduce(
+        (acc: number, s: any) => acc + (s.totalAchievements || 0),
+        0
+      );
+      totalAchievements = Math.max(
+        setTotal,
+        playerAchs.length,
+        totalUnlocked
+      );
+    } else {
+      // Fallback: check SQLite owned games & progress
+      const owned = getUserOwnedGames(authUser.id).find(
+        (g) => g.appId === numAppId && g.platform === "epic"
+      );
+      const existingProgress = getUserGameProgress(
+        authUser.id,
+        numAppId,
+        "epic"
+      );
+
+      if (owned) {
+        totalUnlocked = owned.unlockedCount || 0;
+        totalAchievements = owned.totalAchievements || 0;
+      }
+      if (existingProgress?.unlockedIds) {
+        unlockedIds = existingProgress.unlockedIds;
+      }
+    }
+
+    // If unlockedTitles exists, generate slugs
+    if (unlockedTitles.length > 0) {
+      unlockedIds = unlockedTitles.map(
+        (t, idx) =>
+          `ach_${idx + 1}_${t.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 30)}`
+      );
+    } else if (unlockedIds.length === 0 && totalUnlocked > 0) {
+      // Create indexed achievement slugs matching unlocked count
+      for (let i = 1; i <= totalUnlocked; i++) {
+        unlockedIds.push(`ach_${i}`);
+      }
+    }
+
+    // Persist progress to SQLite
+    saveUserGameProgress(authUser.id, numAppId, "epic", {
+      unlockedIds,
+      lastPlayed: new Date().toISOString(),
+      notes: {},
+    });
+  }
+
+  return {
+    success: true,
+    platform: "epic",
+    gameName: gameName || "Jeu Epic",
+    totalAchievements,
+    count: totalUnlocked || unlockedIds.length,
+    unlockedTitles,
+    unlockedIds,
+  };
+}

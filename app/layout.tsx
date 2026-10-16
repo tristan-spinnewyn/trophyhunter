@@ -35,6 +35,8 @@ export const metadata: Metadata = {
   },
 };
 
+import AppShell from "@/components/AppShell";
+
 export default function RootLayout({
   children,
 }: {
@@ -46,7 +48,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
       <body className="min-h-full flex flex-col bg-slate-950 text-slate-100 selection:bg-sky-500 selection:text-white">
-        {children}
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

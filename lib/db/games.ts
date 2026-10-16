@@ -1,0 +1,110 @@
+import crypto from "node:crypto";
+import { getDb, withTransaction } from "./connection";
+import type { OwnedGame, PlatformType } from "../types";
+
+export function getUserOwnedGames(userId: string): OwnedGame[] {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT app_id, name, header_img, platform, total_achievements, unlocked_count, playtime_hours, last_played, added_at, source
+       FROM user_games
+       WHERE user_id = ?
+       ORDER BY added_at DESC`
+    )
+    .all(userId) as Array<{
+    app_id: number;
+    name: string;
+    header_img: string | null;
+    platform: PlatformType;
+    total_achievements: number;
+    unlocked_count: number;
+    playtime_hours: number | null;
+    last_played: string | null;
+    added_at: string;
+    source: string | null;
+  }>;
+
+  return rows.map((r) => ({
+    appId: r.app_id,
+    name: r.name,
+    headerImg: r.header_img || "",
+    platform: r.platform,
+    totalAchievements: r.total_achievements,
+    unlockedCount: r.unlocked_count,
+    playtimeHours: r.playtime_hours ?? undefined,
+    lastPlayed: r.last_played ?? undefined,
+    addedAt: r.added_at,
+    source: (r.source as OwnedGame["source"]) || undefined,
+  }));
+}
+
+export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
+  if (!games.length) return;
+  const db = getDb();
+
+  const insertStmt = db.prepare(
+    `INSERT INTO user_games (id, user_id, app_id, platform, name, header_img, total_achievements, unlocked_count, playtime_hours, last_played, source, added_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(user_id, platform, app_id) DO UPDATE SET
+       name = excluded.name,
+       header_img = COALESCE(excluded.header_img, user_games.header_img),
+       total_achievements = CASE WHEN excluded.total_achievements > 0 THEN excluded.total_achievements ELSE user_games.total_achievements END,
+       unlocked_count = MAX(excluded.unlocked_count, user_games.unlocked_count),
+       playtime_hours = COALESCE(excluded.playtime_hours, user_games.playtime_hours),
+       last_played = COALESCE(excluded.last_played, user_games.last_played),
+       source = COALESCE(excluded.source, user_games.source)`
+  );
+
+  withTransaction(db, () => {
+    for (const g of games) {
+      const id = crypto.randomUUID();
+      insertStmt.run(
+        id,
+        userId,
+        g.appId,
+        g.platform,
+        g.name,
+        g.headerImg || null,
+        g.totalAchievements || 0,
+        g.unlockedCount || 0,
+        g.playtimeHours ?? null,
+        g.lastPlayed || null,
+        g.source || null,
+        g.addedAt || new Date().toISOString()
+      );
+    }
+  });
+}
+
+export function removeUserPlatformGames(
+  userId: string,
+  platform: PlatformType
+): void {
+  const db = getDb();
+  db.prepare(
+    "DELETE FROM user_games WHERE user_id = ? AND platform = ?"
+  ).run(userId, platform);
+}
+
+export function removeUserOwnedGame(
+  userId: string,
+  appId: number,
+  platform?: PlatformType
+): void {
+  const db = getDb();
+  if (platform) {
+    db.prepare(
+      "DELETE FROM user_games WHERE user_id = ? AND app_id = ? AND platform = ?"
+    ).run(userId, appId, platform);
+    db.prepare(
+      "DELETE FROM user_game_progress WHERE user_id = ? AND app_id = ? AND platform = ?"
+    ).run(userId, appId, platform);
+  } else {
+    db.prepare(
+      "DELETE FROM user_games WHERE user_id = ? AND app_id = ?"
+    ).run(userId, appId);
+    db.prepare(
+      "DELETE FROM user_game_progress WHERE user_id = ? AND app_id = ?"
+    ).run(userId, appId);
+  }
+}
