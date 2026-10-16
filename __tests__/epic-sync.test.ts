@@ -324,5 +324,88 @@ describe("lib/epic-sync", () => {
       expect(result.totalAchievements).toBe(10);
       expect(result.unlockedIds).toEqual(["ach_1", "ach_2", "ach_3"]);
     });
+
+    it("accepts authorizationToken in query and exchanges it with Epic OAuth", async () => {
+      // 1. OAuth code exchange
+      vi.spyOn(global, "fetch")
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            access_token: "mock_exchanged_token",
+            refresh_token: "mock_refresh_token",
+            account_id: "epic_account_777",
+          }),
+        } as any)
+        // 2. GraphQL achievements
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              PlayerAchievement: {
+                playerAchievementGameRecords: {
+                  records: [
+                    {
+                      sandboxId: "supergame",
+                      totalUnlocked: 1,
+                      achievementSets: [{ totalAchievements: 10, totalUnlocked: 1 }],
+                      playerAchievements: [
+                        { achievementName: "First Win", unlocked: true },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          }),
+        } as any);
+
+      const req = new Request(
+        "http://localhost:3000/api/sync?platform=epic&appId=55501&name=Super%20Game&authorizationToken=code_12345"
+      );
+      const result = await syncEpicGame(req, 55501, "Super Game");
+
+      expect(result.success).toBe(true);
+      expect(result.count).toBe(1);
+      expect(result.unlockedTitles).toEqual(["First Win"]);
+      expect(result.unlockedIds[0]).toContain("ach_1_first_win");
+    });
+
+    it("parses JSON authorizationToken string if user pasted the full object", async () => {
+      vi.spyOn(global, "fetch")
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            access_token: "mock_token_from_json",
+            refresh_token: "mock_refresh_from_json",
+            account_id: "epic_account_888",
+          }),
+        } as any)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              PlayerAchievement: {
+                playerAchievementGameRecords: {
+                  records: [],
+                },
+              },
+            },
+          }),
+        } as any);
+
+      const jsonString = encodeURIComponent(
+        JSON.stringify({
+          redirectUrl: "https://localhost/?code=auth_code_from_json",
+          authorizationCode: "auth_code_from_json",
+        })
+      );
+      const req = new Request(
+        `http://localhost:3000/api/sync?platform=epic&appId=55502&name=Some%20Game&authorizationToken=${jsonString}`
+      );
+      const result = await syncEpicGame(req, 55502, "Some Game");
+
+      expect(result.success).toBe(true);
+      expect(result.platform).toBe("epic");
+    });
   });
 });

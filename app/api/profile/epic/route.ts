@@ -13,13 +13,40 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const rawUser = searchParams.get("user")?.trim();
-  const code = searchParams.get("code")?.trim();
+  const rawCode = (
+    searchParams.get("authorizationToken") ||
+    searchParams.get("authorization_token") ||
+    searchParams.get("authorizationCode") ||
+    searchParams.get("authorization_code") ||
+    searchParams.get("code") ||
+    searchParams.get("token") ||
+    request.headers.get("x-authorization-token") ||
+    ""
+  ).trim();
+
+  let code = rawCode;
+  if (code.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(code);
+      code = (
+        parsed.authorizationCode ||
+        parsed.authorizationToken ||
+        parsed.code ||
+        parsed.token ||
+        parsed.access_token ||
+        code
+      ).trim();
+    } catch {}
+  } else if (code.includes("code=")) {
+    const m = code.match(/[?&]code=([a-f0-9]+)/i);
+    if (m) code = m[1];
+  }
 
   if (!rawUser && !code) {
     return NextResponse.json(
       {
         error:
-          "Paramètre 'user' (pseudo Epic Games) ou 'code' (code d'autorisation Epic) requis.",
+          "Paramètre 'user' (pseudo Epic Games) ou 'authorizationToken' / 'code' (code d'autorisation Epic) requis.",
       },
       { status: 400 }
     );

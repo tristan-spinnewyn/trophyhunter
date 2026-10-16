@@ -132,8 +132,21 @@ export function useEpicSync({
   const handleConnectAndSyncEpic = async (overrideUser?: string | unknown) => {
     const rawTarget = typeof overrideUser === "string" ? overrideUser : epicInput;
     const targetUser = (rawTarget || "").trim();
-    const targetCode = (epicCode || "").trim();
-    if (!targetUser && !targetCode) return;
+    let cleanCode = (epicCode || "").trim();
+    if (cleanCode.startsWith("{")) {
+      try {
+        const parsed = JSON.parse(cleanCode);
+        cleanCode = (
+          parsed.authorizationCode ||
+          parsed.authorizationToken ||
+          parsed.code ||
+          parsed.token ||
+          cleanCode
+        ).trim();
+      } catch {}
+    }
+
+    if (!targetUser && !cleanCode) return;
     setIsSyncingEpic(true);
     setBannerMsg(null);
     setSyncProgressText("Importation de la bibliothèque Epic Games...");
@@ -141,8 +154,8 @@ export function useEpicSync({
       const userParam = targetUser
         ? `user=${encodeURIComponent(targetUser)}`
         : "";
-      const codeParam = targetCode
-        ? `code=${encodeURIComponent(targetCode)}`
+      const codeParam = cleanCode
+        ? `authorizationToken=${encodeURIComponent(cleanCode)}&code=${encodeURIComponent(cleanCode)}`
         : "";
       const query = [userParam, codeParam, "resolveAchievements=1"]
         .filter(Boolean)

@@ -53,12 +53,29 @@ export function useGameSyncAction({
       setSyncNotice(null);
 
       try {
-        const res = await fetch(
+        let res = await fetch(
           `/api/sync?platform=epic&appId=${game.id}&name=${encodeURIComponent(
             game.name
           )}&user=${encodeURIComponent(epicAccount.username || "")}`
         );
-        const data = await res.json();
+        let data = await res.json();
+
+        if (data.requiresToken || (!data.success && data.error?.includes("authorizationToken"))) {
+          const userToken = window.prompt(
+            "Pour synchroniser vos succès officiels avec Epic Games, collez votre authorizationToken ou code d'échange Epic :\n(Obtenez-le sur : https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code)"
+          );
+          if (userToken && userToken.trim()) {
+            res = await fetch(
+              `/api/sync?platform=epic&appId=${game.id}&name=${encodeURIComponent(
+                game.name
+              )}&user=${encodeURIComponent(
+                epicAccount.username || ""
+              )}&authorizationToken=${encodeURIComponent(userToken.trim())}`
+            );
+            data = await res.json();
+          }
+        }
+
         if (!res.ok || !data.success) {
           throw new Error(data.error || "Échec de la synchronisation Epic Games.");
         }

@@ -34,7 +34,18 @@ describe('GET /api/profile/epic', () => {
     expect(res.status).toBe(400);
 
     const data = await res.json();
-    expect(data.error).toContain("Paramètre 'user' (pseudo Epic Games) ou 'code'");
+    expect(data.error).toContain("authorizationToken");
+  });
+
+  it('accepts authorizationToken parameter instead of code', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: false,
+      text: async () => '{"errorCode":"errors.com.epicgames.account.oauth.authorization_code_not_found"}',
+    } as any);
+
+    const req = new Request('http://localhost:3000/api/profile/epic?authorizationToken=auth_token_xyz');
+    const res = await GET(req);
+    expect(res.status).toBe(401);
   });
 
   it('configures Epic account in username-only mode without credentials', async () => {
