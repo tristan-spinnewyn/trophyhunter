@@ -16,14 +16,18 @@ const SEASONAL_BADGE_PATTERNS = [
   /replay/i,
 ];
 
+const HTML_ENTITIES: Record<string, string> = {
+  "&nbsp;": " ",
+  "&quot;": '"',
+  "&#39;": "'",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&amp;": "&",
+};
+
 function decodeHtmlEntities(str: string): string {
   return str
-    .replace(/&nbsp;/g, " ")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
+    .replace(/&(?:nbsp|quot|#39|lt|gt|amp);/g, (match) => HTML_ENTITIES[match] || match)
     .trim();
 }
 

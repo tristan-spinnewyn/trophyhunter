@@ -56,11 +56,19 @@ describe('lib/storage', () => {
       expect(getSavedSteamApiKey()).toBe('');
     });
 
-    it('saves, retrieves and removes API key', () => {
+    it('saves, retrieves and removes API key with encryption', () => {
       saveSteamApiKey('ABC123XYZ456');
+      const rawStored = localStorage.getItem('trophyhunter_steam_api_key');
+      expect(rawStored).toMatch(/^enc_v1:/);
+      expect(rawStored).not.toContain('ABC123XYZ456');
       expect(getSavedSteamApiKey()).toBe('ABC123XYZ456');
       saveSteamApiKey('  ');
       expect(getSavedSteamApiKey()).toBe('');
+    });
+
+    it('supports legacy unencrypted API keys', () => {
+      localStorage.setItem('trophyhunter_steam_api_key', 'LEGACY_PLAIN_KEY_999');
+      expect(getSavedSteamApiKey()).toBe('LEGACY_PLAIN_KEY_999');
     });
   });
 

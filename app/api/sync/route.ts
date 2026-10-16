@@ -2,6 +2,17 @@ import { NextResponse } from "next/server";
 
 const normalize = (s: string) => s.replace(/[’']/g, "'").trim().toLowerCase();
 
+// Safely sanitize HTML tags iteratively to prevent incomplete multi-character sanitization
+function stripHtmlTags(input: string): string {
+  let prev = input;
+  let curr = input;
+  do {
+    prev = curr;
+    curr = curr.replace(/<[^>]*>/g, "");
+  } while (curr !== prev);
+  return curr.trim();
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const rawUser = searchParams.get("user")?.trim();
@@ -14,12 +25,20 @@ export async function GET(request: Request) {
     );
   }
 
+  // Validate appId strictly as numeric digits to prevent SSRF
+  if (!/^\d{1,10}$/.test(appId)) {
+    return NextResponse.json(
+      { error: "Paramètre 'appId' invalide (chiffres uniquement)." },
+      { status: 400 }
+    );
+  }
+
   // Parse user input (supports vanity URL, SteamID64 or full URL)
   let userIdentifier = rawUser;
   let isVanity = true;
 
   const urlMatch = rawUser.match(
-    /steamcommunity\.com\/(id|profiles)\/([^\s/?#]+)/i
+    /steamcommunity\.com\/(id|profiles)\/([a-zA-Z0-9_-]+)/i
   );
   if (urlMatch) {
     isVanity = urlMatch[1].toLowerCase() === "id";
@@ -28,11 +47,37 @@ export async function GET(request: Request) {
     isVanity = false;
   }
 
+  // Validate userIdentifier against strictly safe characters to prevent SSRF / path traversal
+  if (isVanity) {
+    if (!/^[a-zA-Z0-9_-]{2,64}$/.test(userIdentifier)) {
+      return NextResponse.json(
+        { error: "Pseudo ou identifiant Steam personnalisé invalide." },
+        { status: 400 }
+      );
+    }
+  } else {
+    if (!/^\d{16,20}$/.test(userIdentifier)) {
+      return NextResponse.json(
+        { error: "SteamID64 invalide (16 à 20 chiffres attendus)." },
+        { status: 400 }
+      );
+    }
+  }
+
   const pathType = isVanity ? "id" : "profiles";
-  const xmlUrl = `https://steamcommunity.com/${pathType}/${encodeURIComponent(
-    userIdentifier
-  )}/stats/${appId}/?xml=1`;
-  const schemaUrl = `https://api.steampowered.com/IPlayerService/GetGameAchievements/v1/?appid=${appId}&language=french`;
+  const safeUser = encodeURIComponent(userIdentifier);
+  const safeAppId = encodeURIComponent(appId);
+
+  const xmlUrl = new URL(
+    `https://steamcommunity.com/${pathType}/${safeUser}/stats/${safeAppId}/`
+  );
+  xmlUrl.searchParams.set("xml", "1");
+
+  const schemaUrl = new URL(
+    "https://api.steampowered.com/IPlayerService/GetGameAchievements/v1/"
+  );
+  schemaUrl.searchParams.set("appid", safeAppId);
+  schemaUrl.searchParams.set("language", "french");
 
   const headers = {
     Cookie:
@@ -44,8 +89,8 @@ export async function GET(request: Request) {
 
   try {
     const [response, globalRes] = await Promise.all([
-      fetch(xmlUrl, { headers, next: { revalidate: 30 } }),
-      fetch(schemaUrl, { headers, next: { revalidate: 600 } }).catch(() => null),
+      fetch(xmlUrl.toString(), { headers, next: { revalidate: 30 } }),
+      fetch(schemaUrl.toString(), { headers, next: { revalidate: 600 } }).catch(() => null),
     ]);
 
     if (!response.ok) {
@@ -189,7 +234,7 @@ export async function GET(request: Request) {
         const titleMatch = chunk.match(/<h3[^>]*>(.*?)<\/h3>/);
         if (!titleMatch) continue;
 
-        const title = titleMatch[1].replace(/<[^>]+>/g, "").trim();
+        const title = stripHtmlTags(titleMatch[1]);
         const hasUnlockTime = chunk.includes("achieveUnlockTime");
 
         if (hasUnlockTime) {
@@ -208,7 +253,7 @@ export async function GET(request: Request) {
           for (let i = 1; i < globalParts.length; i++) {
             const block = globalParts[i];
             const tMatch = block.match(/<h3[^>]*>(.*?)<\/h3>/);
-            const title = tMatch ? tMatch[1].replace(/<[^>]+>/g, "").trim() : `Succès #${i}`;
+            const title = tMatch ? stripHtmlTags(tMatch[1]) : `Succès #${i}`;
             const normTitle = normalize(title);
             const idx = remainingUnlocked.indexOf(normTitle);
             if (idx !== -1) {
