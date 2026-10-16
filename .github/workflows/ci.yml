@@ -53,6 +53,9 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Verify Docker build
+        run: docker build -t trophyhunter:local .
+
   deploy:
     name: deploy
     needs: ci
