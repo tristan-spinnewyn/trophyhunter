@@ -7,6 +7,7 @@ import {
   createSession,
   getUserOwnedGames,
   getUserPlatformAccounts,
+  getUserGameProgress,
 } from '@/lib/db';
 
 const mockCookieStore = new Map<string, any>();
@@ -663,6 +664,82 @@ describe('GET /api/profile/epic', () => {
     expect(data.discoveredGames).toHaveLength(1);
     expect(data.discoveredGames[0].totalAchievements).toBe(3);
     expect(data.discoveredGames[0].headerImg).toContain('/apps/1145360/header.jpg');
+  });
+
+  it('automatically persists user_game_progress for imported games with unlocked achievements when authenticated', async () => {
+    const user = createUser('epicprogressuser', 'pass123');
+    const session = createSession(user.id);
+    mockCookieStore.set('trophyhunter_session', { value: session });
+
+    const mockToken = {
+      access_token: 'valid-epic-token',
+      refresh_token: 'valid-refresh-token',
+      account_id: 'epic-acc-id',
+      displayName: 'EpicPlayer',
+    };
+
+    const mockLibrary = {
+      records: [
+        {
+          appName: 'GameWithAch',
+          catalogItemId: 'cat_gw_ach',
+          namespace: 'ns_gw_ach',
+          sandboxName: 'Game With Ach',
+        },
+      ],
+    };
+
+    const mockGql = {
+      data: {
+        PlayerAchievement: {
+          playerAchievementGameRecords: {
+            records: [
+              {
+                sandboxId: 'ns_gw_ach',
+                totalUnlocked: 2,
+                totalXP: 100,
+                achievementSets: [{ totalAchievements: 10, totalUnlocked: 2 }],
+                playerAchievements: [
+                  { achievementName: 'First Blood', unlocked: true },
+                  { achievementName: 'Second Step', unlocked: true },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockToken,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockLibrary,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: false, // catalog fails
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockGql,
+      } as any);
+
+    const req = new Request('http://localhost:3000/api/profile/epic?code=oauth-code');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.discoveredGames).toHaveLength(1);
+    expect(data.discoveredGames[0].unlockedCount).toBe(2);
+
+    // Verify progress was saved in SQLite database
+    const progress = getUserGameProgress(user.id, data.discoveredGames[0].appId, 'epic');
+    expect(progress).not.toBeNull();
+    expect(progress?.unlockedIds).toHaveLength(2);
   });
 });
 

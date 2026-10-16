@@ -11,6 +11,8 @@ interface ProgressTrackerProps {
   onSync?: () => void;
   isSyncing?: boolean;
   hasSteamUser?: boolean;
+  platform?: "steam" | "epic" | "xbox" | "gog";
+  platformConnected?: boolean;
 }
 
 export default function ProgressTracker({
@@ -20,6 +22,8 @@ export default function ProgressTracker({
   onSync,
   isSyncing = false,
   hasSteamUser = false,
+  platform = "steam",
+  platformConnected,
 }: ProgressTrackerProps) {
   const percent = total > 0 ? Math.round((unlockedCount / total) * 100) : 0;
   const isComplete = total > 0 && unlockedCount === total;
@@ -92,27 +96,53 @@ export default function ProgressTracker({
 
         {/* Right: Actions (Sync & Reset) */}
         <div className="flex items-center gap-1.5">
-          {onSync && (
-            <button
-              onClick={onSync}
-              disabled={isSyncing}
-              className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-medium transition ${
-                hasSteamUser
-                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
-                  : "border-sky-500/40 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20"
-              }`}
-              title={
-                hasSteamUser
-                  ? "Synchroniser avec votre profil Steam"
-                  : "Configurer votre profil Steam pour l'auto-sync"
-              }
-            >
-              <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin text-sky-400" : ""}`} />
-              <span className="hidden sm:inline">
-                {isSyncing ? "Sync..." : hasSteamUser ? "Auto-Sync" : "Lier profil"}
-              </span>
-            </button>
-          )}
+          {onSync && (() => {
+            const isConnected =
+              platformConnected ?? (platform === "epic" ? true : hasSteamUser);
+            const platName =
+              platform === "epic"
+                ? "Epic Games"
+                : platform === "xbox"
+                ? "Xbox"
+                : platform === "gog"
+                ? "GOG"
+                : "Steam";
+
+            const btnColor =
+              platform === "epic"
+                ? "border-purple-500/40 bg-purple-500/10 text-purple-300 hover:bg-purple-500/20"
+                : isConnected
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
+                : "border-sky-500/40 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20";
+
+            return (
+              <button
+                onClick={onSync}
+                disabled={isSyncing}
+                className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-medium transition ${btnColor}`}
+                title={
+                  isConnected
+                    ? `Synchroniser avec votre compte ${platName}`
+                    : `Configurer votre compte ${platName} pour l'auto-sync`
+                }
+              >
+                <RefreshCw
+                  className={`h-3.5 w-3.5 ${
+                    isSyncing ? "animate-spin text-sky-400" : ""
+                  }`}
+                />
+                <span className="hidden sm:inline">
+                  {isSyncing
+                    ? "Sync..."
+                    : isConnected
+                    ? platform === "epic"
+                      ? "Sync Epic"
+                      : "Auto-Sync"
+                    : `Lier ${platName}`}
+                </span>
+              </button>
+            );
+          })()}
 
           {unlockedCount > 0 && (
             <button

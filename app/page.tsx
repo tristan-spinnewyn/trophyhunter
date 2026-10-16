@@ -322,13 +322,98 @@ export default function Home() {
     }
   };
 
-  // Sync achievements from public Steam profile for the active game
+  // Sync achievements from public profile (Steam, Epic, etc.) for the active game
   const handleSync = async () => {
+    if (!game) return;
+
+    const owned = ownedGames.find((g) => g.appId === game.id);
+    const activePlatform = owned?.platform || "steam";
+
+    if (activePlatform === "epic") {
+      const epicAccount = accountProfile.accounts.epic;
+      if (!epicAccount) {
+        setActiveView("account");
+        return;
+      }
+
+      setIsSyncing(true);
+      setSyncNotice(null);
+
+      try {
+        const res = await fetch(
+          `/api/sync?platform=epic&appId=${game.id}&name=${encodeURIComponent(
+            game.name
+          )}&user=${encodeURIComponent(epicAccount.username || "")}`
+        );
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || "Échec de la synchronisation Epic Games.");
+        }
+
+        const unlockedTitles: string[] = data.unlockedTitles || [];
+        const normalize = (s: string) =>
+          s.replace(/[’']/g, "'").trim().toLowerCase();
+
+        const matchedIds =
+          data.unlockedIds && data.unlockedIds.length > 0
+            ? data.unlockedIds
+            : game.achievements
+                .filter((a) =>
+                  unlockedTitles.some((t) => normalize(t) === normalize(a.name))
+                )
+                .map((a) => a.id);
+
+        const updated: UserGameProgress = {
+          ...progress,
+          unlockedIds: matchedIds,
+          lastPlayed: new Date().toISOString(),
+        };
+        setProgress(updated);
+
+        await upsertOwnedGameInMemoryAndDb({
+          appId: game.id,
+          name: game.name,
+          headerImg: game.headerImg,
+          platform: "epic",
+          totalAchievements: data.totalAchievements || game.totalAchievements,
+          unlockedCount: matchedIds.length,
+          addedAt: owned?.addedAt || new Date().toISOString(),
+          source: owned?.source || "manual",
+        });
+
+        if (currentUser) {
+          await fetch("/api/user/progress", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              appId: game.id,
+              platform: "epic",
+              progress: updated,
+            }),
+          });
+        }
+
+        setSyncNotice({
+          type: "success",
+          msg: `${matchedIds.length} succès synchronisés depuis votre compte Epic Games !`,
+        });
+        setTimeout(() => setSyncNotice(null), 5000);
+      } catch (err: any) {
+        setSyncNotice({
+          type: "error",
+          msg: err.message || "Erreur lors de la synchronisation Epic Games.",
+        });
+        setTimeout(() => setSyncNotice(null), 5000);
+      } finally {
+        setIsSyncing(false);
+      }
+      return;
+    }
+
     if (!steamUser) {
       setActiveView("account");
       return;
     }
-    if (!game) return;
 
     setIsSyncing(true);
     setSyncNotice(null);
@@ -992,6 +1077,16 @@ export default function Home() {
                   onReset={handleResetProgress}
                   onSync={handleSync}
                   isSyncing={isSyncing}
+                  platform={
+                    ownedGames.find((g) => g.appId === game.id)?.platform ||
+                    "steam"
+                  }
+                  platformConnected={
+                    (ownedGames.find((g) => g.appId === game.id)?.platform ||
+                      "steam") === "epic"
+                      ? !!accountProfile.accounts.epic
+                      : !!steamUser
+                  }
                   hasSteamUser={!!steamUser}
                 />
 

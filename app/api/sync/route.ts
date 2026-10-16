@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getUserGameProgress, saveUserGameProgress } from "@/lib/db";
+import { syncEpicGame } from "@/lib/epic-sync";
 
 
 const normalize = (s: string) => s.replace(/[’']/g, "'").trim().toLowerCase();
@@ -20,6 +21,19 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const rawUser = searchParams.get("user")?.trim();
   const appId = searchParams.get("appId")?.trim();
+  const platform = (searchParams.get("platform") || "steam").toLowerCase();
+  const gameName = searchParams.get("name")?.trim();
+
+  if (platform === "epic") {
+    if (!appId) {
+      return NextResponse.json(
+        { error: "Paramètre 'appId' requis." },
+        { status: 400 }
+      );
+    }
+    const result = await syncEpicGame(request, appId, gameName);
+    return NextResponse.json(result);
+  }
 
   if (!rawUser || !appId) {
     return NextResponse.json(

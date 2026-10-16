@@ -227,5 +227,25 @@ describe('GET /api/sync', () => {
     expect(progress).not.toBeNull();
     expect(progress?.unlockedIds.length).toBeGreaterThan(0);
   });
+
+  it('returns 400 when platform=epic and appId is missing', async () => {
+    const req = new Request('http://localhost:3000/api/sync?platform=epic');
+    const res = await GET(req);
+    expect(res.status).toBe(400);
+
+    const data = await res.json();
+    expect(data.error).toBe("Paramètre 'appId' requis.");
+  });
+
+  it('delegates to syncEpicGame when platform=epic and appId is provided', async () => {
+    const req = new Request('http://localhost:3000/api/sync?platform=epic&appId=12345&name=Hades');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.platform).toBe('epic');
+    expect(data.gameName).toBe('Hades');
+  });
 });
 

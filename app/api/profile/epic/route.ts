@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import type { OwnedGame, PlatformAccount } from "@/lib/types";
 
 import { getAuthenticatedUser } from "@/lib/auth";
-import { saveUserPlatformAccount, saveUserOwnedGames } from "@/lib/db";
+import {
+  saveUserPlatformAccount,
+  saveUserOwnedGames,
+  saveUserGameProgress,
+} from "@/lib/db";
 import {
   resolveEpicCodename,
   isUnsplashPlaceholder,
@@ -128,6 +132,16 @@ export async function GET(request: Request) {
 
       const discoveredGames: OwnedGame[] = [];
       const gameNamespaceMap = new Map<number, string>();
+      interface AchSummary {
+        sandboxId: string;
+        totalUnlocked: number;
+        totalAchievements: number;
+        totalXP: number;
+        gameTitle?: string;
+        coverUrl?: string;
+        playerAchievements?: any[];
+      }
+      const achBySandbox = new Map<string, AchSummary>();
       let totalAchievements = 0;
       let completedGames = 0;
 
@@ -410,16 +424,6 @@ export async function GET(request: Request) {
 
         // Step 5: Query player achievements from Epic Games Store GraphQL
         try {
-          interface AchSummary {
-            sandboxId: string;
-            totalUnlocked: number;
-            totalAchievements: number;
-            totalXP: number;
-            gameTitle?: string;
-            coverUrl?: string;
-          }
-
-          const achBySandbox = new Map<string, AchSummary>();
           let rawTotalAchievements = 0;
           let rawCompletedGames = 0;
 
@@ -500,6 +504,7 @@ export async function GET(request: Request) {
                     totalUnlocked: unlocked,
                     totalAchievements: totalInGame,
                     totalXP: achRec.totalXP || 0,
+                    playerAchievements: playerAchs,
                   });
                 }
               }
@@ -750,9 +755,41 @@ export async function GET(request: Request) {
 
       if (authUser) {
         try {
-          saveUserPlatformAccount(authUser.id, account);
+          const plainKey = JSON.stringify({
+            accessToken,
+            refreshToken: tokenData?.refresh_token,
+            accountId,
+          });
+          saveUserPlatformAccount(authUser.id, account, plainKey);
           if (discoveredGames.length > 0) {
             saveUserOwnedGames(authUser.id, discoveredGames);
+
+            for (const g of discoveredGames) {
+              if ((g.unlockedCount || 0) > 0) {
+                const sId = gameNamespaceMap.get(g.appId)?.toLowerCase();
+                const rec = sId ? achBySandbox.get(sId) : null;
+                const playerAchs = rec?.playerAchievements || [];
+                const unlockedNames = playerAchs
+                  .filter((p: any) => p.unlocked)
+                  .map((p: any) => p.achievementName);
+                const unlockedIds =
+                  unlockedNames.length > 0
+                    ? unlockedNames.map(
+                        (t: string, idx: number) =>
+                          `ach_${idx + 1}_${t.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 30)}`
+                      )
+                    : Array.from(
+                        { length: g.unlockedCount },
+                        (_, idx) => `ach_${idx + 1}`
+                      );
+
+                saveUserGameProgress(authUser.id, g.appId, "epic", {
+                  unlockedIds,
+                  lastPlayed: nowIso,
+                  notes: {},
+                });
+              }
+            }
           }
         } catch (saveErr) {
           console.warn("Could not auto-persist Epic data to database:", saveErr);

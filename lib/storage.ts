@@ -27,6 +27,13 @@ export function normalizeGameTitle(title: string): string {
 }
 
 
+export const ALL_PLATFORMS: PlatformType[] = [
+  "steam",
+  "xbox",
+  "epic",
+  "gog",
+];
+
 export const PLATFORM_META: Record<
   PlatformType,
   {
