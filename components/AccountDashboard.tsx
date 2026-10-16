@@ -1784,7 +1784,7 @@ export default function AccountDashboard({
                       ) : null}
                     </button>
                     <a
-                      href="https://www.epicgames.com/id/api/redirect"
+                      href="https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b159218764c3fa0a&responseType=code"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[10px] text-purple-400 hover:underline flex items-center gap-0.5"
@@ -1795,7 +1795,7 @@ export default function AccountDashboard({
                   {(showEpicCode || epicCode) && (
                     <div className="mt-2 space-y-1.5 text-[11px] text-slate-400 bg-purple-950/20 border border-purple-500/20 rounded-xl p-2.5">
                       <p className="text-[10px] text-slate-300">
-                        1. Cliquez sur <a href="https://www.epicgames.com/id/api/redirect" target="_blank" rel="noopener noreferrer" className="text-purple-400 underline font-semibold">ce lien Epic officiel</a> (authentification sécurisée sur epicgames.com).
+                        1. Cliquez sur <a href="https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b159218764c3fa0a&responseType=code" target="_blank" rel="noopener noreferrer" className="text-purple-400 underline font-semibold">ce lien Epic officiel</a> (authentification sécurisée sur epicgames.com).
                       </p>
                       <p className="text-[10px] text-slate-300">
                         2. Copiez la valeur de <code>authorizationCode</code> affichée en JSON et collez-la ci-dessous :
