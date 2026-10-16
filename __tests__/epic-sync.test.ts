@@ -5,7 +5,9 @@ import {
   createUser,
   createSession,
   saveUserPlatformAccount,
+  getUserPlatformAccounts,
   saveUserOwnedGames,
+  saveUserGameProgress,
   getUserGameProgress,
 } from "@/lib/db";
 import {
@@ -307,6 +309,12 @@ describe("lib/epic-sync", () => {
         },
       ]);
 
+      saveUserGameProgress(user.id, 77701, "epic", {
+        unlockedIds: ["ach_1", "ach_2", "ach_3"],
+        lastPlayed: new Date().toISOString(),
+        notes: {},
+      });
+
       vi.spyOn(global, "fetch").mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -407,5 +415,128 @@ describe("lib/epic-sync", () => {
       expect(result.success).toBe(true);
       expect(result.platform).toBe("epic");
     });
+
+    it("extracts code when authorizationToken contains a URL redirect string", async () => {
+      vi.spyOn(global, "fetch")
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            access_token: "mock_token_from_url",
+            refresh_token: "mock_refresh_url",
+            account_id: "epic_account_url",
+          }),
+        } as any)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: { PlayerAchievement: { playerAchievementGameRecords: { records: [] } } },
+          }),
+        } as any);
+
+      const req = new Request(
+        "http://localhost:3000/api/sync?platform=epic&appId=55503&name=URL%20Game&authorizationToken=https%3A%2F%2Flocalhost%2F%3Fcode%3Da1b2c3d4e5f6"
+      );
+      const result = await syncEpicGame(req, 55503, "URL Game");
+
+      expect(result.success).toBe(true);
+      expect(result.platform).toBe("epic");
+    });
+
+    it("generates numbered achievement slugs when unlockedIds is empty but totalUnlocked > 0 in fallback", async () => {
+      const user = createUser("numbereduser", "pass123");
+      const session = createSession(user.id);
+      mockCookieStore.set("trophyhunter_session", { value: session });
+
+      saveUserPlatformAccount(
+        user.id,
+        {
+          platform: "epic",
+          username: "NumberedUser",
+          displayName: "Numbered User",
+          connectedAt: new Date().toISOString(),
+          lastSyncedAt: new Date().toISOString(),
+          stats: { gamesOwned: 1, totalAchievements: 0, completedGames: 0 },
+        },
+        JSON.stringify({
+          accessToken: "token_num",
+          accountId: "acc_num",
+        })
+      );
+
+      saveUserOwnedGames(user.id, [
+        {
+          appId: 77702,
+          name: "Numbered Game",
+          headerImg: "https://img.epic.com/num.jpg",
+          platform: "epic",
+          totalAchievements: 5,
+          unlockedCount: 2,
+          addedAt: new Date().toISOString(),
+          source: "manual",
+        },
+      ]);
+
+      vi.spyOn(global, "fetch").mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: { PlayerAchievement: { playerAchievementGameRecords: { records: [] } } },
+        }),
+      } as any);
+
+      const req = new Request(
+        "http://localhost:3000/api/sync?platform=epic&appId=77702&gameName=Numbered%20Game"
+      );
+      const result = await syncEpicGame(req, 77702, "Numbered Game");
+
+      expect(result.success).toBe(true);
+      expect(result.count).toBe(2);
+      expect(result.unlockedIds).toEqual(["ach_1", "ach_2"]);
+    });
+
+    it("verifies and accepts direct eg1~ access token and persists account in SQLite for authenticated user", async () => {
+      const user = createUser("eg1user", "secretpass123");
+      const session = createSession(user.id);
+      mockCookieStore.set("trophyhunter_session", { value: session });
+
+      vi.spyOn(global, "fetch")
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ account_id: "epic_account_eg1_user" }),
+        } as any)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              PlayerAchievement: {
+                playerAchievementGameRecords: {
+                  records: [
+                    {
+                      sandboxId: "mygame",
+                      totalUnlocked: 1,
+                      achievementSets: [{ totalAchievements: 5, totalUnlocked: 1 }],
+                      playerAchievements: [{ achievementName: "First Steps", unlocked: true }],
+                    },
+                  ],
+                },
+              },
+            },
+          }),
+        } as any);
+
+      const req = new Request(
+        "http://localhost:3000/api/sync?platform=epic&appId=66601&name=My%20Game&authorizationToken=eg1~direct_valid_token"
+      );
+      const result = await syncEpicGame(req, 66601, "My Game");
+
+      expect(result.success).toBe(true);
+      expect(result.count).toBe(1);
+      expect(result.unlockedTitles).toEqual(["First Steps"]);
+
+      // Verify account was persisted in SQLite
+      const accounts = getUserPlatformAccounts(user.id);
+      expect(accounts.epic).toBeDefined();
+      expect(accounts.epic?.username).toBe("epic_account_eg1_user");
+    });
   });
 });
+

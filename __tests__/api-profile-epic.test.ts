@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '@/app/api/profile/epic/route';
+import { syncEpicProfileWithOAuth } from '@/lib/epic/service';
 import {
   initDatabase,
   setDbForTesting,
@@ -752,6 +753,78 @@ describe('GET /api/profile/epic', () => {
     expect(progress).not.toBeNull();
     expect(progress?.unlockedIds).toHaveLength(2);
   });
+
+  it('parses JSON string authorizationToken in query for GET /api/profile/epic', async () => {
+    const jsonToken = JSON.stringify({ authorizationCode: 'code_from_json_123' });
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: false,
+      text: async () => '{"errorCode":"invalid_code"}',
+    } as any);
+
+    const req = new Request(`http://localhost:3000/api/profile/epic?authorizationToken=${encodeURIComponent(jsonToken)}`);
+    const res = await GET(req);
+    expect(res.status).toBe(401);
+    const data = await res.json();
+    expect(data.error).toContain("Code d'autorisation Epic Games expiré ou invalide");
+  });
+
+  it('extracts authorization code when authorizationToken is a redirect URL for GET /api/profile/epic', async () => {
+    const redirectUrl = 'https://localhost/?code=a1b2c3d4e5f6';
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: false,
+      text: async () => '{"errorCode":"invalid_code"}',
+    } as any);
+
+    const req = new Request(`http://localhost:3000/api/profile/epic?authorizationToken=${encodeURIComponent(redirectUrl)}`);
+    const res = await GET(req);
+    expect(res.status).toBe(401);
+    const data = await res.json();
+    expect(data.error).toContain("Code d'autorisation Epic Games expiré ou invalide");
+  });
+
+  it('syncEpicProfileWithOAuth parses JSON string code directly', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: false,
+      text: async () => 'error',
+    } as any);
+
+    const res = await syncEpicProfileWithOAuth('{"authorizationCode":"my_code_json"}');
+    expect(res.success).toBe(false);
+  });
+
+  it('syncEpicProfileWithOAuth extracts code from URL redirect string directly', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: false,
+      text: async () => 'error',
+    } as any);
+
+    const res = await syncEpicProfileWithOAuth('https://localhost/?code=abcdef123456');
+    expect(res.success).toBe(false);
+  });
+
+  it('syncEpicProfileWithOAuth verifies direct access token starting with eg1~', async () => {
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ account_id: 'acc_eg1', display_name: 'Eg1User' }),
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ records: [] }),
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: { PlayerAchievement: { playerAchievementGameRecords: { records: [] } } } }),
+      } as any);
+
+    const res = await syncEpicProfileWithOAuth('eg1~valid_access_token');
+    expect(res.success).toBe(true);
+    if (res.success) {
+      expect(res.account.displayName).toBe('Eg1User');
+      expect(res.account.username).toBe('acc_eg1');
+    }
+  });
 });
+
 
 
