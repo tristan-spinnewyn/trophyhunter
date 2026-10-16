@@ -80,6 +80,16 @@ describe("User Sync API (/api/user/sync)", () => {
           notes: {},
         },
       },
+      favorites: [730],
+      wishlist: [730],
+      collections: [
+        {
+          name: "FPS Compétitifs",
+          description: "Mes jeux FPS",
+          color: "#10b981",
+          gameIds: [730],
+        },
+      ],
     };
 
     const postReq = new Request("http://localhost/api/user/sync", {
@@ -93,6 +103,9 @@ describe("User Sync API (/api/user/sync)", () => {
     const postData = await postRes.json();
     expect(postData.success).toBe(true);
     expect(postData.gamesCount).toBe(1);
+    expect(postData.wishlist).toContain(730);
+    expect(postData.collections.length).toBe(1);
+    expect(postData.collections[0].gameIds).toContain(730);
 
     const getRes = await getSyncHandler();
     expect(getRes.status).toBe(200);
@@ -101,5 +114,11 @@ describe("User Sync API (/api/user/sync)", () => {
     expect(getData.games[0].name).toBe("Counter-Strike 2");
     expect(getData.steamApiKey).toBe("ENC_KEY_TEST_XYZ");
     expect(getData.profile.accounts.steam).toBeDefined();
+    expect(getData.favorites).toContain(730);
+    expect(getData.wishlist).toContain(730);
+    expect(getData.collections.length).toBe(1);
+    expect(getData.collections[0].name).toBe("FPS Compétitifs");
+    expect(getData.collections[0].gameIds).toContain(730);
   });
 });
+

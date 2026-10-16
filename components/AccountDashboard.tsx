@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Trophy,
   User,
@@ -40,21 +40,7 @@ import type {
 } from "@/lib/types";
 import {
   PLATFORM_META,
-  savePlatformAccount,
-  removePlatformAccount,
-  upsertOwnedGames,
-  removeOwnedGame,
-  getGameProgress,
-  saveGameProgress,
-  getSavedSteamApiKey,
-  saveSteamApiKey,
-  removePlatformOwnedGames,
-  replacePlatformOwnedGames,
   normalizeGameTitle,
-  getLocalWishlist,
-  toggleLocalWishlist,
-  getLocalCollections,
-  saveLocalCollections,
   LocalCollection,
 } from "@/lib/storage";
 
@@ -67,8 +53,12 @@ interface AccountDashboardProps {
   onSteamUserChange: (steamUser: string) => void;
   currentUser?: UserType | null;
   onOpenAuthModal?: () => void;
+  initialSteamApiKey?: string;
+  initialWishlist?: number[];
+  initialCollections?: LocalCollection[];
+  onWishlistChange?: (wishlist: number[]) => void;
+  onCollectionsChange?: (collections: LocalCollection[]) => void;
 }
-
 
 const ALL_PLATFORMS: PlatformType[] = [
   "steam",
@@ -76,6 +66,62 @@ const ALL_PLATFORMS: PlatformType[] = [
   "epic",
   "gog",
 ];
+
+function mergeGamesList(base: OwnedGame[], incoming: OwnedGame[]): OwnedGame[] {
+  const map = new Map<string, OwnedGame>();
+  for (const g of base) {
+    map.set(`${g.platform}_${g.appId}`, g);
+  }
+  for (const g of incoming) {
+    const key = `${g.platform}_${g.appId}`;
+    const existing = map.get(key);
+    if (existing) {
+      map.set(key, {
+        ...existing,
+        ...g,
+        totalAchievements:
+          g.totalAchievements > 0
+            ? g.totalAchievements
+            : existing.totalAchievements,
+        unlockedCount: Math.max(g.unlockedCount || 0, existing.unlockedCount || 0),
+        playtimeHours: g.playtimeHours ?? existing.playtimeHours,
+        addedAt: existing.addedAt || g.addedAt,
+      });
+    } else {
+      map.set(key, g);
+    }
+  }
+  return Array.from(map.values());
+}
+
+function replacePlatformInList(
+  base: OwnedGame[],
+  platform: PlatformType,
+  incoming: OwnedGame[]
+): OwnedGame[] {
+  const existingByPlatform = new Map<number, OwnedGame>();
+  for (const g of base) {
+    if (g.platform === platform) {
+      existingByPlatform.set(g.appId, g);
+    }
+  }
+  const kept = base.filter((g) => g.platform !== platform);
+  const enrichedIncoming = incoming.map((g) => {
+    const prev = existingByPlatform.get(g.appId);
+    if (!prev) return g;
+    return {
+      ...g,
+      totalAchievements:
+        g.totalAchievements > 0 ? g.totalAchievements : prev.totalAchievements,
+      unlockedCount: Math.max(g.unlockedCount || 0, prev.unlockedCount || 0),
+      headerImg:
+        g.headerImg && !g.headerImg.includes("images.unsplash.com")
+          ? g.headerImg
+          : prev.headerImg || g.headerImg,
+    };
+  });
+  return mergeGamesList(kept, enrichedIncoming);
+}
 
 export default function AccountDashboard({
   accountProfile,
@@ -86,12 +132,17 @@ export default function AccountDashboard({
   onSteamUserChange,
   currentUser,
   onOpenAuthModal,
+  initialSteamApiKey = "",
+  initialWishlist = [],
+  initialCollections = [],
+  onWishlistChange,
+  onCollectionsChange,
 }: AccountDashboardProps) {
   const steamAccount = accountProfile.accounts.steam;
   const [steamInput, setSteamInput] = useState(
     steamAccount?.username || ""
   );
-  const [steamApiKey, setSteamApiKey] = useState(() => getSavedSteamApiKey());
+  const [steamApiKey, setSteamApiKey] = useState(initialSteamApiKey);
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [isSyncingSteam, setIsSyncingSteam] = useState(false);
   const [syncProgressText, setSyncProgressText] = useState<string | null>(null);
@@ -107,8 +158,8 @@ export default function AccountDashboard({
   const [libPlatformFilter, setLibPlatformFilter] = useState<
     PlatformType | "all"
   >("all");
-  const [wishlistIds, setWishlistIds] = useState<number[]>(() => getLocalWishlist());
-  const [collections, setCollections] = useState<LocalCollection[]>(() => getLocalCollections());
+  const [wishlistIds, setWishlistIds] = useState<number[]>(initialWishlist);
+  const [collections, setCollections] = useState<LocalCollection[]>(initialCollections);
   const [selectedCollId, setSelectedCollId] = useState<string | null>(null);
   const [newCollName, setNewCollName] = useState("");
   const [newCollDesc, setNewCollDesc] = useState("");
@@ -145,6 +196,7 @@ export default function AccountDashboard({
   const [epicCode, setEpicCode] = useState("");
   const [showEpicCode, setShowEpicCode] = useState(false);
   const [isSyncingEpic, setIsSyncingEpic] = useState(false);
+  const hasAutoEnrichedEpicRef = useRef(false);
 
   // GOG Sync State
   const gogAccount = accountProfile.accounts.gog;
@@ -152,6 +204,41 @@ export default function AccountDashboard({
   const [gogToken, setGogToken] = useState("");
   const [showGogToken, setShowGogToken] = useState(false);
   const [isSyncingGOG, setIsSyncingGOG] = useState(false);
+
+  // Keep local inputs and lists synced when SQLite data arrives
+  useEffect(() => {
+    if (steamAccount?.username && !steamInput) {
+      setSteamInput(steamAccount.username);
+    }
+    if (xboxAccount?.username && !xboxInput) {
+      setXboxInput(xboxAccount.username);
+    }
+    if (epicAccount?.username && !epicInput) {
+      setEpicInput(epicAccount.username);
+    }
+    if (gogAccount?.username && !gogInput) {
+      setGogInput(gogAccount.username);
+    }
+  }, [
+    steamAccount?.username,
+    xboxAccount?.username,
+    epicAccount?.username,
+    gogAccount?.username,
+  ]);
+
+  useEffect(() => {
+    if (initialSteamApiKey && !steamApiKey) {
+      setSteamApiKey(initialSteamApiKey);
+    }
+  }, [initialSteamApiKey]);
+
+  useEffect(() => {
+    setWishlistIds(initialWishlist);
+  }, [initialWishlist]);
+
+  useEffect(() => {
+    setCollections(initialCollections);
+  }, [initialCollections]);
 
   // Add/Edit Platform Modal state
   const [editingPlatform, setEditingPlatform] = useState<PlatformType | null>(
@@ -182,7 +269,24 @@ export default function AccountDashboard({
   const [bulkImportText, setBulkImportText] = useState("");
   const [isBulkImporting, setIsBulkImporting] = useState(false);
 
-  // Sync a single game's achievements from Steam and update local storage + library
+  const updateAccountProfileInMemory = (account: PlatformAccount): UserAccountProfile => {
+    const nextProfile: UserAccountProfile = {
+      ...accountProfile,
+      displayName:
+        accountProfile.displayName === "Chasseur de Trophées" && account.displayName
+          ? account.displayName
+          : accountProfile.displayName,
+      avatarUrl: accountProfile.avatarUrl || account.avatarUrl,
+      accounts: {
+        ...accountProfile.accounts,
+        [account.platform]: account,
+      },
+    };
+    onAccountChange(nextProfile);
+    return nextProfile;
+  };
+
+  // Sync a single game's achievements from Steam and persist to SQLite
   const syncSingleSteamGame = async (
     user: string,
     game: OwnedGame
@@ -195,11 +299,9 @@ export default function AccountDashboard({
       const data = await res.json();
       if (!data.success) return game;
 
-      const currentProg = getGameProgress(game.appId);
-      const unlockedIds: string[] =
-        data.unlockedIds && data.unlockedIds.length > 0
-          ? data.unlockedIds
-          : currentProg.unlockedIds;
+      const unlockedIds: string[] = Array.isArray(data.unlockedIds)
+        ? data.unlockedIds
+        : [];
 
       const totalAch = data.totalAchievements || game.totalAchievements || 0;
       const unlockedCount = Math.max(
@@ -208,21 +310,20 @@ export default function AccountDashboard({
         game.unlockedCount || 0
       );
 
-      if (unlockedIds.length > 0) {
-        saveGameProgress(
-          game.appId,
-          {
-            ...currentProg,
-            unlockedIds,
-            lastPlayed: new Date().toISOString(),
-          },
-          {
-            name: data.gameName || game.name,
-            headerImg: game.headerImg,
-            totalAchievements: totalAch,
+      if (unlockedIds.length > 0 && currentUser) {
+        fetch("/api/user/progress", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            appId: game.appId,
             platform: "steam",
-          }
-        );
+            progress: {
+              unlockedIds,
+              notes: {},
+              lastPlayed: new Date().toISOString(),
+            },
+          }),
+        }).catch(() => {});
       }
 
       return {
@@ -251,13 +352,16 @@ export default function AccountDashboard({
     }
   };
 
-  const persistGamesToSQLite = async (games: OwnedGame[]) => {
-    if (!games || games.length === 0) return;
+  const persistGamesToSQLite = async (
+    games: OwnedGame[],
+    replacePlatform?: PlatformType
+  ) => {
+    if ((!games || games.length === 0) && !replacePlatform) return;
     try {
       await fetch("/api/user/games", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ games }),
+        body: JSON.stringify({ games, replacePlatform }),
       });
     } catch (e) {
       console.error("Failed to persist games to SQLite:", e);
@@ -285,14 +389,116 @@ export default function AccountDashboard({
     }
   };
 
+  const removePlatformGamesFromSQLite = async (platform: PlatformType) => {
+    try {
+      await fetch(`/api/user/games?platform=${platform}`, {
+        method: "DELETE",
+      });
+    } catch (e) {
+      console.error("Failed to remove platform games from SQLite:", e);
+    }
+  };
+
+  // Batch resolve achievement counts for Epic Games so the user doesn't have to click each game
+  const enrichEpicGamesAchievements = async (
+    epicGamesList: OwnedGame[],
+    allCurrentGames: OwnedGame[]
+  ): Promise<OwnedGame[]> => {
+    const gamesToResolve = epicGamesList.filter(
+      (g) =>
+        g.platform === "epic" &&
+        (g.totalAchievements || 0) === 0 &&
+        g.name &&
+        !g.name.startsWith("Epic Game (") &&
+        !g.name.startsWith("Jeu Epic (")
+    );
+
+    if (gamesToResolve.length === 0) {
+      return allCurrentGames;
+    }
+
+    setIsSyncingEpic(true);
+    let workingGames = [...allCurrentGames];
+    const BATCH_SIZE = 5;
+
+    try {
+      for (let i = 0; i < gamesToResolve.length; i += BATCH_SIZE) {
+        const batch = gamesToResolve.slice(i, i + BATCH_SIZE);
+        setSyncProgressText(
+          `Analyse des succès Epic Games (${Math.min(
+            i + BATCH_SIZE,
+            gamesToResolve.length
+          )}/${gamesToResolve.length}) : ${batch[0].name}...`
+        );
+
+        const resolvedBatch = await Promise.all(
+          batch.map(async (g) => {
+            try {
+              const r = await fetch(
+                `/api/game/${g.appId}?name=${encodeURIComponent(
+                  g.name
+                )}&platform=epic&fast=1`
+              );
+              if (!r.ok) return g;
+              const details = await r.json();
+              const resolvedTotal = details?.totalAchievements || 0;
+              const resolvedHeader =
+                g.headerImg && !g.headerImg.includes("images.unsplash.com")
+                  ? g.headerImg
+                  : details?.headerImg || g.headerImg;
+              if (resolvedTotal > 0 || resolvedHeader !== g.headerImg) {
+                return {
+                  ...g,
+                  totalAchievements: resolvedTotal,
+                  headerImg: resolvedHeader,
+                };
+              }
+              return g;
+            } catch {
+              return g;
+            }
+          })
+        );
+
+        workingGames = mergeGamesList(workingGames, resolvedBatch);
+        onOwnedGamesChange(workingGames);
+        await persistGamesToSQLite(resolvedBatch);
+      }
+    } finally {
+      setSyncProgressText(null);
+      setIsSyncingEpic(false);
+    }
+
+    return workingGames;
+  };
+
+  // Auto-resolve Epic Games achievements once on load if all imported Epic games currently have 0 achievements
+  useEffect(() => {
+    if (hasAutoEnrichedEpicRef.current || isSyncingEpic) return;
+    const epicGames = ownedGames.filter((g) => g.platform === "epic");
+    if (
+      epicGames.length > 0 &&
+      epicGames.every((g) => (g.totalAchievements || 0) === 0)
+    ) {
+      hasAutoEnrichedEpicRef.current = true;
+      enrichEpicGamesAchievements(epicGames, ownedGames).then((finalList) => {
+        const withAch = finalList.filter(
+          (g) => g.platform === "epic" && (g.totalAchievements || 0) > 0
+        ).length;
+        if (withAch > 0) {
+          setBannerMsg({
+            type: "success",
+            text: `Succès Epic Games détectés et enregistrés dans SQLite pour ${withAch} jeu(x) !`,
+          });
+        }
+      });
+    }
+  }, [ownedGames]);
+
   // Full Steam Profile + Owned Games + Achievements Sync
   const handleConnectAndSyncSteam = async (targetUser?: string) => {
     const userToSync = (targetUser ?? steamInput).trim();
     if (!userToSync) return;
-
-    if (steamApiKey.trim()) {
-      saveSteamApiKey(steamApiKey.trim());
-    }
 
     setIsSyncingSteam(true);
     setBannerMsg(null);
@@ -317,11 +523,10 @@ export default function AccountDashboard({
       const discovered: OwnedGame[] = data.discoveredGames || [];
 
       onSteamUserChange(fetchedAccount.username);
-      const updatedProfile = savePlatformAccount(fetchedAccount);
-      onAccountChange(updatedProfile);
+      updateAccountProfileInMemory(fetchedAccount);
 
       // Merge discovered games with existing owned games
-      let mergedGames = upsertOwnedGames(discovered);
+      let mergedGames = mergeGamesList(ownedGames, discovered);
       onOwnedGamesChange(mergedGames);
 
       // Sync achievements for all Steam games in the library
@@ -345,10 +550,10 @@ export default function AccountDashboard({
         updatedSteamGames.push(syncedGame);
       }
 
-      mergedGames = upsertOwnedGames(updatedSteamGames);
+      mergedGames = mergeGamesList(mergedGames, updatedSteamGames);
       onOwnedGamesChange(mergedGames);
 
-      // Update account stats if local library found even more achievements/completed games
+      // Update account stats if library found even more achievements/completed games
       const localCompleted = mergedGames.filter(
         (g) =>
           g.platform === "steam" &&
@@ -375,14 +580,13 @@ export default function AccountDashboard({
         },
       };
 
-      const finalProfile = savePlatformAccount(finalAccount);
-      onAccountChange(finalProfile);
+      updateAccountProfileInMemory(finalAccount);
       await persistAccountToSQLite(finalAccount, steamApiKey.trim() || undefined);
       await persistGamesToSQLite(mergedGames);
 
       setBannerMsg({
         type: "success",
-        text: `Compte Steam "${fetchedAccount.displayName}" synchronisé ! ${steamGamesToSync.length} jeux importés et succès cochés automatiquement.`,
+        text: `Compte Steam "${fetchedAccount.displayName}" synchronisé ! ${steamGamesToSync.length} jeux importés et sauvegardés dans SQLite.`,
       });
     } catch (err: any) {
       setBannerMsg({
@@ -409,11 +613,10 @@ export default function AccountDashboard({
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Impossible de synchroniser avec Xbox.");
       }
-      const updatedProfile = savePlatformAccount(data.account);
-      onAccountChange(updatedProfile);
+      updateAccountProfileInMemory(data.account);
       await persistAccountToSQLite(data.account, xboxApiKey.trim() || undefined);
       if (Array.isArray(data.discoveredGames) && data.discoveredGames.length > 0) {
-        const merged = upsertOwnedGames(data.discoveredGames);
+        const merged = mergeGamesList(ownedGames, data.discoveredGames);
         onOwnedGamesChange(merged);
         await persistGamesToSQLite(data.discoveredGames);
       }
@@ -437,26 +640,49 @@ export default function AccountDashboard({
     if (!targetUser && !targetCode) return;
     setIsSyncingEpic(true);
     setBannerMsg(null);
+    setSyncProgressText("Importation de la bibliothèque Epic Games...");
     try {
       const userParam = targetUser ? `user=${encodeURIComponent(targetUser)}` : "";
       const codeParam = targetCode ? `code=${encodeURIComponent(targetCode)}` : "";
-      const query = [userParam, codeParam].filter(Boolean).join("&");
+      const query = [userParam, codeParam, "resolveAchievements=1"]
+        .filter(Boolean)
+        .join("&");
       const res = await fetch(`/api/profile/epic?${query}`);
       const data = await res.json();
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Impossible de synchroniser avec Epic Games.");
       }
-      const updatedProfile = savePlatformAccount(data.account);
-      onAccountChange(updatedProfile);
+
+      hasAutoEnrichedEpicRef.current = true;
+      updateAccountProfileInMemory(data.account);
       await persistAccountToSQLite(data.account);
+
+      let currentMerged = ownedGames;
       if (Array.isArray(data.discoveredGames) && data.discoveredGames.length > 0) {
-        const merged = replacePlatformOwnedGames("epic", data.discoveredGames);
-        onOwnedGamesChange(merged);
-        await persistGamesToSQLite(data.discoveredGames);
+        currentMerged = replacePlatformInList(ownedGames, "epic", data.discoveredGames);
+        onOwnedGamesChange(currentMerged);
+        await persistGamesToSQLite(
+          currentMerged.filter((g) => g.platform === "epic"),
+          "epic"
+        );
+
+        // Resolve any remaining Epic games with 0 achievements via /api/game
+        const epicSubset = currentMerged.filter((g) => g.platform === "epic");
+        currentMerged = await enrichEpicGamesAchievements(
+          epicSubset,
+          currentMerged
+        );
       }
+
+      const epicWithAch = currentMerged.filter(
+        (g) => g.platform === "epic" && (g.totalAchievements || 0) > 0
+      ).length;
+
       setBannerMsg({
         type: "success",
-        text: data.notice || `Compte Epic Games "${data.account.displayName}" connecté avec succès (${data.discoveredGames?.length || 0} jeux découverts) !`,
+        text:
+          data.notice ||
+          `Compte Epic Games "${data.account.displayName}" synchronisé avec succès (${data.discoveredGames?.length || 0} jeux importés, dont ${epicWithAch} avec succès détectés) !`,
       });
       setEpicCode("");
     } catch (err: any) {
@@ -466,6 +692,7 @@ export default function AccountDashboard({
       });
     } finally {
       setIsSyncingEpic(false);
+      setSyncProgressText(null);
     }
   };
 
@@ -483,11 +710,10 @@ export default function AccountDashboard({
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Impossible de joindre GOG.");
       }
-      const updatedProfile = savePlatformAccount(data.account);
-      onAccountChange(updatedProfile);
+      updateAccountProfileInMemory(data.account);
       await persistAccountToSQLite(data.account, gogToken.trim() || undefined);
       if (Array.isArray(data.discoveredGames) && data.discoveredGames.length > 0) {
-        const merged = upsertOwnedGames(data.discoveredGames);
+        const merged = mergeGamesList(ownedGames, data.discoveredGames);
         onOwnedGamesChange(merged);
         await persistGamesToSQLite(data.discoveredGames);
       }
@@ -590,19 +816,22 @@ export default function AccountDashboard({
       },
     };
 
-    const updated = savePlatformAccount(newAcc);
-    onAccountChange(updated);
+    updateAccountProfileInMemory(newAcc);
     await persistAccountToSQLite(newAcc);
     setEditingPlatform(null);
     setBannerMsg({
       type: "success",
-      text: `Compte ${PLATFORM_META[editingPlatform].name} enregistré avec succès !`,
+      text: `Compte ${PLATFORM_META[editingPlatform].name} enregistré dans SQLite avec succès !`,
     });
   };
 
   const handleDisconnectPlatform = async (platform: PlatformType) => {
-    const updated = removePlatformAccount(platform);
-    onAccountChange(updated);
+    const nextAccounts = { ...accountProfile.accounts };
+    delete nextAccounts[platform];
+    onAccountChange({
+      ...accountProfile,
+      accounts: nextAccounts,
+    });
     await removeAccountFromSQLite(platform);
     if (platform === "steam") {
       onSteamUserChange("");
@@ -631,7 +860,7 @@ export default function AccountDashboard({
   };
 
   const handleAddGameToLibrary = async (item: GameSearchResult) => {
-    const newGame: OwnedGame = {
+    let newGame: OwnedGame = {
       appId: item.id,
       name: item.name,
       headerImg: `https://cdn.akamai.steamstatic.com/steam/apps/${item.id}/header.jpg`,
@@ -642,25 +871,24 @@ export default function AccountDashboard({
       source: "manual",
     };
 
-    let updatedList = upsertOwnedGames([newGame]);
+    let updatedList = mergeGamesList(ownedGames, [newGame]);
     onOwnedGamesChange(updatedList);
 
     // Fetch achievement count (and auto-sync if Steam user connected)
     if (selectedPlatformForAdd === "steam" && steamAccount?.username) {
-      const synced = await syncSingleSteamGame(steamAccount.username, newGame);
-      updatedList = upsertOwnedGames([synced]);
+      newGame = await syncSingleSteamGame(steamAccount.username, newGame);
+      updatedList = mergeGamesList(ownedGames, [newGame]);
       onOwnedGamesChange(updatedList);
     } else {
       try {
         const r = await fetch(`/api/game/${item.id}`);
         if (r.ok) {
           const gDetails = await r.json();
-          updatedList = upsertOwnedGames([
-            {
-              ...newGame,
-              totalAchievements: gDetails.totalAchievements || 0,
-            },
-          ]);
+          newGame = {
+            ...newGame,
+            totalAchievements: gDetails.totalAchievements || 0,
+          };
+          updatedList = mergeGamesList(ownedGames, [newGame]);
           onOwnedGamesChange(updatedList);
         }
       } catch {
@@ -668,7 +896,7 @@ export default function AccountDashboard({
       }
     }
 
-    await persistGamesToSQLite(updatedList);
+    await persistGamesToSQLite([newGame]);
 
     setBannerMsg({
       type: "success",
@@ -743,7 +971,7 @@ export default function AccountDashboard({
         return;
       }
 
-      let merged = upsertOwnedGames(discovered);
+      let merged = mergeGamesList(ownedGames, discovered);
       onOwnedGamesChange(merged);
 
       // Sync the newly imported games if Steam user is connected (up to 15 immediately so it stays fast)
@@ -754,7 +982,7 @@ export default function AccountDashboard({
           const s = await syncSingleSteamGame(steamAccount.username, g);
           syncedBatch.push(s);
         }
-        merged = upsertOwnedGames(syncedBatch);
+        merged = mergeGamesList(merged, syncedBatch);
         onOwnedGamesChange(merged);
       }
 
@@ -764,7 +992,7 @@ export default function AccountDashboard({
       setIsAddGameOpen(false);
       setBannerMsg({
         type: "success",
-        text: `${discovered.length} jeux importés dans votre bibliothèque !`,
+        text: `${discovered.length} jeux importés dans votre bibliothèque SQLite !`,
       });
     } finally {
       setIsBulkImporting(false);
@@ -794,10 +1022,17 @@ export default function AccountDashboard({
     return result;
   }, [ownedGames]);
 
-  // Wishlist toggle handler
+  // Wishlist toggle handler (100% SQLite)
   const handleToggleWishlist = async (appId: number, platform: PlatformType) => {
-    const nextAdded = toggleLocalWishlist(appId);
-    setWishlistIds(getLocalWishlist());
+    const isCurrentlyWishlisted = wishlistIds.includes(appId);
+    const nextAdded = !isCurrentlyWishlisted;
+    const nextWishlist = nextAdded
+      ? [...wishlistIds, appId]
+      : wishlistIds.filter((id) => id !== appId);
+
+    setWishlistIds(nextWishlist);
+    if (onWishlistChange) onWishlistChange(nextWishlist);
+
     if (currentUser) {
       try {
         await fetch("/api/user/wishlist", {
@@ -815,14 +1050,15 @@ export default function AccountDashboard({
     });
   };
 
-  // Collections handlers
+  // Collections handlers (100% SQLite)
   const handleCreateCollection = async () => {
     const trimmed = newCollName.trim();
     if (!trimmed) return;
 
+    let createdId = "coll_" + Date.now();
     if (currentUser) {
       try {
-        await fetch("/api/collections", {
+        const res = await fetch("/api/collections", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -831,11 +1067,17 @@ export default function AccountDashboard({
             color: newCollColor,
           }),
         });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.collection?.id) {
+            createdId = data.collection.id;
+          }
+        }
       } catch {}
     }
 
     const newColl: LocalCollection = {
-      id: "coll_" + Date.now(),
+      id: createdId,
       name: trimmed,
       description: newCollDesc.trim() || undefined,
       color: newCollColor,
@@ -843,7 +1085,7 @@ export default function AccountDashboard({
     };
     const next = [...collections, newColl];
     setCollections(next);
-    saveLocalCollections(next);
+    if (onCollectionsChange) onCollectionsChange(next);
     setNewCollName("");
     setNewCollDesc("");
     setIsCreatingColl(false);
@@ -859,7 +1101,7 @@ export default function AccountDashboard({
     }
     const next = collections.filter((c) => c.id !== collId);
     setCollections(next);
-    saveLocalCollections(next);
+    if (onCollectionsChange) onCollectionsChange(next);
     if (selectedCollId === collId) setSelectedCollId(null);
     setBannerMsg({ type: "success", text: "Collection supprimée." });
   };
@@ -881,7 +1123,7 @@ export default function AccountDashboard({
       return c;
     });
     setCollections(next);
-    saveLocalCollections(next);
+    if (onCollectionsChange) onCollectionsChange(next);
     setGameToAddToColl(null);
     setBannerMsg({ type: "success", text: `"${game.name}" ajouté à la collection !` });
   };
@@ -901,7 +1143,7 @@ export default function AccountDashboard({
       return c;
     });
     setCollections(next);
-    saveLocalCollections(next);
+    if (onCollectionsChange) onCollectionsChange(next);
     setBannerMsg({ type: "success", text: "Jeu retiré de la collection." });
   };
 
@@ -1151,6 +1393,14 @@ export default function AccountDashboard({
           >
             ✕
           </button>
+        </div>
+      )}
+
+      {/* Live Sync Progress Banner */}
+      {syncProgressText && (
+        <div className="flex items-center gap-2.5 rounded-2xl border border-sky-500/40 bg-sky-500/10 p-3 text-xs text-sky-200">
+          <Loader2 className="h-4 w-4 animate-spin shrink-0 text-sky-400" />
+          <span className="font-medium truncate">{syncProgressText}</span>
         </div>
       )}
 
@@ -2151,9 +2401,16 @@ export default function AccountDashboard({
                   )}
                 </div>
 
-                <p className="text-[10px] text-slate-400">
-                  Zero mot de passe partagé. Importe automatiquement vos jeux et succès Epic Games.
-                </p>
+                {syncProgressText && isSyncingEpic ? (
+                  <div className="flex items-center gap-2 text-[11px] text-purple-300 pt-1">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                    <span className="truncate">{syncProgressText}</span>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-slate-400">
+                    Zero mot de passe partagé. Importe automatiquement vos jeux et succès Epic Games.
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -2206,27 +2463,64 @@ export default function AccountDashboard({
                 Sans succès ({epicCounts.noAch})
               </button>
               {epicCounts.total > 0 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (
-                      confirm(
-                        `Voulez-vous supprimer les ${epicCounts.total} jeux Epic Games actuels de votre bibliothèque locale pour nettoyer les hashs bruts ?`
-                      )
-                    ) {
-                      const updated = removePlatformOwnedGames("epic");
-                      onOwnedGamesChange(updated);
-                      setBannerMsg({
-                        type: "success",
-                        text: `Bibliothèque Epic nettoyée (${epicCounts.total} entrées retirées). Vous pouvez relancer l'import propre.`,
-                      });
-                    }
-                  }}
-                  className="rounded-xl border border-rose-500/30 bg-rose-950/30 px-3 py-1.5 text-xs font-bold text-rose-300 hover:bg-rose-900/40 hover:text-rose-200 transition flex items-center gap-1.5 sm:ml-auto"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Nettoyer les jeux Epic ({epicCounts.total})
-                </button>
+                <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+                  {epicCounts.noAch > 0 && (
+                    <button
+                      type="button"
+                      disabled={isSyncingEpic}
+                      onClick={async () => {
+                        const epicSubset = ownedGames.filter(
+                          (g) => g.platform === "epic"
+                        );
+                        const finalList = await enrichEpicGamesAchievements(
+                          epicSubset,
+                          ownedGames
+                        );
+                        const withAch = finalList.filter(
+                          (g) =>
+                            g.platform === "epic" &&
+                            (g.totalAchievements || 0) > 0
+                        ).length;
+                        setBannerMsg({
+                          type: "success",
+                          text: `Scan terminé : ${withAch} jeu(x) Epic avec succès sauvegardés dans SQLite !`,
+                        });
+                      }}
+                      className="rounded-xl border border-purple-500/40 bg-purple-500/20 px-3 py-1.5 text-xs font-bold text-purple-200 hover:bg-purple-500/30 disabled:opacity-50 transition flex items-center gap-1.5"
+                    >
+                      <RefreshCw
+                        className={`h-3.5 w-3.5 ${
+                          isSyncingEpic ? "animate-spin" : ""
+                        }`}
+                      />
+                      Scanner les succès ({epicCounts.noAch})
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (
+                        confirm(
+                          `Voulez-vous supprimer les ${epicCounts.total} jeux Epic Games actuels de votre bibliothèque SQLite ?`
+                        )
+                      ) {
+                        const updated = ownedGames.filter(
+                          (g) => g.platform !== "epic"
+                        );
+                        onOwnedGamesChange(updated);
+                        await removePlatformGamesFromSQLite("epic");
+                        setBannerMsg({
+                          type: "success",
+                          text: `Bibliothèque Epic nettoyée (${epicCounts.total} entrées retirées de SQLite). Vous pouvez relancer l'import propre.`,
+                        });
+                      }
+                    }}
+                    className="rounded-xl border border-rose-500/30 bg-rose-950/30 px-3 py-1.5 text-xs font-bold text-rose-300 hover:bg-rose-900/40 hover:text-rose-200 transition flex items-center gap-1.5"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Nettoyer les jeux Epic ({epicCounts.total})
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -2983,22 +3277,39 @@ export default function AccountDashboard({
                           </button>
                         )}
 
-                        {g.platform === "steam" && steamAccount?.username && (
+                        {((g.platform === "steam" && steamAccount?.username) ||
+                          g.platform === "epic") && (
                           <button
                             onClick={async () => {
-                              const synced = await syncSingleSteamGame(
-                                steamAccount.username,
-                                g
-                              );
-                              const next = upsertOwnedGames([synced]);
-                              onOwnedGamesChange(next);
-                              await persistGamesToSQLite([synced]);
-                              setBannerMsg({
-                                type: "success",
-                                text: `Succès de "${synced.name}" synchronisés (${synced.unlockedCount}/${synced.totalAchievements}) !`,
-                              });
+                              if (g.platform === "steam" && steamAccount?.username) {
+                                const synced = await syncSingleSteamGame(
+                                  steamAccount.username,
+                                  g
+                                );
+                                const next = mergeGamesList(ownedGames, [synced]);
+                                onOwnedGamesChange(next);
+                                await persistGamesToSQLite([synced]);
+                                setBannerMsg({
+                                  type: "success",
+                                  text: `Succès de "${synced.name}" synchronisés (${synced.unlockedCount}/${synced.totalAchievements}) !`,
+                                });
+                              } else {
+                                const next = await enrichEpicGamesAchievements(
+                                  [{ ...g, totalAchievements: 0 }],
+                                  ownedGames
+                                );
+                                const updatedGame = next.find(
+                                  (item) =>
+                                    item.appId === g.appId &&
+                                    item.platform === "epic"
+                                );
+                                setBannerMsg({
+                                  type: "success",
+                                  text: `Succès de "${g.name}" actualisés (${updatedGame?.totalAchievements || 0} succès détectés) !`,
+                                });
+                              }
                             }}
-                            title="Synchroniser les succès Steam de ce jeu"
+                            title="Actualiser les succès de ce jeu"
                             className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-emerald-400"
                           >
                             <RefreshCw className="h-3.5 w-3.5" />
@@ -3006,7 +3317,13 @@ export default function AccountDashboard({
                         )}
                         <button
                           onClick={async () => {
-                            const next = removeOwnedGame(g.appId, g.platform);
+                            const next = ownedGames.filter(
+                              (item) =>
+                                !(
+                                  item.appId === g.appId &&
+                                  item.platform === g.platform
+                                )
+                            );
                             onOwnedGamesChange(next);
                             await removeGameFromSQLite(g.appId, g.platform);
                           }}

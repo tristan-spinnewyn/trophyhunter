@@ -207,4 +207,57 @@ describe('GET /api/game/[id]', () => {
     expect(data.achievements[0].name).toBe('Cité abandonnée');
     expect(data.guideLinks.steamGuidesUrl).toContain('/app/504230/guides');
   });
+
+  it('supports fast=1 mode to resolve non-Steam game achievements with minimal requests and smart title matching', async () => {
+    const mockSearchResults = {
+      items: [
+        { id: 111111, name: 'Hades Soundtrack' },
+        { id: 1145360, name: 'Hades', tiny_image: 'https://cdn.example.com/hades_tiny.jpg' },
+      ],
+    };
+
+    const mockSchemaJson = {
+      response: {
+        achievements: [
+          {
+            internal_name: 'ACH_1',
+            localized_name: 'Évasion',
+            localized_desc: 'Franchir le Tartare.',
+            icon: 'hades_ach1.jpg',
+            hidden: false,
+            player_percent_unlocked: '75.2',
+          },
+          {
+            internal_name: 'ACH_2',
+            localized_name: 'Fils de Hadès',
+            localized_desc: 'Vaincre le boss final.',
+            icon: 'hades_ach2.jpg',
+            hidden: false,
+            player_percent_unlocked: '42.0',
+          },
+        ],
+      },
+    };
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockSearchResults,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => JSON.stringify(mockSchemaJson),
+      } as any);
+
+    const req = new Request('http://localhost:3000/api/game/88888888?name=Hades%20-%20Definitive%20Edition&platform=epic&fast=1');
+    const params = Promise.resolve({ id: '88888888' });
+    const res = await GET(req, { params });
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.id).toBe(88888888);
+    expect(data.totalAchievements).toBe(2);
+    expect(data.achievements[0].icon).toContain('/apps/1145360/hades_ach1.jpg');
+  });
 });
+

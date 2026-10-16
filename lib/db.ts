@@ -397,9 +397,21 @@ export function getUserPlatformAccounts(
       totalAchievements: 0,
       completedGames: 0,
     };
+    let meta: {
+      level?: number;
+      onlineState?: string;
+      memberSince?: string;
+      location?: string;
+      rareShowcase?: PlatformAccount["rareShowcase"];
+    } = {};
     if (r.stats_json) {
       try {
-        stats = JSON.parse(r.stats_json);
+        const parsed = JSON.parse(r.stats_json);
+        const { _meta, ...restStats } = parsed || {};
+        stats = { ...stats, ...restStats };
+        if (_meta && typeof _meta === "object") {
+          meta = _meta;
+        }
       } catch {
         // use default stats
       }
@@ -411,6 +423,11 @@ export function getUserPlatformAccounts(
       displayName: r.display_name || r.platform_username,
       avatarUrl: r.avatar_url || undefined,
       profileUrl: r.profile_url || undefined,
+      level: meta.level,
+      onlineState: meta.onlineState,
+      memberSince: meta.memberSince,
+      location: meta.location,
+      rareShowcase: meta.rareShowcase,
       connectedAt: r.connected_at,
       lastSyncedAt: r.last_synced_at || undefined,
       stats,
@@ -439,7 +456,17 @@ export function saveUserPlatformAccount(
     encryptedKey = plainApiKey ? encryptSecret(plainApiKey.trim()) : null;
   }
 
-  const statsJson = JSON.stringify(account.stats || {});
+  const statsPayload = {
+    ...(account.stats || {}),
+    _meta: {
+      level: account.level,
+      onlineState: account.onlineState,
+      memberSince: account.memberSince,
+      location: account.location,
+      rareShowcase: account.rareShowcase,
+    },
+  };
+  const statsJson = JSON.stringify(statsPayload);
   const now = new Date().toISOString();
 
   if (existing) {
@@ -559,9 +586,9 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(user_id, platform, app_id) DO UPDATE SET
        name = excluded.name,
-       header_img = excluded.header_img,
-       total_achievements = excluded.total_achievements,
-       unlocked_count = excluded.unlocked_count,
+       header_img = COALESCE(excluded.header_img, user_games.header_img),
+       total_achievements = CASE WHEN excluded.total_achievements > 0 THEN excluded.total_achievements ELSE user_games.total_achievements END,
+       unlocked_count = MAX(excluded.unlocked_count, user_games.unlocked_count),
        playtime_hours = COALESCE(excluded.playtime_hours, user_games.playtime_hours),
        last_played = COALESCE(excluded.last_played, user_games.last_played),
        source = COALESCE(excluded.source, user_games.source)`
@@ -770,6 +797,25 @@ export function getUserCollections(userId: string): Collection[] {
     game_count: number;
   }>;
 
+  const gameLinks = db
+    .prepare(
+      `SELECT cg.collection_id, ug.app_id
+       FROM collection_games cg
+       JOIN user_games ug ON cg.user_game_id = ug.id
+       JOIN collections c ON cg.collection_id = c.id
+       WHERE c.user_id = ?`
+    )
+    .all(userId) as Array<{ collection_id: string; app_id: number }>;
+
+  const gameIdsByColl = new Map<string, number[]>();
+  for (const link of gameLinks) {
+    const list = gameIdsByColl.get(link.collection_id) || [];
+    if (!list.includes(link.app_id)) {
+      list.push(link.app_id);
+      gameIdsByColl.set(link.collection_id, list);
+    }
+  }
+
   return rows.map((r) => ({
     id: r.id,
     userId: r.user_id,
@@ -779,6 +825,7 @@ export function getUserCollections(userId: string): Collection[] {
     icon: r.icon || undefined,
     createdAt: r.created_at,
     gameCount: r.game_count,
+    gameIds: gameIdsByColl.get(r.id) || [],
   }));
 }
 
@@ -793,6 +840,24 @@ export function createCollection(
   const trimmed = name.trim();
   if (!trimmed) {
     throw new Error("Collection name cannot be empty");
+  }
+
+  const existing = db
+    .prepare("SELECT id, created_at FROM collections WHERE user_id = ? AND name = ? COLLATE NOCASE")
+    .get(userId, trimmed) as { id: string; created_at: string } | undefined;
+
+  if (existing) {
+    return {
+      id: existing.id,
+      userId,
+      name: trimmed,
+      description: description?.trim() || undefined,
+      color: color || undefined,
+      icon: icon || undefined,
+      createdAt: existing.created_at,
+      gameCount: 0,
+      gameIds: [],
+    };
   }
 
   const id = crypto.randomUUID();
@@ -820,6 +885,7 @@ export function createCollection(
     icon: icon || undefined,
     createdAt: now,
     gameCount: 0,
+    gameIds: [],
   };
 }
 
@@ -838,11 +904,17 @@ export function addGameToCollection(
   platform: PlatformType
 ): void {
   const db = getDb();
-  const game = db
+  let game = db
     .prepare(
       "SELECT id FROM user_games WHERE user_id = ? AND app_id = ? AND platform = ?"
     )
     .get(userId, appId, platform) as { id: string } | undefined;
+
+  if (!game) {
+    game = db
+      .prepare("SELECT id FROM user_games WHERE user_id = ? AND app_id = ? LIMIT 1")
+      .get(userId, appId) as { id: string } | undefined;
+  }
 
   if (!game) {
     throw new Error("Game not found in user library");
@@ -869,11 +941,17 @@ export function removeGameFromCollection(
   platform: PlatformType
 ): void {
   const db = getDb();
-  const game = db
+  let game = db
     .prepare(
       "SELECT id FROM user_games WHERE user_id = ? AND app_id = ? AND platform = ?"
     )
     .get(userId, appId, platform) as { id: string } | undefined;
+
+  if (!game) {
+    game = db
+      .prepare("SELECT id FROM user_games WHERE user_id = ? AND app_id = ? LIMIT 1")
+      .get(userId, appId) as { id: string } | undefined;
+  }
 
   if (!game) return;
 
@@ -931,9 +1009,17 @@ export function setGameWishlist(
   isWishlist: boolean
 ): void {
   const db = getDb();
-  db.prepare(
-    "UPDATE user_games SET is_wishlist = ? WHERE user_id = ? AND app_id = ? AND platform = ?"
-  ).run(isWishlist ? 1 : 0, userId, appId, platform);
+  const res = db
+    .prepare(
+      "UPDATE user_games SET is_wishlist = ? WHERE user_id = ? AND app_id = ? AND platform = ?"
+    )
+    .run(isWishlist ? 1 : 0, userId, appId, platform);
+
+  if (res.changes === 0) {
+    db.prepare(
+      "UPDATE user_games SET is_wishlist = ? WHERE user_id = ? AND app_id = ?"
+    ).run(isWishlist ? 1 : 0, userId, appId);
+  }
 }
 
 export function setGameFavorite(
@@ -943,9 +1029,17 @@ export function setGameFavorite(
   isFavorite: boolean
 ): void {
   const db = getDb();
-  db.prepare(
-    "UPDATE user_games SET is_favorite = ? WHERE user_id = ? AND app_id = ? AND platform = ?"
-  ).run(isFavorite ? 1 : 0, userId, appId, platform);
+  const res = db
+    .prepare(
+      "UPDATE user_games SET is_favorite = ? WHERE user_id = ? AND app_id = ? AND platform = ?"
+    )
+    .run(isFavorite ? 1 : 0, userId, appId, platform);
+
+  if (res.changes === 0) {
+    db.prepare(
+      "UPDATE user_games SET is_favorite = ? WHERE user_id = ? AND app_id = ?"
+    ).run(isFavorite ? 1 : 0, userId, appId);
+  }
 }
 
 export function getUserFavoriteAppIds(userId: string): number[] {
@@ -994,6 +1088,16 @@ export function getUserWishlist(userId: string): OwnedGame[] {
   }));
 }
 
+export function clearAllUserData(userId: string): void {
+  const db = getDb();
+  withTransaction(db, () => {
+    db.prepare("DELETE FROM collections WHERE user_id = ?").run(userId);
+    db.prepare("DELETE FROM user_game_progress WHERE user_id = ?").run(userId);
+    db.prepare("DELETE FROM user_games WHERE user_id = ?").run(userId);
+    db.prepare("DELETE FROM platform_accounts WHERE user_id = ?").run(userId);
+  });
+}
+
 // -------------------------------------------------------------
 // DUPLICATE GAMES DETECTION
 // -------------------------------------------------------------
@@ -1002,7 +1106,7 @@ export function normalizeGameTitle(title: string): string {
   return title
     .toLowerCase()
     .replace(
-      /\b(game of the year edition|goty edition|definitive edition|director's cut|remastered|enhanced edition|special edition|standard edition|deluxe edition)\b/gi,
+      /\b(game of the year edition|goty edition|definitive edition|director's cut|remastered|enhanced edition|special edition|standard edition|deluxe edition|ultimate edition|complete edition)\b/gi,
       ""
     )
     .replace(/[^a-z0-9]/gi, "")
@@ -1087,6 +1191,38 @@ export function syncFromLocalStorage(
         db.prepare(
           "UPDATE user_games SET is_favorite = 1 WHERE user_id = ? AND app_id = ?"
         ).run(userId, Number(appId));
+      }
+    }
+
+    // 5. Sync Wishlist
+    if (payload.wishlist && Array.isArray(payload.wishlist)) {
+      for (const appId of payload.wishlist) {
+        db.prepare(
+          "UPDATE user_games SET is_wishlist = 1 WHERE user_id = ? AND app_id = ?"
+        ).run(userId, Number(appId));
+      }
+    }
+
+    // 6. Sync Collections
+    if (payload.collections && Array.isArray(payload.collections)) {
+      for (const coll of payload.collections) {
+        if (!coll || !coll.name) continue;
+        const created = createCollection(
+          userId,
+          coll.name,
+          coll.description,
+          coll.color,
+          coll.icon
+        );
+        if (Array.isArray(coll.gameIds)) {
+          for (const gId of coll.gameIds) {
+            try {
+              addGameToCollection(userId, created.id, Number(gId), "steam");
+            } catch {
+              // ignore if game not in library
+            }
+          }
+        }
       }
     }
   });

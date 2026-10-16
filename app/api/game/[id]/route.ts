@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import type { Achievement, GameDetails } from "@/lib/types";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { getDb } from "@/lib/db";
 
 // Heuristic keywords that often indicate missable/challenging trophies
 const MISSABLE_KEYWORDS = [
@@ -35,8 +37,40 @@ function cleanTitleForSearch(title: string): string {
     .replace(/(\(.*?\)|\[.*?\])/g, "")
     .replace(/ - Definitive Edition/gi, "")
     .replace(/ - Game of the Year Edition/gi, "")
+    .replace(/ - Standard Edition/gi, "")
+    .replace(/ - Complete Edition/gi, "")
+    .replace(/ - Deluxe Edition/gi, "")
     .replace(/ Enhanced Edition/gi, "")
+    .replace(/ Director's Cut/gi, "")
+    .replace(/\s+/g, " ")
     .trim();
+}
+
+function normalizeForComparison(title: string): string {
+  return cleanTitleForSearch(title)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function findBestSteamMatch(
+  items: Array<{ id?: number; name?: string }>,
+  targetName: string
+): { id?: number; name?: string } | undefined {
+  if (!Array.isArray(items) || items.length === 0) return undefined;
+  const targetNorm = normalizeForComparison(targetName);
+  if (targetNorm) {
+    const exact = items.find(
+      (it) => it.name && normalizeForComparison(it.name) === targetNorm
+    );
+    if (exact) return exact;
+    const startsWith = items.find((it) => {
+      if (!it.name) return false;
+      const itemNorm = normalizeForComparison(it.name);
+      return itemNorm.startsWith(targetNorm) || targetNorm.startsWith(itemNorm);
+    });
+    if (startsWith) return startsWith;
+  }
+  return items[0];
 }
 
 // Safely sanitize HTML tags iteratively to prevent incomplete multi-character sanitization
@@ -48,6 +82,37 @@ function stripHtmlTags(input: string): string {
     curr = curr.replace(/<[^>]*>/g, "");
   } while (curr !== prev);
   return curr.trim();
+}
+
+async function fetchSteamAchievementsByAppId(steamAppId: string) {
+  try {
+    const r = await fetch(
+      `https://api.steampowered.com/IPlayerService/GetGameAchievements/v1/?appid=${steamAppId}&language=french`,
+      {
+        headers: {
+          Cookie:
+            "Steam_Language=french; mature_content=1; birthtime=568022401; lastagecheckage=1-January-1990",
+          "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        },
+        next: { revalidate: 600 },
+      }
+    );
+    if (!r.ok) return null;
+    const text = await r.text();
+    try {
+      const json = JSON.parse(text);
+      if (Array.isArray(json?.response?.achievements)) {
+        return { type: "schema" as const, list: json.response.achievements };
+      }
+    } catch {
+      // text is HTML (e.g. from unit test mock or legacy endpoint)
+    }
+    return { type: "html" as const, html: text };
+  } catch {
+    return null;
+  }
 }
 
 export async function GET(
@@ -62,52 +127,42 @@ export async function GET(
   }
 
   try {
-    // 1. Fetch Store details (Game name, image, description)
-    const storePromise = fetch(
-      `https://store.steampowered.com/api/appdetails?appids=${appId}&l=french&cc=fr`,
-      {
-        headers: {
-          "Accept-Language": "fr-FR,fr;q=0.9",
-        },
-        next: { revalidate: 3600 }, // 1 hour cache
-      }
-    ).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-
-    // 2. Fetch Achievements (Schema JSON or HTML fallback)
-    const achPromise = fetch(
-      `https://api.steampowered.com/IPlayerService/GetGameAchievements/v1/?appid=${appId}&language=french`,
-      {
-        headers: {
-          Cookie: "Steam_Language=french; mature_content=1; birthtime=568022401; lastagecheckage=1-January-1990",
-          "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        },
-        next: { revalidate: 600 },
-      }
-    )
-      .then(async (r) => {
-        if (!r.ok) return null;
-        const text = await r.text();
-        try {
-          const json = JSON.parse(text);
-          if (Array.isArray(json?.response?.achievements)) {
-            return { type: "schema" as const, list: json.response.achievements };
-          }
-        } catch {
-          // text is HTML (e.g. from unit test mock or legacy endpoint)
-        }
-        return { type: "html" as const, html: text };
-      })
-      .catch(() => null);
-
     const { searchParams } = new URL(request.url);
     const nameParam = searchParams.get("name")?.trim();
+    const fastMode = searchParams.get("fast") === "1";
 
-    const [storeData, initialAchResult] = await Promise.all([storePromise, achPromise]);
-    let achResult = initialAchResult;
-    let gameInfo = storeData?.[appId]?.data;
+    let achResult:
+      | { type: "schema"; list: any[] }
+      | { type: "html"; html: string }
+      | null = null;
+    let gameInfo: any = null;
     let effectiveAppId = appId;
+    let matchedSearchImage = "";
+
+    if (!fastMode || !nameParam) {
+      // 1. Fetch Store details (Game name, image, description)
+      const storePromise = fetch(
+        `https://store.steampowered.com/api/appdetails?appids=${appId}&l=french&cc=fr`,
+        {
+          headers: {
+            "Accept-Language": "fr-FR,fr;q=0.9",
+          },
+          next: { revalidate: 3600 }, // 1 hour cache
+        }
+      )
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null);
+
+      // 2. Fetch Achievements (Schema JSON or HTML fallback)
+      const achPromise = fetchSteamAchievementsByAppId(appId);
+
+      const [storeData, initialAchResult] = await Promise.all([
+        storePromise,
+        achPromise,
+      ]);
+      achResult = initialAchResult;
+      gameInfo = storeData?.[appId]?.data;
+    }
 
     // If game was not found directly by appId (e.g. non-Steam appId from Epic, GOG, or Xbox),
     // search Steam by name to resolve its French achievement checklist!
@@ -116,7 +171,7 @@ export async function GET(
         const cleanSearchName = cleanTitleForSearch(nameParam);
         const searchRes = await fetch(
           `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(
-            cleanSearchName
+            cleanSearchName || nameParam
           )}&l=french&cc=fr`,
           {
             headers: { "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8" },
@@ -124,44 +179,44 @@ export async function GET(
         );
         if (searchRes.ok) {
           const searchData = await searchRes.json();
-          const firstMatch = searchData?.items?.[0];
-          if (firstMatch?.id) {
-            effectiveAppId = String(firstMatch.id);
-            const [matchedStoreRes, matchedAchRes] = await Promise.all([
-              fetch(
-                `https://store.steampowered.com/api/appdetails?appids=${effectiveAppId}&l=french&cc=fr`,
-                {
-                  headers: { "Accept-Language": "fr-FR,fr;q=0.9" },
-                  next: { revalidate: 3600 },
-                }
-              ).then((r) => (r.ok ? r.json() : null)).catch(() => null),
-              fetch(
-                `https://api.steampowered.com/IPlayerService/GetGameAchievements/v1/?appid=${effectiveAppId}&language=french`,
-                {
-                  headers: {
-                    Cookie: "Steam_Language=french; mature_content=1; birthtime=568022401; lastagecheckage=1-January-1990",
-                    "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
-                    "User-Agent":
-                      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                  },
-                  next: { revalidate: 600 },
-                }
-              ).then(async (r) => {
-                if (!r.ok) return null;
-                const text = await r.text();
-                try {
-                  const json = JSON.parse(text);
-                  if (Array.isArray(json?.response?.achievements)) {
-                    return { type: "schema" as const, list: json.response.achievements };
-                  }
-                } catch {}
-                return { type: "html" as const, html: text };
-              }).catch(() => null),
-            ]);
+          const bestMatch = findBestSteamMatch(
+            searchData?.items || [],
+            cleanSearchName || nameParam
+          ) as { id?: number; name?: string; tiny_image?: string } | undefined;
 
-            if (matchedStoreRes?.[effectiveAppId]?.data) {
-              gameInfo = matchedStoreRes[effectiveAppId].data;
-              achResult = matchedAchRes;
+          if (bestMatch?.id) {
+            effectiveAppId = String(bestMatch.id);
+            if (bestMatch.tiny_image) {
+              matchedSearchImage = bestMatch.tiny_image;
+            }
+
+            if (fastMode) {
+              const matchedAchRes = await fetchSteamAchievementsByAppId(
+                effectiveAppId
+              );
+              if (matchedAchRes) {
+                achResult = matchedAchRes;
+              }
+            } else {
+              const [matchedStoreRes, matchedAchRes] = await Promise.all([
+                fetch(
+                  `https://store.steampowered.com/api/appdetails?appids=${effectiveAppId}&l=french&cc=fr`,
+                  {
+                    headers: { "Accept-Language": "fr-FR,fr;q=0.9" },
+                    next: { revalidate: 3600 },
+                  }
+                )
+                  .then((r) => (r.ok ? r.json() : null))
+                  .catch(() => null),
+                fetchSteamAchievementsByAppId(effectiveAppId),
+              ]);
+
+              if (matchedStoreRes?.[effectiveAppId]?.data) {
+                gameInfo = matchedStoreRes[effectiveAppId].data;
+              }
+              if (matchedAchRes) {
+                achResult = matchedAchRes;
+              }
             }
           }
         }
@@ -173,7 +228,8 @@ export async function GET(
     const gameName = gameInfo?.name || nameParam || `Jeu (#${appId})`;
     const headerImg =
       gameInfo?.header_image ||
-      `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/header.jpg`;
+      matchedSearchImage ||
+      `https://cdn.akamai.steamstatic.com/steam/apps/${effectiveAppId}/header.jpg`;
     const shortDesc = gameInfo?.short_description || "";
     const developers = gameInfo?.developers || [];
     const publishers = gameInfo?.publishers || [];
@@ -193,7 +249,7 @@ export async function GET(
         const icon = item.icon
           ? (item.icon.startsWith("http")
               ? item.icon
-              : `https://shared.fastly.steamstatic.com/community_assets/images/apps/${appId}/${item.icon}`)
+              : `https://shared.fastly.steamstatic.com/community_assets/images/apps/${effectiveAppId}/${item.icon}`)
           : "";
         const missable = isLikelyMissable(title, displayDesc);
         const idSlug = `ach_${i + 1}_${title.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 30)}`;
@@ -242,6 +298,23 @@ export async function GET(
       }
     }
 
+    // Automatically persist resolved totalAchievements in SQLite if user is authenticated
+    if (achievements.length > 0) {
+      try {
+        const authUser = await getAuthenticatedUser();
+        if (authUser) {
+          const db = getDb();
+          db.prepare(
+            `UPDATE user_games
+             SET total_achievements = ?
+             WHERE user_id = ? AND app_id = ?`
+          ).run(achievements.length, authUser.id, parseInt(appId, 10));
+        }
+      } catch {
+        // Non-blocking DB update
+      }
+    }
+
     const cleanName = cleanTitleForSearch(gameName);
 
     const gameDetails: GameDetails = {
@@ -271,3 +344,4 @@ export async function GET(
     );
   }
 }
+

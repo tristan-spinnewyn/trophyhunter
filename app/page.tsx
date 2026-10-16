@@ -17,27 +17,18 @@ import type {
   UserGameProgress,
   UserAccountProfile,
   OwnedGame,
-  PlatformAccount,
   User as UserType,
 } from "@/lib/types";
 
 import {
-  getGameProgress,
-  saveGameProgress,
-  toggleAchievementUnlocked,
-  setAchievementNote,
-  resetGameProgress,
-  getFavoriteGames,
-  toggleFavoriteGame,
-  getRecentGames,
-  getSavedSteamUser,
   getSavedSteamApiKey,
   getUserAccount,
-  savePlatformAccount,
   getOwnedGames,
-  upsertOwnedGames,
-  removeOwnedGame,
+  getFavoriteGames,
+  getLocalWishlist,
+  getLocalCollections,
   clearLegacyLocalStorage,
+  LocalCollection,
 } from "@/lib/storage";
 import {
   Trophy,
@@ -113,15 +104,17 @@ export default function Home() {
   const [sort, setSort] = useState<SortOrder>("default");
   const [revealSecrets, setRevealSecrets] = useState<boolean>(false);
 
-  // Storage & Account State
+  // SQLite-backed Account & Library State
   const [progress, setProgress] = useState<UserGameProgress>({
     unlockedIds: [],
     notes: {},
   });
   const [favorites, setFavorites] = useState<number[]>([]);
-  const [recentIds, setRecentIds] = useState<number[]>([]);
+  const [wishlistIds, setWishlistIds] = useState<number[]>([]);
+  const [collections, setCollections] = useState<LocalCollection[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [steamUser, setSteamUser] = useState<string>("");
+  const [steamApiKey, setSteamApiKey] = useState<string>("");
   const [accountProfile, setAccountProfile] = useState<UserAccountProfile>({
     displayName: "Chasseur de Trophées",
     accounts: {},
@@ -136,32 +129,56 @@ export default function Home() {
     msg: string;
   } | null>(null);
 
+  const applySyncData = (syncData: any) => {
+    if (Array.isArray(syncData?.games)) {
+      setOwnedGames(syncData.games);
+    }
+    if (syncData?.profile) {
+      setAccountProfile(syncData.profile);
+      if (syncData.profile.accounts?.steam?.username) {
+        setSteamUser(syncData.profile.accounts.steam.username);
+      }
+    }
+    if (typeof syncData?.steamApiKey === "string") {
+      setSteamApiKey(syncData.steamApiKey);
+    }
+    if (Array.isArray(syncData?.favorites)) {
+      setFavorites(syncData.favorites);
+    }
+    if (Array.isArray(syncData?.wishlist)) {
+      setWishlistIds(syncData.wishlist);
+    }
+    if (Array.isArray(syncData?.collections)) {
+      setCollections(
+        syncData.collections.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          description: c.description,
+          color: c.color || "#6366f1",
+          gameIds: Array.isArray(c.gameIds) ? c.gameIds : [],
+        }))
+      );
+    }
+  };
+
   const refreshUserData = async () => {
     try {
       const res = await fetch("/api/user/sync");
       if (!res.ok) return;
       const syncData = await res.json();
-      if (syncData?.games) {
-        setOwnedGames(syncData.games);
-      }
-      if (syncData?.profile) {
-        setAccountProfile(syncData.profile);
-        if (syncData.profile.accounts?.steam?.username) {
-          setSteamUser(syncData.profile.accounts.steam.username);
-        }
-      }
-      if (Array.isArray(syncData?.favorites)) {
-        setFavorites(syncData.favorites);
-      }
+      applySyncData(syncData);
     } catch (e) {
       console.error("Failed to refresh user data from SQLite:", e);
     }
   };
 
+  // One-time migration helper if legacy localStorage still contains data
   const handleSyncLocalToSQLite = async () => {
     const localProfile = getUserAccount();
     const localGames = getOwnedGames();
     const localFavorites = getFavoriteGames();
+    const localWishlist = getLocalWishlist();
+    const localCollections = getLocalCollections();
     const localApiKey = getSavedSteamApiKey();
     const progressMap: Record<string, any> = {};
     if (typeof window !== "undefined") {
@@ -179,6 +196,8 @@ export default function Home() {
       profile: localProfile,
       games: localGames,
       favorites: localFavorites,
+      wishlist: localWishlist,
+      collections: localCollections,
       steamApiKey: localApiKey || undefined,
       progress: progressMap,
     };
@@ -194,15 +213,13 @@ export default function Home() {
     }
 
     const data = await res.json();
-    if (data?.profile) {
-      setAccountProfile(data.profile);
-    }
+    applySyncData(data);
 
     // Purge legacy localStorage entries now that data is persisted in SQLite
     clearLegacyLocalStorage();
   };
 
-  // Check user session & load database data
+  // Check user session & load database data from SQLite
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => (r.ok ? r.json() : null))
@@ -229,16 +246,6 @@ export default function Home() {
       })
       .catch(() => setCurrentUser(null))
       .finally(() => setIsCheckingAuth(false));
-
-    setFavorites(getFavoriteGames());
-    const savedSteam = getSavedSteamUser();
-    setSteamUser(savedSteam);
-    const savedAccount = getUserAccount();
-    setAccountProfile(savedAccount);
-    const savedOwned = getOwnedGames();
-    setOwnedGames(savedOwned);
-    const recents = getRecentGames();
-    setRecentIds(recents);
   }, []);
 
   const handleLogout = async () => {
@@ -252,6 +259,10 @@ export default function Home() {
       accounts: {},
     });
     setFavorites([]);
+    setWishlistIds([]);
+    setCollections([]);
+    setSteamUser("");
+    setSteamApiKey("");
     setProgress({ unlockedIds: [], notes: {} });
     setGame(null);
     setSelectedAppId(null);
@@ -276,6 +287,39 @@ export default function Home() {
     await refreshUserData();
   };
 
+  // Helper to update a game in ownedGames state and persist to SQLite
+  const upsertOwnedGameInMemoryAndDb = async (updatedGame: OwnedGame) => {
+    setOwnedGames((prev) => {
+      const idx = prev.findIndex(
+        (g) => g.appId === updatedGame.appId && g.platform === updatedGame.platform
+      );
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = {
+          ...next[idx],
+          ...updatedGame,
+          totalAchievements:
+            updatedGame.totalAchievements > 0
+              ? updatedGame.totalAchievements
+              : next[idx].totalAchievements,
+        };
+        return next;
+      }
+      return [updatedGame, ...prev];
+    });
+
+    if (currentUser) {
+      try {
+        await fetch("/api/user/games", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ game: updatedGame }),
+        });
+      } catch (e) {
+        console.error("Failed to save game to SQLite:", e);
+      }
+    }
+  };
 
   // Sync achievements from public Steam profile for the active game
   const handleSync = async () => {
@@ -316,14 +360,34 @@ export default function Home() {
         unlockedIds: matchedIds,
         lastPlayed: new Date().toISOString(),
       };
-      saveGameProgress(game.id, updated, {
+      setProgress(updated);
+
+      const owned = ownedGames.find((g) => g.appId === game.id);
+      const activePlatform = owned?.platform || "steam";
+
+      await upsertOwnedGameInMemoryAndDb({
+        appId: game.id,
         name: game.name,
         headerImg: game.headerImg,
+        platform: activePlatform,
         totalAchievements: game.totalAchievements,
-        platform: "steam",
+        unlockedCount: matchedIds.length,
+        addedAt: owned?.addedAt || new Date().toISOString(),
+        source: owned?.source || "steam-import",
       });
-      setProgress(updated);
-      setOwnedGames(getOwnedGames());
+
+      if (currentUser) {
+        await fetch("/api/user/progress", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            appId: game.id,
+            platform: activePlatform,
+            progress: updated,
+          }),
+        });
+      }
+
       setSyncNotice({
         type: "success",
         msg: `${matchedIds.length} succès synchronisés depuis le profil Steam de "${steamUser}" !`,
@@ -350,11 +414,14 @@ export default function Home() {
     setFilter("all");
 
     const owned = ownedGames.find((g) => g.appId === appId);
-    let currentProgress = getGameProgress(appId);
+    const activePlatform = owned?.platform || "steam";
+    let currentProgress: UserGameProgress = { unlockedIds: [], notes: {} };
+
     if (currentUser) {
       try {
-        const plat = owned?.platform || "steam";
-        const progRes = await fetch(`/api/user/progress?appId=${appId}&platform=${plat}`);
+        const progRes = await fetch(
+          `/api/user/progress?appId=${appId}&platform=${activePlatform}`
+        );
         if (progRes.ok) {
           const progData = await progRes.json();
           if (progData?.progress) {
@@ -377,30 +444,37 @@ export default function Home() {
       }
       const data: GameDetails = await res.json();
       setGame(data);
-      setRecentIds(getRecentGames());
 
-      // Update totalAchievements in ownedGames if this game is owned
+      // Update totalAchievements in ownedGames state & SQLite if this game is owned
       if (owned) {
-        const nextOwned = upsertOwnedGames([
-          {
-            appId: data.id,
-            name: data.name,
-            headerImg: data.headerImg || owned.headerImg,
-            platform: owned.platform || "steam",
-            totalAchievements: data.totalAchievements,
-            unlockedCount: currentProgress.unlockedIds.length,
-            addedAt: new Date().toISOString(),
-          },
-        ]);
-        setOwnedGames(nextOwned);
+        const unlockedCount = Math.max(
+          owned.unlockedCount || 0,
+          currentProgress.unlockedIds.length
+        );
+        await upsertOwnedGameInMemoryAndDb({
+          ...owned,
+          appId: data.id,
+          name: owned.name || data.name,
+          headerImg:
+            owned.headerImg && !owned.headerImg.includes("images.unsplash.com")
+              ? owned.headerImg
+              : data.headerImg || owned.headerImg,
+          platform: activePlatform,
+          totalAchievements: data.totalAchievements,
+          unlockedCount,
+        });
       }
 
-      // Auto-sync from Steam profile if no achievements are checked yet
+      // Auto-sync from Steam profile if this is a Steam game and no achievements are checked yet
       const user = accountProfile.accounts.steam?.username || steamUser;
-      if (user && currentProgress.unlockedIds.length === 0) {
+      if (
+        activePlatform === "steam" &&
+        user &&
+        currentProgress.unlockedIds.length === 0
+      ) {
         fetch(`/api/sync?user=${encodeURIComponent(user)}&appId=${appId}`)
           .then((r) => r.json())
-          .then((syncData) => {
+          .then(async (syncData) => {
             if (syncData.success && syncData.unlockedTitles) {
               const normalize = (s: string) =>
                 s.replace(/[’']/g, "'").trim().toLowerCase();
@@ -416,19 +490,22 @@ export default function Home() {
                       .map((a) => a.id);
 
               if (matched.length > 0) {
-                const updated = {
+                const updated: UserGameProgress = {
                   ...currentProgress,
                   unlockedIds: matched,
                   lastPlayed: new Date().toISOString(),
                 };
-                saveGameProgress(appId, updated, {
+                setProgress(updated);
+
+                await upsertOwnedGameInMemoryAndDb({
+                  appId,
                   name: data.name,
                   headerImg: data.headerImg,
-                  totalAchievements: data.totalAchievements,
                   platform: "steam",
+                  totalAchievements: data.totalAchievements,
+                  unlockedCount: matched.length,
+                  addedAt: owned?.addedAt || new Date().toISOString(),
                 });
-                setProgress(updated);
-                setOwnedGames(getOwnedGames());
 
                 if (currentUser) {
                   fetch("/api/user/progress", {
@@ -463,19 +540,36 @@ export default function Home() {
   // Toggle achievement checkbox
   const handleToggleAchievement = async (achId: string) => {
     if (!selectedAppId) return;
-    const updated = toggleAchievementUnlocked(
-      selectedAppId,
-      achId,
-      game
-        ? {
-            name: game.name,
-            headerImg: game.headerImg,
-            totalAchievements: game.totalAchievements,
-          }
-        : undefined
-    );
-    setProgress({ ...updated });
-    setOwnedGames(getOwnedGames());
+    const isCurrentlyUnlocked = progress.unlockedIds.includes(achId);
+    const nextUnlockedIds = isCurrentlyUnlocked
+      ? progress.unlockedIds.filter((id) => id !== achId)
+      : [...progress.unlockedIds, achId];
+
+    const updated: UserGameProgress = {
+      ...progress,
+      unlockedIds: nextUnlockedIds,
+      lastPlayed: new Date().toISOString(),
+    };
+    setProgress(updated);
+
+    const owned = ownedGames.find((g) => g.appId === selectedAppId);
+    const activePlatform = owned?.platform || "steam";
+
+    if (owned || game) {
+      await upsertOwnedGameInMemoryAndDb({
+        appId: selectedAppId,
+        name: owned?.name || game?.name || `Jeu #${selectedAppId}`,
+        headerImg: owned?.headerImg || game?.headerImg || "",
+        platform: activePlatform,
+        totalAchievements:
+          game?.totalAchievements || owned?.totalAchievements || 0,
+        unlockedCount: nextUnlockedIds.length,
+        playtimeHours: owned?.playtimeHours,
+        lastPlayed: updated.lastPlayed,
+        addedAt: owned?.addedAt || new Date().toISOString(),
+        source: owned?.source || "manual",
+      });
+    }
 
     if (currentUser) {
       try {
@@ -484,7 +578,7 @@ export default function Home() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             appId: selectedAppId,
-            platform: "steam",
+            platform: activePlatform,
             progress: updated,
           }),
         });
@@ -497,8 +591,20 @@ export default function Home() {
   // Save custom note for achievement
   const handleSaveNotes = async (achId: string, noteText: string) => {
     if (!selectedAppId) return;
-    const updated = setAchievementNote(selectedAppId, achId, noteText);
-    setProgress({ ...updated });
+    const nextNotes = { ...progress.notes };
+    if (!noteText.trim()) {
+      delete nextNotes[achId];
+    } else {
+      nextNotes[achId] = noteText.trim();
+    }
+    const updated: UserGameProgress = {
+      ...progress,
+      notes: nextNotes,
+    };
+    setProgress(updated);
+
+    const owned = ownedGames.find((g) => g.appId === selectedAppId);
+    const activePlatform = owned?.platform || "steam";
 
     if (currentUser) {
       try {
@@ -507,7 +613,7 @@ export default function Home() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             appId: selectedAppId,
-            platform: "steam",
+            platform: activePlatform,
             progress: updated,
           }),
         });
@@ -520,15 +626,24 @@ export default function Home() {
   // Reset progress for this game
   const handleResetProgress = async () => {
     if (!selectedAppId) return;
-    resetGameProgress(selectedAppId);
+    const owned = ownedGames.find((g) => g.appId === selectedAppId);
+    const activePlatform = owned?.platform || "steam";
+
     setProgress({ unlockedIds: [], notes: {} });
-    setOwnedGames(getOwnedGames());
+    setOwnedGames((prev) =>
+      prev.map((g) =>
+        g.appId === selectedAppId ? { ...g, unlockedCount: 0 } : g
+      )
+    );
 
     if (currentUser) {
       try {
-        await fetch(`/api/user/progress?appId=${selectedAppId}&platform=steam`, {
-          method: "DELETE",
-        });
+        await fetch(
+          `/api/user/progress?appId=${selectedAppId}&platform=${activePlatform}`,
+          {
+            method: "DELETE",
+          }
+        );
       } catch (err) {
         console.error("Failed to reset progress in database:", err);
       }
@@ -539,8 +654,13 @@ export default function Home() {
   const handleToggleFavorite = async () => {
     if (!selectedAppId) return;
     const isFav = favorites.includes(selectedAppId);
-    const updated = toggleFavoriteGame(selectedAppId);
+    const updated = isFav
+      ? favorites.filter((id) => id !== selectedAppId)
+      : [...favorites, selectedAppId];
     setFavorites(updated);
+
+    const owned = ownedGames.find((g) => g.appId === selectedAppId);
+    const activePlatform = owned?.platform || "steam";
 
     if (currentUser) {
       try {
@@ -549,7 +669,7 @@ export default function Home() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             appId: selectedAppId,
-            platform: "steam",
+            platform: activePlatform,
             isFavorite: !isFav,
           }),
         });
@@ -562,15 +682,17 @@ export default function Home() {
   // Toggle Owned status for the currently active game
   const handleToggleOwnedActiveGame = async () => {
     if (!game) return;
-    const exists = ownedGames.some((g) => g.appId === game.id);
-    if (exists) {
-      const next = removeOwnedGame(game.id);
-      setOwnedGames(next);
+    const existing = ownedGames.find((g) => g.appId === game.id);
+    if (existing) {
+      setOwnedGames((prev) => prev.filter((g) => g.appId !== game.id));
       if (currentUser) {
         try {
-          await fetch(`/api/user/games?appId=${game.id}&platform=steam`, {
-            method: "DELETE",
-          });
+          await fetch(
+            `/api/user/games?appId=${game.id}&platform=${existing.platform}`,
+            {
+              method: "DELETE",
+            }
+          );
         } catch (err) {
           console.error("Failed to remove game from database:", err);
         }
@@ -586,8 +708,7 @@ export default function Home() {
         addedAt: new Date().toISOString(),
         source: "manual",
       };
-      const next = upsertOwnedGames([newGame]);
-      setOwnedGames(next);
+      setOwnedGames((prev) => [newGame, ...prev]);
       if (currentUser) {
         try {
           await fetch("/api/user/games", {
@@ -751,6 +872,11 @@ export default function Home() {
               onSteamUserChange={setSteamUser}
               currentUser={currentUser}
               onOpenAuthModal={() => setIsAuthOpen(true)}
+              initialSteamApiKey={steamApiKey}
+              initialWishlist={wishlistIds}
+              initialCollections={collections}
+              onWishlistChange={setWishlistIds}
+              onCollectionsChange={setCollections}
             />
 
 
@@ -949,9 +1075,21 @@ export default function Home() {
         onDataReset={() => {
           setProgress({ unlockedIds: [], notes: {} });
           setFavorites([]);
+          setWishlistIds([]);
+          setCollections([]);
           setOwnedGames([]);
+          setAccountProfile({
+            displayName: "Chasseur de Trophées",
+            accounts: {},
+          });
         }}
-        onSteamUserSaved={(u) => setSteamUser(u)}
+        initialSteamUser={steamUser}
+        initialSteamApiKey={steamApiKey}
+        onSteamUserSaved={(u, key) => {
+          setSteamUser(u);
+          if (key !== undefined) setSteamApiKey(key);
+        }}
+        onRefreshData={refreshUserData}
       />
 
       {/* Auth Modal (SQLite) */}
