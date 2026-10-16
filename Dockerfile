@@ -1,7 +1,7 @@
 FROM node:25-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g pnpm@latest
+RUN npm install -g pnpm@12.4.2
 
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
