@@ -7,13 +7,15 @@ export function createSession(userId: string, expiresInDays = 30): string {
   const db = getDb();
   const sessionId = crypto.randomBytes(32).toString("hex");
   const now = new Date();
+  const nowIso = now.toISOString();
   const expiresAt = new Date(
     now.getTime() + expiresInDays * 24 * 60 * 60 * 1000
   ).toISOString();
 
+  db.prepare("DELETE FROM sessions WHERE expires_at < ?").run(nowIso);
   db.prepare(
     "INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)"
-  ).run(sessionId, userId, expiresAt, now.toISOString());
+  ).run(sessionId, userId, expiresAt, nowIso);
 
   return sessionId;
 }

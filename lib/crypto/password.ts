@@ -1,25 +1,27 @@
 // lib/crypto/password.ts
 import crypto from "node:crypto";
 
-/**
- * Hashes a user password using scrypt with a unique random salt.
- * Output format: "salt:hash" (hex encoded)
- */
+const MAX_PASSWORD_BYTES = 256;
+const DUMMY_STORED_HASH = `${"0".repeat(32)}:${"0".repeat(128)}`;
+
 export function hashPassword(password: string): string {
+  if (Buffer.byteLength(password, "utf8") > MAX_PASSWORD_BYTES) {
+    throw new Error("Password exceeds maximum allowed length");
+  }
   const salt = crypto.randomBytes(16).toString("hex");
   const derivedKey = crypto.scryptSync(password, salt, 64);
   return `${salt}:${derivedKey.toString("hex")}`;
 }
 
-/**
- * Verifies a password against a stored scrypt "salt:hash" string.
- */
-export function verifyPassword(password: string, storedHash: string): boolean {
-  if (!password || !storedHash || !storedHash.includes(":")) {
+export function verifyPassword(password: string, storedHash: string | null | undefined): boolean {
+  if (!password || Buffer.byteLength(password, "utf8") > MAX_PASSWORD_BYTES) {
     return false;
   }
 
-  const [salt, expectedHash] = storedHash.split(":");
+  const hasValidStored = Boolean(storedHash && storedHash.includes(":"));
+  const targetHash = hasValidStored ? (storedHash as string) : DUMMY_STORED_HASH;
+
+  const [salt, expectedHash] = targetHash.split(":");
   if (!salt || !expectedHash) return false;
 
   const derivedKey = crypto.scryptSync(password, salt, 64);
@@ -29,5 +31,6 @@ export function verifyPassword(password: string, storedHash: string): boolean {
     return false;
   }
 
-  return crypto.timingSafeEqual(derivedKey, expectedBuffer);
+  const isEqual = crypto.timingSafeEqual(derivedKey, expectedBuffer);
+  return hasValidStored && isEqual;
 }

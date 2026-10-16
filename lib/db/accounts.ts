@@ -2,6 +2,7 @@
 import crypto from "node:crypto";
 import { getDb } from "./connection";
 import { encryptSecret } from "../crypto";
+import { sanitizeExternalHref } from "../security/url-validator";
 import type { PlatformAccount, PlatformType } from "../types";
 import { parseAccountStatsJson, serializeAccountStats } from "./accounts-meta";
 
@@ -24,7 +25,8 @@ export function getUserPlatformAccounts(userId: string): Partial<Record<Platform
     result[r.platform] = {
       platform: r.platform, username: r.platform_username,
       displayName: r.display_name || r.platform_username,
-      avatarUrl: r.avatar_url || undefined, profileUrl: r.profile_url || undefined,
+      avatarUrl: sanitizeExternalHref(r.avatar_url),
+      profileUrl: sanitizeExternalHref(r.profile_url),
       level: meta.level, onlineState: meta.onlineState, memberSince: meta.memberSince,
       location: meta.location, rareShowcase: meta.rareShowcase,
       connectedAt: r.connected_at, lastSyncedAt: r.last_synced_at || undefined, stats,
@@ -44,6 +46,8 @@ export function saveUserPlatformAccount(userId: string, account: PlatformAccount
     encryptedKey = plainApiKey ? encryptSecret(plainApiKey.trim()) : null;
   }
 
+  const safeAvatarUrl = sanitizeExternalHref(account.avatarUrl) || null;
+  const safeProfileUrl = sanitizeExternalHref(account.profileUrl) || null;
   const statsJson = serializeAccountStats(account);
   const now = new Date().toISOString();
 
@@ -52,8 +56,8 @@ export function saveUserPlatformAccount(userId: string, account: PlatformAccount
       `UPDATE platform_accounts SET platform_username = ?, display_name = ?, avatar_url = ?, profile_url = ?,
        encrypted_api_key = ?, stats_json = ?, last_synced_at = ? WHERE id = ?`
     ).run(
-      account.username, account.displayName || account.username, account.avatarUrl || null,
-      account.profileUrl || null, encryptedKey, statsJson, account.lastSyncedAt || now, existing.id
+      account.username, account.displayName || account.username, safeAvatarUrl,
+      safeProfileUrl, encryptedKey, statsJson, account.lastSyncedAt || now, existing.id
     );
   } else {
     db.prepare(
@@ -61,7 +65,7 @@ export function saveUserPlatformAccount(userId: string, account: PlatformAccount
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       crypto.randomUUID(), userId, account.platform, account.username,
-      account.displayName || account.username, account.avatarUrl || null, account.profileUrl || null,
+      account.displayName || account.username, safeAvatarUrl, safeProfileUrl,
       encryptedKey, statsJson, account.connectedAt || now, account.lastSyncedAt || null
     );
   }

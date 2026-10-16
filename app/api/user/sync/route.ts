@@ -1,3 +1,4 @@
+// app/api/user/sync/route.ts
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import {
@@ -10,6 +11,7 @@ import {
   getUserWishlist,
   getUserCollections,
 } from "@/lib/db";
+import { validateSyncPayload, SyncPayloadValidationError } from "@/lib/security";
 
 export async function GET() {
   const user = await getAuthenticatedUser();
@@ -37,6 +39,7 @@ export async function GET() {
     favorites,
     wishlist,
     collections,
+    hasSteamApiKey: Boolean(steamApiKey),
     steamApiKey: steamApiKey || undefined,
   });
 }
@@ -48,8 +51,20 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = await req.json();
-    syncFromLocalStorage(user.id, body || {});
+    const rawBody = (await req.json()) as Record<string, unknown>;
+    const validated = validateSyncPayload(rawBody || {});
+    syncFromLocalStorage(user.id, {
+      profile: validated.profile,
+      games: [...validated.games],
+      favorites: [...validated.favorites],
+      wishlist: [...validated.wishlist],
+      collections: validated.collections.map((c) => ({
+        ...c,
+        gameIds: c.gameIds ? [...c.gameIds] : undefined,
+      })),
+      progress: { ...validated.progress },
+      steamApiKey: validated.steamApiKey,
+    });
 
     const accounts = getUserPlatformAccounts(user.id);
     const games = getUserOwnedGames(user.id);
@@ -75,6 +90,9 @@ export async function POST(req: Request) {
       progressCount: Object.keys(progress).length,
     });
   } catch (err) {
+    if (err instanceof SyncPayloadValidationError) {
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
     console.error("User sync error:", err);
     return NextResponse.json(
       { error: "Erreur lors de la synchronisation des données." },
@@ -82,4 +100,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

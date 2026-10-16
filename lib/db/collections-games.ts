@@ -51,7 +51,11 @@ export function removeGameFromCollection(
 
   if (!game) return;
 
-  db.prepare("DELETE FROM collection_games WHERE collection_id = ? AND user_game_id = ?").run(collectionId, game.id);
+  db.prepare(
+    `DELETE FROM collection_games
+     WHERE collection_id IN (SELECT id FROM collections WHERE id = ? AND user_id = ?)
+       AND user_game_id = ?`
+  ).run(collectionId, userId, game.id);
 }
 
 export function getCollectionGames(userId: string, collectionId: string): OwnedGame[] {
