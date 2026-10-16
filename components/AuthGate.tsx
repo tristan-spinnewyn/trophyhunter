@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Trophy,
   User,
@@ -28,6 +28,20 @@ export default function AuthGate({ onAuthSuccess }: AuthGateProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [legacyGamesCount, setLegacyGamesCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const rawGames = localStorage.getItem("trophyhunter_owned_games");
+        const games = rawGames ? JSON.parse(rawGames) : [];
+        if (Array.isArray(games) && games.length > 0) {
+          setLegacyGamesCount(games.length);
+          setMode("register");
+        }
+      } catch {}
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +119,20 @@ export default function AuthGate({ onAuthSuccess }: AuthGateProps) {
             </p>
           </div>
         </div>
+
+        {legacyGamesCount > 0 && (
+          <div className="flex items-start gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-3.5 text-xs text-amber-200">
+            <Sparkles className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <div className="font-bold text-amber-300">
+                Bibliothèque locale détectée ({legacyGamesCount} jeux)
+              </div>
+              <p className="text-slate-300 text-[11px] leading-relaxed">
+                Vos jeux et succès précédents sont conservés dans votre navigateur. Créez votre compte (ou connectez-vous) ci-dessous pour les transférer et les enregistrer définitivement dans votre base SQLite !
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Tab switch */}
         <div className="grid grid-cols-2 rounded-2xl border border-slate-800 bg-slate-950 p-1">

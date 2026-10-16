@@ -37,6 +37,7 @@ import {
   getOwnedGames,
   upsertOwnedGames,
   removeOwnedGame,
+  clearLegacyLocalStorage,
 } from "@/lib/storage";
 import {
   Trophy,
@@ -157,14 +158,71 @@ export default function Home() {
     }
   };
 
+  const handleSyncLocalToSQLite = async () => {
+    const localProfile = getUserAccount();
+    const localGames = getOwnedGames();
+    const localFavorites = getFavoriteGames();
+    const localApiKey = getSavedSteamApiKey();
+    const progressMap: Record<string, any> = {};
+    if (typeof window !== "undefined") {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("trophyhunter_game_")) {
+          try {
+            progressMap[k] = JSON.parse(localStorage.getItem(k) || "{}");
+          } catch {}
+        }
+      }
+    }
+
+    const payload = {
+      profile: localProfile,
+      games: localGames,
+      favorites: localFavorites,
+      steamApiKey: localApiKey || undefined,
+      progress: progressMap,
+    };
+
+    const res = await fetch("/api/user/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      throw new Error("Erreur de synchronisation SQLite");
+    }
+
+    const data = await res.json();
+    if (data?.profile) {
+      setAccountProfile(data.profile);
+    }
+
+    // Purge legacy localStorage entries now that data is persisted in SQLite
+    clearLegacyLocalStorage();
+  };
+
   // Check user session & load database data
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
+      .then(async (data) => {
         if (data?.user) {
           setCurrentUser(data.user);
-          refreshUserData();
+          try {
+            const localGames = getOwnedGames();
+            const localAccount = getUserAccount();
+            const hasLocalData =
+              localGames.length > 0 ||
+              (localAccount?.accounts && Object.keys(localAccount.accounts).length > 0);
+
+            if (hasLocalData) {
+              await handleSyncLocalToSQLite();
+            }
+          } catch (e) {
+            console.error("Auto-migration check error:", e);
+          }
+          await refreshUserData();
         } else {
           setCurrentUser(null);
         }
@@ -200,48 +258,22 @@ export default function Home() {
     setActiveView("account");
   };
 
-  const handleAuthSuccess = (u: UserType) => {
+  const handleAuthSuccess = async (u: UserType) => {
     setCurrentUser(u);
-    refreshUserData();
-  };
+    try {
+      const localGames = getOwnedGames();
+      const localAccount = getUserAccount();
+      const hasLocalData =
+        localGames.length > 0 ||
+        (localAccount?.accounts && Object.keys(localAccount.accounts).length > 0);
 
-  const handleSyncLocalToSQLite = async () => {
-    const localProfile = getUserAccount();
-    const localGames = getOwnedGames();
-    const localApiKey = getSavedSteamApiKey();
-    const progressMap: Record<string, any> = {};
-    if (typeof window !== "undefined") {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.startsWith("trophyhunter_game_")) {
-          try {
-            progressMap[k] = JSON.parse(localStorage.getItem(k) || "{}");
-          } catch {}
-        }
+      if (hasLocalData) {
+        await handleSyncLocalToSQLite();
       }
+    } catch (e) {
+      console.error("Auto-sync local data to SQLite failed:", e);
     }
-
-    const payload = {
-      profile: localProfile,
-      games: localGames,
-      steamApiKey: localApiKey || undefined,
-      progress: progressMap,
-    };
-
-    const res = await fetch("/api/user/sync", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      throw new Error("Erreur de synchronisation SQLite");
-    }
-
-    const data = await res.json();
-    if (data?.profile) {
-      setAccountProfile(data.profile);
-    }
+    await refreshUserData();
   };
 
 
@@ -317,10 +349,22 @@ export default function Home() {
     setSearch("");
     setFilter("all");
 
-    const currentProgress = getGameProgress(appId);
+    const owned = ownedGames.find((g) => g.appId === appId);
+    let currentProgress = getGameProgress(appId);
+    if (currentUser) {
+      try {
+        const plat = owned?.platform || "steam";
+        const progRes = await fetch(`/api/user/progress?appId=${appId}&platform=${plat}`);
+        if (progRes.ok) {
+          const progData = await progRes.json();
+          if (progData?.progress) {
+            currentProgress = progData.progress;
+          }
+        }
+      } catch {}
+    }
     setProgress(currentProgress);
 
-    const owned = ownedGames.find((g) => g.appId === appId);
     const query = new URLSearchParams();
     if (owned?.name) query.set("name", owned.name);
     if (owned?.platform) query.set("platform", owned.platform);
@@ -385,6 +429,19 @@ export default function Home() {
                 });
                 setProgress(updated);
                 setOwnedGames(getOwnedGames());
+
+                if (currentUser) {
+                  fetch("/api/user/progress", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      appId,
+                      platform: "steam",
+                      progress: updated,
+                    }),
+                  }).catch(() => {});
+                }
+
                 setSyncNotice({
                   type: "success",
                   msg: `${matched.length} succès synchronisés automatiquement depuis votre profil Steam !`,

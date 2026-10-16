@@ -100,93 +100,93 @@ export async function GET(request: Request) {
               ? libData.records
               : [];
 
-            for (const item of records) {
-              const appName = item.appName || "";
-              const meta = item.metadata || {};
+              for (const item of records) {
+                const appName = item.appName || "";
+                const meta = item.metadata || {};
 
-              // Skip Unreal Engine items, prerequisites, tools, and background services
-              if (
-                appName.startsWith("UE_") ||
-                appName.includes("Prerequisites") ||
-                meta.mainGameItem === false
-              ) {
-                continue;
-              }
+                // Skip Unreal Engine items, prerequisites, tools, and background services
+                if (
+                  appName.startsWith("UE_") ||
+                  appName.includes("Prerequisites") ||
+                  meta.mainGameItem === false
+                ) {
+                  continue;
+                }
 
-              // Extract real commercial title
-              let gameTitle =
-                meta.title ||
-                meta.itemName ||
-                item.title ||
-                item.name ||
-                resolveEpicCodename(appName) ||
-                "";
+                // Extract real commercial title
+                let gameTitle =
+                  meta.title ||
+                  meta.itemName ||
+                  item.title ||
+                  item.name ||
+                  resolveEpicCodename(appName) ||
+                  "";
 
-              if (!gameTitle && appName && !isJunkHex(appName)) {
-                gameTitle = appName.replace(/([A-Z])/g, " $1").trim();
-              }
+                if (!gameTitle && appName && !isJunkHex(appName)) {
+                  gameTitle = appName.replace(/([A-Z])/g, " $1").trim();
+                }
 
-              // Skip raw hex hashes with no resolved name
-              if (!gameTitle || isJunkHex(gameTitle)) {
-                continue;
-              }
+                // Skip raw hex hashes with no resolved name
+                if (!gameTitle || isJunkHex(gameTitle)) {
+                  continue;
+                }
 
-              // Extract best cover image from keyImages
-              let coverUrl = "";
-              if (Array.isArray(meta.keyImages)) {
-                const preferred = [
-                  "DieselStoreFrontWide",
-                  "OfferImageWide",
-                  "Thumbnail",
-                  "DieselStoreFrontTall",
-                  "DieselGameBox",
-                  "DieselGameBoxTall",
-                  "VaultClosed",
-                ];
-                for (const pType of preferred) {
-                  const found = meta.keyImages.find(
-                    (img: any) => img.type === pType && img.url
-                  );
-                  if (found) {
-                    coverUrl = found.url;
-                    break;
+                // Extract best cover image from keyImages
+                let coverUrl = "";
+                if (Array.isArray(meta.keyImages)) {
+                  const preferred = [
+                    "DieselStoreFrontWide",
+                    "OfferImageWide",
+                    "Thumbnail",
+                    "DieselStoreFrontTall",
+                    "DieselGameBox",
+                    "DieselGameBoxTall",
+                    "VaultClosed",
+                  ];
+                  for (const pType of preferred) {
+                    const found = meta.keyImages.find(
+                      (img: any) => img.type === pType && img.url
+                    );
+                    if (found) {
+                      coverUrl = found.url;
+                      break;
+                    }
+                  }
+                  if (!coverUrl && meta.keyImages.length > 0 && meta.keyImages[0].url) {
+                    coverUrl = meta.keyImages[0].url;
                   }
                 }
-                if (!coverUrl && meta.keyImages.length > 0 && meta.keyImages[0].url) {
-                  coverUrl = meta.keyImages[0].url;
+
+                if (!coverUrl) {
+                  coverUrl =
+                    item.headerImg ||
+                    "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80";
                 }
+
+                const idNum = Math.abs(
+                  hashCode(item.catalogItemId || appName || gameTitle)
+                );
+
+                const ns = item.namespace || meta.namespace || item.sandboxId || "";
+                if (ns) {
+                  gameNamespaceMap.set(idNum, ns);
+                }
+
+                discoveredGames.push({
+                  appId: idNum,
+                  name: gameTitle,
+                  headerImg: coverUrl,
+                  platform: "epic",
+                  totalAchievements: 0,
+                  unlockedCount: 0,
+                  addedAt: nowIso,
+                  source: "manual",
+                });
               }
-
-              if (!coverUrl) {
-                coverUrl =
-                  item.headerImg ||
-                  "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80";
-              }
-
-              const idNum = Math.abs(
-                hashCode(item.catalogItemId || appName || gameTitle)
-              );
-
-              const ns = item.namespace || meta.namespace || item.sandboxId || "";
-              if (ns) {
-                gameNamespaceMap.set(idNum, ns);
-              }
-
-              discoveredGames.push({
-                appId: idNum,
-                name: gameTitle,
-                headerImg: coverUrl,
-                platform: "epic",
-                totalAchievements: 0,
-                unlockedCount: 0,
-                addedAt: nowIso,
-                source: "manual",
-              });
             }
+          } catch {
+            // Fallback if library service fails
           }
-        } catch {
-          // Fallback if library service fails
-        }
 
         // Step 2: Fallback to launcher assets if library service returned nothing
         if (discoveredGames.length === 0) {

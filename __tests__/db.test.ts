@@ -31,6 +31,7 @@ import {
   setGameWishlist,
   setGameFavorite,
   getUserWishlist,
+  getUserFavoriteAppIds,
   getUserDuplicateGames,
   normalizeGameTitle,
   syncFromLocalStorage,
@@ -318,6 +319,7 @@ describe("lib/db (SQLite layer)", () => {
             notes: { ACH_OLD: "Imported from local" },
           },
         },
+        favorites: [1234],
       });
 
       const accounts = getUserPlatformAccounts(user.id);
@@ -327,6 +329,9 @@ describe("lib/db (SQLite layer)", () => {
       const games = getUserOwnedGames(user.id);
       expect(games.length).toBe(1);
       expect(games[0].name).toBe("Synced Local Game");
+
+      const favs = getUserFavoriteAppIds(user.id);
+      expect(favs).toEqual([1234]);
 
       const prog = getUserGameProgress(user.id, 1234, "steam");
       expect(prog?.unlockedIds).toEqual(["ACH_OLD"]);

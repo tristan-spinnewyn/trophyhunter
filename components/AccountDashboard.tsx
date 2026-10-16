@@ -239,6 +239,52 @@ export default function AccountDashboard({
     }
   };
 
+  const persistAccountToSQLite = async (account: PlatformAccount, plainApiKey?: string) => {
+    try {
+      await fetch("/api/user/account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account, plainApiKey }),
+      });
+    } catch (e) {
+      console.error("Failed to persist account to SQLite:", e);
+    }
+  };
+
+  const persistGamesToSQLite = async (games: OwnedGame[]) => {
+    if (!games || games.length === 0) return;
+    try {
+      await fetch("/api/user/games", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ games }),
+      });
+    } catch (e) {
+      console.error("Failed to persist games to SQLite:", e);
+    }
+  };
+
+  const removeAccountFromSQLite = async (platform: PlatformType) => {
+    try {
+      await fetch(`/api/user/account?platform=${platform}`, {
+        method: "DELETE",
+      });
+    } catch (e) {
+      console.error("Failed to remove account from SQLite:", e);
+    }
+  };
+
+  const removeGameFromSQLite = async (appId: number, platform?: PlatformType) => {
+    try {
+      const platParam = platform ? `&platform=${platform}` : "";
+      await fetch(`/api/user/games?appId=${appId}${platParam}`, {
+        method: "DELETE",
+      });
+    } catch (e) {
+      console.error("Failed to remove game from SQLite:", e);
+    }
+  };
+
   // Full Steam Profile + Owned Games + Achievements Sync
   const handleConnectAndSyncSteam = async (targetUser?: string) => {
     const userToSync = (targetUser ?? steamInput).trim();
@@ -331,6 +377,8 @@ export default function AccountDashboard({
 
       const finalProfile = savePlatformAccount(finalAccount);
       onAccountChange(finalProfile);
+      await persistAccountToSQLite(finalAccount, steamApiKey.trim() || undefined);
+      await persistGamesToSQLite(mergedGames);
 
       setBannerMsg({
         type: "success",
@@ -363,9 +411,11 @@ export default function AccountDashboard({
       }
       const updatedProfile = savePlatformAccount(data.account);
       onAccountChange(updatedProfile);
+      await persistAccountToSQLite(data.account, xboxApiKey.trim() || undefined);
       if (Array.isArray(data.discoveredGames) && data.discoveredGames.length > 0) {
         const merged = upsertOwnedGames(data.discoveredGames);
         onOwnedGamesChange(merged);
+        await persistGamesToSQLite(data.discoveredGames);
       }
       setBannerMsg({
         type: "success",
@@ -398,9 +448,11 @@ export default function AccountDashboard({
       }
       const updatedProfile = savePlatformAccount(data.account);
       onAccountChange(updatedProfile);
+      await persistAccountToSQLite(data.account);
       if (Array.isArray(data.discoveredGames) && data.discoveredGames.length > 0) {
         const merged = replacePlatformOwnedGames("epic", data.discoveredGames);
         onOwnedGamesChange(merged);
+        await persistGamesToSQLite(data.discoveredGames);
       }
       setBannerMsg({
         type: "success",
@@ -433,9 +485,11 @@ export default function AccountDashboard({
       }
       const updatedProfile = savePlatformAccount(data.account);
       onAccountChange(updatedProfile);
+      await persistAccountToSQLite(data.account, gogToken.trim() || undefined);
       if (Array.isArray(data.discoveredGames) && data.discoveredGames.length > 0) {
         const merged = upsertOwnedGames(data.discoveredGames);
         onOwnedGamesChange(merged);
+        await persistGamesToSQLite(data.discoveredGames);
       }
       setBannerMsg({
         type: "success",
@@ -489,7 +543,7 @@ export default function AccountDashboard({
     });
   };
 
-  const handleSavePlatformModal = () => {
+  const handleSavePlatformModal = async () => {
     if (!editingPlatform || !platForm.username.trim()) return;
 
     if (editingPlatform === "steam") {
@@ -538,6 +592,7 @@ export default function AccountDashboard({
 
     const updated = savePlatformAccount(newAcc);
     onAccountChange(updated);
+    await persistAccountToSQLite(newAcc);
     setEditingPlatform(null);
     setBannerMsg({
       type: "success",
@@ -545,9 +600,10 @@ export default function AccountDashboard({
     });
   };
 
-  const handleDisconnectPlatform = (platform: PlatformType) => {
+  const handleDisconnectPlatform = async (platform: PlatformType) => {
     const updated = removePlatformAccount(platform);
     onAccountChange(updated);
+    await removeAccountFromSQLite(platform);
     if (platform === "steam") {
       onSteamUserChange("");
     }
@@ -611,6 +667,8 @@ export default function AccountDashboard({
         // ignore
       }
     }
+
+    await persistGamesToSQLite(updatedList);
 
     setBannerMsg({
       type: "success",
@@ -699,6 +757,8 @@ export default function AccountDashboard({
         merged = upsertOwnedGames(syncedBatch);
         onOwnedGamesChange(merged);
       }
+
+      await persistGamesToSQLite(merged);
 
       setBulkImportText("");
       setIsAddGameOpen(false);
@@ -2932,6 +2992,7 @@ export default function AccountDashboard({
                               );
                               const next = upsertOwnedGames([synced]);
                               onOwnedGamesChange(next);
+                              await persistGamesToSQLite([synced]);
                               setBannerMsg({
                                 type: "success",
                                 text: `Succès de "${synced.name}" synchronisés (${synced.unlockedCount}/${synced.totalAchievements}) !`,
@@ -2944,9 +3005,10 @@ export default function AccountDashboard({
                           </button>
                         )}
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             const next = removeOwnedGame(g.appId, g.platform);
                             onOwnedGamesChange(next);
+                            await removeGameFromSQLite(g.appId, g.platform);
                           }}
                           title="Retirer de ma bibliothèque"
                           className="rounded-lg p-1 text-slate-500 hover:bg-slate-800 hover:text-rose-400"

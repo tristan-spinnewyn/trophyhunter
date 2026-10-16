@@ -33,6 +33,7 @@ import {
   toggleLocalWishlist,
   getLocalCollections,
   saveLocalCollections,
+  clearLegacyLocalStorage,
 } from '@/lib/storage';
 import type { PlatformAccount, OwnedGame, UserAccountProfile } from '@/lib/types';
 
@@ -411,6 +412,24 @@ describe('lib/storage', () => {
       const rawAfter = JSON.parse(localStorage.getItem("trophyhunter_owned_games") || "[]");
       expect(rawAfter[0].name).toBe("Watch Dogs 2");
       expect(rawAfter[1].name).toBe("Control");
+    });
+  });
+
+  describe('clearLegacyLocalStorage', () => {
+    it('removes all trophyhunter_* keys while preserving other localStorage keys', () => {
+      localStorage.setItem('trophyhunter_owned_games', JSON.stringify([{ appId: 10 }]));
+      localStorage.setItem('trophyhunter_favorites', JSON.stringify([10]));
+      localStorage.setItem('other_app_key', 'keep_me');
+
+      expect(localStorage.getItem('trophyhunter_owned_games')).not.toBeNull();
+      expect(localStorage.getItem('trophyhunter_favorites')).not.toBeNull();
+      expect(localStorage.getItem('other_app_key')).toBe('keep_me');
+
+      clearLegacyLocalStorage();
+
+      expect(localStorage.getItem('trophyhunter_owned_games')).toBeNull();
+      expect(localStorage.getItem('trophyhunter_favorites')).toBeNull();
+      expect(localStorage.getItem('other_app_key')).toBe('keep_me');
     });
   });
 });

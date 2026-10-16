@@ -564,3 +564,20 @@ export function saveLocalCollections(colls: LocalCollection[]): void {
   localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(colls));
 }
 
+/**
+ * Removes all legacy TrophyHunter localStorage entries after migrating to SQLite.
+ */
+export function clearLegacyLocalStorage(): void {
+  if (typeof window === "undefined") return;
+  const keysToRemove: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith("trophyhunter_")) {
+      keysToRemove.push(k);
+    }
+  }
+  for (const k of keysToRemove) {
+    localStorage.removeItem(k);
+  }
+}
+
