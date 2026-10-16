@@ -21,17 +21,17 @@ jobs:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Approve Dependabot PR
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
         run: |
-          echo "Approbation de la PR Dependabot : $PR_URL"
-          gh pr review --approve "$PR_URL" || echo "PR déjà approuvée ou étape ignorée"
+          gh pr review --approve "$PR_URL" || true
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Enable auto-merge for Dependabot PR
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
         run: |
-          echo "Activation de l'auto-merge pour la PR Dependabot : $PR_URL"
-          gh pr merge --auto --squash "$PR_URL" || echo "Auto-merge déjà activé"
+          gh pr merge --auto --squash "$PR_URL" || true
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

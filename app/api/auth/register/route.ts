@@ -1,8 +1,20 @@
+// app/api/auth/register/route.ts
 import { NextResponse } from "next/server";
 import { createUser } from "@/lib/db";
 import { setAuthSessionCookie } from "@/lib/auth";
+import { checkRateLimit, extractClientKey } from "@/lib/security";
+
+const REGISTER_RATE_LIMIT = { windowMs: 60_000, maxRequests: 10 };
 
 export async function POST(req: Request) {
+  const rateLimit = checkRateLimit(extractClientKey(req, "auth_register"), REGISTER_RATE_LIMIT);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Trop de tentatives d'inscription. Veuillez réessayer plus tard." },
+      { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } }
+    );
+  }
+
   try {
     const body = await req.json();
     const { username, password, displayName } = body || {};
@@ -25,8 +37,9 @@ export async function POST(req: Request) {
     await setAuthSessionCookie(user.id);
 
     return NextResponse.json({ user }, { status: 201 });
-  } catch (err: any) {
-    if (err.message && err.message.includes("already taken")) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "";
+    if (message.includes("already taken")) {
       return NextResponse.json(
         { error: "Ce nom d'utilisateur est déjà utilisé." },
         { status: 409 }

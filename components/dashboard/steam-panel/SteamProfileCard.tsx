@@ -1,23 +1,25 @@
 // components/dashboard/steam-panel/SteamProfileCard.tsx
-
 import { User, ExternalLink } from "lucide-react";
 import type { PlatformAccount } from "@/lib/types";
+import { sanitizeExternalHref } from "@/lib/security/url-validator";
 
 interface ProfileCardProps {
-  steamAccount?: PlatformAccount;
-  displayName: string;
+  readonly steamAccount?: PlatformAccount;
+  readonly displayName: string;
 }
 
 export function SteamProfileCard({ steamAccount, displayName }: ProfileCardProps) {
   const isOnline = steamAccount?.onlineState === "online" || steamAccount?.onlineState === "in-game";
+  const safeProfileUrl = sanitizeExternalHref(steamAccount?.profileUrl);
+  const safeAvatarUrl = sanitizeExternalHref(steamAccount?.avatarUrl);
 
   return (
     <div className="flex items-center gap-4">
       <div className="relative shrink-0">
-        {steamAccount?.avatarUrl ? (
+        {safeAvatarUrl ? (
           <img
-            src={steamAccount.avatarUrl}
-            alt={steamAccount.displayName}
+            src={safeAvatarUrl}
+            alt={steamAccount?.displayName || displayName}
             className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl object-cover border-2 border-sky-500/50 shadow-lg shadow-sky-500/20"
           />
         ) : (
@@ -64,10 +66,10 @@ export function SteamProfileCard({ steamAccount, displayName }: ProfileCardProps
           )}
         </div>
 
-        {steamAccount?.profileUrl && (
+        {safeProfileUrl && (
           <div className="pt-1">
             <a
-              href={steamAccount.profileUrl}
+              href={safeProfileUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs font-semibold text-sky-400 hover:text-sky-300"
