@@ -9,98 +9,182 @@ import {
   Trash2,
   Check,
   AlertCircle,
-  HelpCircle,
   User,
-  RefreshCw,
 } from "lucide-react";
-import {
-  exportAllData,
-  importAllData,
-  getSavedSteamUser,
-  saveSteamUser,
-  getSavedSteamApiKey,
-  saveSteamApiKey,
-} from "@/lib/storage";
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onDataReset: () => void;
-  onSteamUserSaved?: (user: string) => void;
+  initialSteamUser?: string;
+  initialSteamApiKey?: string;
+  onSteamUserSaved?: (user: string, apiKey?: string) => void;
+  onRefreshData?: () => Promise<void>;
 }
 
 export default function SettingsModal({
   isOpen,
   onClose,
   onDataReset,
+  initialSteamUser = "",
+  initialSteamApiKey = "",
   onSteamUserSaved,
+  onRefreshData,
 }: SettingsModalProps) {
   const [importText, setImportText] = useState("");
   const [copied, setCopied] = useState(false);
-  const [steamUser, setSteamUser] = useState("");
-  const [steamApiKey, setSteamApiKey] = useState("");
+  const [steamUser, setSteamUser] = useState(initialSteamUser);
+  const [steamApiKey, setSteamApiKey] = useState(initialSteamApiKey);
   const [steamSaved, setSteamSaved] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
-    setSteamUser(getSavedSteamUser());
-    setSteamApiKey(getSavedSteamApiKey());
-  }, [isOpen]);
+    if (isOpen) {
+      setSteamUser(initialSteamUser || "");
+      setSteamApiKey(initialSteamApiKey || "");
+    }
+  }, [isOpen, initialSteamUser, initialSteamApiKey]);
 
-  const handleSaveSteamUser = () => {
-    saveSteamUser(steamUser);
-    saveSteamApiKey(steamApiKey);
-    setSteamSaved(true);
-    if (onSteamUserSaved) onSteamUserSaved(steamUser);
-    setStatusMsg({ type: "success", text: "Paramètres Steam enregistrés !" });
-    setTimeout(() => setSteamSaved(false), 2500);
+  const handleSaveSteamUser = async () => {
+    try {
+      const trimmedUser = steamUser.trim();
+      const trimmedKey = steamApiKey.trim();
+      if (trimmedUser) {
+        await fetch("/api/user/account", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            account: {
+              platform: "steam",
+              username: trimmedUser,
+              displayName: trimmedUser,
+              connectedAt: new Date().toISOString(),
+              lastSyncedAt: new Date().toISOString(),
+              stats: {
+                gamesOwned: 0,
+                totalAchievements: 0,
+                completedGames: 0,
+              },
+            },
+            plainApiKey: trimmedKey || undefined,
+          }),
+        });
+      }
+      setSteamSaved(true);
+      if (onSteamUserSaved) onSteamUserSaved(trimmedUser, trimmedKey);
+      if (onRefreshData) await onRefreshData();
+      setStatusMsg({ type: "success", text: "Paramètres Steam enregistrés dans SQLite !" });
+      setTimeout(() => setSteamSaved(false), 2500);
+    } catch {
+      setStatusMsg({ type: "error", text: "Erreur lors de la sauvegarde dans SQLite." });
+    }
   };
 
   if (!isOpen) return null;
 
-  const handleExport = () => {
-    const data = exportAllData();
-    navigator.clipboard.writeText(data);
-    setCopied(true);
-    setStatusMsg({ type: "success", text: "Données copiées dans le presse-papier !" });
-    setTimeout(() => setCopied(false), 3000);
+  const fetchExportJsonFromSQLite = async (): Promise<string> => {
+    const res = await fetch("/api/user/sync");
+    if (!res.ok) {
+      throw new Error("Impossible d'exporter les données depuis SQLite.");
+    }
+    const syncData = await res.json();
+    const payload = {
+      profile: syncData.profile,
+      games: syncData.games || [],
+      progress: syncData.progress || {},
+      favorites: syncData.favorites || [],
+      wishlist: syncData.wishlist || [],
+      collections: syncData.collections || [],
+      steamApiKey: syncData.steamApiKey,
+    };
+    return JSON.stringify(payload, null, 2);
   };
 
-  const handleDownload = () => {
-    const data = exportAllData();
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `trophyhunter-sauvegarde-${new Date().toISOString().split("T")[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setStatusMsg({ type: "success", text: "Fichier de sauvegarde téléchargé !" });
+  const handleExport = async () => {
+    try {
+      const data = await fetchExportJsonFromSQLite();
+      await navigator.clipboard.writeText(data);
+      setCopied(true);
+      setStatusMsg({ type: "success", text: "Données SQLite copiées dans le presse-papier !" });
+      setTimeout(() => setCopied(false), 3000);
+    } catch {
+      setStatusMsg({ type: "error", text: "Impossible d'exporter les données SQLite." });
+    }
   };
 
-  const handleImport = () => {
+  const handleDownload = async () => {
+    try {
+      const data = await fetchExportJsonFromSQLite();
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `trophyhunter-sauvegarde-${new Date().toISOString().split("T")[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setStatusMsg({ type: "success", text: "Fichier de sauvegarde SQLite téléchargé !" });
+    } catch {
+      setStatusMsg({ type: "error", text: "Impossible de télécharger la sauvegarde." });
+    }
+  };
+
+  const handleImport = async () => {
     if (!importText.trim()) return;
-    const ok = importAllData(importText);
-    if (ok) {
-      setStatusMsg({ type: "success", text: "Données importées avec succès ! Rechargement..." });
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } else {
+    try {
+      const parsed = JSON.parse(importText);
+      if (typeof parsed !== "object" || parsed === null) {
+        throw new Error("Invalid JSON");
+      }
+
+      // Support both SQLite export format and legacy key-value format
+      const syncPayload =
+        parsed.games || parsed.profile || parsed.progress
+          ? parsed
+          : {
+              profile: parsed["trophyhunter_account_v1"],
+              games: parsed["trophyhunter_owned_games_v1"],
+              favorites: parsed["trophyhunter_favorites"],
+              wishlist: parsed["trophyhunter_wishlist_v1"],
+              collections: parsed["trophyhunter_collections_v1"],
+              steamApiKey: parsed["trophyhunter_steam_api_key"],
+              progress: Object.fromEntries(
+                Object.entries(parsed).filter(([k]) =>
+                  k.startsWith("trophyhunter_game_")
+                )
+              ),
+            };
+
+      const res = await fetch("/api/user/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(syncPayload),
+      });
+
+      if (!res.ok) {
+        throw new Error("Sync failed");
+      }
+
+      if (onRefreshData) await onRefreshData();
+      setImportText("");
+      setStatusMsg({ type: "success", text: "Données importées dans la base SQLite avec succès !" });
+    } catch {
       setStatusMsg({ type: "error", text: "Format JSON invalide. Vérifiez vos données." });
     }
   };
 
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
     if (
       window.confirm(
-        "ATTENTION : Cette action supprimera définitivement toute votre progression et vos notes locales. Confirmer ?"
+        "ATTENTION : Cette action supprimera définitivement toute votre progression, vos jeux et vos notes de la base SQLite. Confirmer ?"
       )
     ) {
-      localStorage.clear();
-      onDataReset();
-      setStatusMsg({ type: "success", text: "Toutes les données ont été réinitialisées." });
-      setTimeout(() => window.location.reload(), 1000);
+      try {
+        await fetch("/api/user/games?all=true", { method: "DELETE" });
+        onDataReset();
+        setStatusMsg({ type: "success", text: "Toutes les données SQLite ont été réinitialisées." });
+      } catch {
+        setStatusMsg({ type: "error", text: "Erreur lors de la réinitialisation." });
+      }
     }
   };
 

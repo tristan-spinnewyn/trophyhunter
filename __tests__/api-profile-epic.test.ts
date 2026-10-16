@@ -589,5 +589,81 @@ describe('GET /api/profile/epic', () => {
     expect(data.account.stats.gamesOwned).toBe(3);
     expect(data.account.stats.totalAchievements).toBe(10);
   });
+
+  it('resolves totalAchievements via Steam schema when resolveAchievements=1 is passed', async () => {
+    const mockToken = {
+      access_token: 'epic_resolve_token',
+      account_id: 'epic_resolve_acc',
+      displayName: 'EpicResolver',
+    };
+
+    const mockLibrary = {
+      records: [
+        {
+          appName: 'HadesEpic',
+          catalogItemId: 'cat_hades',
+          namespace: 'ns_hades',
+          sandboxName: 'Hades - Standard Edition',
+        },
+      ],
+    };
+
+    const mockSteamSearch = {
+      items: [
+        {
+          id: 1145360,
+          name: 'Hades',
+          tiny_image: 'https://cdn.example.com/hades_tiny.jpg',
+        },
+      ],
+    };
+
+    const mockSteamAch = {
+      response: {
+        achievements: [
+          { internal_name: 'A1', localized_name: 'Succès 1' },
+          { internal_name: 'A2', localized_name: 'Succès 2' },
+          { internal_name: 'A3', localized_name: 'Succès 3' },
+        ],
+      },
+    };
+
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockToken,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockLibrary,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: false, // catalog fails
+      } as any)
+      .mockResolvedValueOnce({
+        ok: false, // Epic GraphQL fails (404)
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockSteamSearch,
+      } as any)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockSteamAch,
+      } as any);
+
+    const req = new Request(
+      'http://localhost:3000/api/profile/epic?code=resolve-code&resolveAchievements=1'
+    );
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.discoveredGames).toHaveLength(1);
+    expect(data.discoveredGames[0].totalAchievements).toBe(3);
+    expect(data.discoveredGames[0].headerImg).toContain('/apps/1145360/header.jpg');
+  });
 });
+
 

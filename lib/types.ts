@@ -128,6 +128,7 @@ export interface Collection {
   icon?: string;
   createdAt: string;
   gameCount?: number;
+  gameIds?: number[];
 }
 
 export interface DuplicateGameGroup {
@@ -139,8 +140,18 @@ export interface DatabaseSyncPayload {
   profile?: UserAccountProfile;
   games?: OwnedGame[];
   favorites?: number[];
+  wishlist?: number[];
+  collections?: Array<{
+    id?: string;
+    name: string;
+    description?: string;
+    color?: string;
+    icon?: string;
+    gameIds?: number[];
+  }>;
   recentAppIds?: number[];
   steamApiKey?: string;
   progress?: Record<string, UserGameProgress>;
 }
+
 

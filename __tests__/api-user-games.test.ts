@@ -96,4 +96,82 @@ describe("User Games API (/api/user/games)", () => {
     const remaining = getUserOwnedGames(userId);
     expect(remaining.length).toBe(0);
   });
+
+  it("supports replacePlatform on POST and platform/all deletion on DELETE", async () => {
+    // 1. Add initial Epic and Steam games
+    await postGamesHandler(
+      new Request("http://localhost/api/user/games", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          games: [
+            {
+              appId: 1001,
+              name: "Old Epic Game",
+              headerImg: "",
+              platform: "epic",
+              totalAchievements: 12,
+              unlockedCount: 2,
+              addedAt: new Date().toISOString(),
+            },
+            {
+              appId: 730,
+              name: "Counter-Strike 2",
+              headerImg: "",
+              platform: "steam",
+              totalAchievements: 1,
+              unlockedCount: 1,
+              addedAt: new Date().toISOString(),
+            },
+          ],
+        }),
+      })
+    );
+
+    // 2. Replace Epic platform games via replacePlatform
+    const replaceRes = await postGamesHandler(
+      new Request("http://localhost/api/user/games", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          replacePlatform: "epic",
+          games: [
+            {
+              appId: 2002,
+              name: "Hades",
+              headerImg: "https://example.com/hades.jpg",
+              platform: "epic",
+              totalAchievements: 49,
+              unlockedCount: 10,
+              addedAt: new Date().toISOString(),
+            },
+          ],
+        }),
+      })
+    );
+    expect(replaceRes.status).toBe(200);
+    const replaceData = await replaceRes.json();
+    expect(replaceData.games.length).toBe(2);
+    expect(replaceData.games.some((g: any) => g.name === "Old Epic Game")).toBe(false);
+    expect(replaceData.games.some((g: any) => g.name === "Hades")).toBe(true);
+
+    // 3. Delete all Epic games by platform parameter
+    const delEpicRes = await deleteGamesHandler(
+      new Request("http://localhost/api/user/games?platform=epic", {
+        method: "DELETE",
+      })
+    );
+    expect(delEpicRes.status).toBe(200);
+    expect(getUserOwnedGames(userId).length).toBe(1);
+
+    // 4. Delete all user data with all=true
+    const delAllRes = await deleteGamesHandler(
+      new Request("http://localhost/api/user/games?all=true", {
+        method: "DELETE",
+      })
+    );
+    expect(delAllRes.status).toBe(200);
+    expect(getUserOwnedGames(userId).length).toBe(0);
+  });
 });
+

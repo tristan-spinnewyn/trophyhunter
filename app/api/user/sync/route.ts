@@ -7,6 +7,8 @@ import {
   syncFromLocalStorage,
   getUserPlatformApiKey,
   getUserFavoriteAppIds,
+  getUserWishlist,
+  getUserCollections,
 } from "@/lib/db";
 
 export async function GET() {
@@ -20,6 +22,8 @@ export async function GET() {
   const progress = getAllUserGameProgress(user.id);
   const steamApiKey = getUserPlatformApiKey(user.id, "steam");
   const favorites = getUserFavoriteAppIds(user.id);
+  const wishlist = getUserWishlist(user.id).map((g) => g.appId);
+  const collections = getUserCollections(user.id);
 
   return NextResponse.json({
     user,
@@ -31,6 +35,8 @@ export async function GET() {
     games,
     progress,
     favorites,
+    wishlist,
+    collections,
     steamApiKey: steamApiKey || undefined,
   });
 }
@@ -48,6 +54,9 @@ export async function POST(req: Request) {
     const accounts = getUserPlatformAccounts(user.id);
     const games = getUserOwnedGames(user.id);
     const progress = getAllUserGameProgress(user.id);
+    const favorites = getUserFavoriteAppIds(user.id);
+    const wishlist = getUserWishlist(user.id).map((g) => g.appId);
+    const collections = getUserCollections(user.id);
 
     return NextResponse.json({
       success: true,
@@ -57,6 +66,11 @@ export async function POST(req: Request) {
         avatarUrl: user.avatarUrl,
         accounts,
       },
+      games,
+      progress,
+      favorites,
+      wishlist,
+      collections,
       gamesCount: games.length,
       progressCount: Object.keys(progress).length,
     });
@@ -68,3 +82,4 @@ export async function POST(req: Request) {
     );
   }
 }
+
