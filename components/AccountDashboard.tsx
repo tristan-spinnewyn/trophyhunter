@@ -150,6 +150,12 @@ export default function AccountDashboard({
     handleRemoveGame,
     handleScanEpicAchievements,
     handleCleanEpicGames,
+    isEpicAuthModalOpen,
+    epicAuthModalGame,
+    epicAuthModalError,
+    isEpicModalSyncing,
+    closeEpicAuthModal,
+    handleEpicModalSubmit,
   } = usePlatformSync({
     accountProfile,
     ownedGames,
@@ -400,6 +406,12 @@ export default function AccountDashboard({
         collections={collections}
         onCloseAddToColl={() => setGameToAddToColl(null)}
         onAddToCollection={handleAddGameToColl}
+        isEpicAuthModalOpen={isEpicAuthModalOpen}
+        epicAuthModalGame={epicAuthModalGame}
+        epicAuthModalError={epicAuthModalError}
+        isEpicModalSyncing={isEpicModalSyncing}
+        onCloseEpicAuthModal={closeEpicAuthModal}
+        onSubmitEpicAuthModal={handleEpicModalSubmit}
       />
     </div>
   );

@@ -10,6 +10,7 @@ import {
   Trash2,
 } from "lucide-react";
 import type { UserAccountProfile, PlatformType } from "@/lib/types";
+import { parseEpicAuthInput } from "@/lib/epic/auth-parser";
 
 interface PlatformEpicPanelProps {
   accountProfile: UserAccountProfile;
@@ -203,21 +204,7 @@ export default function PlatformEpicPanel({
                   <input
                     type="password"
                     value={epicCode}
-                    onChange={(e) => {
-                      let val = e.target.value.trim();
-                      if (val.startsWith("{")) {
-                        try {
-                          const parsed = JSON.parse(val);
-                          val =
-                            parsed.authorizationCode ||
-                            parsed.authorizationToken ||
-                            parsed.code ||
-                            parsed.token ||
-                            val;
-                        } catch {}
-                      }
-                      setEpicCode(val);
-                    }}
+                    onChange={(e) => setEpicCode(parseEpicAuthInput(e.target.value))}
                     placeholder="Collez votre authorizationToken ou code d'échange OAuth..."
                     className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-purple-500 font-mono"
                   />

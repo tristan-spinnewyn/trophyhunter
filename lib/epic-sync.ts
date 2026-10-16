@@ -1,49 +1,30 @@
+import type { Achievement } from "./types";
 import { getAuthenticatedUser } from "./auth";
 import {
-  getUserPlatformAccounts,
-  getUserPlatformApiKey,
-  saveUserPlatformAccount,
   getUserOwnedGames,
   getUserGameProgress,
   saveUserGameProgress,
+  saveUserOwnedGames,
+  getEpicGameSandbox,
+  saveEpicGameSandboxes,
 } from "./db";
 import { normalizeGameTitle } from "./db/collections";
+import {
+  exchangeEpicAuthInput,
+  loadStoredEpicCredentials,
+  storeEpicCredentials,
+  refreshEpicAccessToken,
+  type EpicCredentials,
+} from "./epic/credentials";
+import {
+  unwrapPlayerAchievement,
+  fetchEpicProductAchievements,
+} from "./epic/game-achievements";
 
-const EPIC_CLIENT_ID = "34a02cf8f4414e29b15921876da36f9a";
-const EPIC_CLIENT_SECRET = "daafbccc737745039dffe53d94fc76cf";
-const EPIC_BASIC_AUTH = Buffer.from(
-  `${EPIC_CLIENT_ID}:${EPIC_CLIENT_SECRET}`
-).toString("base64");
+export { refreshEpicAccessToken } from "./epic/credentials";
 
-export async function refreshEpicAccessToken(
-  refreshToken: string
-): Promise<{ accessToken: string; refreshToken?: string; accountId?: string } | null> {
-  try {
-    const res = await fetch(
-      "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: `Basic ${EPIC_BASIC_AUTH}`,
-        },
-        body: new URLSearchParams({
-          grant_type: "refresh_token",
-          refresh_token: refreshToken,
-        }).toString(),
-      }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    return {
-      accessToken: data.access_token,
-      refreshToken: data.refresh_token,
-      accountId: data.account_id,
-    };
-  } catch {
-    return null;
-  }
-}
+const EPIC_GRAPHQL_ENDPOINT = "https://graphql.epicgames.com/graphql";
+const EPIC_USER_AGENT = "EpicGamesLauncher/14.0.8-22004686+++Portal+Release-Live";
 
 export async function fetchEpicPlayerAchievements(
   accountId: string,
@@ -62,6 +43,11 @@ export async function fetchEpicPlayerAchievements(
             totalUnlocked
           }
           playerAchievements {
+            playerAchievement {
+              achievementName
+              unlocked
+              XP
+            }
             achievementName
             unlocked
             XP
@@ -72,12 +58,12 @@ export async function fetchEpicPlayerAchievements(
   }`;
 
   try {
-    const res = await fetch("https://graphql.epicgames.com/graphql", {
+    const res = await fetch(EPIC_GRAPHQL_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
-        "User-Agent": "EpicGamesLauncher/14.0.8-22004686+++Portal+Release-Live",
+        "User-Agent": EPIC_USER_AGENT,
       },
       body: JSON.stringify({
         query: gqlQuery,
@@ -102,26 +88,19 @@ export interface EpicSyncResult {
   count: number;
   unlockedTitles: string[];
   unlockedIds: string[];
+  achievements?: Achievement[];
   error?: string;
   requiresToken?: boolean;
 }
 
-export async function syncEpicGame(
-  request: Request,
-  appId: string | number,
-  gameName?: string
-): Promise<EpicSyncResult> {
-  const authUser = await getAuthenticatedUser();
-  const numAppId = typeof appId === "string" ? parseInt(appId, 10) : appId;
-  const normTitle = normalizeGameTitle(gameName || "");
-
+function readAuthInput(request: Request): string {
   const { searchParams } = new URL(request.url);
   const authHeader = request.headers.get("authorization");
   const bearerToken = authHeader?.startsWith("Bearer ")
     ? authHeader.slice(7).trim()
     : null;
 
-  const rawAuthToken = (
+  return (
     searchParams.get("authorizationToken") ||
     searchParams.get("authorization_token") ||
     searchParams.get("authorizationCode") ||
@@ -132,136 +111,72 @@ export async function syncEpicGame(
     bearerToken ||
     ""
   ).trim();
+}
 
-  let cleanToken = rawAuthToken;
-  if (cleanToken.startsWith("{")) {
-    try {
-      const parsed = JSON.parse(cleanToken);
-      cleanToken = (
-        parsed.authorizationCode ||
-        parsed.authorizationToken ||
-        parsed.code ||
-        parsed.token ||
-        parsed.access_token ||
-        cleanToken
-      ).trim();
-    } catch {}
-  } else if (cleanToken.includes("code=")) {
-    const m = cleanToken.match(/[?&]code=([a-f0-9]+)/i);
-    if (m) cleanToken = m[1];
+const TOKEN_REQUIRED_MESSAGE =
+  "Un code ou token d'autorisation Epic Games (authorizationToken) est requis pour synchroniser ce jeu.";
+const TOKEN_INVALID_MESSAGE =
+  "Code d'autorisation Epic Games invalide ou expiré. Rendez-vous sur https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code pour obtenir un nouveau code.";
+
+export async function syncEpicGame(
+  request: Request,
+  appId: string | number,
+  gameName?: string
+): Promise<EpicSyncResult> {
+  const authUser = await getAuthenticatedUser();
+  const numAppId = typeof appId === "string" ? parseInt(appId, 10) : appId;
+  const name = gameName || "Jeu Epic";
+  const normTitle = normalizeGameTitle(name);
+
+  const rawInput = readAuthInput(request);
+  let creds: EpicCredentials | null = null;
+  let providedInvalidCode = false;
+
+  // 1. Check explicit authorization input
+  if (rawInput) {
+    creds = await exchangeEpicAuthInput(rawInput);
+    if (creds && authUser) {
+      storeEpicCredentials(authUser.id, creds);
+    }
+    if (!creds) {
+      providedInvalidCode = true;
+    }
+  }
+
+  // 2. Fall back to stored credentials in SQLite
+  if (!creds && authUser) {
+    creds = loadStoredEpicCredentials(authUser.id);
   }
 
   let totalUnlocked = 0;
   let totalAchievements = 0;
   let unlockedTitles: string[] = [];
   let unlockedIds: string[] = [];
-
   let matchedRecord: any = null;
-  let accessToken: string | null = null;
-  let refreshToken: string | null = null;
-  let accountId: string | null = null;
+  let productAchievements: Achievement[] | undefined;
 
-  // 1. If authorizationToken is provided in the request, exchange or verify it
-  if (cleanToken) {
-    if (cleanToken.startsWith("eg1~")) {
-      // Direct access token
-      try {
-        const verifyRes = await fetch(
-          "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/verify",
-          { headers: { Authorization: `Bearer ${cleanToken}` } }
-        );
-        if (verifyRes.ok) {
-          const verifyData = await verifyRes.json();
-          accessToken = cleanToken;
-          accountId = verifyData.account_id;
-        }
-      } catch {}
-    }
+  // 3. Query Epic GraphQL if credentials exist
+  if (creds) {
+    let records = await fetchEpicPlayerAchievements(creds.accountId, creds.accessToken);
 
-    if (!accessToken) {
-      // Try authorization code exchange
-      try {
-        const tokenRes = await fetch(
-          "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-              Authorization: `Basic ${EPIC_BASIC_AUTH}`,
-            },
-            body: new URLSearchParams({
-              grant_type: "authorization_code",
-              code: cleanToken,
-              token_type: "eg1",
-            }).toString(),
-          }
-        );
-        if (tokenRes.ok) {
-          const tokenData = await tokenRes.json();
-          accessToken = tokenData.access_token;
-          refreshToken = tokenData.refresh_token;
-          accountId = tokenData.account_id;
-        }
-      } catch {}
-    }
-
-    // Persist new token in SQLite if user is logged in
-    if (authUser && accessToken && accountId) {
-      try {
-        const accounts = getUserPlatformAccounts(authUser.id);
-        const existingEpic = accounts.epic || {
-          platform: "epic",
-          username: accountId,
-          displayName: "Joueur Epic",
-          connectedAt: new Date().toISOString(),
-          stats: { gamesOwned: 1, totalAchievements: 0, completedGames: 0 },
-        };
-        saveUserPlatformAccount(
-          authUser.id,
-          existingEpic,
-          JSON.stringify({ accessToken, refreshToken, accountId })
-        );
-      } catch {}
-    }
-  }
-
-  // 2. Fall back to SQLite stored token if not in request
-  if (!accessToken && authUser) {
-    const rawApiKey = getUserPlatformApiKey(authUser.id, "epic");
-    if (rawApiKey) {
-      try {
-        const parsed = JSON.parse(rawApiKey);
-        accessToken = parsed.accessToken || null;
-        refreshToken = parsed.refreshToken || null;
-        accountId = parsed.accountId || null;
-      } catch {
-        accessToken = rawApiKey;
-      }
-    }
-  }
-
-  // 3. Query Epic GraphQL achievements if token and accountId are available
-  if (accountId && accessToken) {
-    let records = await fetchEpicPlayerAchievements(accountId, accessToken);
-    if (records.length === 0 && refreshToken) {
-      const refreshed = await refreshEpicAccessToken(refreshToken);
+    // If records is empty, try refreshing the token
+    if (records.length === 0 && creds.refreshToken) {
+      const refreshed = await refreshEpicAccessToken(creds.refreshToken);
       if (refreshed?.accessToken) {
-        accessToken = refreshed.accessToken;
-        refreshToken = refreshed.refreshToken || refreshToken;
-        records = await fetchEpicPlayerAchievements(accountId, accessToken);
-
+        creds = {
+          ...creds,
+          accessToken: refreshed.accessToken,
+          refreshToken: refreshed.refreshToken || creds.refreshToken,
+          accountId: refreshed.accountId || creds.accountId,
+        };
         if (authUser) {
-          const accounts = getUserPlatformAccounts(authUser.id);
-          if (accounts.epic) {
-            saveUserPlatformAccount(
-              authUser.id,
-              accounts.epic,
-              JSON.stringify({ accessToken, refreshToken, accountId })
-            );
-          }
+          storeEpicCredentials(authUser.id, creds);
         }
+        records = await fetchEpicPlayerAchievements(creds.accountId, creds.accessToken);
       }
     }
+
+    const knownSandbox = authUser ? getEpicGameSandbox(authUser.id, numAppId) : null;
 
     for (const rec of records) {
       const sId = (rec.sandboxId || "").toLowerCase();
@@ -271,25 +186,42 @@ export async function syncEpicGame(
         .replace(/[^a-z0-9]/g, "");
 
       if (
+        (knownSandbox && sId === knownSandbox.toLowerCase()) ||
         cleanSid === normTitle ||
         (normTitle.length >= 4 && cleanSid.startsWith(normTitle)) ||
         (cleanSid.length >= 4 && normTitle.startsWith(cleanSid))
       ) {
         matchedRecord = rec;
+        if (authUser && sId && sId !== knownSandbox?.toLowerCase()) {
+          saveEpicGameSandboxes(authUser.id, [{ appId: numAppId, sandboxId: sId }]);
+        }
         break;
       }
     }
+
+    // Try fetching product achievements definitions if sandbox is known
+    const resolvedSandbox = matchedRecord?.sandboxId || knownSandbox;
+    if (resolvedSandbox && creds.accessToken) {
+      try {
+        const prod = await fetchEpicProductAchievements(resolvedSandbox, creds.accessToken);
+        if (prod.length > 0) {
+          productAchievements = prod;
+        }
+      } catch {}
+    }
   }
 
-  // Extract achievements from matched record if found
+  // 4. Extract achievements from matched record if found
   if (matchedRecord) {
     totalUnlocked = matchedRecord.totalUnlocked || 0;
     const playerAchs = Array.isArray(matchedRecord.playerAchievements)
       ? matchedRecord.playerAchievements
       : [];
+
     unlockedTitles = playerAchs
-      .filter((p: any) => p.unlocked)
-      .map((p: any) => p.achievementName);
+      .map(unwrapPlayerAchievement)
+      .filter((p: { achievementName: string; unlocked: boolean }) => p.unlocked && p.achievementName)
+      .map((p: { achievementName: string }) => p.achievementName);
 
     const sets = Array.isArray(matchedRecord.achievementSets)
       ? matchedRecord.achievementSets
@@ -298,8 +230,10 @@ export async function syncEpicGame(
       (acc: number, s: any) => acc + (s.totalAchievements || 0),
       0
     );
+
     totalAchievements = Math.max(
       setTotal,
+      productAchievements?.length || 0,
       playerAchs.length,
       totalUnlocked
     );
@@ -308,22 +242,18 @@ export async function syncEpicGame(
     const owned = getUserOwnedGames(authUser.id).find(
       (g) => g.appId === numAppId && g.platform === "epic"
     );
-    const existingProgress = getUserGameProgress(
-      authUser.id,
-      numAppId,
-      "epic"
-    );
+    const existingProgress = getUserGameProgress(authUser.id, numAppId, "epic");
 
     if (owned) {
       totalUnlocked = owned.unlockedCount || 0;
       totalAchievements = owned.totalAchievements || 0;
     }
-    if (existingProgress?.unlockedIds) {
+    if (existingProgress?.unlockedIds?.length) {
       unlockedIds = existingProgress.unlockedIds;
     }
   }
 
-  // If unlockedTitles exists, generate slugs
+  // 5. Generate formatted slugs
   if (unlockedTitles.length > 0) {
     unlockedIds = unlockedTitles.map(
       (t, idx) =>
@@ -335,30 +265,43 @@ export async function syncEpicGame(
     }
   }
 
-  // Persist progress to SQLite if authenticated
+  // 6. Persist progress to SQLite if authenticated
   if (authUser && unlockedIds.length > 0) {
     saveUserGameProgress(authUser.id, numAppId, "epic", {
       unlockedIds,
       lastPlayed: new Date().toISOString(),
       notes: {},
     });
+
+    const owned = getUserOwnedGames(authUser.id).find(
+      (g) => g.appId === numAppId && g.platform === "epic"
+    );
+    if (owned) {
+      saveUserOwnedGames(authUser.id, [
+        {
+          ...owned,
+          totalAchievements: totalAchievements || owned.totalAchievements,
+          unlockedCount: totalUnlocked || unlockedIds.length,
+        },
+      ]);
+    }
   }
 
-  const hasCredentials = Boolean(accessToken && accountId);
+  const hasCredentials = Boolean(creds?.accessToken && creds?.accountId);
 
   return {
     success: true,
     platform: "epic",
-    gameName: gameName || "Jeu Epic",
+    gameName: name,
     totalAchievements,
     count: totalUnlocked || unlockedIds.length,
     unlockedTitles,
     unlockedIds,
+    ...(productAchievements ? { achievements: productAchievements } : {}),
     ...(!hasCredentials && !matchedRecord
       ? {
           requiresToken: true,
-          error:
-            "Un code ou token d'autorisation Epic Games (authorizationToken) est requis pour synchroniser ce jeu.",
+          error: providedInvalidCode ? TOKEN_INVALID_MESSAGE : TOKEN_REQUIRED_MESSAGE,
         }
       : {}),
   };

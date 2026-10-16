@@ -12,6 +12,7 @@ import { useGameSyncAction } from "./useGameSyncAction";
 
 interface UseGameProgressActionsParams {
   game: GameDetails | null;
+  setGame?: (g: GameDetails) => void;
   owned?: OwnedGame;
   activePlatform: PlatformType;
   progress: UserGameProgress;
@@ -29,6 +30,7 @@ interface UseGameProgressActionsParams {
 
 export function useGameProgressActions({
   game,
+  setGame,
   owned,
   activePlatform,
   progress,
@@ -43,8 +45,15 @@ export function useGameProgressActions({
   setIsSyncing,
   setSyncNotice,
 }: UseGameProgressActionsParams) {
-  const { handleSync } = useGameSyncAction({
+  const {
+    handleSync,
+    isEpicAuthModalOpen,
+    setIsEpicAuthModalOpen,
+    epicAuthModalError,
+    handleEpicAuthSubmit,
+  } = useGameSyncAction({
     game,
+    setGame,
     owned,
     activePlatform,
     progress,
@@ -209,6 +218,10 @@ export function useGameProgressActions({
 
   return {
     handleSync,
+    isEpicAuthModalOpen,
+    setIsEpicAuthModalOpen,
+    epicAuthModalError,
+    handleEpicAuthSubmit,
     handleToggleAchievement,
     handleSaveNotes,
     handleResetProgress,

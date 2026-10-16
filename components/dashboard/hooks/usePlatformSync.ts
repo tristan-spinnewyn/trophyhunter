@@ -58,6 +58,12 @@ export function usePlatformSync({
 }: UsePlatformSyncProps) {
   const [syncProgressText, setSyncProgressText] = useState<string | null>(null);
 
+  // Dedicated Epic Auth Modal state for library syncing
+  const [isEpicAuthModalOpen, setIsEpicAuthModalOpen] = useState(false);
+  const [epicAuthModalGame, setEpicAuthModalGame] = useState<OwnedGame | null>(null);
+  const [epicAuthModalError, setEpicAuthModalError] = useState<string | null>(null);
+  const [isEpicModalSyncing, setIsEpicModalSyncing] = useState(false);
+
   const {
     updateAccountProfileInMemory,
     persistAccountToSQLite,
@@ -153,6 +159,21 @@ export function usePlatformSync({
     await removeGameFromSQLite(appId, platform);
   };
 
+  const syncEpicGameWithData = async (g: OwnedGame, data: any) => {
+    const updatedGame: OwnedGame = {
+      ...g,
+      unlockedCount: data.count ?? data.unlockedCount ?? g.unlockedCount,
+      totalAchievements: data.totalAchievements ?? g.totalAchievements,
+    };
+    const next = mergeGamesList(ownedGames, [updatedGame]);
+    onOwnedGamesChange(next);
+    await persistGamesToSQLite([updatedGame]);
+    setBannerMsg({
+      type: "success",
+      text: `Succès Epic de "${g.name}" synchronisés (${updatedGame.unlockedCount}/${updatedGame.totalAchievements}) !`,
+    });
+  };
+
   const handleSyncGame = async (g: OwnedGame) => {
     const steamAccount = accountProfile.accounts.steam;
     if (g.platform === "steam" && steamAccount?.username) {
@@ -166,40 +187,22 @@ export function usePlatformSync({
       });
     } else if (g.platform === "epic") {
       try {
-        let res = await fetch(
+        const res = await fetch(
           `/api/sync?platform=epic&appId=${g.appId}&name=${encodeURIComponent(
             g.name
           )}`
         );
-        let data = res.ok ? await res.json() : null;
+        const data = res.ok ? await res.json() : null;
 
         if (data?.requiresToken) {
-          const userToken = window.prompt(
-            `Pour synchroniser les succès Epic Games de "${g.name}", collez votre authorizationToken ou code d'échange Epic :`
-          );
-          if (userToken && userToken.trim()) {
-            res = await fetch(
-              `/api/sync?platform=epic&appId=${g.appId}&name=${encodeURIComponent(
-                g.name
-              )}&authorizationToken=${encodeURIComponent(userToken.trim())}`
-            );
-            data = res.ok ? await res.json() : null;
-          }
+          setEpicAuthModalGame(g);
+          setEpicAuthModalError(data.error || null);
+          setIsEpicAuthModalOpen(true);
+          return;
         }
 
         if (data && data.success) {
-          const updatedGame: OwnedGame = {
-            ...g,
-            unlockedCount: data.count ?? data.unlockedCount ?? g.unlockedCount,
-            totalAchievements: data.totalAchievements ?? g.totalAchievements,
-          };
-          const next = mergeGamesList(ownedGames, [updatedGame]);
-          onOwnedGamesChange(next);
-          await persistGamesToSQLite([updatedGame]);
-          setBannerMsg({
-            type: "success",
-            text: `Succès Epic de "${g.name}" synchronisés (${updatedGame.unlockedCount}/${updatedGame.totalAchievements}) !`,
-          });
+          await syncEpicGameWithData(g, data);
           return;
         }
       } catch (e) {
@@ -216,6 +219,30 @@ export function usePlatformSync({
         type: "success",
         text: `Succès de "${g.name}" actualisés (${updatedGame?.totalAchievements || 0} succès détectés) !`,
       });
+    }
+  };
+
+  const handleEpicModalSubmit = async (token: string) => {
+    if (!epicAuthModalGame) return;
+    setIsEpicModalSyncing(true);
+    setEpicAuthModalError(null);
+    try {
+      const res = await fetch(
+        `/api/sync?platform=epic&appId=${epicAuthModalGame.appId}&name=${encodeURIComponent(
+          epicAuthModalGame.name
+        )}&authorizationToken=${encodeURIComponent(token)}`
+      );
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Code d'autorisation Epic Games invalide.");
+      }
+      await syncEpicGameWithData(epicAuthModalGame, data);
+      setIsEpicAuthModalOpen(false);
+      setEpicAuthModalGame(null);
+    } catch (err: any) {
+      setEpicAuthModalError(err.message || "Erreur de validation du code Epic.");
+    } finally {
+      setIsEpicModalSyncing(false);
     }
   };
 
@@ -244,5 +271,16 @@ export function usePlatformSync({
     handleRemoveGame,
     handleScanEpicAchievements,
     handleCleanEpicGames,
+    // Epic Auth Modal
+    isEpicAuthModalOpen,
+    epicAuthModalGame,
+    epicAuthModalError,
+    isEpicModalSyncing,
+    closeEpicAuthModal: () => {
+      setIsEpicAuthModalOpen(false);
+      setEpicAuthModalGame(null);
+      setEpicAuthModalError(null);
+    },
+    handleEpicModalSubmit,
   };
 }

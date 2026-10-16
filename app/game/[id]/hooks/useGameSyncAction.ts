@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type {
   GameDetails,
   OwnedGame,
@@ -11,6 +12,7 @@ import type {
 
 interface UseGameSyncActionParams {
   game: GameDetails | null;
+  setGame?: (g: GameDetails) => void;
   owned?: OwnedGame;
   activePlatform: PlatformType;
   progress: UserGameProgress;
@@ -25,6 +27,7 @@ interface UseGameSyncActionParams {
 
 export function useGameSyncAction({
   game,
+  setGame,
   owned,
   activePlatform,
   progress,
@@ -36,93 +39,148 @@ export function useGameSyncAction({
   setIsSyncing,
   setSyncNotice,
 }: UseGameSyncActionParams) {
+  const [isEpicAuthModalOpen, setIsEpicAuthModalOpen] = useState(false);
+  const [epicAuthModalError, setEpicAuthModalError] = useState<string | null>(null);
+
+  const applyEpicSyncData = async (data: any) => {
+    if (!game) return;
+
+    let currentAchievements = game.achievements;
+    if (Array.isArray(data.achievements) && data.achievements.length > 0) {
+      currentAchievements = data.achievements;
+      if (setGame) {
+        setGame({
+          ...game,
+          achievements: data.achievements,
+          totalAchievements: data.achievements.length,
+        });
+      }
+    }
+
+    const normalize = (s: string) =>
+      s.replace(/[’']/g, "'").trim().toLowerCase();
+    const unlockedTitles: string[] = data.unlockedTitles || [];
+    const returnedUnlockedIds: string[] = data.unlockedIds || [];
+
+    const matched = currentAchievements
+      .filter((a) =>
+        returnedUnlockedIds.includes(a.id) ||
+        unlockedTitles.some((t) => normalize(t) === normalize(a.name))
+      )
+      .map((a) => a.id);
+
+    const newUnlockedIds = Array.from(
+      new Set([
+        ...progress.unlockedIds,
+        ...matched,
+        ...(returnedUnlockedIds.length > 0 && matched.length === 0
+          ? returnedUnlockedIds
+          : []),
+      ])
+    );
+
+    const updatedProgress: UserGameProgress = {
+      ...progress,
+      unlockedIds: newUnlockedIds,
+      lastPlayed: new Date().toISOString(),
+    };
+
+    setProgress(updatedProgress);
+
+    const resolvedTotal =
+      data.totalAchievements || currentAchievements.length || game.totalAchievements;
+
+    if (owned) {
+      await upsertOwnedGameInMemoryAndDb({
+        ...owned,
+        totalAchievements: resolvedTotal,
+        unlockedCount: Math.max(
+          owned.unlockedCount || 0,
+          newUnlockedIds.length
+        ),
+      });
+    }
+
+    if (currentUser) {
+      try {
+        await fetch("/api/user/progress", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            appId: game.id,
+            platform: "epic",
+            progress: updatedProgress,
+          }),
+        });
+      } catch {}
+    }
+
+    setSyncNotice({
+      type: "success",
+      msg: `Synchronisation Epic réussie : ${newUnlockedIds.length}/${resolvedTotal} succès débloqués !`,
+    });
+  };
+
+  const executeEpicSync = async (userToken?: string) => {
+    if (!game) return;
+    const epicAccount = accountProfile.accounts.epic;
+    if (!epicAccount) {
+      setSyncNotice({
+        type: "error",
+        msg: "Veuillez lier votre compte Epic Games dans l'onglet Comptes.",
+      });
+      return;
+    }
+
+    setIsSyncing(true);
+    setSyncNotice(null);
+
+    try {
+      const tokenParam = userToken
+        ? `&authorizationToken=${encodeURIComponent(userToken.trim())}`
+        : "";
+      const res = await fetch(
+        `/api/sync?platform=epic&appId=${game.id}&name=${encodeURIComponent(
+          game.name
+        )}&user=${encodeURIComponent(epicAccount.username || "")}${tokenParam}`
+      );
+      const data = await res.json();
+
+      if (data.requiresToken || (!data.success && data.error?.includes("authorizationToken"))) {
+        setEpicAuthModalError(data.error || null);
+        setIsEpicAuthModalOpen(true);
+        return;
+      }
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Échec de la synchronisation Epic Games.");
+      }
+
+      await applyEpicSyncData(data);
+      setIsEpicAuthModalOpen(false);
+      setEpicAuthModalError(null);
+    } catch (err: any) {
+      setSyncNotice({
+        type: "error",
+        msg: err.message || "Erreur de synchronisation Epic Games.",
+      });
+      if (userToken) {
+        setEpicAuthModalError(err.message || "Erreur de validation du code Epic.");
+      }
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleEpicAuthSubmit = async (token: string) => {
+    await executeEpicSync(token);
+  };
+
   const handleSync = async () => {
     if (!game) return;
 
     if (activePlatform === "epic") {
-      const epicAccount = accountProfile.accounts.epic;
-      if (!epicAccount) {
-        setSyncNotice({
-          type: "error",
-          msg: "Veuillez lier votre compte Epic Games dans l'onglet Comptes.",
-        });
-        return;
-      }
-
-      setIsSyncing(true);
-      setSyncNotice(null);
-
-      try {
-        let res = await fetch(
-          `/api/sync?platform=epic&appId=${game.id}&name=${encodeURIComponent(
-            game.name
-          )}&user=${encodeURIComponent(epicAccount.username || "")}`
-        );
-        let data = await res.json();
-
-        if (data.requiresToken || (!data.success && data.error?.includes("authorizationToken"))) {
-          const userToken = window.prompt(
-            "Pour synchroniser vos succès officiels avec Epic Games, collez votre authorizationToken ou code d'échange Epic :\n(Obtenez-le sur : https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code)"
-          );
-          if (userToken && userToken.trim()) {
-            res = await fetch(
-              `/api/sync?platform=epic&appId=${game.id}&name=${encodeURIComponent(
-                game.name
-              )}&user=${encodeURIComponent(
-                epicAccount.username || ""
-              )}&authorizationToken=${encodeURIComponent(userToken.trim())}`
-            );
-            data = await res.json();
-          }
-        }
-
-        if (!res.ok || !data.success) {
-          throw new Error(data.error || "Échec de la synchronisation Epic Games.");
-        }
-
-        const normalize = (s: string) =>
-          s.replace(/[’']/g, "'").trim().toLowerCase();
-        const unlockedTitles: string[] = data.unlockedTitles || [];
-        const matched = game.achievements
-          .filter((a) =>
-            unlockedTitles.some((t) => normalize(t) === normalize(a.name))
-          )
-          .map((a) => a.id);
-
-        const newUnlockedIds = Array.from(
-          new Set([...progress.unlockedIds, ...matched])
-        );
-
-        const updatedProgress: UserGameProgress = {
-          ...progress,
-          unlockedIds: newUnlockedIds,
-          lastPlayed: new Date().toISOString(),
-        };
-
-        setProgress(updatedProgress);
-
-        if (owned) {
-          await upsertOwnedGameInMemoryAndDb({
-            ...owned,
-            unlockedCount: Math.max(
-              owned.unlockedCount || 0,
-              newUnlockedIds.length
-            ),
-          });
-        }
-
-        setSyncNotice({
-          type: "success",
-          msg: `Synchronisation Epic réussie : ${matched.length} succès reconnus.`,
-        });
-      } catch (err: any) {
-        setSyncNotice({
-          type: "error",
-          msg: err.message || "Erreur de synchronisation Epic Games.",
-        });
-      } finally {
-        setIsSyncing(false);
-      }
+      await executeEpicSync();
       return;
     }
 
@@ -202,5 +260,11 @@ export function useGameSyncAction({
     }
   };
 
-  return { handleSync };
+  return {
+    handleSync,
+    isEpicAuthModalOpen,
+    setIsEpicAuthModalOpen,
+    epicAuthModalError,
+    handleEpicAuthSubmit,
+  };
 }

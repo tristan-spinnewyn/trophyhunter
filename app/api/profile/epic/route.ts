@@ -4,6 +4,7 @@ import {
   syncEpicProfileWithOAuth,
   createEpicProfileUsernameOnly,
 } from "@/lib/epic/service";
+import { parseEpicAuthInput } from "@/lib/epic/credentials";
 
 export async function GET(request: Request) {
   let authUser = null;
@@ -24,23 +25,7 @@ export async function GET(request: Request) {
     ""
   ).trim();
 
-  let code = rawCode;
-  if (code.startsWith("{")) {
-    try {
-      const parsed = JSON.parse(code);
-      code = (
-        parsed.authorizationCode ||
-        parsed.authorizationToken ||
-        parsed.code ||
-        parsed.token ||
-        parsed.access_token ||
-        code
-      ).trim();
-    } catch {}
-  } else if (code.includes("code=")) {
-    const m = code.match(/[?&]code=([a-f0-9]+)/i);
-    if (m) code = m[1];
-  }
+  const code = parseEpicAuthInput(rawCode);
 
   if (!rawUser && !code) {
     return NextResponse.json(

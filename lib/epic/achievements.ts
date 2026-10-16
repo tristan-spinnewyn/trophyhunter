@@ -1,5 +1,6 @@
 import type { AchSummary } from "./types";
 import { extractBestCover } from "./helpers";
+import { unwrapPlayerAchievement } from "./game-achievements";
 
 export async function fetchEpicAchievementsGraphQL(
   accountId: string,
@@ -25,7 +26,7 @@ export async function fetchEpicAchievementsGraphQL(
       body: JSON.stringify({
         query: `query PlayerGameAchievementProgress($epicAccountId: String!) {
           PlayerAchievement {
-            playerAchievementGameRecords(epicAccountId: $epicAccountId, includeAchievements: false) {
+            playerAchievementGameRecords(epicAccountId: $epicAccountId) {
               records {
                 sandboxId
                 totalUnlocked
@@ -38,9 +39,11 @@ export async function fetchEpicAchievementsGraphQL(
                   totalAchievements
                 }
                 playerAchievements {
-                  achievementName
-                  unlocked
-                  XP
+                  playerAchievement {
+                    achievementName
+                    unlocked
+                    XP
+                  }
                 }
               }
             }
@@ -88,7 +91,7 @@ export async function fetchEpicAchievementsGraphQL(
         rawTotalAchievements += unlocked;
 
         const playerAchs = Array.isArray(achRec.playerAchievements)
-          ? achRec.playerAchievements
+          ? achRec.playerAchievements.map(unwrapPlayerAchievement)
           : [];
         const sets = Array.isArray(achRec.achievementSets)
           ? achRec.achievementSets

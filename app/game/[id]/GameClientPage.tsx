@@ -5,6 +5,7 @@ import GameHeader from "@/components/GameHeader";
 import ProgressTracker from "@/components/ProgressTracker";
 import FilterToolbar from "@/components/FilterToolbar";
 import AchievementItem from "@/components/AchievementItem";
+import EpicAuthModal from "@/components/EpicAuthModal";
 import type { PlatformType } from "@/lib/types";
 import { useUserData } from "@/context/UserDataContext";
 import { useGameDetails } from "./hooks/useGameDetails";
@@ -34,6 +35,7 @@ export default function GameClientPage({ id }: { id: string }) {
 
   const {
     game,
+    setGame,
     progress,
     setProgress,
     isLoading,
@@ -54,6 +56,10 @@ export default function GameClientPage({ id }: { id: string }) {
 
   const {
     handleSync,
+    isEpicAuthModalOpen,
+    setIsEpicAuthModalOpen,
+    epicAuthModalError,
+    handleEpicAuthSubmit,
     handleToggleAchievement,
     handleSaveNotes,
     handleResetProgress,
@@ -61,6 +67,7 @@ export default function GameClientPage({ id }: { id: string }) {
     handleToggleOwned,
   } = useGameProgressActions({
     game,
+    setGame,
     owned,
     activePlatform,
     progress,
@@ -177,6 +184,15 @@ export default function GameClientPage({ id }: { id: string }) {
           </div>
         </div>
       </div>
+
+      <EpicAuthModal
+        isOpen={isEpicAuthModalOpen}
+        onClose={() => setIsEpicAuthModalOpen(false)}
+        onSubmit={handleEpicAuthSubmit}
+        gameName={game.name}
+        isLoading={isSyncing}
+        error={epicAuthModalError}
+      />
     </div>
   );
 }
