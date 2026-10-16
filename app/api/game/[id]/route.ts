@@ -1,0 +1,155 @@
+import { NextResponse } from "next/server";
+import type { Achievement, GameDetails } from "@/lib/types";
+
+// Heuristic keywords that often indicate missable/challenging trophies
+const MISSABLE_KEYWORDS = [
+  "sans mourir",
+  "en moins de",
+  "chronométré",
+  "choix",
+  "décision",
+  "toutes les fins",
+  "fin secrète",
+  "manquable",
+  "rater",
+  "speedrun",
+  "sans utiliser",
+  "sans tuer",
+  "discrétion",
+  "100%",
+  "tous les collectibles",
+  "tous les objets",
+  "difficulté maximale",
+  "en une seule partie",
+];
+
+function isLikelyMissable(title: string, desc: string): boolean {
+  const combined = `${title} ${desc}`.toLowerCase();
+  return MISSABLE_KEYWORDS.some((kw) => combined.includes(kw));
+}
+
+// Clean game titles for better external search (e.g., removing "(TM)", "®", "Game of the Year", etc.)
+function cleanTitleForSearch(title: string): string {
+  return title
+    .replace(/[®™©]/g, "")
+    .replace(/(\(.*?\)|\[.*?\])/g, "")
+    .replace(/ - Definitive Edition/gi, "")
+    .replace(/ - Game of the Year Edition/gi, "")
+    .replace(/ Enhanced Edition/gi, "")
+    .trim();
+}
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const appId = id?.trim();
+
+  if (!appId || !/^\d+$/.test(appId)) {
+    return NextResponse.json({ error: "AppID Steam invalide." }, { status: 400 });
+  }
+
+  try {
+    // 1. Fetch Store details (Game name, image, description)
+    const storePromise = fetch(
+      `https://store.steampowered.com/api/appdetails?appids=${appId}&l=french&cc=fr`,
+      {
+        headers: {
+          "Accept-Language": "fr-FR,fr;q=0.9",
+        },
+        next: { revalidate: 3600 }, // 1 hour cache
+      }
+    ).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+
+    // 2. Fetch French Community Achievements
+    const statsPromise = fetch(
+      `https://steamcommunity.com/stats/${appId}/achievements/?l=french`,
+      {
+        headers: {
+          Cookie: "Steam_Language=french; mature_content=1; birthtime=568022401; lastagecheckage=1-January-1990",
+          "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        },
+        next: { revalidate: 600 }, // 10 minutes cache
+      }
+    ).then((r) => (r.ok ? r.text() : ""));
+
+    const [storeData, statsHtml] = await Promise.all([storePromise, statsPromise]);
+
+    const gameInfo = storeData?.[appId]?.data;
+    const gameName = gameInfo?.name || `Jeu Steam (#${appId})`;
+    const headerImg =
+      gameInfo?.header_image ||
+      `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/header.jpg`;
+    const shortDesc = gameInfo?.short_description || "";
+    const developers = gameInfo?.developers || [];
+    const publishers = gameInfo?.publishers || [];
+
+    // Parse achievements from statsHtml
+    const achievements: Achievement[] = [];
+    if (statsHtml) {
+      const parts = statsHtml.split(/<div[^>]*class="[^"]*achieveRow[^"]*"[^>]*>/);
+      for (let i = 1; i < parts.length; i++) {
+        const block = parts[i];
+
+        const imgMatch = block.match(/<img[^>]*src="([^"]+)"/);
+        const titleMatch = block.match(/<h3[^>]*>(.*?)<\/h3>/);
+        const descMatch = block.match(/<h5[^>]*>(.*?)<\/h5>/);
+        const percentMatch = block.match(/<div class="achievePercent">([^<]+)<\/div>/);
+
+        const title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, "").trim() : `Succès #${i}`;
+        const rawDesc = descMatch ? descMatch[1].replace(/<[^>]+>/g, "").trim() : "";
+        const percentStr = percentMatch ? percentMatch[1].replace("%", "").trim() : "0";
+        const percent = parseFloat(percentStr) || 0;
+        const icon = imgMatch ? imgMatch[1] : "";
+
+        // On Steam, hidden/secret achievements have empty descriptions on the public stats page
+        const isHidden = !rawDesc || rawDesc.length === 0;
+        const displayDesc = isHidden ? "Succès secret (Masqué par le jeu)" : rawDesc;
+
+        const missable = isLikelyMissable(title, displayDesc);
+
+        // Generate a deterministic identifier
+        const idSlug = `ach_${i}_${title.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 30)}`;
+
+        achievements.push({
+          id: idSlug,
+          name: title,
+          desc: displayDesc,
+          icon,
+          percent,
+          hidden: isHidden,
+          missable,
+        });
+      }
+    }
+
+    const cleanName = cleanTitleForSearch(gameName);
+
+    const gameDetails: GameDetails = {
+      id: parseInt(appId, 10),
+      name: gameName,
+      headerImg,
+      shortDesc,
+      developers,
+      publishers,
+      totalAchievements: achievements.length,
+      achievements,
+      guideLinks: {
+        steamGuidesUrl: `https://steamcommunity.com/app/${appId}/guides/?requiredtags[]=Achievements`,
+        psthcUrl: `https://www.psthc.fr/recherche.html?q=${encodeURIComponent(cleanName)}`,
+        youtubeUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanName + " succes trophée fr")}`,
+      },
+    };
+
+    return NextResponse.json(gameDetails);
+  } catch (error: any) {
+    console.error("Game API error:", error);
+    return NextResponse.json(
+      { error: "Impossible de charger les données du jeu.", details: error.message },
+      { status: 500 }
+    );
+  }
+}

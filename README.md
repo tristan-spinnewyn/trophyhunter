@@ -1,0 +1,58 @@
+# 🏆 TrophyHunter - Chasseur de Platine Multi-Plateforme (Mobile & Web)
+
+Application mobile PWA conçue pour les chasseurs de succès et de platine sur **Steam, PlayStation (PSN), Xbox, Epic Games, GOG, Nintendo Switch et RetroAchievements**, avec guides et checklists en **français**, **sans aucune clé API requise**.
+
+---
+
+## 📱 Comment l'ouvrir sur ton smartphone
+
+1. Assure-toi que ton téléphone est connecté au **même réseau Wi-Fi** que ton PC.
+2. Ouvre le navigateur de ton téléphone (Safari sur iPhone, Chrome sur Android) et va sur :
+   ```text
+   http://192.168.1.17:3000
+   ```
+3. **Installe l'application sur ton écran d'accueil** :
+   * **Sur iPhone (Safari)** : Appuie sur le bouton **Partager** (rectangle avec flèche vers le haut) puis sur **« Sur l'écran d'accueil »**.
+   * **Sur Android (Chrome)** : Appuie sur les **3 petits points** en haut à droite puis sur **« Installer l'application »** ou **« Ajouter à l'écran d'accueil »**.
+
+L'application s'ouvrira en plein écran comme une vraie application native !
+
+---
+
+## 🚀 Commandes utiles (avec pnpm)
+
+Pour lancer l'application en mode développement ou production :
+
+```bash
+# Lancer le serveur de développement
+pnpm dev
+
+# Compiler pour la production
+pnpm build
+
+# Démarrer en production (optimisé et ultra rapide)
+pnpm start
+```
+
+---
+
+## ✨ Fonctionnalités incluses
+
+* **👤 Système de Compte & Synchronisation Steam (0 Clé API)** :
+  * Renseigne ton **SteamID64**, ton pseudo personnalisé ou l'URL de ton profil public.
+  * Récupération automatique de ton **Avatar, Niveau Steam, Statut en ligne** et de tes **statistiques officielles** (Jeux possédés, Succès totaux, Jeux terminés à 100%, Badges, DLC, Vitrine des succès les plus rares).
+  * **Import automatique de tes jeux possédés** et **cochage automatique des succès débloqués** sur toute ta bibliothèque en 1 clic !
+* **🎮 Comptes Multi-Plateformes & Statistiques Globales** :
+  * Lie tes comptes **PlayStation Network (PSN)**, **Xbox Live**, **Epic Games**, **GOG Galaxy**, **Nintendo Switch** et **RetroAchievements** sans aucune clé API.
+  * Suis tes trophées (**Platine, Or, Argent, Bronze**), ton **Gamerscore (G)**, ton nombre total de jeux possédés et ton taux de complétion global.
+* **📚 Bibliothèque « Mes Jeux Possédés »** :
+  * Filtre tes jeux par plateforme (*Steam, PSN, Xbox, Switch, Epic, GOG*) et par statut (*Tous, 100% Platinés 🏆, En cours, À commencer*).
+  * Ajoute n'importe quel jeu en 1 clic ou via l'outil d'**import massif Steam**.
+* **🔍 Recherche instantanée & Succès 100% en français** :
+  * Noms officiels, descriptions, rareté et icônes extraits directement.
+* **⚠️ Détection des succès manquables & gestion des secrets** :
+  * Repère automatiquement les trophées à ne pas rater pendant ton run et masque les spoilers par défaut.
+* **🏆 Guides intégrés en 1 clic** :
+  * Lien direct vers le guide **PSTHC** du jeu (la référence FR), **YouTube FR** et **Steam Guides**.
+* **🎉 Célébration 100%, Notes & Sauvegarde JSON** :
+  * Pluie de confettis au Platine, notes personnelles par succès et sauvegarde/restauration locale (`localStorage` + export JSON).
