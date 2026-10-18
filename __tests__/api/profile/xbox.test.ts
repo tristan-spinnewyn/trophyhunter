@@ -1,4 +1,5 @@
 // __tests__/api/profile/xbox.test.ts
+
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/profile/xbox/route";
 import { initDatabase, setDbForTesting } from "@/lib/db";
@@ -71,5 +72,18 @@ describe("GET /api/profile/xbox Direct Flow", () => {
     expect(data.account.stats.gamerScore).toBe(98500);
     expect(data.discoveredGames).toHaveLength(1);
     expect(data.discoveredGames[0].name).toBe("Halo Infinite");
+  });
+
+  it("returns 401 error response when OpenXBL API key is rejected", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      jsonResponse({ error: "Invalid API Key" }, 401)
+    );
+
+    const res = await GET(
+      new Request("http://localhost:3000/api/profile/xbox?user=MajorNelson&key=bad-key")
+    );
+    expect(res.status).toBe(401);
+    const data = await res.json();
+    expect(data.error).toContain("OpenXBL");
   });
 });
