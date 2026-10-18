@@ -2,6 +2,7 @@
 
 import type { OwnedGame, PlatformType } from "@/lib/types";
 import type { LocalCollection } from "@/lib/storage";
+import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
 
 export type StatusFilterType =
   | "all"
@@ -21,7 +22,7 @@ export type SortOrderType =
 
 export interface UseLibraryFiltersProps {
   ownedGames: OwnedGame[];
-  activePlatformTab: PlatformType | "all" | "duplicates" | "wishlist" | "collections";
+  activePlatformTab: DashboardTabType;
   wishlistIds: number[];
   collections: LocalCollection[];
   selectedCollId: string | null;

@@ -11,7 +11,8 @@ export type DashboardTabType =
   | "all"
   | "duplicates"
   | "wishlist"
-  | "collections";
+  | "collections"
+  | "gamepass";
 
 export interface DashboardNavTabsProps {
   activePlatformTab: DashboardTabType;

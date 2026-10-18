@@ -51,5 +51,11 @@ describe("filterGames with GameStatus", () => {
       libStatusFilter: "completed",
     });
     expect(xboxCompleted).toHaveLength(0);
+
+    const gamepassTabAll = filterGames({
+      ...baseParams,
+      activePlatformTab: "gamepass",
+    });
+    expect(gamepassTabAll).toHaveLength(4);
   });
 });

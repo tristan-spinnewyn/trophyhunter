@@ -7,6 +7,7 @@ import type {
 } from "@/lib/types";
 import type { LocalCollection } from "@/lib/storage";
 import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
+import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
 import type {
   GlobalDashboardStats,
   EpicGameCounts,
@@ -17,6 +18,8 @@ export interface ActiveTabPanelProps {
   activePlatformTab: DashboardTabType;
   globalStats: GlobalDashboardStats;
   accountProfile: UserAccountProfile;
+  ownedGames: readonly OwnedGame[];
+  wishlistIds: readonly number[];
   platformCounts: Record<string, number>;
   duplicateGroups: Array<{ title: string; games: OwnedGame[] }>;
   epicCounts: EpicGameCounts;
@@ -26,8 +29,9 @@ export interface ActiveTabPanelProps {
   openEditPlatform: (plat: PlatformType) => void;
   handleDisconnectPlatform: (plat: PlatformType) => void;
   onSelectGame: (appId: number) => void;
+  onAddGamePassToXbox: (item: GamePassCatalogItem) => Promise<void>;
+  onToggleWishlist: (appId: number, platform: PlatformType) => Promise<void>;
 
-  // Collections
   collections: LocalCollection[];
   selectedCollId: string | null;
   setSelectedCollId: (id: string | null) => void;
@@ -40,7 +44,6 @@ export interface ActiveTabPanelProps {
   handleCreateCollection: () => Promise<void>;
   handleDeleteCollection: (collId: string) => Promise<void>;
 
-  // Steam
   displayName: string;
   steamInput: string;
   setSteamInput: (val: string) => void;
@@ -52,7 +55,6 @@ export interface ActiveTabPanelProps {
   syncProgressText: string | null;
   handleConnectAndSyncSteam: () => Promise<void>;
 
-  // Xbox
   xboxInput: string;
   setXboxInput: (val: string) => void;
   xboxApiKey: string;
@@ -62,7 +64,6 @@ export interface ActiveTabPanelProps {
   isSyncingXbox: boolean;
   handleConnectAndSyncXbox: () => Promise<void>;
 
-  // Epic
   epicInput: string;
   setEpicInput: (val: string) => void;
   epicCode: string;
@@ -75,7 +76,6 @@ export interface ActiveTabPanelProps {
   handleCleanEpicGames: () => Promise<void>;
   onOpenEpicModal?: () => void;
 
-  // GOG
   gogInput: string;
   setGogInput: (val: string) => void;
   gogToken: string;

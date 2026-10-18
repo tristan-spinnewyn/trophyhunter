@@ -2,6 +2,7 @@
 
 import type { OwnedGame, PlatformType } from "@/lib/types";
 import type { LocalCollection } from "@/lib/storage";
+import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
 import { resolveGameStatus } from "@/lib/game-status/game-status.services";
 import type {
   StatusFilterType,
@@ -10,7 +11,7 @@ import type {
 
 interface FilterParams {
   readonly games: OwnedGame[];
-  readonly activePlatformTab: PlatformType | "all" | "duplicates" | "wishlist" | "collections";
+  readonly activePlatformTab: DashboardTabType;
   readonly libPlatformFilter: PlatformType | "all";
   readonly libStatusFilter: StatusFilterType;
   readonly libAchievementFilter: AchievementFilterType;
@@ -26,7 +27,14 @@ export function filterGames(params: FilterParams): OwnedGame[] {
     libAchievementFilter, libSearch, wishlistIds, collections, selectedCollId,
   } = params;
 
-  const targetPlatform = activePlatformTab !== "all" ? activePlatformTab : libPlatformFilter;
+  const isFeatureTab =
+    activePlatformTab === "all" ||
+    activePlatformTab === "duplicates" ||
+    activePlatformTab === "wishlist" ||
+    activePlatformTab === "collections" ||
+    activePlatformTab === "gamepass";
+
+  const targetPlatform = !isFeatureTab ? activePlatformTab : libPlatformFilter;
 
   return games.filter((g) => {
     if (activePlatformTab === "wishlist") {

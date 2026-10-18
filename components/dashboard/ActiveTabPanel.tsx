@@ -3,6 +3,7 @@
 import OverviewPanel from "@/components/dashboard/OverviewPanel";
 import DuplicatesPanel from "@/components/dashboard/DuplicatesPanel";
 import CollectionsPanel from "@/components/dashboard/CollectionsPanel";
+import GamePassPanel from "@/components/dashboard/GamePassPanel";
 import type { ActiveTabPanelProps } from "./active-tab/ActiveTabPanel.types";
 import { PlatformTabSwitcher } from "./active-tab/PlatformTabSwitcher";
 
@@ -21,6 +22,19 @@ export default function ActiveTabPanel(props: ActiveTabPanelProps) {
         onEditPlatform={props.openEditPlatform}
         onDisconnectPlatform={props.handleDisconnectPlatform}
         onSelectGame={props.onSelectGame}
+      />
+    );
+  }
+
+  if (activePlatformTab === "gamepass") {
+    return (
+      <GamePassPanel
+        ownedGames={props.ownedGames}
+        wishlistIds={props.wishlistIds}
+        onAddGameToXbox={props.onAddGamePassToXbox}
+        onToggleWishlist={props.onToggleWishlist}
+        onSelectGame={(appId) => props.onSelectGame(appId)}
+        onBackToAll={() => onSelectTab("all")}
       />
     );
   }
