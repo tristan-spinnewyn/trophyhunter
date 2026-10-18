@@ -51,7 +51,7 @@ export function EpicSyncForm({
         />
         <button
           onClick={() => onConnectAndSyncEpic()}
-          disabled={isSyncingEpic || (!epicInput.trim() && !epicCode.trim())}
+          disabled={isSyncingEpic}
           className="shrink-0 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 px-3.5 py-2 text-xs font-bold text-white hover:brightness-110 disabled:opacity-50 transition flex items-center gap-1.5 shadow-md shadow-purple-500/20"
         >
           <RefreshCw

@@ -1,5 +1,4 @@
 // components/dashboard/hooks/useEpicSync.ts
-
 import { useState } from "react";
 import type { UseEpicSyncProps } from "./useEpicSync.types";
 import { useEpicEnrichment } from "./useEpicEnrichment";
@@ -44,9 +43,15 @@ export function useEpicSync({
       return;
     }
     setBannerMsg({ type: "success", text: `Actualisation en arrière-plan des succès pour ${epicSubset.length} jeux Epic...` });
-    const finalList = await enrichEpicGamesAchievements(epicSubset, ownedGames);
+    const finalList = await enrichEpicGamesAchievements(epicSubset, ownedGames, true);
     const withAch = finalList.filter((g) => g.platform === "epic" && (g.totalAchievements || 0) > 0).length;
-    setBannerMsg({ type: "success", text: `Terminé ! ${withAch}/${epicSubset.length} jeux Epic disposent de succès répertoriés.` });
+    const totalUnlocked = finalList
+      .filter((g) => g.platform === "epic")
+      .reduce((acc, g) => acc + (g.unlockedCount || 0), 0);
+    setBannerMsg({
+      type: "success",
+      text: `Terminé ! ${withAch}/${epicSubset.length} jeux Epic avec succès (${totalUnlocked} trophées débloqués).`,
+    });
   };
 
   return {
@@ -57,3 +62,4 @@ export function useEpicSync({
     handleCleanEpicGames,
   };
 }
+

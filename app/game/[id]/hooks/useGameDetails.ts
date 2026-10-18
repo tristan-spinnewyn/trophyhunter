@@ -35,7 +35,7 @@ export function useGameDetails({
     setError(null);
 
     async function fetchData() {
-      const currentProgress = currentUser
+      let currentProgress = currentUser
         ? (await fetchRemoteUserProgress(appId, activePlatform)) || { unlockedIds: [], notes: {} }
         : { unlockedIds: [], notes: {} };
 
@@ -46,6 +46,14 @@ export function useGameDetails({
         const data = await fetchGameDetailsApi(appId, owned?.name, owned?.platform);
         if (isCancelled) return;
         setGame(data);
+
+        if (activePlatform === "epic" && currentUser) {
+          const refreshedProgress = await fetchRemoteUserProgress(appId, "epic");
+          if (!isCancelled && refreshedProgress && refreshedProgress.unlockedIds.length >= currentProgress.unlockedIds.length) {
+            currentProgress = refreshedProgress;
+            setProgress(refreshedProgress);
+          }
+        }
 
         if (owned) {
           const unlockedCount = Math.max(owned.unlockedCount || 0, currentProgress.unlockedIds.length);
@@ -72,8 +80,9 @@ export function useGameDetails({
             },
           });
         }
-      } catch (err: any) {
-        if (!isCancelled) setError(err.message || "Erreur lors du chargement.");
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Erreur lors du chargement.";
+        if (!isCancelled) setError(message);
       } finally {
         if (!isCancelled) setIsLoading(false);
       }
@@ -81,7 +90,8 @@ export function useGameDetails({
 
     fetchData();
     return () => { isCancelled = true; };
-  }, [appId, activePlatform, currentUser?.id]);
+  }, [appId, activePlatform, currentUser?.id, owned?.name]);
 
   return { game, setGame, progress, setProgress, isLoading, error, isSyncing, setIsSyncing, syncNotice, setSyncNotice };
 }
+

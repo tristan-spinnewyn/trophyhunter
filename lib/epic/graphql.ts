@@ -1,78 +1,92 @@
 // lib/epic/graphql.ts
-const EPIC_GRAPHQL_ENDPOINT = "https://graphql.epicgames.com/graphql";
-const EPIC_USER_AGENT = "EpicGamesLauncher/14.0.8-22004686+++Portal+Release-Live";
+import { EPIC_PRIMARY_GRAPHQL_ENDPOINT, EPIC_USER_AGENT } from "./graphql-client";
 
-export async function fetchEpicPlayerAchievements(accountId: string, accessToken: string): Promise<any[]> {
-  const gqlQuery = `query PlayerProfileAchievements($epicAccountId: String!) {
-    PlayerAchievement {
-      playerAchievementGameRecords(epicAccountId: $epicAccountId) {
-        records {
-          sandboxId
-          totalUnlocked
-          totalXP
-          achievementSets {
-            achievementSetId
-            totalAchievements
-            totalUnlocked
-          }
-          playerAchievements {
-            playerAchievement {
-              achievementName
-              unlocked
-              XP
-            }
-            achievementName
-            unlocked
-            XP
-          }
+export interface EpicPlayerAchievementRecord {
+  sandboxId?: string;
+  totalUnlocked?: number;
+  totalXP?: number;
+  productName?: string;
+  totalProductAchievements?: number;
+  achievementSets?: ReadonlyArray<{
+    readonly achievementSetId?: string;
+    readonly totalAchievements?: number;
+    readonly totalUnlocked?: number;
+  }>;
+  playerAchievements?: readonly unknown[];
+}
+
+const PLAYER_PROFILE_ACH_QUERY = `query PlayerProfileAchievements($epicAccountId: String!) {
+  PlayerAchievement {
+    playerAchievementGameRecords(epicAccountId: $epicAccountId, includeAchievements: true) {
+      records {
+        sandboxId
+        totalUnlocked
+        totalXP
+        achievementSets { achievementSetId isBase totalUnlocked totalXP }
+        playerAchievements {
+          playerAchievement { achievementName unlocked XP unlockDate }
         }
       }
     }
-    PlayerProfile {
-      playerProfile(epicAccountId: $epicAccountId) {
-        achievementsSummaries {
+  }
+  PlayerProfile {
+    playerProfile(epicAccountId: $epicAccountId) {
+      achievementsSummaries {
+        ... on PlayerAchievementResponseSuccess {
           data {
             sandboxId
             totalUnlocked
             totalXP
-            product {
-              name
-            }
+            product(locale: "fr") { name }
+            productAchievements { totalAchievements }
           }
         }
       }
     }
-  }`;
+  }
+}`;
 
+export async function fetchEpicPlayerAchievements(
+  accountId: string,
+  accessToken: string
+): Promise<EpicPlayerAchievementRecord[]> {
   try {
-    const res = await fetch(EPIC_GRAPHQL_ENDPOINT, {
+    const res = await fetch(EPIC_PRIMARY_GRAPHQL_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
         "User-Agent": EPIC_USER_AGENT,
       },
-      body: JSON.stringify({ query: gqlQuery, variables: { epicAccountId: accountId } }),
+      body: JSON.stringify({ query: PLAYER_PROFILE_ACH_QUERY, variables: { epicAccountId: accountId } }),
     });
     if (!res.ok) return [];
     const json = await res.json();
-    const records: any[] = json?.data?.PlayerAchievement?.playerAchievementGameRecords?.records || [];
-    const summaries: any[] =
+    const records: EpicPlayerAchievementRecord[] =
+      json?.data?.PlayerAchievement?.playerAchievementGameRecords?.records || [];
+    const rawSummaries =
       json?.data?.PlayerProfile?.playerProfile?.achievementsSummaries?.data ||
       json?.data?.PlayerProfile?.playerProfile?.achievementsSummaries ||
       [];
+    const summaries = Array.isArray(rawSummaries) ? rawSummaries : [];
 
-    const nameBySandbox = new Map<string, string>();
+    const metaBySandbox = new Map<string, { name: string; total: number }>();
     for (const s of summaries) {
-      const sId = (s.sandboxId || "").toLowerCase();
-      const pName = s.product?.name || "";
-      if (sId && pName) nameBySandbox.set(sId, pName);
+      const sId = String(s?.sandboxId || "").toLowerCase();
+      if (sId) {
+        metaBySandbox.set(sId, {
+          name: String(s?.product?.name || ""),
+          total: Number(s?.productAchievements?.totalAchievements) || 0,
+        });
+      }
     }
 
     for (const r of records) {
-      const sId = (r.sandboxId || "").toLowerCase();
-      if (sId && nameBySandbox.has(sId)) {
-        r.productName = nameBySandbox.get(sId);
+      const sId = String(r.sandboxId || "").toLowerCase();
+      const meta = sId ? metaBySandbox.get(sId) : undefined;
+      if (meta) {
+        if (meta.name) r.productName = meta.name;
+        if (meta.total > 0) r.totalProductAchievements = meta.total;
       }
     }
     return records;
@@ -80,3 +94,5 @@ export async function fetchEpicPlayerAchievements(accountId: string, accessToken
     return [];
   }
 }
+
+

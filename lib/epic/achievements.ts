@@ -2,6 +2,7 @@
 import type { AchSummary } from "./types";
 import { PLAYER_GAME_ACHIEVEMENT_QUERY } from "./achievements-query";
 import { parseEpicAchievementRecords, mergeEpicSummaries } from "./achievements-parser";
+import { EPIC_PRIMARY_GRAPHQL_ENDPOINT, EPIC_USER_AGENT } from "./graphql-client";
 
 export async function fetchEpicAchievementsGraphQL(
   accountId: string,
@@ -12,12 +13,12 @@ export async function fetchEpicAchievementsGraphQL(
   rawCompletedGames: number;
 }> {
   try {
-    const gqlRes = await fetch("https://graphql.epicgames.com/graphql", {
+    const gqlRes = await fetch(EPIC_PRIMARY_GRAPHQL_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
-        "User-Agent": "EpicGamesLauncher/14.0.8-22004686+++Portal+Release-Live",
+        "User-Agent": EPIC_USER_AGENT,
       },
       body: JSON.stringify({
         query: PLAYER_GAME_ACHIEVEMENT_QUERY,
@@ -42,3 +43,4 @@ export async function fetchEpicAchievementsGraphQL(
 
   return { achBySandbox: new Map(), rawTotalAchievements: 0, rawCompletedGames: 0 };
 }
+

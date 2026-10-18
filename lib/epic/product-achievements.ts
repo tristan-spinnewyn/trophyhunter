@@ -25,8 +25,9 @@ const PLAYER_ACHIEVEMENTS_QUERY = `query PlayerAchievementBySandbox($epicAccount
   }
 }`;
 
-export function unwrapPlayerAchievement(entry: any): { achievementName: string; unlocked: boolean } {
-  const p = entry?.playerAchievement ?? entry ?? {};
+export function unwrapPlayerAchievement(entry: unknown): { achievementName: string; unlocked: boolean } {
+  const obj = (entry ?? {}) as { playerAchievement?: Record<string, unknown> } & Record<string, unknown>;
+  const p = obj.playerAchievement ?? obj;
   return { achievementName: String(p.achievementName || ""), unlocked: Boolean(p.unlocked) };
 }
 
@@ -34,28 +35,42 @@ export function epicAchievementId(name: string): string {
   return `epic_${name.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 60)}`;
 }
 
-export async function fetchEpicProductAchievements(
-  sandboxId: string,
-  accessToken: string,
-  locale = "fr"
-): Promise<Array<Achievement & { epicName: string }>> {
-  const data = await epicGraphQL(PRODUCT_ACHIEVEMENTS_QUERY, { sandboxId, locale }, accessToken);
-  const list: any[] = data?.Achievement?.productAchievementsRecordBySandbox?.achievements || [];
+interface ProductAchievementsQueryData {
+  readonly Achievement?: {
+    readonly productAchievementsRecordBySandbox?: {
+      readonly achievements?: ReadonlyArray<{ readonly achievement?: Record<string, unknown> } & Record<string, unknown>>;
+    };
+  };
+}
+
+interface PlayerAchievementsQueryData {
+  readonly PlayerAchievement?: {
+    readonly playerAchievementGameRecordsBySandbox?: {
+      readonly records?: ReadonlyArray<{ readonly totalUnlocked?: number; readonly playerAchievements?: ReadonlyArray<unknown> }>;
+    };
+  };
+}
+
+export async function fetchEpicProductAchievements(sandboxId: string, accessToken: string, locale = "fr"): Promise<Array<Achievement & { epicName: string }>> {
+  const data = await epicGraphQL<ProductAchievementsQueryData>(PRODUCT_ACHIEVEMENTS_QUERY, { sandboxId, locale }, accessToken);
+  const list = data?.Achievement?.productAchievementsRecordBySandbox?.achievements || [];
 
   return list
-    .map((entry) => entry?.achievement ?? entry)
-    .filter((a) => a?.name)
+    .map((entry) => (entry?.achievement ?? entry) as Record<string, unknown>)
+    .filter((a) => Boolean(a?.name))
     .map((a) => {
-      const name = a.unlockedDisplayName || a.lockedDisplayName || a.name;
+      const rawName = String(a.name || "");
+      const name = String(a.unlockedDisplayName || a.lockedDisplayName || rawName);
       const hidden = Boolean(a.hidden);
-      const desc = a.unlockedDescription || a.lockedDescription || (hidden ? "Succès secret (Masqué par le jeu)" : "");
+      const desc = String(a.unlockedDescription || a.lockedDescription || (hidden ? "Succès secret (Masqué par le jeu)" : ""));
+      const rarity = a.rarity as { percent?: number } | undefined;
       return {
-        id: epicAchievementId(a.name),
-        epicName: String(a.name),
+        id: epicAchievementId(rawName),
+        epicName: rawName,
         name,
         desc,
-        icon: a.unlockedIconLink || a.lockedIconLink || "",
-        percent: Number(a.rarity?.percent) || 0,
+        icon: String(a.unlockedIconLink || a.lockedIconLink || ""),
+        percent: Number(rarity?.percent) || 0,
         hidden,
         missable: isLikelyMissable(name, desc),
       };
@@ -67,8 +82,8 @@ export async function fetchEpicPlayerUnlockedNames(
   sandboxId: string,
   accessToken: string
 ): Promise<{ unlockedNames: Set<string>; totalUnlocked: number }> {
-  const data = await epicGraphQL(PLAYER_ACHIEVEMENTS_QUERY, { epicAccountId: accountId, sandboxId }, accessToken);
-  const records: any[] = data?.PlayerAchievement?.playerAchievementGameRecordsBySandbox?.records || [];
+  const data = await epicGraphQL<PlayerAchievementsQueryData>(PLAYER_ACHIEVEMENTS_QUERY, { epicAccountId: accountId, sandboxId }, accessToken);
+  const records = data?.PlayerAchievement?.playerAchievementGameRecordsBySandbox?.records || [];
 
   const unlockedNames = new Set<string>();
   let totalUnlocked = 0;

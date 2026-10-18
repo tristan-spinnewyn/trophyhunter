@@ -1,5 +1,4 @@
 // components/dashboard/hooks/useEpicProfileConnect.ts
-
 import type { OwnedGame, PlatformAccount } from "@/lib/types";
 import { replacePlatformInList } from "@/components/dashboard/utils";
 import { parseEpicAuthInput } from "@/lib/epic/auth-parser";
@@ -16,7 +15,7 @@ interface UseEpicProfileConnectProps {
   updateAccountProfileInMemory: (account: PlatformAccount) => void;
   persistAccountToSQLite: (account: PlatformAccount) => Promise<void>;
   persistGamesToSQLite: (games: OwnedGame[], replacePlatform?: "epic") => Promise<void>;
-  enrichEpicGamesAchievements: (epicGamesList: OwnedGame[], allCurrentGames: OwnedGame[]) => Promise<OwnedGame[]>;
+  enrichEpicGamesAchievements: (epicGamesList: OwnedGame[], allCurrentGames: OwnedGame[], forceAll?: boolean) => Promise<OwnedGame[]>;
   onRequireToken?: () => void;
 }
 
@@ -61,6 +60,13 @@ export function useEpicProfileConnect({
         throw new Error(data.error || "Impossible de synchroniser avec Epic Games.");
       }
 
+      if (data?.requiresToken && (!data.discoveredGames || data.discoveredGames.length === 0) && onRequireToken) {
+        updateAccountProfileInMemory(data.account);
+        await persistAccountToSQLite(data.account);
+        onRequireToken();
+        return;
+      }
+
       updateAccountProfileInMemory(data.account);
       await persistAccountToSQLite(data.account);
 
@@ -78,8 +84,9 @@ export function useEpicProfileConnect({
         text: data.notice || `Compte Epic Games "${data.account.displayName}" synchronisé avec succès (${data.discoveredGames?.length || 0} jeux importés, dont ${epicWithAch} avec succès détectés) !`,
       });
       setEpicCode("");
-    } catch (err: any) {
-      setBannerMsg({ type: "error", text: err.message || "Erreur de connexion Epic Games." });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Erreur de connexion Epic Games.";
+      setBannerMsg({ type: "error", text: message });
     } finally {
       setIsSyncingEpic(false);
       setSyncProgressText(null);
@@ -88,3 +95,4 @@ export function useEpicProfileConnect({
 
   return { handleConnectAndSyncEpic };
 }
+
