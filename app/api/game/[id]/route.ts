@@ -1,3 +1,4 @@
+// app/api/game/[id]/route.ts
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getSteamGameDetails } from "@/lib/steam/game-details";
@@ -23,11 +24,9 @@ export async function GET(
     let authUser = null;
     try {
       authUser = await getAuthenticatedUser();
-    } catch {
-      // Non-blocking
-    }
+    } catch {}
 
-    const isEpic = platform === "epic" && !!authUser && !fastMode;
+    const isEpic = platform === "epic" && !!authUser;
 
     const [gameDetails, epicAchievements] = await Promise.all([
       getSteamGameDetails({
@@ -51,11 +50,13 @@ export async function GET(
     }
 
     return NextResponse.json(gameDetails);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Erreur interne";
     console.error("Game API error:", error);
     return NextResponse.json(
-      { error: "Impossible de charger les données du jeu.", details: error.message },
+      { error: "Impossible de charger les données du jeu.", details: message },
       { status: 500 }
     );
   }
 }
+

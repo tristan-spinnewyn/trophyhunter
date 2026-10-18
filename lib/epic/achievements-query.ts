@@ -1,7 +1,7 @@
 // lib/epic/achievements-query.ts
 export const PLAYER_GAME_ACHIEVEMENT_QUERY = `query PlayerGameAchievementProgress($epicAccountId: String!) {
   PlayerAchievement {
-    playerAchievementGameRecords(epicAccountId: $epicAccountId) {
+    playerAchievementGameRecords(epicAccountId: $epicAccountId, includeAchievements: true) {
       records {
         sandboxId
         totalUnlocked
@@ -11,13 +11,13 @@ export const PLAYER_GAME_ACHIEVEMENT_QUERY = `query PlayerGameAchievementProgres
           isBase
           totalUnlocked
           totalXP
-          totalAchievements
         }
         playerAchievements {
           playerAchievement {
             achievementName
             unlocked
             XP
+            unlockDate
           }
         }
       }
@@ -26,25 +26,29 @@ export const PLAYER_GAME_ACHIEVEMENT_QUERY = `query PlayerGameAchievementProgres
   PlayerProfile {
     playerProfile(epicAccountId: $epicAccountId) {
       achievementsSummaries {
-        data {
-          sandboxId
-          totalUnlocked
-          totalXP
-          product {
-            name
-          }
-          baseOfferForSandbox {
-            keyImages {
-              type
-              url
+        ... on PlayerAchievementResponseSuccess {
+          data {
+            sandboxId
+            totalUnlocked
+            totalXP
+            product(locale: "fr") {
+              name
+              slug
             }
-          }
-          productAchievements {
-            totalAchievements
-            totalProductXP
+            baseOfferForSandbox(locale: "fr") {
+              keyImages {
+                type
+                url
+              }
+            }
+            productAchievements {
+              totalAchievements
+              totalProductXP
+            }
           }
         }
       }
     }
   }
 }`;
+

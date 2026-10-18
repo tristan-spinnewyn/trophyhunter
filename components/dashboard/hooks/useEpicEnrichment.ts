@@ -1,5 +1,4 @@
 // components/dashboard/hooks/useEpicEnrichment.ts
-
 import { useRef, useEffect } from "react";
 import type { OwnedGame } from "@/lib/types";
 import { mergeGamesList } from "@/components/dashboard/utils";
@@ -28,10 +27,16 @@ export function useEpicEnrichment({
 
   const enrichEpicGamesAchievements = async (
     epicGamesList: OwnedGame[],
-    allCurrentGames: OwnedGame[]
+    allCurrentGames: OwnedGame[],
+    forceAll = false
   ): Promise<OwnedGame[]> => {
     const gamesToResolve = epicGamesList.filter(
-      (g) => g.platform === "epic" && (g.totalAchievements || 0) === 0 && g.name && !g.name.startsWith("Epic Game (") && !g.name.startsWith("Jeu Epic (")
+      (g) =>
+        g.platform === "epic" &&
+        (forceAll || (g.totalAchievements || 0) === 0) &&
+        g.name &&
+        !g.name.startsWith("Epic Game (") &&
+        !g.name.startsWith("Jeu Epic (")
     );
     if (gamesToResolve.length === 0) return allCurrentGames;
 
@@ -42,7 +47,7 @@ export function useEpicEnrichment({
     try {
       for (let i = 0; i < gamesToResolve.length; i += BATCH_SIZE) {
         const batch = gamesToResolve.slice(i, i + BATCH_SIZE);
-        setSyncProgressText(`Détection des succès Epic Games (${i + 1}/${gamesToResolve.length})...`);
+        setSyncProgressText(`Synchronisation des succès Epic Games (${i + 1}/${gamesToResolve.length})...`);
         const resolvedBatch = await Promise.all(batch.map(resolveSingleEpicGame));
         workingGames = mergeGamesList(workingGames, resolvedBatch);
         onOwnedGamesChange(workingGames);
@@ -74,3 +79,4 @@ export function useEpicEnrichment({
 
   return { enrichEpicGamesAchievements, hasAutoEnrichedEpicRef };
 }
+

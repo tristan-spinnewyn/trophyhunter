@@ -1,12 +1,10 @@
+// lib/epic/game-details.ts
 import type { Achievement } from "@/lib/types";
 import { getEpicGameSandbox, saveEpicGameSandboxes } from "@/lib/db";
 import { loadStoredEpicCredentials, withEpicCredentials } from "./credentials";
 import { getEpicGameAchievements } from "./game-achievements";
+import { persistEpicGameSync } from "./sync-progress";
 
-/**
- * Returns the official Epic Games achievement list of a game for a user
- * with stored Epic credentials, or null if unavailable.
- */
 export async function getEpicAchievementsForUser(
   userId: string,
   appId: number,
@@ -34,8 +32,20 @@ export async function getEpicAchievementsForUser(
     if (result.sandboxId !== knownSandbox) {
       saveEpicGameSandboxes(userId, [{ appId, sandboxId: result.sandboxId }]);
     }
+
+    if (result.unlockedIds.length > 0 || result.achievements.length > 0) {
+      persistEpicGameSync(
+        { id: userId, username: "", displayName: "", createdAt: "" },
+        appId,
+        result.unlockedIds,
+        result.achievements.length,
+        result.totalUnlocked
+      );
+    }
+
     return result.achievements;
   } catch {
     return null;
   }
 }
+

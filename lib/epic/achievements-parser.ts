@@ -3,7 +3,30 @@ import type { AchSummary } from "./types";
 import { extractBestCover } from "./helpers";
 import { unwrapPlayerAchievement } from "./game-achievements";
 
-export function parseEpicAchievementRecords(records: any[]): {
+export interface RawEpicAchSet {
+  readonly totalAchievements?: number;
+  readonly totalUnlocked?: number;
+}
+
+export interface RawEpicAchRecord {
+  readonly sandboxId?: string;
+  readonly totalUnlocked?: number;
+  readonly totalXP?: number;
+  readonly playerAchievements?: readonly unknown[];
+  readonly achievementSets?: readonly RawEpicAchSet[];
+}
+
+export interface RawEpicSummaryItem {
+  readonly sandboxId?: string;
+  readonly totalUnlocked?: number;
+  readonly totalAchievements?: number;
+  readonly totalXP?: number;
+  readonly product?: { readonly name?: string };
+  readonly baseOfferForSandbox?: { readonly keyImages?: unknown };
+  readonly productAchievements?: { readonly totalAchievements?: number };
+}
+
+export function parseEpicAchievementRecords(records: readonly RawEpicAchRecord[]): {
   achBySandbox: Map<string, AchSummary>;
   rawTotalAchievements: number;
   rawCompletedGames: number;
@@ -23,14 +46,9 @@ export function parseEpicAchievementRecords(records: any[]): {
       ? achRec.playerAchievements.map(unwrapPlayerAchievement)
       : [];
     const sets = Array.isArray(achRec.achievementSets) ? achRec.achievementSets : [];
-
-    let totalInGame = playerAchs.length;
-    if (totalInGame === 0) {
-      totalInGame = Math.max(
-        unlocked,
-        sets.reduce((acc: number, s: any) => acc + (s.totalAchievements || s.totalUnlocked || 0), 0)
-      );
-    }
+    const setsTotal = sets.reduce((acc, s) => acc + (s.totalAchievements || 0), 0);
+    const hasLockedInList = playerAchs.some((p) => !p.unlocked);
+    const totalInGame = setsTotal > 0 ? Math.max(setsTotal, playerAchs.length, unlocked) : hasLockedInList ? playerAchs.length : 0;
 
     if (unlocked > 0 && totalInGame > 0 && unlocked >= totalInGame) {
       rawCompletedGames += 1;
@@ -48,12 +66,12 @@ export function parseEpicAchievementRecords(records: any[]): {
   return { achBySandbox, rawTotalAchievements, rawCompletedGames };
 }
 
-export function mergeEpicSummaries(achBySandbox: Map<string, AchSummary>, sumItems: any[]): void {
+export function mergeEpicSummaries(achBySandbox: Map<string, AchSummary>, sumItems: readonly RawEpicSummaryItem[]): void {
   for (const it of sumItems) {
     const sId = (it.sandboxId || "").toLowerCase();
     if (!sId) continue;
     const unlocked = it.totalUnlocked || 0;
-    const total = it.productAchievements?.totalAchievements || Math.max(unlocked, it.totalAchievements || 0);
+    const total = it.productAchievements?.totalAchievements || it.totalAchievements || 0;
     const title = it.product?.name || "";
     const cover = extractBestCover(it.baseOfferForSandbox?.keyImages);
 
@@ -65,13 +83,11 @@ export function mergeEpicSummaries(achBySandbox: Map<string, AchSummary>, sumIte
       if (unlocked > existing.totalUnlocked) existing.totalUnlocked = unlocked;
     } else {
       achBySandbox.set(sId, {
-        sandboxId: sId,
-        totalUnlocked: unlocked,
-        totalAchievements: total,
-        totalXP: it.totalXP || 0,
-        gameTitle: title,
-        coverUrl: cover,
+        sandboxId: sId, totalUnlocked: unlocked, totalAchievements: total,
+        totalXP: it.totalXP || 0, gameTitle: title, coverUrl: cover,
       });
     }
   }
 }
+
+

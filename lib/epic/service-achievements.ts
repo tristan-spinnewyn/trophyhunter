@@ -4,6 +4,24 @@ import { resolveEpicCodename, isUnsplashPlaceholder, DEFAULT_EPIC_COVER } from "
 import { isJunkHex, hashCode, normalizeTitle } from "./helpers";
 import type { AchSummary } from "./types";
 
+function doesGameMatchSandbox(gameName: string, sId: string, ach: AchSummary): boolean {
+  const normGameTitle = normalizeTitle(gameName);
+  const cleanSid = sId.replace(/^ns_?/, "").replace(/_?sandbox$/, "").replace(/[^a-z0-9]/g, "");
+  const normAchTitle = ach.gameTitle ? normalizeTitle(ach.gameTitle) : "";
+  const codenameTitle = resolveEpicCodename(sId);
+  const normCodename = codenameTitle ? normalizeTitle(codenameTitle) : "";
+
+  return Boolean(
+    cleanSid === normGameTitle ||
+      (cleanSid.length >= 4 && normGameTitle.startsWith(cleanSid)) ||
+      (normGameTitle.length >= 4 && cleanSid.startsWith(normGameTitle)) ||
+      (normAchTitle && normAchTitle === normGameTitle) ||
+      (normAchTitle.length >= 4 && normGameTitle.includes(normAchTitle)) ||
+      (normGameTitle.length >= 4 && normAchTitle.includes(normGameTitle)) ||
+      (normCodename && normCodename === normGameTitle)
+  );
+}
+
 export function matchAndEnrichSandboxAchievements(
   discoveredGames: OwnedGame[],
   gameNamespaceMap: Map<number, string>,
@@ -15,23 +33,19 @@ export function matchAndEnrichSandboxAchievements(
     let ach = ns ? achBySandbox.get(ns) : undefined;
 
     if (!ach) {
-      const normGameTitle = normalizeTitle(g.name);
       for (const [sId, a] of achBySandbox.entries()) {
-        const cleanSid = sId.replace(/^ns_?/, "").replace(/_?sandbox$/, "").replace(/[^a-z0-9]/g, "");
-        if (
-          cleanSid === normGameTitle ||
-          (cleanSid.length >= 4 && normGameTitle.startsWith(cleanSid)) ||
-          (normGameTitle.length >= 4 && cleanSid.startsWith(normGameTitle)) ||
-          (a.gameTitle && normalizeTitle(a.gameTitle) === normGameTitle)
-        ) {
+        if (doesGameMatchSandbox(g.name, sId, a)) {
           ach = a;
+          gameNamespaceMap.set(g.appId, sId);
           break;
         }
       }
     }
 
     if (ach) {
-      g.totalAchievements = ach.totalAchievements;
+      if (ach.totalAchievements > 0) {
+        g.totalAchievements = ach.totalAchievements;
+      }
       g.unlockedCount = ach.totalUnlocked;
       if (ach.coverUrl && (!g.headerImg || isUnsplashPlaceholder(g.headerImg))) {
         g.headerImg = ach.coverUrl;
@@ -42,14 +56,7 @@ export function matchAndEnrichSandboxAchievements(
   for (const [sId, ach] of achBySandbox.entries()) {
     const alreadyInGames = discoveredGames.some((g) => {
       const gNs = gameNamespaceMap.get(g.appId)?.toLowerCase();
-      const cleanSid = sId.replace(/^ns_?/, "").replace(/_?sandbox$/, "").replace(/[^a-z0-9]/g, "");
-      const normGameTitle = normalizeTitle(g.name);
-      return (
-        gNs === sId || cleanSid === normGameTitle ||
-        (cleanSid.length >= 4 && normGameTitle.startsWith(cleanSid)) ||
-        (normGameTitle.length >= 4 && cleanSid.startsWith(normGameTitle)) ||
-        (ach.gameTitle && normalizeTitle(g.name) === normalizeTitle(ach.gameTitle))
-      );
+      return gNs === sId || doesGameMatchSandbox(g.name, sId, ach);
     });
 
     if (!alreadyInGames && (ach.totalAchievements > 0 || ach.totalUnlocked > 0)) {
@@ -68,3 +75,4 @@ export function matchAndEnrichSandboxAchievements(
     }
   }
 }
+
