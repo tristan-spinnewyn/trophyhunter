@@ -1,8 +1,9 @@
 // lib/types/game.ts
 
 import type { GameStatus } from "../game-status/game-status.types";
+import type { GameHuntingOverride } from "../hunting/hunting.types";
 
-export type { GameStatus };
+export type { GameStatus, GameHuntingOverride };
 
 export interface GameSearchResult {
   id: number;
@@ -40,13 +41,21 @@ export interface GameDetails {
   };
 }
 
-export type FilterStatus = "all" | "locked" | "unlocked" | "missable" | "hidden";
+export type FilterStatus =
+  | "all"
+  | "locked"
+  | "unlocked"
+  | "missable"
+  | "hidden"
+  | "pinned";
 
 export type SortOrder = "default" | "rarity-asc" | "rarity-desc" | "name-asc";
 
 export interface UserGameProgress {
   unlockedIds: string[];
   notes: Record<string, string>;
+  pinnedIds?: string[];
+  huntingMeta?: GameHuntingOverride;
   lastPlayed?: string;
 }
 

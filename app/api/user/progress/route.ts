@@ -1,3 +1,4 @@
+// app/api/user/progress/route.ts
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import {
@@ -5,6 +6,8 @@ import {
   getUserGameProgress,
   resetUserGameProgress,
 } from "@/lib/db";
+import { normalizePinnedIds } from "@/lib/hunting/pinned-targets.services";
+import { sanitizeHuntingOverrideSafe } from "@/lib/hunting/hunting-override.services";
 import type { PlatformType, UserGameProgress } from "@/lib/types";
 
 export async function GET(req: Request) {
@@ -22,7 +25,9 @@ export async function GET(req: Request) {
   }
 
   const progress = getUserGameProgress(user.id, Number(appId), platform);
-  return NextResponse.json({ progress: progress || { unlockedIds: [], notes: {} } });
+  return NextResponse.json({
+    progress: progress || { unlockedIds: [], notes: {}, pinnedIds: [] },
+  });
 }
 
 export async function POST(req: Request) {
@@ -42,9 +47,12 @@ export async function POST(req: Request) {
       );
     }
 
+    const huntingMeta = sanitizeHuntingOverrideSafe(progress.huntingMeta);
     const gameProgress: UserGameProgress = {
       unlockedIds: Array.isArray(progress.unlockedIds) ? progress.unlockedIds : [],
       notes: typeof progress.notes === "object" && progress.notes !== null ? progress.notes : {},
+      pinnedIds: normalizePinnedIds(progress.pinnedIds),
+      ...(huntingMeta ? { huntingMeta } : {}),
       lastPlayed: progress.lastPlayed || new Date().toISOString(),
     };
 

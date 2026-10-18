@@ -62,6 +62,8 @@ CREATE TABLE IF NOT EXISTS user_game_progress (
   platform TEXT NOT NULL,
   unlocked_ids_json TEXT NOT NULL DEFAULT '[]',
   notes_json TEXT NOT NULL DEFAULT '{}',
+  pinned_ids_json TEXT NOT NULL DEFAULT '[]',
+  hunting_meta_json TEXT,
   last_played TEXT,
   updated_at TEXT NOT NULL,
   UNIQUE(user_id, platform, app_id)

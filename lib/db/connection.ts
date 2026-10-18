@@ -3,6 +3,7 @@ import { DatabaseSync } from "node:sqlite";
 import fs from "node:fs";
 import path from "node:path";
 import { SCHEMA_SQL } from "./schema";
+import { runDatabaseMigrations } from "./migrations";
 
 export { withTransaction } from "./transaction";
 
@@ -29,16 +30,6 @@ export function getDatabasePath(): string {
   return path.join(dataDir, "trophyhunter.db");
 }
 
-function migrateUserGamesStatusColumn(db: DatabaseSync): void {
-  const columns = db
-    .prepare("PRAGMA table_info(user_games)")
-    .all() as Array<{ readonly name: string }>;
-  const hasStatus = columns.some((col) => col.name === "status");
-  if (!hasStatus) {
-    db.exec("ALTER TABLE user_games ADD COLUMN status TEXT NOT NULL DEFAULT 'backlog';");
-  }
-}
-
 export function initDatabase(dbPath?: string): DatabaseSync {
   const targetPath = dbPath || getDatabasePath();
   const db = new DatabaseSync(targetPath);
@@ -52,7 +43,7 @@ export function initDatabase(dbPath?: string): DatabaseSync {
   db.exec("PRAGMA busy_timeout = 5000;");
 
   db.exec(SCHEMA_SQL);
-  migrateUserGamesStatusColumn(db);
+  runDatabaseMigrations(db);
   return db;
 }
 

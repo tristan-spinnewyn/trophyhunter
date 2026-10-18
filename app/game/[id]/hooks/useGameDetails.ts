@@ -48,7 +48,7 @@ export function useGameDetails({
         setGame(data);
 
         if (Array.isArray(data.unlockedIds) && data.unlockedIds.length > currentProgress.unlockedIds.length) {
-          currentProgress = { unlockedIds: data.unlockedIds, notes: currentProgress.notes };
+          currentProgress = { ...currentProgress, unlockedIds: data.unlockedIds };
           setProgress(currentProgress);
         } else if ((activePlatform === "epic" || activePlatform === "gog" || activePlatform === "xbox") && currentUser) {
           const refreshedProgress = await fetchRemoteUserProgress(appId, activePlatform);
