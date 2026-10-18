@@ -1,32 +1,32 @@
 // context/UserDataContext.types.ts
+
 import type { UserAccountProfile, OwnedGame, User as UserType } from "@/lib/types";
 import type { LocalCollection } from "@/lib/storage";
 
 export interface UserDataContextType {
-  currentUser: UserType | null;
-  setCurrentUser: React.Dispatch<React.SetStateAction<UserType | null>>;
-  accountProfile: UserAccountProfile;
-  setAccountProfile: React.Dispatch<React.SetStateAction<UserAccountProfile>>;
-  ownedGames: OwnedGame[];
-  setOwnedGames: React.Dispatch<React.SetStateAction<OwnedGame[]>>;
-  favorites: number[];
-  setFavorites: React.Dispatch<React.SetStateAction<number[]>>;
-  wishlistIds: number[];
-  setWishlistIds: React.Dispatch<React.SetStateAction<number[]>>;
-  collections: LocalCollection[];
-  setCollections: React.Dispatch<React.SetStateAction<LocalCollection[]>>;
-  steamUser: string;
-  setSteamUser: React.Dispatch<React.SetStateAction<string>>;
-  steamApiKey: string;
-  setSteamApiKey: React.Dispatch<React.SetStateAction<string>>;
-  isCheckingAuth: boolean;
-  isAuthOpen: boolean;
-  setIsAuthOpen: (open: boolean) => void;
-  isSettingsOpen: boolean;
-  setIsSettingsOpen: (open: boolean) => void;
-  refreshUserData: () => Promise<void>;
-  handleSyncLocalToSQLite: () => Promise<void>;
-  handleLogout: () => Promise<void>;
-  handleAuthSuccess: (u: UserType) => Promise<void>;
-  upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<void>;
+  readonly currentUser: UserType | null;
+  readonly setCurrentUser: React.Dispatch<React.SetStateAction<UserType | null>>;
+  readonly accountProfile: UserAccountProfile;
+  readonly setAccountProfile: React.Dispatch<React.SetStateAction<UserAccountProfile>>;
+  readonly ownedGames: OwnedGame[];
+  readonly setOwnedGames: React.Dispatch<React.SetStateAction<OwnedGame[]>>;
+  readonly favorites: number[];
+  readonly setFavorites: React.Dispatch<React.SetStateAction<number[]>>;
+  readonly wishlistIds: number[];
+  readonly setWishlistIds: React.Dispatch<React.SetStateAction<number[]>>;
+  readonly collections: LocalCollection[];
+  readonly setCollections: React.Dispatch<React.SetStateAction<LocalCollection[]>>;
+  readonly steamUser: string;
+  readonly setSteamUser: React.Dispatch<React.SetStateAction<string>>;
+  readonly steamApiKey: string;
+  readonly setSteamApiKey: React.Dispatch<React.SetStateAction<string>>;
+  readonly isCheckingAuth: boolean;
+  readonly isAuthOpen: boolean;
+  readonly setIsAuthOpen: (open: boolean) => void;
+  readonly isSettingsOpen: boolean;
+  readonly setIsSettingsOpen: (open: boolean) => void;
+  readonly refreshUserData: () => Promise<void>;
+  readonly handleLogout: () => Promise<void>;
+  readonly handleAuthSuccess: (u: UserType) => Promise<void>;
+  readonly upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<void>;
 }

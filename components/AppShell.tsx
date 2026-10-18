@@ -1,3 +1,4 @@
+// components/AppShell.tsx
 "use client";
 
 import React, { Suspense } from "react";
@@ -6,7 +7,7 @@ import Navbar from "@/components/Navbar";
 import AuthModal from "@/components/AuthModal";
 import SettingsModal from "@/components/SettingsModal";
 
-function AppShellContent({ children }: { children: React.ReactNode }) {
+function AppShellContent({ children }: { readonly children: React.ReactNode }) {
   const {
     currentUser,
     isAuthOpen,
@@ -15,7 +16,6 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
     setIsSettingsOpen,
     handleAuthSuccess,
     handleLogout,
-    handleSyncLocalToSQLite,
     steamUser,
     setSteamUser,
     steamApiKey,
@@ -43,7 +43,6 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
         currentUser={currentUser}
         onAuthSuccess={handleAuthSuccess}
         onLogout={handleLogout}
-        onSyncLocalData={handleSyncLocalToSQLite}
       />
 
       <SettingsModal
@@ -71,7 +70,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
+export default function AppShell({ children }: { readonly children: React.ReactNode }) {
   return (
     <UserDataProvider>
       <AppShellContent>{children}</AppShellContent>

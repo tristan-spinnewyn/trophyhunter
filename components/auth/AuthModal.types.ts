@@ -3,10 +3,9 @@
 import type { User as UserType } from "@/lib/types";
 
 export interface AuthModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  currentUser: UserType | null;
-  onAuthSuccess: (user: UserType) => void;
-  onLogout: () => void;
-  onSyncLocalData?: () => Promise<void>;
+  readonly isOpen: boolean;
+  readonly onClose: () => void;
+  readonly currentUser: UserType | null;
+  readonly onAuthSuccess: (user: UserType) => void;
+  readonly onLogout: () => void;
 }

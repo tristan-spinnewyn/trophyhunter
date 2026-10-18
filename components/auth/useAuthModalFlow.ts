@@ -5,19 +5,17 @@ import { useState } from "react";
 import type { User as UserType } from "@/lib/types";
 
 interface FlowProps {
-  onAuthSuccess: (user: UserType) => void;
-  onLogout: () => void;
-  onClose: () => void;
-  onSyncLocalData?: () => Promise<void>;
+  readonly onAuthSuccess: (user: UserType) => void;
+  readonly onLogout: () => void;
+  readonly onClose: () => void;
 }
 
-export function useAuthModalFlow({ onAuthSuccess, onLogout, onClose, onSyncLocalData }: FlowProps) {
+export function useAuthModalFlow({ onAuthSuccess, onLogout, onClose }: FlowProps) {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
@@ -30,7 +28,9 @@ export function useAuthModalFlow({ onAuthSuccess, onLogout, onClose, onSyncLocal
     try {
       const endpoint = mode === "register" ? "/api/auth/register" : "/api/auth/login";
       const payload: Record<string, string> = { username: username.trim(), password };
-      if (mode === "register" && displayName.trim()) payload.displayName = displayName.trim();
+      if (mode === "register" && displayName.trim()) {
+        payload.displayName = displayName.trim();
+      }
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -41,17 +41,20 @@ export function useAuthModalFlow({ onAuthSuccess, onLogout, onClose, onSyncLocal
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Une erreur est survenue.");
 
-      setSuccessMsg(mode === "register" ? "Compte créé avec succès ! Session active." : "Connexion réussie !");
+      setSuccessMsg(
+        mode === "register"
+          ? "Compte créé avec succès ! Session active."
+          : "Connexion réussie !"
+      );
       onAuthSuccess(data.user);
 
-      if (onSyncLocalData) {
-        setIsSyncing(true);
-        try { await onSyncLocalData(); } catch {} finally { setIsSyncing(false); }
-      }
-
-      setTimeout(() => { onClose(); }, 1000);
-    } catch (err: any) {
-      setErrorMsg(err.message || "Erreur lors de l'opération.");
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Erreur lors de l'opération.";
+      setErrorMsg(message);
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +66,9 @@ export function useAuthModalFlow({ onAuthSuccess, onLogout, onClose, onSyncLocal
       await fetch("/api/auth/logout", { method: "POST" });
       onLogout();
       setSuccessMsg("Déconnexion réussie.");
-      setTimeout(() => { onClose(); }, 600);
+      setTimeout(() => {
+        onClose();
+      }, 600);
     } catch {
       setErrorMsg("Erreur lors de la déconnexion.");
     } finally {
@@ -72,9 +77,20 @@ export function useAuthModalFlow({ onAuthSuccess, onLogout, onClose, onSyncLocal
   };
 
   return {
-    mode, setMode, username, setUsername, password, setPassword,
-    displayName, setDisplayName, isLoading, isSyncing, setIsSyncing,
-    errorMsg, setErrorMsg, successMsg, setSuccessMsg,
-    handleSubmit, handleLogout,
+    mode,
+    setMode,
+    username,
+    setUsername,
+    password,
+    setPassword,
+    displayName,
+    setDisplayName,
+    isLoading,
+    errorMsg,
+    setErrorMsg,
+    successMsg,
+    setSuccessMsg,
+    handleSubmit,
+    handleLogout,
   };
 }

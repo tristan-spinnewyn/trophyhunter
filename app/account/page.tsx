@@ -1,8 +1,10 @@
+// app/account/page.tsx
+
 "use client";
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, User, ShieldCheck } from "lucide-react";
+import { ArrowLeft, User } from "lucide-react";
 import AccountDashboard from "@/components/AccountDashboard";
 import { useUserData } from "@/context/UserDataContext";
 
@@ -25,7 +27,6 @@ export default function AccountPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
         <div className="flex items-center gap-3">
           <Link
@@ -46,16 +47,8 @@ export default function AccountPage() {
             </p>
           </div>
         </div>
-
-        {currentUser && (
-          <div className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-bold text-emerald-300 self-start sm:self-auto">
-            <ShieldCheck className="h-4 w-4 text-emerald-400" />
-            <span>Session SQLite : @{currentUser.username}</span>
-          </div>
-        )}
       </div>
 
-      {/* Main Account Dashboard component */}
       <AccountDashboard
         accountProfile={accountProfile}
         ownedGames={ownedGames}

@@ -37,8 +37,6 @@ export default function HomePage() {
         duplicateCount={c.stats.duplicateGroups.length}
         wishlistCount={c.collectionsState.wishlistIds.length}
         collectionsCount={c.collectionsState.collections.length}
-        currentUser={c.currentUser}
-        onOpenAuthModal={() => c.setIsAuthOpen(true)}
       />
 
       <HomeContextPanels

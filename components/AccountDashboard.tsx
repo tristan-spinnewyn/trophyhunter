@@ -32,8 +32,6 @@ export default function AccountDashboard(props: AccountDashboardControllerParams
         duplicateCount={c.stats.duplicateGroups.length}
         wishlistCount={c.collectionsState.wishlistIds.length}
         collectionsCount={c.collectionsState.collections.length}
-        currentUser={props.currentUser}
-        onOpenAuthModal={props.onOpenAuthModal}
       />
 
       <DashboardActiveTabSection
