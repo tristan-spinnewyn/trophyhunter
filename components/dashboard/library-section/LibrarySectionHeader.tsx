@@ -26,7 +26,7 @@ export function LibrarySectionHeader({
   onAddApiKeyClick,
 }: LibrarySectionHeaderProps) {
   const title =
-    activePlatformTab === "all"
+    activePlatformTab === "all" || activePlatformTab === "gamepass"
       ? `Mes Jeux Possédés (${filteredCount}${
           totalOwnedGamesCount !== filteredCount ? ` / ${totalOwnedGamesCount}` : ""
         })`

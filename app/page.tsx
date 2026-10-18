@@ -43,6 +43,8 @@ export default function HomePage() {
 
       <HomeContextPanels
         activePlatformTab={c.activePlatformTab}
+        ownedGames={c.ownedGames}
+        wishlistIds={c.collectionsState.wishlistIds}
         collections={c.collectionsState.collections}
         selectedCollId={c.collectionsState.selectedCollId}
         setSelectedCollId={c.collectionsState.setSelectedCollId}
@@ -55,6 +57,8 @@ export default function HomePage() {
         handleCreateCollection={c.collectionsState.handleCreateCollection}
         handleDeleteCollection={c.collectionsState.handleDeleteCollection}
         duplicateGroups={c.stats.duplicateGroups}
+        onAddGamePassToXbox={c.handleAddGamePassToXbox}
+        onToggleWishlist={c.collectionsState.handleToggleWishlist}
         onBackToAll={() => c.handleSelectTab("all")}
       />
 

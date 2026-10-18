@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
+import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
+import { addGamePassItemToXboxLibrary } from "@/components/dashboard/gamepass/gamepassLibraryAction.services";
 import { usePlatformInputs } from "./usePlatformInputs";
 import { useDashboardCollections } from "./useDashboardCollections";
 import { usePlatformSync } from "./usePlatformSync";
@@ -59,14 +61,26 @@ export function useAccountDashboardController(params: AccountDashboardController
   const handleSelectTab = (tab: DashboardTabType) => {
     setActivePlatformTab(tab);
     libraryFilters.setLibPlatformFilter(
-      tab === "all" || tab === "duplicates" || tab === "wishlist" || tab === "collections" ? "all" : tab
+      tab === "all" || tab === "duplicates" || tab === "wishlist" || tab === "collections" || tab === "gamepass"
+        ? "all"
+        : tab
     );
+  };
+
+  const handleAddGamePassToXbox = async (item: GamePassCatalogItem) => {
+    await addGamePassItemToXboxLibrary({
+      item,
+      ownedGames,
+      onOwnedGamesChange,
+      persistGamesToSQLite: platformSync.persistGamesToSQLite,
+      setBannerMsg,
+    });
   };
 
   const displayName = steamAccount?.displayName || steamAccount?.username || "Joueur Steam";
 
   return {
-    bannerMsg, setBannerMsg, activePlatformTab, handleSelectTab, displayName, steamAccount,
-    platformInputs, collectionsState, platformSync, addGameFlow, bulkImport, stats, libraryFilters,
+    bannerMsg, setBannerMsg, activePlatformTab, handleSelectTab, handleAddGamePassToXbox, displayName,
+    steamAccount, platformInputs, collectionsState, platformSync, addGameFlow, bulkImport, stats, libraryFilters,
   };
 }

@@ -1,11 +1,14 @@
 // components/dashboard/DashboardActiveTabSection.tsx
 
 import ActiveTabPanel from "./ActiveTabPanel";
-import type { AccountDashboardControllerParams } from "./hooks/useAccountDashboardController";
+import type {
+  useAccountDashboardController,
+  AccountDashboardControllerParams,
+} from "./hooks/useAccountDashboardController";
 
 interface DashboardActiveTabSectionProps {
-  controller: any;
-  props: AccountDashboardControllerParams;
+  readonly controller: ReturnType<typeof useAccountDashboardController>;
+  readonly props: AccountDashboardControllerParams;
 }
 
 export function DashboardActiveTabSection({
@@ -19,6 +22,8 @@ export function DashboardActiveTabSection({
       activePlatformTab={c.activePlatformTab}
       globalStats={stats.globalStats}
       accountProfile={props.accountProfile}
+      ownedGames={props.ownedGames}
+      wishlistIds={cs.wishlistIds}
       platformCounts={stats.platformCounts}
       duplicateGroups={stats.duplicateGroups}
       epicCounts={stats.epicCounts}
@@ -28,6 +33,8 @@ export function DashboardActiveTabSection({
       openEditPlatform={ps.openEditPlatform}
       handleDisconnectPlatform={ps.handleDisconnectPlatform}
       onSelectGame={props.onSelectGame}
+      onAddGamePassToXbox={c.handleAddGamePassToXbox}
+      onToggleWishlist={cs.handleToggleWishlist}
       collections={cs.collections}
       selectedCollId={cs.selectedCollId}
       setSelectedCollId={cs.setSelectedCollId}
