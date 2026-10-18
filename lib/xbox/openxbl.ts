@@ -1,7 +1,7 @@
 // lib/xbox/openxbl.ts
 
 import type { OwnedGame } from "@/lib/types";
-import type { OpenXblPerson, OpenXblProfile, OpenXblTitle } from "./types";
+import type { OpenXblAchievementItem, OpenXblPerson, OpenXblProfile, OpenXblTitle } from "./types";
 
 export function unwrapOpenXblPayload<T>(raw: unknown): T {
   if (raw && typeof raw === "object" && "content" in raw) {
@@ -20,6 +20,10 @@ export function hashCode(str: string): number {
     hash |= 0;
   }
   return hash;
+}
+
+export function isXboxAchievementUnlocked(item: OpenXblAchievementItem): boolean {
+  return Boolean(item.isUnlocked || item.progressState === "Achieved");
 }
 
 export function parseOpenXblProfile(
@@ -66,27 +70,34 @@ export function parseOpenXblTitles(titles: readonly OpenXblTitle[], nowIso: stri
     if (title.type && title.type.toLowerCase() !== "game") continue;
 
     const achList = Array.isArray(title.achievements) ? title.achievements : null;
-    const currentAch =
-      title.achievement?.currentAchievements ??
-      (achList ? achList.filter((a) => a.isUnlocked || a.progressState === "Achieved").length : 0);
-    const rawTotalAch = title.achievement?.totalAchievements ?? (achList ? achList.length : 0);
+    const unlockedFromList = achList ? achList.filter(isXboxAchievementUnlocked).length : 0;
+    const hasLockedInList = achList ? achList.some((a) => !isXboxAchievementUnlocked(a)) : false;
+
+    const currentAch = title.achievement?.currentAchievements ?? unlockedFromList;
+    const rawTotalAch =
+      title.achievement?.totalAchievements ||
+      (achList && hasLockedInList ? achList.length : 0);
     const pct = title.achievement?.progressPercentage ?? 0;
     const curGs = title.achievement?.currentGamerscore ?? title.currentGamerscore ?? 0;
     const maxGs = title.achievement?.totalGamerscore ?? title.maxGamerscore ?? 0;
 
+    const isCompletedByGsOrPct =
+      pct >= 100 || (maxGs > 0 && curGs >= maxGs) || (rawTotalAch > 0 && currentAch >= rawTotalAch);
+
     let totalAch = rawTotalAch;
     if (totalAch === 0 && currentAch > 0) {
-      totalAch = pct > 0 ? Math.max(currentAch, Math.round((currentAch * 100) / pct)) : currentAch;
+      if (isCompletedByGsOrPct) {
+        totalAch = currentAch;
+      } else if (pct > 0 && pct < 100) {
+        totalAch = Math.max(currentAch + 1, Math.round((currentAch * 100) / pct));
+      } else if (maxGs > 0 && curGs > 0 && curGs < maxGs) {
+        totalAch = Math.max(currentAch + 1, Math.round((currentAch * maxGs) / curGs));
+      }
     }
 
     totalAchievements += currentAch;
     titlesGamerScore += curGs;
-
-    const isCompleted =
-      (totalAch > 0 && currentAch >= totalAch) ||
-      pct >= 100 ||
-      (maxGs > 0 && curGs >= maxGs);
-    if (isCompleted) completedGames++;
+    if (isCompletedByGsOrPct) completedGames++;
 
     const idStr = String(title.titleId);
     const rawId = parseInt(idStr, 10) || Math.abs(hashCode(idStr));

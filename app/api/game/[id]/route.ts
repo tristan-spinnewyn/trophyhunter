@@ -1,9 +1,11 @@
 // app/api/game/[id]/route.ts
+
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getSteamGameDetails } from "@/lib/steam/game-details";
 import { getEpicAchievementsForUser } from "@/lib/epic/game-details";
 import { getGogAchievementsForUser } from "@/lib/gog/service";
+import { getXboxAchievementsForUser } from "@/lib/xbox/game-details";
 
 export async function GET(
   request: Request,
@@ -32,13 +34,14 @@ export async function GET(
     const numericAppId = parseInt(appId, 10);
     const isEpic = platform === "epic" && !!authUser;
     const isGog = platform === "gog" && !!authUser;
+    const isXbox = platform === "xbox";
 
     const [gameDetails, epicAchievements, gogAchievements] = await Promise.all([
       getSteamGameDetails({
         appId,
         nameParam,
         fastMode,
-        authUserId: isEpic || isGog ? undefined : authUser?.id,
+        authUserId: isEpic || isGog || isXbox ? undefined : authUser?.id,
       }),
       isEpic
         ? getEpicAchievementsForUser(authUser!.id, numericAppId, nameParam || "")
@@ -47,6 +50,23 @@ export async function GET(
         ? getGogAchievementsForUser(authUser!.id, numericAppId)
         : Promise.resolve(null),
     ]);
+
+    if (isXbox) {
+      const xboxResult = await getXboxAchievementsForUser(
+        authUser?.id,
+        numericAppId,
+        gameDetails.achievements
+      );
+      if (xboxResult && xboxResult.achievements.length > 0) {
+        return NextResponse.json({
+          ...gameDetails,
+          achievements: xboxResult.achievements,
+          totalAchievements: xboxResult.achievements.length,
+          unlockedIds: xboxResult.unlockedIds,
+          achievementsSource: "xbox",
+        });
+      }
+    }
 
     if (epicAchievements && epicAchievements.length > 0) {
       return NextResponse.json({

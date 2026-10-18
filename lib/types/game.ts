@@ -1,4 +1,5 @@
 // lib/types/game.ts
+
 export interface GameSearchResult {
   id: number;
   name: string;
@@ -26,6 +27,8 @@ export interface GameDetails {
   publishers?: string[];
   totalAchievements: number;
   achievements: Achievement[];
+  unlockedIds?: string[];
+  achievementsSource?: string;
   guideLinks: {
     steamGuidesUrl: string;
     psthcUrl: string;
@@ -33,9 +36,9 @@ export interface GameDetails {
   };
 }
 
-export type FilterStatus = 'all' | 'locked' | 'unlocked' | 'missable' | 'hidden';
+export type FilterStatus = "all" | "locked" | "unlocked" | "missable" | "hidden";
 
-export type SortOrder = 'default' | 'rarity-asc' | 'rarity-desc' | 'name-asc';
+export type SortOrder = "default" | "rarity-asc" | "rarity-desc" | "name-asc";
 
 export interface UserGameProgress {
   unlockedIds: string[];
@@ -53,7 +56,7 @@ export interface OwnedGame {
   playtimeHours?: number;
   lastPlayed?: string;
   addedAt: string;
-  source?: 'steam-auto' | 'steam-import' | 'manual';
+  source?: "steam-auto" | "steam-import" | "manual";
 }
 
 export interface DuplicateGameGroup {

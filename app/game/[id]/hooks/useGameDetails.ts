@@ -47,7 +47,10 @@ export function useGameDetails({
         if (isCancelled) return;
         setGame(data);
 
-        if ((activePlatform === "epic" || activePlatform === "gog") && currentUser) {
+        if (Array.isArray(data.unlockedIds) && data.unlockedIds.length > currentProgress.unlockedIds.length) {
+          currentProgress = { unlockedIds: data.unlockedIds, notes: currentProgress.notes };
+          setProgress(currentProgress);
+        } else if ((activePlatform === "epic" || activePlatform === "gog" || activePlatform === "xbox") && currentUser) {
           const refreshedProgress = await fetchRemoteUserProgress(appId, activePlatform);
           if (!isCancelled && refreshedProgress && refreshedProgress.unlockedIds.length >= currentProgress.unlockedIds.length) {
             currentProgress = refreshedProgress;

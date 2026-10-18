@@ -48,19 +48,19 @@ describe("lib/xbox/openxbl", () => {
     });
   });
 
-  it("parses titles, estimates totalAchievements from progressPercentage, and filters non-games", () => {
+  it("estimates totalAchievements from pct or gamerscore and never marks partial games as 1/1", () => {
     const titles = [
       {
         titleId: "1144039928",
-        name: "Halo: The Master Chief Collection",
+        name: "Starfield",
         type: "Game",
-        displayImage: "http://store-images.s-microsoft.com/image/halo.jpg",
+        displayImage: "http://store-images.s-microsoft.com/image/starfield.jpg",
         achievement: {
-          currentAchievements: 17,
+          currentAchievements: 1,
           totalAchievements: 0,
-          currentGamerscore: 200,
+          currentGamerscore: 10,
           totalGamerscore: 1000,
-          progressPercentage: 17,
+          progressPercentage: 0,
         },
       },
       {
@@ -82,12 +82,13 @@ describe("lib/xbox/openxbl", () => {
 
     const res = parseOpenXblTitles(titles, "2026-10-18T00:00:00.000Z");
     expect(res.discoveredGames).toHaveLength(2);
-    expect(res.discoveredGames[0].headerImg).toBe("https://store-images.s-microsoft.com/image/halo.jpg");
+    expect(res.discoveredGames[0].headerImg).toBe("https://store-images.s-microsoft.com/image/starfield.jpg");
     expect(res.discoveredGames[0].totalAchievements).toBe(100);
-    expect(res.discoveredGames[0].unlockedCount).toBe(17);
+    expect(res.discoveredGames[0].unlockedCount).toBe(1);
     expect(res.discoveredGames[1].appId).toBe(Math.abs(hashCode("abc-id")));
+    expect(res.discoveredGames[1].totalAchievements).toBe(2);
     expect(res.completedGames).toBe(1);
-    expect(res.totalAchievements).toBe(19);
-    expect(res.titlesGamerScore).toBe(1200);
+    expect(res.totalAchievements).toBe(3);
+    expect(res.titlesGamerScore).toBe(1010);
   });
 });
