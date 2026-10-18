@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getSteamGameDetails } from "@/lib/steam/game-details";
 import { getEpicAchievementsForUser } from "@/lib/epic/game-details";
+import { getGogAchievementsForUser } from "@/lib/gog/service";
 
 export async function GET(
   request: Request,
@@ -24,19 +25,26 @@ export async function GET(
     let authUser = null;
     try {
       authUser = await getAuthenticatedUser();
-    } catch {}
+    } catch (authErr: unknown) {
+      if (authErr instanceof Error) authUser = null;
+    }
 
+    const numericAppId = parseInt(appId, 10);
     const isEpic = platform === "epic" && !!authUser;
+    const isGog = platform === "gog" && !!authUser;
 
-    const [gameDetails, epicAchievements] = await Promise.all([
+    const [gameDetails, epicAchievements, gogAchievements] = await Promise.all([
       getSteamGameDetails({
         appId,
         nameParam,
         fastMode,
-        authUserId: isEpic ? undefined : authUser?.id,
+        authUserId: isEpic || isGog ? undefined : authUser?.id,
       }),
       isEpic
-        ? getEpicAchievementsForUser(authUser!.id, parseInt(appId, 10), nameParam || "")
+        ? getEpicAchievementsForUser(authUser!.id, numericAppId, nameParam || "")
+        : Promise.resolve(null),
+      isGog
+        ? getGogAchievementsForUser(authUser!.id, numericAppId)
         : Promise.resolve(null),
     ]);
 
@@ -46,6 +54,15 @@ export async function GET(
         achievements: epicAchievements,
         totalAchievements: epicAchievements.length,
         achievementsSource: "epic",
+      });
+    }
+
+    if (gogAchievements && gogAchievements.length > 0) {
+      return NextResponse.json({
+        ...gameDetails,
+        achievements: gogAchievements,
+        totalAchievements: gogAchievements.length,
+        achievementsSource: "gog",
       });
     }
 
@@ -59,4 +76,3 @@ export async function GET(
     );
   }
 }
-

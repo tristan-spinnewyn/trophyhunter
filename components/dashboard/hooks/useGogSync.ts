@@ -1,21 +1,22 @@
+// components/dashboard/hooks/useGogSync.ts
 import { useState } from "react";
 import type { OwnedGame, PlatformAccount } from "@/lib/types";
 import { mergeGamesList } from "@/components/dashboard/utils";
 
 interface UseGogSyncProps {
-  ownedGames: OwnedGame[];
-  onOwnedGamesChange: (games: OwnedGame[]) => void;
-  setBannerMsg: (
+  readonly ownedGames: OwnedGame[];
+  readonly onOwnedGamesChange: (games: OwnedGame[]) => void;
+  readonly setBannerMsg: (
     msg: { type: "success" | "error"; text: string } | null
   ) => void;
-  gogInput: string;
-  gogToken: string;
-  updateAccountProfileInMemory: (account: PlatformAccount) => void;
-  persistAccountToSQLite: (
+  readonly gogInput: string;
+  readonly gogToken: string;
+  readonly updateAccountProfileInMemory: (account: PlatformAccount) => void;
+  readonly persistAccountToSQLite: (
     account: PlatformAccount,
     plainApiKey?: string
   ) => Promise<void>;
-  persistGamesToSQLite: (games: OwnedGame[]) => Promise<void>;
+  readonly persistGamesToSQLite: (games: OwnedGame[]) => Promise<void>;
 }
 
 export function useGogSync({
@@ -30,7 +31,7 @@ export function useGogSync({
 }: UseGogSyncProps) {
   const [isSyncingGOG, setIsSyncingGOG] = useState(false);
 
-  const handleConnectAndSyncGOG = async (overrideUser?: string | unknown) => {
+  const handleConnectAndSyncGOG = async (overrideUser?: string) => {
     const rawTarget = typeof overrideUser === "string" ? overrideUser : gogInput;
     const targetUser = (rawTarget || "").trim();
     if (!targetUser) return;
@@ -43,8 +44,13 @@ export function useGogSync({
       const res = await fetch(
         `/api/profile/gog?user=${encodeURIComponent(targetUser)}${tokenParam}`
       );
-      const data = await res.json();
-      if (!res.ok || !data.success) {
+      const data = (await res.json()) as {
+        readonly success?: boolean;
+        readonly error?: string;
+        readonly account?: PlatformAccount;
+        readonly discoveredGames?: OwnedGame[];
+      };
+      if (!res.ok || !data.success || !data.account) {
         throw new Error(data.error || "Impossible de joindre GOG.");
       }
       updateAccountProfileInMemory(data.account);
@@ -64,10 +70,12 @@ export function useGogSync({
         type: "success",
         text: `Compte GOG "${data.account.displayName}" connecté (${data.discoveredGames?.length || 0} jeux synchronisés) !`,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Erreur de connexion GOG.";
       setBannerMsg({
         type: "error",
-        text: err.message || "Erreur de connexion GOG.",
+        text: message,
       });
     } finally {
       setIsSyncingGOG(false);

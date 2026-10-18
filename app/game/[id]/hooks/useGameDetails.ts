@@ -47,8 +47,8 @@ export function useGameDetails({
         if (isCancelled) return;
         setGame(data);
 
-        if (activePlatform === "epic" && currentUser) {
-          const refreshedProgress = await fetchRemoteUserProgress(appId, "epic");
+        if ((activePlatform === "epic" || activePlatform === "gog") && currentUser) {
+          const refreshedProgress = await fetchRemoteUserProgress(appId, activePlatform);
           if (!isCancelled && refreshedProgress && refreshedProgress.unlockedIds.length >= currentProgress.unlockedIds.length) {
             currentProgress = refreshedProgress;
             setProgress(refreshedProgress);
@@ -94,4 +94,3 @@ export function useGameDetails({
 
   return { game, setGame, progress, setProgress, isLoading, error, isSyncing, setIsSyncing, syncNotice, setSyncNotice };
 }
-

@@ -1,38 +1,22 @@
 // lib/gog/service.ts
-
 import type { OwnedGame, PlatformAccount } from "@/lib/types";
+import { GogSyncError, type GogSyncResult } from "./gog.types";
+import { parseGogUsername } from "./identifier.services";
+import { parseGogProfileHtml } from "./parser.services";
+import { fetchGogPublicGames } from "./games.services";
+import { fetchGogTokenGames, getGogAchievementsForUser } from "./game-details.services";
 
-export interface GogSyncResult {
-  account: PlatformAccount;
-  discoveredGames: OwnedGame[];
-}
-
-export function parseGogProfileHtml(html: string): { avatarUrl: string; gamesOwned: number } {
-  let avatarUrl = "";
-  let gamesOwned = 0;
-
-  const avatarMatch =
-    html.match(/class="user-avatar[^"]*"[^>]*src="([^"]+)"/i) ||
-    html.match(/class="avatar"[^>]*src="([^"]+)"/i);
-  if (avatarMatch) {
-    avatarUrl = avatarMatch[1].startsWith("//") ? `https:${avatarMatch[1]}` : avatarMatch[1];
-  }
-
-  const gamesMatch = html.match(/class="user-stats__item-count">\s*(\d+)/);
-  if (gamesMatch) {
-    gamesOwned = parseInt(gamesMatch[1], 10) || 0;
-  }
-
-  return { avatarUrl, gamesOwned };
-}
+export { GogSyncError, parseGogProfileHtml, parseGogUsername, getGogAchievementsForUser };
+export type { GogSyncResult };
 
 export async function fetchGogProfile(
   rawUser: string,
   token?: string,
   nowIso = new Date().toISOString()
 ): Promise<GogSyncResult> {
-  const baseUrl = `https://www.gog.com/u/${encodeURIComponent(rawUser)}`;
-  const headers = {
+  const username = parseGogUsername(rawUser);
+  const baseUrl = `https://www.gog.com/u/${encodeURIComponent(username)}`;
+  const headers: Record<string, string> = {
     "User-Agent":
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
@@ -40,58 +24,62 @@ export async function fetchGogProfile(
   };
 
   const profileRes = await fetch(baseUrl, { headers, next: { revalidate: 120 } });
-  let avatarUrl = "";
-  let gamesOwned = 0;
+  if (!profileRes.ok) {
+    throw new GogSyncError(
+      profileRes.status === 404
+        ? `Profil GOG "${username}" introuvable ou privé.`
+        : `Erreur GOG HTTP ${profileRes.status}.`,
+      profileRes.status === 404 ? 404 : 502
+    );
+  }
+
+  const html = await profileRes.text();
+  const parsed = parseGogProfileHtml(html, username);
+  const displayUsername = parsed.username || username;
+
   const discoveredGames: OwnedGame[] = [];
+  let gameProgress: Record<number, readonly string[]> = {};
+  let completedGamesCount = 0;
 
-  if (profileRes.ok) {
-    const html = await profileRes.text();
-    const parsed = parseGogProfileHtml(html);
-    avatarUrl = parsed.avatarUrl;
-    gamesOwned = parsed.gamesOwned;
+  if (parsed.userId || parsed.recentGames.length > 0 || !token) {
+    const publicGamesResult = await fetchGogPublicGames(
+      displayUsername,
+      parsed.userId,
+      headers,
+      nowIso,
+      parsed.recentGames
+    );
+    discoveredGames.push(...publicGamesResult.games);
+    gameProgress = publicGamesResult.gameProgress;
+    completedGamesCount = publicGamesResult.completedGamesCount;
   }
 
-  if (token) {
-    try {
-      const libraryRes = await fetch("https://embed.gog.com/user/data/games", {
-        headers,
-        next: { revalidate: 300 },
-      });
-      if (libraryRes.ok) {
-        const data = await libraryRes.json();
-        const ownedIds: number[] = Array.isArray(data?.owned) ? data.owned : [];
-        gamesOwned = Math.max(gamesOwned, ownedIds.length);
-
-        for (const id of ownedIds.slice(0, 50)) {
-          discoveredGames.push({
-            appId: id,
-            name: `Jeu GOG #${id}`,
-            headerImg: `https://images.gog-statics.com/products/${id}/header.jpg`,
-            platform: "gog",
-            totalAchievements: 0,
-            unlockedCount: 0,
-            addedAt: nowIso,
-            source: "manual",
-          });
-        }
-      }
-    } catch {}
+  if (token && discoveredGames.length === 0) {
+    const tokenGames = await fetchGogTokenGames(headers, nowIso);
+    discoveredGames.push(...tokenGames);
   }
+
+  const totalUnlockedSum = Object.values(gameProgress).reduce(
+    (acc, ids) => acc + ids.length,
+    0
+  );
 
   const account: PlatformAccount = {
     platform: "gog",
-    username: rawUser,
-    displayName: rawUser,
-    avatarUrl: avatarUrl || undefined,
-    profileUrl: baseUrl,
+    username: displayUsername,
+    displayName: displayUsername,
+    avatarUrl: parsed.avatarUrl || undefined,
+    profileUrl: `https://www.gog.com/u/${encodeURIComponent(displayUsername)}`,
+    memberSince: parsed.memberSince,
     connectedAt: nowIso,
     lastSyncedAt: nowIso,
     stats: {
-      gamesOwned: Math.max(gamesOwned, discoveredGames.length),
-      totalAchievements: 0,
-      completedGames: 0,
+      gamesOwned: Math.max(parsed.gamesOwned, discoveredGames.length),
+      totalAchievements: Math.max(parsed.totalAchievements, totalUnlockedSum),
+      completedGames: completedGamesCount,
+      hoursPlayed: parsed.hoursPlayed || undefined,
     },
   };
 
-  return { account, discoveredGames };
+  return { account, discoveredGames, gameProgress };
 }
