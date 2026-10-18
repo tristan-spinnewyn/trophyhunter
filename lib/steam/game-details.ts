@@ -7,6 +7,7 @@ import {
   cleanTitleForSearch,
   normalizeForComparison,
   findBestSteamMatch,
+  buildPsthcGuideUrl,
 } from "./game-details-utils";
 import {
   fetchSteamAchievementsByAppId,
@@ -16,11 +17,8 @@ import {
 import { parseAchievementsResult } from "./game-details-parser";
 
 export {
-  MISSABLE_KEYWORDS,
-  isLikelyMissable,
-  cleanTitleForSearch,
-  normalizeForComparison,
-  findBestSteamMatch,
+  MISSABLE_KEYWORDS, isLikelyMissable, cleanTitleForSearch,
+  normalizeForComparison, findBestSteamMatch, buildPsthcGuideUrl,
   fetchSteamAchievementsByAppId,
 };
 
@@ -92,7 +90,7 @@ export async function getSteamGameDetails({
     achievements,
     guideLinks: {
       steamGuidesUrl: effectiveAppId ? `https://steamcommunity.com/app/${effectiveAppId}/guides/?requiredtags[]=Achievements` : "",
-      psthcUrl: `https://www.psthc.fr/recherche.html?q=${encodeURIComponent(cleanName)}`,
+      psthcUrl: buildPsthcGuideUrl(cleanName),
       youtubeUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanName + " succes trophée fr")}`,
     },
   };
