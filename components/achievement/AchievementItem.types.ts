@@ -7,9 +7,11 @@ export interface AchievementItemProps {
   gameName: string;
   gameId: number;
   isUnlocked: boolean;
+  isPinned?: boolean;
   notes: string;
   revealSecret: boolean;
   onToggleUnlocked: () => void;
+  onTogglePinned?: () => void;
   onSaveNotes: (notes: string) => void;
 }
 

@@ -3,6 +3,7 @@
 
 import AchievementItem from "@/components/AchievementItem";
 import type { Achievement, GameDetails, UserGameProgress } from "@/lib/types";
+import { isAchievementPinned } from "@/lib/hunting/pinned-targets.services";
 
 interface ListSectionProps {
   readonly displayedAchievements: Achievement[];
@@ -10,6 +11,7 @@ interface ListSectionProps {
   readonly progress: UserGameProgress;
   readonly revealSecrets: boolean;
   readonly onToggleAchievement: (id: string) => void;
+  readonly onTogglePinAchievement?: (id: string) => void;
   readonly onSaveNotes: (id: string, notes: string) => void;
   readonly onResetFilters: () => void;
 }
@@ -20,6 +22,7 @@ export function AchievementsListSection({
   progress,
   revealSecrets,
   onToggleAchievement,
+  onTogglePinAchievement,
   onSaveNotes,
   onResetFilters,
 }: ListSectionProps) {
@@ -56,9 +59,13 @@ export function AchievementsListSection({
           gameName={game.name}
           gameId={game.id}
           isUnlocked={progress.unlockedIds.includes(ach.id)}
+          isPinned={isAchievementPinned(progress.pinnedIds, ach.id)}
           notes={progress.notes[ach.id] || ""}
           revealSecret={revealSecrets}
           onToggleUnlocked={() => onToggleAchievement(ach.id)}
+          onTogglePinned={
+            onTogglePinAchievement ? () => onTogglePinAchievement(ach.id) : undefined
+          }
           onSaveNotes={(noteText) => onSaveNotes(ach.id, noteText)}
         />
       ))}

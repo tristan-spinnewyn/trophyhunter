@@ -1,13 +1,14 @@
 // components/achievement/AchievementItemHeader.tsx
 "use client";
 
-import { Check, AlertTriangle, Eye, Edit3 } from "lucide-react";
+import { Check, AlertTriangle, Eye, Edit3, Target } from "lucide-react";
 import type { Achievement } from "@/lib/types";
 import type { RarityBadge } from "./AchievementItem.types";
 
 interface HeaderProps {
   achievement: Achievement;
   isUnlocked: boolean;
+  isPinned?: boolean;
   notes: string;
   rarity: RarityBadge;
   descriptionText: string;
@@ -18,6 +19,7 @@ interface HeaderProps {
 export function AchievementItemHeader({
   achievement,
   isUnlocked,
+  isPinned,
   notes,
   rarity,
   descriptionText,
@@ -62,6 +64,11 @@ export function AchievementItemHeader({
           <span className={`rounded-md border px-1.5 py-0.2 text-[10px] font-semibold ${rarity.classes}`}>
             {achievement.percent}% • {rarity.label}
           </span>
+          {isPinned && (
+            <span className="flex items-center gap-1 rounded-md border border-amber-500/50 bg-amber-500/15 px-1.5 py-0.2 text-[10px] font-bold text-amber-300">
+              <Target className="h-2.5 w-2.5" /> Cible
+            </span>
+          )}
           {achievement.missable && (
             <span className="flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.2 text-[10px] font-semibold text-amber-300">
               <AlertTriangle className="h-2.5 w-2.5" /> Manquable

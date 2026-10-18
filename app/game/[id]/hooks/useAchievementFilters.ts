@@ -1,3 +1,4 @@
+// app/game/[id]/hooks/useAchievementFilters.ts
 "use client";
 
 import { useState, useMemo } from "react";
@@ -7,6 +8,7 @@ import type {
   SortOrder,
   UserGameProgress,
 } from "@/lib/types";
+import { isAchievementPinned } from "@/lib/hunting/pinned-targets.services";
 
 export function useAchievementFilters(
   achievements: Achievement[] | undefined,
@@ -26,6 +28,9 @@ export function useAchievementFilters(
         if (filter === "locked" && isUnlocked) return false;
         if (filter === "missable" && !ach.missable) return false;
         if (filter === "hidden" && !ach.hidden) return false;
+        if (filter === "pinned" && !isAchievementPinned(progress.pinnedIds, ach.id)) {
+          return false;
+        }
 
         if (search.trim()) {
           const q = search.toLowerCase();
@@ -48,18 +53,22 @@ export function useAchievementFilters(
 
   const counts = useMemo(() => {
     if (!achievements) {
-      return { all: 0, locked: 0, unlocked: 0, missable: 0, hidden: 0 };
+      return { all: 0, locked: 0, unlocked: 0, missable: 0, hidden: 0, pinned: 0 };
     }
     const all = achievements.length;
     const unlocked = progress.unlockedIds.length;
     const missable = achievements.filter((a) => a.missable).length;
     const hidden = achievements.filter((a) => a.hidden).length;
+    const pinned = achievements.filter((a) =>
+      isAchievementPinned(progress.pinnedIds, a.id)
+    ).length;
     return {
       all,
       unlocked,
       locked: Math.max(0, all - unlocked),
       missable,
       hidden,
+      pinned,
     };
   }, [achievements, progress]);
 

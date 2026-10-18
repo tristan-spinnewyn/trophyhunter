@@ -68,7 +68,7 @@ describe("User Progress API", () => {
     expect(deleteRes.status).toBe(401);
   });
 
-  it("saves, retrieves and resets game progress", async () => {
+  it("saves, retrieves and resets game progress with pinnedIds and huntingMeta", async () => {
     const postRes = await postProgressHandler(
       new Request("http://localhost/api/user/progress", {
         method: "POST",
@@ -76,7 +76,12 @@ describe("User Progress API", () => {
         body: JSON.stringify({
           appId: 100,
           platform: "steam",
-          progress: { unlockedIds: ["ach_1", "ach_2"], notes: { ach_1: "Important guide note" } },
+          progress: {
+            unlockedIds: ["ach_1", "ach_2"],
+            notes: { ach_1: "Important guide note" },
+            pinnedIds: ["ach_3"],
+            huntingMeta: { difficultyRating: 7, estimatedHours: 35, warningType: "online-required" },
+          },
         }),
       })
     );
@@ -86,6 +91,8 @@ describe("User Progress API", () => {
     expect(getRes.status).toBe(200);
     const getData = await getRes.json();
     expect(getData.progress.unlockedIds).toEqual(["ach_1", "ach_2"]);
+    expect(getData.progress.pinnedIds).toEqual(["ach_3"]);
+    expect(getData.progress.huntingMeta.difficultyRating).toBe(7);
 
     const deleteRes = await deleteProgressHandler(new Request("http://localhost/api/user/progress?appId=100&platform=steam", { method: "DELETE" }));
     expect(deleteRes.status).toBe(200);

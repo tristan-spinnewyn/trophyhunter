@@ -21,6 +21,7 @@ interface FilterToolbarProps {
     unlocked: number;
     missable: number;
     hidden: number;
+    pinned?: number;
   };
 }
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import GameHeader from "@/components/GameHeader";
 import FilterToolbar from "@/components/FilterToolbar";
 import EpicAuthModal from "@/components/EpicAuthModal";
+import { ActiveHuntPanel } from "@/components/hunting/ActiveHuntPanel";
 import { useGameClientController } from "./hooks/useGameClientController";
 import { GameClientLoading } from "./components/GameClientLoading";
 import { GameClientError } from "./components/GameClientError";
@@ -18,8 +19,7 @@ export default function GameClientPage({ id }: { id: string }) {
   if (c.isLoading) return <GameClientLoading />;
   if (c.error || !c.game) return <GameClientError error={c.error} />;
 
-  const hasAchievements =
-    c.game.totalAchievements > 0 || c.game.achievements.length > 0;
+  const hasAchievements = c.game.totalAchievements > 0 || c.game.achievements.length > 0;
 
   return (
     <div className="space-y-6">
@@ -31,6 +31,8 @@ export default function GameClientPage({ id }: { id: string }) {
         onToggleOwned={c.handleToggleOwned}
         gameStatus={c.owned?.status}
         onChangeGameStatus={c.handleChangeGameStatus}
+        huntingMeta={hasAchievements ? c.huntingMeta : undefined}
+        onSaveHuntingOverride={c.handleSaveHuntingOverride}
         onBackToLibrary={() => router.push("/")}
       />
 
@@ -50,17 +52,28 @@ export default function GameClientPage({ id }: { id: string }) {
 
         <div className="lg:col-span-8 space-y-4">
           {hasAchievements && (
-            <FilterToolbar
-              filter={c.filter}
-              onFilterChange={c.setFilter}
-              search={c.search}
-              onSearchChange={c.setSearch}
-              sort={c.sort}
-              onSortChange={c.setSort}
-              revealSecrets={c.revealSecrets}
-              onToggleRevealSecrets={() => c.setRevealSecrets(!c.revealSecrets)}
-              counts={c.counts}
-            />
+            <>
+              <ActiveHuntPanel
+                pinnedAchievements={c.pinnedAchievements}
+                unlockedIds={c.progress.unlockedIds}
+                notes={c.progress.notes}
+                onToggleUnlocked={c.handleToggleAchievement}
+                onUnpin={c.handleTogglePinAchievement}
+                onClearUnlocked={c.handleClearUnlockedPins}
+                onClearAll={c.handleClearAllPins}
+              />
+              <FilterToolbar
+                filter={c.filter}
+                onFilterChange={c.setFilter}
+                search={c.search}
+                onSearchChange={c.setSearch}
+                sort={c.sort}
+                onSortChange={c.setSort}
+                revealSecrets={c.revealSecrets}
+                onToggleRevealSecrets={() => c.setRevealSecrets(!c.revealSecrets)}
+                counts={c.counts}
+              />
+            </>
           )}
 
           <AchievementsListSection
@@ -69,6 +82,7 @@ export default function GameClientPage({ id }: { id: string }) {
             progress={c.progress}
             revealSecrets={c.revealSecrets}
             onToggleAchievement={c.handleToggleAchievement}
+            onTogglePinAchievement={c.handleTogglePinAchievement}
             onSaveNotes={c.handleSaveNotes}
             onResetFilters={() => { c.setFilter("all"); c.setSearch(""); }}
           />

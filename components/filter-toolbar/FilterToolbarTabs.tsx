@@ -1,6 +1,7 @@
 // components/filter-toolbar/FilterToolbarTabs.tsx
 
-import { AlertTriangle, Eye } from "lucide-react";
+import type { ComponentType } from "react";
+import { AlertTriangle, Eye, Target } from "lucide-react";
 import type { FilterStatus } from "@/lib/types";
 
 interface FilterToolbarTabsProps {
@@ -12,6 +13,7 @@ interface FilterToolbarTabsProps {
     unlocked: number;
     missable: number;
     hidden: number;
+    pinned?: number;
   };
 }
 
@@ -20,10 +22,17 @@ export function FilterToolbarTabs({
   onFilterChange,
   counts,
 }: FilterToolbarTabsProps) {
-  const tabs: { id: FilterStatus; label: string; count: number; icon?: any; color?: string }[] = [
+  const tabs: {
+    id: FilterStatus;
+    label: string;
+    count: number;
+    icon?: ComponentType<{ className?: string }>;
+    color?: string;
+  }[] = [
     { id: "all", label: "Tous", count: counts.all },
     { id: "locked", label: "À faire", count: counts.locked },
     { id: "unlocked", label: "Obtenus", count: counts.unlocked },
+    { id: "pinned", label: "Chasse active", count: counts.pinned ?? 0, icon: Target, color: "text-amber-400" },
     { id: "missable", label: "Manquables", count: counts.missable, icon: AlertTriangle, color: "text-amber-400" },
     { id: "hidden", label: "Secrets", count: counts.hidden, icon: Eye, color: "text-purple-400" },
   ];

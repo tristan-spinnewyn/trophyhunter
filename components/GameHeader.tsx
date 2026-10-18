@@ -4,6 +4,7 @@
 import type { GameHeaderProps } from "./game-header/GameHeader.types";
 import { GameHeaderActions } from "./game-header/GameHeaderActions";
 import { GameHeaderGuides } from "./game-header/GameHeaderGuides";
+import { GameHuntingMetaBar } from "./hunting/GameHuntingMetaBar";
 
 export default function GameHeader({
   game,
@@ -13,6 +14,8 @@ export default function GameHeader({
   onToggleOwned,
   gameStatus,
   onChangeGameStatus,
+  huntingMeta,
+  onSaveHuntingOverride,
   onBackToLibrary,
 }: GameHeaderProps) {
   return (
@@ -63,6 +66,13 @@ export default function GameHeader({
             </div>
           </div>
         </div>
+
+        {huntingMeta && (
+          <GameHuntingMetaBar
+            meta={huntingMeta}
+            onSaveOverride={onSaveHuntingOverride}
+          />
+        )}
 
         <GameHeaderGuides game={game} />
       </div>

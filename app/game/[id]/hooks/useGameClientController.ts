@@ -6,6 +6,7 @@ import type { PlatformType } from "@/lib/types";
 import { useGameDetails } from "./useGameDetails";
 import { useGameProgressActions } from "./useGameProgressActions";
 import { useAchievementFilters } from "./useAchievementFilters";
+import { useHuntingActions } from "./useHuntingActions";
 
 export function useGameClientController(id: string) {
   const appId = parseInt(id, 10);
@@ -30,12 +31,22 @@ export function useGameClientController(id: string) {
     setIsSyncing: details.setIsSyncing, setSyncNotice: details.setSyncNotice,
   });
 
+  const hunting = useHuntingActions({
+    game: details.game,
+    activePlatform,
+    progress: details.progress,
+    setProgress: details.setProgress,
+    currentUser,
+    setSyncNotice: details.setSyncNotice,
+  });
+
   const filters = useAchievementFilters(details.game?.achievements, details.progress);
 
   return {
     appId, owned, activePlatform, favorites, ownedGames, accountProfile, steamUser,
     ...details,
     ...actions,
+    ...hunting,
     ...filters,
   };
 }
