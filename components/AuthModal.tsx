@@ -13,9 +13,8 @@ export default function AuthModal({
   currentUser,
   onAuthSuccess,
   onLogout,
-  onSyncLocalData,
 }: AuthModalProps) {
-  const flow = useAuthModalFlow({ onAuthSuccess, onLogout, onClose, onSyncLocalData });
+  const flow = useAuthModalFlow({ onAuthSuccess, onLogout, onClose });
 
   if (!isOpen) return null;
 
@@ -23,6 +22,7 @@ export default function AuthModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
       <div className="relative w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
         <button
+          type="button"
           onClick={onClose}
           className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white"
         >
@@ -33,14 +33,9 @@ export default function AuthModal({
           <AuthModalLoggedIn
             currentUser={currentUser}
             successMsg={flow.successMsg}
-            isSyncing={flow.isSyncing}
             isLoading={flow.isLoading}
-            onSyncLocalData={onSyncLocalData}
             onLogout={flow.handleLogout}
             onClose={onClose}
-            setIsSyncing={flow.setIsSyncing}
-            setSuccessMsg={flow.setSuccessMsg}
-            setErrorMsg={flow.setErrorMsg}
           />
         ) : (
           <AuthModalForm

@@ -4,7 +4,6 @@ import { Layers } from "lucide-react";
 import type { DashboardTabType, DashboardNavTabsProps } from "./nav/DashboardNavTabs.types";
 import { NavPlatformTabs } from "./nav/NavPlatformTabs";
 import { NavFeatureTabs } from "./nav/NavFeatureTabs";
-import { NavSqliteBadge } from "./nav/NavSqliteBadge";
 
 export type { DashboardTabType, DashboardNavTabsProps };
 
@@ -17,39 +16,46 @@ export default function DashboardNavTabs({
   duplicateCount,
   wishlistCount,
   collectionsCount,
-  currentUser,
-  onOpenAuthModal,
 }: DashboardNavTabsProps) {
+  const isAllActive = activePlatformTab === "all";
+
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs no-scrollbar">
-      {/* Global Overview Tab */}
-      <button
-        onClick={() => onSelectTab("all")}
-        className={`flex items-center gap-1.5 rounded-2xl px-4 py-2 font-bold whitespace-nowrap transition shrink-0 ${
-          activePlatformTab === "all"
-            ? "bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20"
-            : "border border-slate-800 bg-slate-900/90 text-slate-300 hover:border-slate-700 hover:text-white"
-        }`}
-      >
-        <Layers className="h-3.5 w-3.5" />
-        <span>Vue Globale</span>
-        <span
-          className={`ml-1 rounded-full px-1.5 py-0.2 text-[10px] ${
-            activePlatformTab === "all"
-              ? "bg-slate-950/30 text-slate-950 font-black"
-              : "bg-slate-800 text-slate-400"
+    <nav
+      aria-label="Navigation de la bibliothèque"
+      className="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 rounded-2xl border border-slate-800/80 bg-slate-900/75 p-2 backdrop-blur-xl shadow-lg"
+    >
+      <div className="flex flex-wrap items-center gap-1 rounded-xl border border-slate-800/60 bg-slate-950/70 p-1">
+        <button
+          type="button"
+          onClick={() => onSelectTab("all")}
+          className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition-all duration-150 ${
+            isAllActive
+              ? "bg-gradient-to-r from-sky-500 to-sky-400 text-slate-950 shadow-md shadow-sky-500/20"
+              : "text-slate-300 hover:bg-slate-900 hover:text-white"
           }`}
         >
-          {ownedGamesCount}
-        </span>
-      </button>
+          <Layers className="h-3.5 w-3.5 shrink-0" />
+          <span>Vue Globale</span>
+          <span
+            className={`rounded-md px-1.5 py-0.5 text-[10px] font-extrabold tabular-nums ${
+              isAllActive
+                ? "bg-slate-950/25 text-slate-950"
+                : "bg-slate-800/90 text-slate-400"
+            }`}
+          >
+            {ownedGamesCount}
+          </span>
+        </button>
 
-      <NavPlatformTabs
-        activePlatformTab={activePlatformTab}
-        onSelectTab={onSelectTab}
-        platformCounts={platformCounts}
-        accountProfile={accountProfile}
-      />
+        <div className="hidden sm:block h-4 w-px bg-slate-800/80 mx-0.5" />
+
+        <NavPlatformTabs
+          activePlatformTab={activePlatformTab}
+          onSelectTab={onSelectTab}
+          platformCounts={platformCounts}
+          accountProfile={accountProfile}
+        />
+      </div>
 
       <NavFeatureTabs
         activePlatformTab={activePlatformTab}
@@ -58,11 +64,6 @@ export default function DashboardNavTabs({
         wishlistCount={wishlistCount}
         collectionsCount={collectionsCount}
       />
-
-      <NavSqliteBadge
-        currentUser={currentUser}
-        onOpenAuthModal={onOpenAuthModal}
-      />
-    </div>
+    </nav>
   );
 }

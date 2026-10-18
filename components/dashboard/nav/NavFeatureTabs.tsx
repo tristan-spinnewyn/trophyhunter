@@ -1,7 +1,9 @@
 // components/dashboard/nav/NavFeatureTabs.tsx
 
+import type { ReactNode } from "react";
 import { Copy, Heart, Folder, MonitorPlay } from "lucide-react";
-import type { DashboardTabType } from "./DashboardNavTabs.types";
+import type { DashboardTabType, FeatureTabId } from "./DashboardNavTabs.types";
+import { buildFeatureTabItems } from "./navTabsConfig.services";
 
 interface NavFeatureTabsProps {
   readonly activePlatformTab: DashboardTabType;
@@ -11,6 +13,13 @@ interface NavFeatureTabsProps {
   readonly collectionsCount: number;
 }
 
+const FEATURE_ICONS: Record<FeatureTabId, (className: string) => ReactNode> = {
+  gamepass: (cls) => <MonitorPlay className={cls} />,
+  duplicates: (cls) => <Copy className={cls} />,
+  wishlist: (cls) => <Heart className={cls} />,
+  collections: (cls) => <Folder className={cls} />,
+};
+
 export function NavFeatureTabs({
   activePlatformTab,
   onSelectTab,
@@ -18,87 +27,40 @@ export function NavFeatureTabs({
   wishlistCount,
   collectionsCount,
 }: NavFeatureTabsProps) {
-  const baseClass =
-    "flex items-center gap-1.5 rounded-2xl px-3.5 py-2 font-bold whitespace-nowrap transition shrink-0";
-  const inactiveClass =
-    "border border-slate-800 bg-slate-900/80 text-slate-300 hover:border-slate-700 hover:text-white";
+  const items = buildFeatureTabItems(activePlatformTab, {
+    duplicateCount,
+    wishlistCount,
+    collectionsCount,
+  });
 
   return (
-    <>
-      <button
-        onClick={() => onSelectTab("gamepass")}
-        className={`${baseClass} ${
-          activePlatformTab === "gamepass"
-            ? "border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 ring-2 ring-emerald-500/40 shadow-lg"
-            : inactiveClass
-        }`}
-      >
-        <MonitorPlay className="h-3.5 w-3.5 text-emerald-400" />
-        <span>PC Game Pass</span>
-      </button>
-
-      <button
-        onClick={() => onSelectTab("duplicates")}
-        className={`${baseClass} ${
-          activePlatformTab === "duplicates"
-            ? "border border-purple-500/50 bg-purple-500/20 text-purple-300 ring-2 ring-purple-500/40 shadow-lg"
-            : inactiveClass
-        }`}
-      >
-        <Copy className="h-3.5 w-3.5 text-purple-400" />
-        <span>Doublons</span>
-        {duplicateCount > 0 && (
-          <span
-            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
-              activePlatformTab === "duplicates" ? "bg-purple-900 text-purple-200 font-black" : "bg-slate-800 text-slate-400"
-            }`}
-          >
-            {duplicateCount}
-          </span>
-        )}
-      </button>
-
-      <button
-        onClick={() => onSelectTab("wishlist")}
-        className={`${baseClass} ${
-          activePlatformTab === "wishlist"
-            ? "border border-rose-500/50 bg-rose-500/20 text-rose-300 ring-2 ring-rose-500/40 shadow-lg"
-            : inactiveClass
-        }`}
-      >
-        <Heart className="h-3.5 w-3.5 text-rose-400" />
-        <span>Liste d&apos;envies</span>
-        {wishlistCount > 0 && (
-          <span
-            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
-              activePlatformTab === "wishlist" ? "bg-rose-900 text-rose-200 font-black" : "bg-slate-800 text-slate-400"
-            }`}
-          >
-            {wishlistCount}
-          </span>
-        )}
-      </button>
-
-      <button
-        onClick={() => onSelectTab("collections")}
-        className={`${baseClass} ${
-          activePlatformTab === "collections"
-            ? "border border-indigo-500/50 bg-indigo-500/20 text-indigo-300 ring-2 ring-indigo-500/40 shadow-lg"
-            : inactiveClass
-        }`}
-      >
-        <Folder className="h-3.5 w-3.5 text-indigo-400" />
-        <span>Collections</span>
-        {collectionsCount > 0 && (
-          <span
-            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
-              activePlatformTab === "collections" ? "bg-indigo-900 text-indigo-200 font-black" : "bg-slate-800 text-slate-400"
-            }`}
-          >
-            {collectionsCount}
-          </span>
-        )}
-      </button>
-    </>
+    <div className="flex flex-wrap items-center gap-1.5">
+      {items.map((item) => (
+        <button
+          key={item.id}
+          type="button"
+          onClick={() => onSelectTab(item.id)}
+          className={`group flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-150 ${
+            item.isActive
+              ? item.activeClass
+              : "border-slate-800/80 bg-slate-950/60 text-slate-300 hover:border-slate-700 hover:bg-slate-900 hover:text-white"
+          }`}
+        >
+          {FEATURE_ICONS[item.id](`h-3.5 w-3.5 shrink-0 ${item.iconColorClass}`)}
+          <span>{item.label}</span>
+          {typeof item.count === "number" && item.count > 0 && (
+            <span
+              className={`rounded-md px-1.5 py-0.5 text-[10px] font-extrabold tabular-nums ${
+                item.isActive
+                  ? item.activeBadgeClass
+                  : "bg-slate-800/90 text-slate-400 group-hover:text-slate-200"
+              }`}
+            >
+              {item.count}
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
   );
 }

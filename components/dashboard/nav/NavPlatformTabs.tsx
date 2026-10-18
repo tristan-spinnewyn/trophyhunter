@@ -1,14 +1,14 @@
 // components/dashboard/nav/NavPlatformTabs.tsx
 
-import type { UserAccountProfile, PlatformType } from "@/lib/types";
-import { ALL_PLATFORMS, PLATFORM_META } from "@/lib/storage";
+import type { UserAccountProfile } from "@/lib/types";
 import type { DashboardTabType } from "./DashboardNavTabs.types";
+import { buildPlatformTabItems } from "./navTabsConfig.services";
 
 interface NavPlatformTabsProps {
-  activePlatformTab: DashboardTabType;
-  onSelectTab: (tab: DashboardTabType) => void;
-  platformCounts: Record<string, number>;
-  accountProfile: UserAccountProfile;
+  readonly activePlatformTab: DashboardTabType;
+  readonly onSelectTab: (tab: DashboardTabType) => void;
+  readonly platformCounts: Record<string, number>;
+  readonly accountProfile: UserAccountProfile;
 }
 
 export function NavPlatformTabs({
@@ -17,45 +17,43 @@ export function NavPlatformTabs({
   platformCounts,
   accountProfile,
 }: NavPlatformTabsProps) {
-  return (
-    <>
-      {ALL_PLATFORMS.map((plat) => {
-        const meta = PLATFORM_META[plat];
-        const count = platformCounts[plat] || 0;
-        const isConnected = !!accountProfile.accounts[plat];
-        const isActive = activePlatformTab === plat;
+  const items = buildPlatformTabItems(activePlatformTab, platformCounts, accountProfile);
 
-        return (
-          <button
-            key={plat}
-            onClick={() => onSelectTab(plat)}
-            className={`flex items-center gap-1.5 rounded-2xl px-3.5 py-2 font-bold whitespace-nowrap transition shrink-0 ${
-              isActive
-                ? `${meta.badgeClass} ring-2 ring-current/40 shadow-lg`
-                : "border border-slate-800 bg-slate-900/80 text-slate-300 hover:border-slate-700 hover:text-white"
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      {items.map((item) => (
+        <button
+          key={item.id}
+          type="button"
+          onClick={() => onSelectTab(item.id)}
+          className={`group flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-150 ${
+            item.isActive
+              ? item.activeClass
+              : "border-transparent text-slate-400 hover:border-slate-800 hover:bg-slate-900/90 hover:text-slate-100"
+          }`}
+        >
+          <span
+            className={`h-1.5 w-1.5 rounded-full shrink-0 transition-transform group-hover:scale-110 ${
+              item.isConnected
+                ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]"
+                : "bg-slate-700"
             }`}
-          >
-            <span>{meta.shortName}</span>
-            {count > 0 && (
-              <span
-                className={`rounded-full px-1.5 py-0.2 text-[10px] ${
-                  isActive
-                    ? "bg-black/30 font-black"
-                    : "bg-slate-800 text-slate-400"
-                }`}
-              >
-                {count}
-              </span>
-            )}
-            {isConnected && (
-              <span
-                className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0"
-                title="Compte lié"
-              />
-            )}
-          </button>
-        );
-      })}
-    </>
+            title={item.isConnected ? "Compte lié" : "Compte non lié"}
+          />
+          <span>{item.label}</span>
+          {item.count > 0 && (
+            <span
+              className={`rounded-md px-1.5 py-0.5 text-[10px] font-extrabold tabular-nums transition-colors ${
+                item.isActive
+                  ? "bg-slate-950/50 text-white"
+                  : "bg-slate-800/90 text-slate-400 group-hover:text-slate-200"
+              }`}
+            >
+              {item.count}
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
   );
 }
