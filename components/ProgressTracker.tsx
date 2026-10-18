@@ -19,8 +19,9 @@ export default function ProgressTracker({
   platformConnected,
   onOpenEpicModal,
 }: ProgressTrackerProps) {
-  const percent = total > 0 ? Math.round((unlockedCount / total) * 100) : 0;
-  const isComplete = total > 0 && unlockedCount === total;
+  const hasAchievements = total > 0;
+  const percent = hasAchievements ? Math.round((unlockedCount / total) * 100) : 0;
+  const isComplete = hasAchievements && unlockedCount === total;
   const prevCountRef = useRef(unlockedCount);
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function ProgressTracker({
     prevCountRef.current = unlockedCount;
   }, [isComplete, unlockedCount, total]);
 
-  const tier = getProgressTier(isComplete, percent);
+  const tier = getProgressTier(isComplete, percent, total);
 
   return (
     <div
@@ -60,10 +61,16 @@ export default function ProgressTracker({
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Progression</span>
               <span className={`text-xs font-semibold ${tier.color}`}>{tier.name}</span>
             </div>
-            <div className="text-2xl font-black text-white">
-              {percent}%{" "}
-              <span className="text-xs font-normal text-slate-400">({unlockedCount} / {total})</span>
-            </div>
+            {hasAchievements ? (
+              <div className="text-2xl font-black text-white">
+                {percent}%{" "}
+                <span className="text-xs font-normal text-slate-400">({unlockedCount} / {total})</span>
+              </div>
+            ) : (
+              <div className="text-lg font-bold text-slate-300">
+                Aucun succès
+              </div>
+            )}
           </div>
         </div>
 

@@ -2,6 +2,7 @@
 
 import type { OwnedGame, UserAccountProfile } from "@/lib/types";
 import { ALL_PLATFORMS, normalizeGameTitle } from "@/lib/storage";
+import { resolveGameStatus } from "@/lib/game-status/game-status.services";
 import type {
   GlobalDashboardStats,
   EpicGameCounts,
@@ -19,8 +20,7 @@ export function calculateDuplicateGroups(ownedGames: OwnedGame[]): DuplicateGrou
   }
   const result: DuplicateGroup[] = [];
   for (const games of groups.values()) {
-    const platforms = new Set(games.map((g) => g.platform));
-    if (platforms.size > 1) {
+    if (new Set(games.map((g) => g.platform)).size > 1) {
       result.push({ title: games[0].name, games });
     }
   }
@@ -30,9 +30,7 @@ export function calculateDuplicateGroups(ownedGames: OwnedGame[]): DuplicateGrou
 export function calculatePlatformCounts(ownedGames: OwnedGame[]): Record<string, number> {
   const counts: Record<string, number> = { all: ownedGames.length };
   for (const p of ALL_PLATFORMS) counts[p] = 0;
-  for (const g of ownedGames) {
-    counts[g.platform] = (counts[g.platform] || 0) + 1;
-  }
+  for (const g of ownedGames) counts[g.platform] = (counts[g.platform] || 0) + 1;
   return counts;
 }
 
@@ -50,12 +48,15 @@ export function calculateGlobalStats(
   const localByPlatform: Record<string, { games: number; ach: number; comp: number; hrs: number }> = {};
   for (const p of ALL_PLATFORMS) localByPlatform[p] = { games: 0, ach: 0, comp: 0, hrs: 0 };
 
+  let finishedGamesCount = 0;
   for (const g of ownedGames) {
     const row = localByPlatform[g.platform] || { games: 0, ach: 0, comp: 0, hrs: 0 };
     localByPlatform[g.platform] = row;
     row.games += 1;
     row.ach += g.unlockedCount || 0;
-    if (g.totalAchievements > 0 && g.unlockedCount >= g.totalAchievements) row.comp += 1;
+    const isPlat = g.totalAchievements > 0 && g.unlockedCount >= g.totalAchievements;
+    if (isPlat) row.comp += 1;
+    if (resolveGameStatus(g.status) === "completed" || isPlat) finishedGamesCount += 1;
     row.hrs += g.playtimeHours || 0;
   }
 
@@ -86,6 +87,9 @@ export function calculateGlobalStats(
   const avgCompletion = withAch.length > 0
     ? Math.round((withAch.reduce((acc, g) => acc + Math.min(1, (g.unlockedCount || 0) / g.totalAchievements), 0) / withAch.length) * 100)
     : 0;
+  const finishedGamesPercent = ownedGames.length > 0
+    ? Math.round((finishedGamesCount / ownedGames.length) * 100)
+    : 0;
 
   return {
     connectedCount: connectedAccounts.length,
@@ -95,5 +99,7 @@ export function calculateGlobalStats(
     totalHours: Math.round(totalHrs * 10) / 10,
     avgCompletion,
     trackedGamesCount: ownedGames.length,
+    finishedGamesCount,
+    finishedGamesPercent,
   };
 }

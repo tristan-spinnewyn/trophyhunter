@@ -3,13 +3,21 @@
 import { CheckCircle2 } from "lucide-react";
 
 interface ProgressBarProps {
-  total: number;
-  unlockedCount: number;
-  percent: number;
-  isComplete: boolean;
+  readonly total: number;
+  readonly unlockedCount: number;
+  readonly percent: number;
+  readonly isComplete: boolean;
 }
 
 export function ProgressBar({ total, unlockedCount, percent, isComplete }: ProgressBarProps) {
+  if (total <= 0) {
+    return (
+      <div className="mt-3 border-t border-slate-800/80 pt-2.5 text-[11px] text-slate-400">
+        Aucun succès répertorié pour ce jeu sur cette plateforme.
+      </div>
+    );
+  }
+
   return (
     <div className="mt-4">
       <div className="relative h-3 w-full overflow-hidden rounded-full bg-slate-800/80 p-0.5">

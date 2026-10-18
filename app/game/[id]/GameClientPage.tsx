@@ -18,6 +18,9 @@ export default function GameClientPage({ id }: { id: string }) {
   if (c.isLoading) return <GameClientLoading />;
   if (c.error || !c.game) return <GameClientError error={c.error} />;
 
+  const hasAchievements =
+    c.game.totalAchievements > 0 || c.game.achievements.length > 0;
+
   return (
     <div className="space-y-6">
       <GameHeader
@@ -46,17 +49,19 @@ export default function GameClientPage({ id }: { id: string }) {
         />
 
         <div className="lg:col-span-8 space-y-4">
-          <FilterToolbar
-            filter={c.filter}
-            onFilterChange={c.setFilter}
-            search={c.search}
-            onSearchChange={c.setSearch}
-            sort={c.sort}
-            onSortChange={c.setSort}
-            revealSecrets={c.revealSecrets}
-            onToggleRevealSecrets={() => c.setRevealSecrets(!c.revealSecrets)}
-            counts={c.counts}
-          />
+          {hasAchievements && (
+            <FilterToolbar
+              filter={c.filter}
+              onFilterChange={c.setFilter}
+              search={c.search}
+              onSearchChange={c.setSearch}
+              sort={c.sort}
+              onSortChange={c.setSort}
+              revealSecrets={c.revealSecrets}
+              onToggleRevealSecrets={() => c.setRevealSecrets(!c.revealSecrets)}
+              counts={c.counts}
+            />
+          )}
 
           <AchievementsListSection
             displayedAchievements={c.displayedAchievements}

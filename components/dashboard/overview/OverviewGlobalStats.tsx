@@ -1,18 +1,12 @@
 // components/dashboard/overview/OverviewGlobalStats.tsx
 
-import { Gamepad2, Trophy, Award, Sparkles } from "lucide-react";
+import { Gamepad2, CheckCircle2, Trophy, Award, Sparkles } from "lucide-react";
 import type { UserAccountProfile } from "@/lib/types";
+import type { GlobalDashboardStats } from "../hooks/useDashboardStats.types";
 
 interface OverviewGlobalStatsProps {
-  globalStats: {
-    totalGamesOwned: number;
-    trackedGamesCount: number;
-    totalCompletedGames: number;
-    totalAchievementsUnlocked: number;
-    connectedCount: number;
-    avgCompletion: number;
-  };
-  steamAccount?: UserAccountProfile["accounts"]["steam"];
+  readonly globalStats: GlobalDashboardStats;
+  readonly steamAccount?: UserAccountProfile["accounts"]["steam"];
 }
 
 export function OverviewGlobalStats({
@@ -20,7 +14,7 @@ export function OverviewGlobalStats({
   steamAccount,
 }: OverviewGlobalStatsProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
       <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 space-y-1">
         <div className="flex items-center justify-between text-xs text-slate-400">
           <span className="font-semibold">Jeux Possédés</span>
@@ -31,6 +25,19 @@ export function OverviewGlobalStats({
         </div>
         <div className="text-[11px] text-slate-400">
           Dont {globalStats.trackedGamesCount} dans la bibliothèque active
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-teal-500/30 bg-gradient-to-br from-teal-950/30 to-slate-900 p-4 space-y-1">
+        <div className="flex items-center justify-between text-xs text-teal-300">
+          <span className="font-semibold">Jeux Terminés</span>
+          <CheckCircle2 className="h-4 w-4 text-teal-400" />
+        </div>
+        <div className="text-2xl sm:text-3xl font-black text-teal-400">
+          {globalStats.finishedGamesPercent}%
+        </div>
+        <div className="text-[11px] text-slate-400">
+          {globalStats.finishedGamesCount} / {globalStats.trackedGamesCount} jeux terminés
         </div>
       </div>
 
@@ -73,7 +80,7 @@ export function OverviewGlobalStats({
             ? `${steamAccount.stats.badges} Badges Steam • ${
                 steamAccount.stats.dlcCount || 0
               } DLC`
-            : "Sur vos jeux suivis"}
+            : "Sur vos jeux avec succès"}
         </div>
       </div>
     </div>

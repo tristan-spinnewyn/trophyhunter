@@ -1,18 +1,18 @@
 // components/progress/ProgressTracker.types.ts
 
 export interface ProgressTrackerProps {
-  total: number;
-  unlockedCount: number;
-  onReset: () => void;
-  onSync?: () => void;
-  isSyncing?: boolean;
-  hasSteamUser?: boolean;
-  platform?: "steam" | "epic" | "xbox" | "gog";
-  platformConnected?: boolean;
-  onOpenEpicModal?: () => void;
+  readonly total: number;
+  readonly unlockedCount: number;
+  readonly onReset: () => void;
+  readonly onSync?: () => void;
+  readonly isSyncing?: boolean;
+  readonly hasSteamUser?: boolean;
+  readonly platform?: "steam" | "epic" | "xbox" | "gog";
+  readonly platformConnected?: boolean;
+  readonly onOpenEpicModal?: () => void;
 }
 
 export interface ProgressTier {
-  name: string;
-  color: string;
+  readonly name: string;
+  readonly color: string;
 }
