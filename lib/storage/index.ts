@@ -3,6 +3,7 @@ export * from "./constants";
 export * from "./crypto";
 export * from "./account";
 export * from "./games";
+export * from "./game-status";
 export * from "./progress";
 export * from "./preferences";
 export * from "./collections";

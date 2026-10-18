@@ -2,13 +2,20 @@
 "use client";
 
 import { Star, Check, Plus, ArrowLeft } from "lucide-react";
+import type { GameStatus } from "@/lib/types";
+import {
+  GAME_STATUS_OPTIONS,
+  resolveGameStatus,
+} from "@/lib/game-status/game-status.services";
 
 interface ActionsProps {
-  isFavorite: boolean;
-  onToggleFavorite: () => void;
-  isOwned?: boolean;
-  onToggleOwned?: () => void;
-  onBackToLibrary?: () => void;
+  readonly isFavorite: boolean;
+  readonly onToggleFavorite: () => void;
+  readonly isOwned?: boolean;
+  readonly onToggleOwned?: () => void;
+  readonly gameStatus?: GameStatus;
+  readonly onChangeGameStatus?: (status: GameStatus) => void;
+  readonly onBackToLibrary?: () => void;
 }
 
 export function GameHeaderActions({
@@ -16,8 +23,12 @@ export function GameHeaderActions({
   onToggleFavorite,
   isOwned = false,
   onToggleOwned,
+  gameStatus,
+  onChangeGameStatus,
   onBackToLibrary,
 }: ActionsProps) {
+  const currentStatus = resolveGameStatus(gameStatus);
+
   return (
     <>
       {onBackToLibrary && (
@@ -30,7 +41,29 @@ export function GameHeaderActions({
         </button>
       )}
 
-      <div className="absolute right-4 top-4 flex items-center gap-2">
+      <div className="absolute right-4 top-4 flex flex-wrap items-center justify-end gap-2">
+        {onChangeGameStatus && (
+          <div className="flex items-center gap-1 rounded-2xl border border-slate-700/60 bg-slate-950/75 p-1 backdrop-blur-md">
+            {GAME_STATUS_OPTIONS.map((opt) => {
+              const isActive = isOwned && currentStatus === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => onChangeGameStatus(opt.value)}
+                  className={`rounded-xl border px-2.5 py-1.5 text-xs font-bold transition ${
+                    isActive
+                      ? opt.activeButtonClass
+                      : "border-transparent text-slate-300 hover:bg-slate-800/80 hover:text-white"
+                  }`}
+                >
+                  {opt.shortLabel}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {onToggleOwned && (
           <button
             onClick={onToggleOwned}

@@ -1,5 +1,9 @@
 // lib/types/game.ts
 
+import type { GameStatus } from "../game-status/game-status.types";
+
+export type { GameStatus };
+
 export interface GameSearchResult {
   id: number;
   name: string;
@@ -57,6 +61,7 @@ export interface OwnedGame {
   lastPlayed?: string;
   addedAt: string;
   source?: "steam-auto" | "steam-import" | "manual";
+  status?: GameStatus;
 }
 
 export interface DuplicateGameGroup {

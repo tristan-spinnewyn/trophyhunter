@@ -3,7 +3,13 @@
 import type { OwnedGame, PlatformType } from "@/lib/types";
 import type { LocalCollection } from "@/lib/storage";
 
-export type StatusFilterType = "all" | "completed" | "in-progress" | "unstarted";
+export type StatusFilterType =
+  | "all"
+  | "backlog"
+  | "in-progress"
+  | "completed"
+  | "platinum"
+  | "unstarted";
 export type AchievementFilterType = "all" | "with-achievements" | "no-achievements";
 export type SortOrderType =
   | "default"

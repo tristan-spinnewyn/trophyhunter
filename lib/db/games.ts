@@ -2,13 +2,14 @@
 import crypto from "node:crypto";
 import { getDb, withTransaction } from "./connection";
 import type { OwnedGame, PlatformType } from "../types";
+import { isValidGameStatus } from "../game-status/game-status.services";
 import { mapUserGameRow, type UserGameRow } from "./games-mapper";
 
 export function getUserOwnedGames(userId: string): OwnedGame[] {
   const db = getDb();
   const rows = db
     .prepare(
-      `SELECT app_id, name, header_img, platform, total_achievements, unlocked_count, playtime_hours, last_played, added_at, source
+      `SELECT app_id, name, header_img, platform, total_achievements, unlocked_count, playtime_hours, last_played, added_at, source, status
        FROM user_games
        WHERE user_id = ?
        ORDER BY added_at DESC`
@@ -23,8 +24,8 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
   const db = getDb();
 
   const insertStmt = db.prepare(
-    `INSERT INTO user_games (id, user_id, app_id, platform, name, header_img, total_achievements, unlocked_count, playtime_hours, last_played, source, added_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO user_games (id, user_id, app_id, platform, name, header_img, total_achievements, unlocked_count, playtime_hours, last_played, source, status, added_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, 'backlog'), ?)
      ON CONFLICT(user_id, platform, app_id) DO UPDATE SET
        name = excluded.name,
        header_img = COALESCE(excluded.header_img, user_games.header_img),
@@ -32,11 +33,13 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
        unlocked_count = MAX(excluded.unlocked_count, user_games.unlocked_count),
        playtime_hours = COALESCE(excluded.playtime_hours, user_games.playtime_hours),
        last_played = COALESCE(excluded.last_played, user_games.last_played),
-       source = COALESCE(excluded.source, user_games.source)`
+       source = COALESCE(excluded.source, user_games.source),
+       status = COALESCE(?, user_games.status)`
   );
 
   withTransaction(db, () => {
     for (const g of games) {
+      const explicitStatus = isValidGameStatus(g.status) ? g.status : null;
       insertStmt.run(
         crypto.randomUUID(),
         userId,
@@ -49,7 +52,9 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
         g.playtimeHours ?? null,
         g.lastPlayed || null,
         g.source || null,
-        g.addedAt || new Date().toISOString()
+        explicitStatus,
+        g.addedAt || new Date().toISOString(),
+        explicitStatus
       );
     }
   });

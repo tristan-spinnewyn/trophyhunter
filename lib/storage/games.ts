@@ -1,6 +1,7 @@
 // lib/storage/games.ts
 import type { OwnedGame, PlatformType } from "../types";
 import { resolveEpicCodename } from "../epic-codenames";
+import { isValidGameStatus, resolveGameStatus } from "../game-status/game-status.services";
 import { OWNED_GAMES_KEY } from "./constants";
 import { getGameProgress } from "./progress";
 
@@ -30,6 +31,7 @@ export function getOwnedGames(): OwnedGame[] {
         ...g, name,
         unlockedCount: localUnlocked > 0 ? localUnlocked : g.unlockedCount,
         lastPlayed: prog.lastPlayed || g.lastPlayed,
+        status: resolveGameStatus(g.status),
       };
     });
     if (mutated) saveOwnedGames(resolved);
@@ -57,14 +59,15 @@ export function upsertOwnedGames(newGames: OwnedGame[]): OwnedGame[] {
     const key = `${g.platform}_${g.appId}`;
     const existing = map.get(key);
     const localCount = getGameProgress(g.appId).unlockedIds.length;
+    const status = isValidGameStatus(g.status) ? g.status : resolveGameStatus(existing?.status);
 
     map.set(key, {
-      ...existing,
-      ...g,
+      ...existing, ...g,
       totalAchievements: g.totalAchievements || existing?.totalAchievements || 0,
       unlockedCount: Math.max(g.unlockedCount || 0, existing?.unlockedCount || 0, localCount),
       playtimeHours: g.playtimeHours ?? existing?.playtimeHours,
       addedAt: existing?.addedAt || g.addedAt || new Date().toISOString(),
+      status,
     });
   }
 
@@ -74,8 +77,7 @@ export function upsertOwnedGames(newGames: OwnedGame[]): OwnedGame[] {
 }
 
 export function removeOwnedGame(appId: number, platform?: PlatformType): OwnedGame[] {
-  const current = getOwnedGames();
-  const filtered = current.filter((g) => platform ? !(g.appId === appId && g.platform === platform) : g.appId !== appId);
+  const filtered = getOwnedGames().filter((g) => platform ? !(g.appId === appId && g.platform === platform) : g.appId !== appId);
   saveOwnedGames(filtered);
   return filtered;
 }
@@ -87,8 +89,14 @@ export function removePlatformOwnedGames(platform: PlatformType): OwnedGame[] {
 }
 
 export function replacePlatformOwnedGames(platform: PlatformType, newGames: OwnedGame[]): OwnedGame[] {
-  const others = getOwnedGames().filter((g) => g.platform !== platform);
-  const combined = sortOwnedGames([...others, ...newGames]);
+  const current = getOwnedGames();
+  const prevByApp = new Map(current.filter((g) => g.platform === platform).map((g) => [g.appId, g]));
+  const others = current.filter((g) => g.platform !== platform);
+  const normalized = newGames.map((g) => ({
+    ...g,
+    status: isValidGameStatus(g.status) ? g.status : resolveGameStatus(prevByApp.get(g.appId)?.status),
+  }));
+  const combined = sortOwnedGames([...others, ...normalized]);
   saveOwnedGames(combined);
   return combined;
 }

@@ -1,6 +1,11 @@
 // components/dashboard/library-section/LibrarySection.types.ts
 
-import type { OwnedGame, PlatformType, UserAccountProfile } from "@/lib/types";
+import type {
+  GameStatus,
+  OwnedGame,
+  PlatformType,
+  UserAccountProfile,
+} from "@/lib/types";
 import type { LocalCollection } from "@/lib/storage";
 import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
 import type {
@@ -10,38 +15,41 @@ import type {
 } from "@/components/dashboard/hooks/useLibraryFilters";
 
 export interface LibrarySectionProps {
-  activePlatformTab: DashboardTabType;
-  filteredGames: OwnedGame[];
-  totalOwnedGamesCount: number;
-  platformGameCount: number;
-  steamAccount?: UserAccountProfile["accounts"]["steam"];
-  onOpenAddGame: () => void;
-  onAddApiKeyClick: () => void;
-  // Filters
-  libSearch: string;
-  setLibSearch: (val: string) => void;
-  libPlatformFilter: PlatformType | "all";
-  setLibPlatformFilter: (val: PlatformType | "all") => void;
-  libStatusFilter: StatusFilterType;
-  setLibStatusFilter: (val: StatusFilterType) => void;
-  libAchievementFilter: AchievementFilterType;
-  setLibAchievementFilter: (val: AchievementFilterType) => void;
-  libSortOrder: SortOrderType;
-  setLibSortOrder: (val: SortOrderType) => void;
-  // Card Actions & State
-  selectedCollId: string | null;
-  wishlistIds: number[];
-  collections: LocalCollection[];
-  onSelectGame: (appId: number) => void;
-  onToggleWishlist: (appId: number, platform: PlatformType) => void;
-  onOpenAddToCollection: (game: OwnedGame) => void;
-  onRemoveFromCollection: (
+  readonly activePlatformTab: DashboardTabType;
+  readonly filteredGames: OwnedGame[];
+  readonly totalOwnedGamesCount: number;
+  readonly platformGameCount: number;
+  readonly steamAccount?: UserAccountProfile["accounts"]["steam"];
+  readonly onOpenAddGame: () => void;
+  readonly onAddApiKeyClick: () => void;
+  readonly libSearch: string;
+  readonly setLibSearch: (val: string) => void;
+  readonly libPlatformFilter: PlatformType | "all";
+  readonly setLibPlatformFilter: (val: PlatformType | "all") => void;
+  readonly libStatusFilter: StatusFilterType;
+  readonly setLibStatusFilter: (val: StatusFilterType) => void;
+  readonly libAchievementFilter: AchievementFilterType;
+  readonly setLibAchievementFilter: (val: AchievementFilterType) => void;
+  readonly libSortOrder: SortOrderType;
+  readonly setLibSortOrder: (val: SortOrderType) => void;
+  readonly selectedCollId: string | null;
+  readonly wishlistIds: number[];
+  readonly collections: LocalCollection[];
+  readonly onSelectGame: (appId: number) => void;
+  readonly onToggleWishlist: (appId: number, platform: PlatformType) => void;
+  readonly onOpenAddToCollection: (game: OwnedGame) => void;
+  readonly onRemoveFromCollection: (
     collId: string,
     appId: number,
     platform: PlatformType
   ) => void;
-  onSyncGame: (game: OwnedGame) => Promise<void>;
-  onRemoveGame: (appId: number, platform: PlatformType) => Promise<void>;
-  onConnectAndSyncSteam: () => Promise<void>;
-  isSyncingSteam: boolean;
+  readonly onSyncGame: (game: OwnedGame) => Promise<void>;
+  readonly onRemoveGame: (appId: number, platform: PlatformType) => Promise<void>;
+  readonly onUpdateGameStatus?: (
+    appId: number,
+    platform: PlatformType,
+    status: GameStatus
+  ) => Promise<void> | void;
+  readonly onConnectAndSyncSteam: () => Promise<void>;
+  readonly isSyncingSteam: boolean;
 }

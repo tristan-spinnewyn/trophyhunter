@@ -11,6 +11,8 @@ export default function GameHeader({
   onToggleFavorite,
   isOwned = false,
   onToggleOwned,
+  gameStatus,
+  onChangeGameStatus,
   onBackToLibrary,
 }: GameHeaderProps) {
   return (
@@ -29,6 +31,8 @@ export default function GameHeader({
           onToggleFavorite={onToggleFavorite}
           isOwned={isOwned}
           onToggleOwned={onToggleOwned}
+          gameStatus={gameStatus}
+          onChangeGameStatus={onChangeGameStatus}
           onBackToLibrary={onBackToLibrary}
         />
       </div>

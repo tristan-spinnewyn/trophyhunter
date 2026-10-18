@@ -1,17 +1,18 @@
+// components/dashboard/utils.ts
 import type { OwnedGame, PlatformType } from "@/lib/types";
 import { isUnsplashPlaceholder } from "@/lib/epic-codenames";
+import { isValidGameStatus, resolveGameStatus } from "@/lib/game-status/game-status.services";
 
-/**
- * Merges an incoming list of OwnedGames into a base list,
- * preserving existing metadata and taking the highest achievement progress.
- */
 export function mergeGamesList(
   base: OwnedGame[],
   incoming: OwnedGame[]
 ): OwnedGame[] {
   const map = new Map<string, OwnedGame>();
   for (const g of base) {
-    map.set(`${g.platform}_${g.appId}`, g);
+    map.set(`${g.platform}_${g.appId}`, {
+      ...g,
+      status: resolveGameStatus(g.status),
+    });
   }
   for (const g of incoming) {
     const key = `${g.platform}_${g.appId}`;
@@ -30,18 +31,20 @@ export function mergeGamesList(
         ),
         playtimeHours: g.playtimeHours ?? existing.playtimeHours,
         addedAt: existing.addedAt || g.addedAt,
+        status: isValidGameStatus(g.status)
+          ? g.status
+          : resolveGameStatus(existing.status),
       });
     } else {
-      map.set(key, g);
+      map.set(key, {
+        ...g,
+        status: resolveGameStatus(g.status),
+      });
     }
   }
   return Array.from(map.values());
 }
 
-/**
- * Replaces all games of a given platform with incoming games,
- * preserving enriched images and progress from previous records.
- */
 export function replacePlatformInList(
   base: OwnedGame[],
   platform: PlatformType,
@@ -56,7 +59,7 @@ export function replacePlatformInList(
   const kept = base.filter((g) => g.platform !== platform);
   const enrichedIncoming = incoming.map((g) => {
     const prev = existingByPlatform.get(g.appId);
-    if (!prev) return g;
+    if (!prev) return { ...g, status: resolveGameStatus(g.status) };
     return {
       ...g,
       totalAchievements:
@@ -65,6 +68,9 @@ export function replacePlatformInList(
       headerImg: !isUnsplashPlaceholder(g.headerImg)
         ? g.headerImg
         : prev.headerImg || g.headerImg,
+      status: isValidGameStatus(g.status)
+        ? g.status
+        : resolveGameStatus(prev.status),
     };
   });
   return mergeGamesList(kept, enrichedIncoming);
