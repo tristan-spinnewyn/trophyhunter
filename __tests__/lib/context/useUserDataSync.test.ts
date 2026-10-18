@@ -52,7 +52,7 @@ describe("useUserDataSync", () => {
       addedAt: "2026-01-01",
     };
     const user: User = {
-      id: 1,
+      id: "1",
       username: "tester",
       displayName: "Tester",
       createdAt: "2026-01-01",
