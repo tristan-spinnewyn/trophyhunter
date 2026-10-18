@@ -55,27 +55,3 @@ jobs:
 
       - name: Verify Docker build
         run: docker build -t trophyhunter:local .
-
-  deploy:
-    name: deploy
-    needs: ci
-    # Uniquement après un push sur main et si la CI est verte
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    concurrency:
-      group: deploy-production
-      cancel-in-progress: false
-    steps:
-      - name: Trigger Coolify deployment
-        env:
-          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
-          COOLIFY_DEPLOY_URL: ${{ secrets.COOLIFY_DEPLOY_URL }}
-        run: |
-          if [ -z "$COOLIFY_TOKEN" ] || [ -z "$COOLIFY_DEPLOY_URL" ]; then
-            echo "::error::Secrets COOLIFY_TOKEN / COOLIFY_DEPLOY_URL manquants"
-            exit 1
-          fi
-          curl --fail-with-body -sS --max-time 60 -X POST \
-            -H "Authorization: Bearer $COOLIFY_TOKEN" \
-            "$COOLIFY_DEPLOY_URL"
