@@ -57,6 +57,50 @@ describe("GET /api/profile/gog", () => {
     expect(data.account.stats.gamesOwned).toBe(42);
   });
 
+  it("synchronizes full GOG URL with window.profilesData and public games/stats", async () => {
+    const mockProfileHtml = `
+      <script>
+        window.profilesData.profileUser = {"username":"shinkuma13","userId":"50793782277245151","avatar":"https:\\/\\/images.gog.com\\/dc04.jpg","stats":{"games_owned":"33","achievements":15,"hours_played":8}};
+      </script>
+    `;
+    const mockStatsJson = {
+      page: 1,
+      pages: 1,
+      total: 1,
+      _embedded: {
+        items: [
+          {
+            game: {
+              id: "1436434037",
+              title: "Metro 2033 Redux",
+              achievementSupport: false,
+              image: "https://images.gog-statics.com/metro.png",
+            },
+            stats: [],
+          },
+        ],
+      },
+    };
+
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce(textResponse(mockProfileHtml))
+      .mockResolvedValueOnce(jsonResponse(mockStatsJson));
+
+    const res = await GET(
+      new Request(
+        "http://localhost:3000/api/profile/gog?user=" +
+          encodeURIComponent("https://www.gog.com/u/shinkuma13")
+      )
+    );
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.account.username).toBe("shinkuma13");
+    expect(data.account.stats.gamesOwned).toBe(33);
+    expect(data.account.stats.totalAchievements).toBe(15);
+    expect(data.discoveredGames).toHaveLength(1);
+    expect(data.discoveredGames[0].name).toBe("Metro 2033 Redux");
+  });
+
   it("fetches owned games when GOG token is provided and persists to database", async () => {
     const user = createUser("GogAuthUser", "password123");
     const sessionId = createSession(user.id);

@@ -1,12 +1,11 @@
 // components/dashboard/gog-panel/GogProfileCard.tsx
-
 import { Gamepad2, Trophy, Edit3, Unlink } from "lucide-react";
 import type { UserAccountProfile, PlatformType } from "@/lib/types";
 
 interface GogProfileCardProps {
-  gogAccount?: UserAccountProfile["accounts"]["gog"];
-  openEditPlatform: (plat: PlatformType) => void;
-  handleDisconnectPlatform: (plat: PlatformType) => void;
+  readonly gogAccount?: UserAccountProfile["accounts"]["gog"];
+  readonly openEditPlatform: (plat: PlatformType) => void;
+  readonly handleDisconnectPlatform: (plat: PlatformType) => void;
 }
 
 export function GogProfileCard({
@@ -17,9 +16,17 @@ export function GogProfileCard({
   return (
     <div className="lg:col-span-7 flex flex-col sm:flex-row items-start sm:items-center gap-4">
       <div className="relative shrink-0">
-        <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border-2 border-violet-500/40 bg-violet-500/10 text-violet-400 shadow-lg shadow-violet-500/20">
-          <Gamepad2 className="h-8 w-8 sm:h-10 sm:w-10" />
-        </div>
+        {gogAccount?.avatarUrl ? (
+          <img
+            src={gogAccount.avatarUrl}
+            alt={gogAccount.displayName}
+            className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl border-2 border-violet-500/40 object-cover shadow-lg shadow-violet-500/20"
+          />
+        ) : (
+          <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border-2 border-violet-500/40 bg-violet-500/10 text-violet-400 shadow-lg shadow-violet-500/20">
+            <Gamepad2 className="h-8 w-8 sm:h-10 sm:w-10" />
+          </div>
+        )}
       </div>
 
       <div className="space-y-1.5 flex-1 min-w-0">

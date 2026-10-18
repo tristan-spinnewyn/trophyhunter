@@ -1,16 +1,15 @@
 // components/dashboard/gog-panel/GogSyncForm.tsx
-
 import { Sparkles, RefreshCw } from "lucide-react";
 
 interface GogSyncFormProps {
-  gogInput: string;
-  setGogInput: (val: string) => void;
-  gogToken: string;
-  setGogToken: (val: string) => void;
-  showGogToken: boolean;
-  setShowGogToken: (val: boolean) => void;
-  isSyncingGOG: boolean;
-  onConnectAndSyncGOG: () => void;
+  readonly gogInput: string;
+  readonly setGogInput: (val: string) => void;
+  readonly gogToken: string;
+  readonly setGogToken: (val: string) => void;
+  readonly showGogToken: boolean;
+  readonly setShowGogToken: (val: boolean) => void;
+  readonly isSyncingGOG: boolean;
+  readonly onConnectAndSyncGOG: () => void;
 }
 
 export function GogSyncForm({
@@ -41,7 +40,7 @@ export function GogSyncForm({
           value={gogInput}
           onChange={(e) => setGogInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && onConnectAndSyncGOG()}
-          placeholder="Pseudo public GOG (ex: GOGUser)"
+          placeholder="Pseudo ou URL GOG (ex: shinkuma13)"
           className="flex-1 min-w-0 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-violet-500"
         />
         <button
