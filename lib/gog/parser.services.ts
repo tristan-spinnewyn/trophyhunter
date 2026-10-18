@@ -84,7 +84,12 @@ export function parseGogGameAchievementsHtml(
       missable: false,
     });
 
-    const statsObj = item.stats && !Array.isArray(item.stats) ? item.stats : null;
+    const statsObj =
+      item.stats && !Array.isArray(item.stats)
+        ? (item.stats as Readonly<
+            Record<string, { readonly isUnlocked?: boolean; readonly unlockDate?: number }>
+          >)
+        : null;
     const userStat = statsObj
       ? (targetUserId ? statsObj[targetUserId] : Object.values(statsObj)[0])
       : undefined;
