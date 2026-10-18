@@ -33,11 +33,40 @@ export interface OpenXblAchievementSummary {
   readonly progressPercentage?: number;
 }
 
+export interface OpenXblMediaAsset {
+  readonly name?: string;
+  readonly type?: string;
+  readonly url?: string;
+}
+
+export interface OpenXblRarity {
+  readonly currentCategory?: string;
+  readonly currentPercentage?: number;
+}
+
 export interface OpenXblAchievementItem {
-  readonly id?: string;
+  readonly id?: string | number;
+  readonly name?: string;
+  readonly description?: string;
+  readonly lockedDescription?: string;
+  readonly isSecret?: boolean;
   readonly isUnlocked?: boolean;
   readonly progressState?: string;
   readonly gamerscore?: number;
+  readonly imageUnlocked?: string;
+  readonly icon?: string;
+  readonly mediaAssets?: readonly OpenXblMediaAsset[];
+  readonly rarity?: OpenXblRarity;
+}
+
+export interface OpenXblPagingInfo {
+  readonly continuationToken?: string | null;
+  readonly totalRecords?: number;
+}
+
+export interface OpenXblTitleAchievementsPayload {
+  readonly achievements?: readonly OpenXblAchievementItem[];
+  readonly pagingInfo?: OpenXblPagingInfo;
 }
 
 export interface OpenXblTitle {

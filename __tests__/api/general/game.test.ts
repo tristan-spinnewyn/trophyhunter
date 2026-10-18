@@ -1,11 +1,13 @@
 // __tests__/api/general/game.test.ts
+
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/game/[id]/route";
 import { jsonResponse, textResponse } from "../../helpers/responses";
 
-describe("GET /api/game/[id] - Store HTML", () => {
+describe("GET /api/game/[id] - Store HTML & Xbox", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    delete process.env.OPENXBL_API_KEY;
   });
 
   it("rejects invalid non-numeric app IDs", async () => {
@@ -59,5 +61,36 @@ describe("GET /api/game/[id] - Store HTML", () => {
     expect(data.achievements[0].missable).toBe(true);
     expect(data.achievements[0].percent).toBe(3.5);
     expect(data.achievements[1].hidden).toBe(true);
+  });
+
+  it("merges Xbox unlocked achievements when platform=xbox", async () => {
+    process.env.OPENXBL_API_KEY = "test-xbl-key";
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce(jsonResponse(null, 404))
+      .mockResolvedValueOnce(jsonResponse(null, 404))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          content: { profileUsers: [{ id: "2533274798129181", settings: [] }] },
+        })
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          content: {
+            achievements: [
+              { id: "1", name: "Into the Starfield", progressState: "Achieved" },
+              { id: "2", name: "One Small Step", progressState: "NotStarted" },
+            ],
+            pagingInfo: { totalRecords: 2 },
+          },
+        })
+      );
+
+    const req = new Request("http://localhost:3000/api/game/1715559203?platform=xbox");
+    const res = await GET(req, { params: Promise.resolve({ id: "1715559203" }) });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.achievementsSource).toBe("xbox");
+    expect(data.totalAchievements).toBe(2);
+    expect(data.unlockedIds).toEqual(["1"]);
   });
 });

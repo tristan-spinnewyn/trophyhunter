@@ -9,6 +9,7 @@ import {
   XboxApiError,
 } from "./types";
 import { parseOpenXblProfile, parseOpenXblTitles, unwrapOpenXblPayload } from "./openxbl";
+import { enrichXboxGamesTotals } from "./game-details";
 
 export function buildFallbackXboxAccount(rawUser: string, nowIso = new Date().toISOString()): PlatformAccount {
   return {
@@ -85,6 +86,7 @@ export async function fetchXboxProfileLive(
 
   const titles = await fetchPlayerTitles(xuid, headers);
   const { discoveredGames, totalAchievements, completedGames, titlesGamerScore } = parseOpenXblTitles(titles, nowIso);
+  await enrichXboxGamesTotals(discoveredGames, titles, xuid, headers);
 
   return {
     account: {
