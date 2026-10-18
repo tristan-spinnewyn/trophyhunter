@@ -1,6 +1,7 @@
 // components/achievement/achievementRarity.ts
 
 import type { RarityBadge } from "./AchievementItem.types";
+import { buildPsthcGuideUrl } from "@/lib/steam/game-details-utils";
 
 export function getRarityBadge(percent: number): RarityBadge {
   if (percent <= 5.0) {
@@ -31,7 +32,7 @@ export function buildGuideUrls(gameName: string, achievementName: string, gameId
   const cleanQuery = encodeURIComponent(`${gameName} ${achievementName} succès trophée guide fr`);
   return {
     youtubeUrl: `https://www.youtube.com/results?search_query=${cleanQuery}`,
-    psthcUrl: `https://www.psthc.fr/recherche.html?q=${encodeURIComponent(gameName)}`,
+    psthcUrl: buildPsthcGuideUrl(gameName),
     steamGuidesUrl: `https://steamcommunity.com/app/${gameId}/guides/?requiredtags[]=Achievements`,
   };
 }
