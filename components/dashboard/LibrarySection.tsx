@@ -35,6 +35,7 @@ export default function LibrarySection({
   onRemoveFromCollection,
   onSyncGame,
   onRemoveGame,
+  onUpdateGameStatus,
   onConnectAndSyncSteam,
   isSyncingSteam,
 }: LibrarySectionProps) {
@@ -81,6 +82,7 @@ export default function LibrarySection({
               onRemoveFromCollection={onRemoveFromCollection}
               onSyncGame={onSyncGame}
               onRemoveGame={onRemoveGame}
+              onUpdateGameStatus={onUpdateGameStatus}
             />
           ))}
         </div>

@@ -11,6 +11,7 @@ import { useGogSync } from "./useGogSync";
 import { usePlatformModal } from "./usePlatformModal";
 import { useEpicAuthModalState } from "./useEpicAuthModalState";
 import { useGameSyncHandler } from "./useGameSyncHandler";
+import { useGameStatusHandler } from "./useGameStatusHandler";
 
 export function usePlatformSync(props: UsePlatformSyncProps) {
   const { accountProfile, ownedGames, onAccountChange, onOwnedGamesChange, onSteamUserChange,
@@ -20,6 +21,7 @@ export function usePlatformSync(props: UsePlatformSyncProps) {
   const [syncProgressText, setSyncProgressText] = useState<string | null>(null);
 
   const db = usePlatformDb({ accountProfile, onAccountChange });
+  const statusHandler = useGameStatusHandler({ ownedGames, onOwnedGamesChange });
 
   const steam = useSteamSync({
     ownedGames, onOwnedGamesChange, onSteamUserChange, currentUser,
@@ -92,6 +94,7 @@ export function usePlatformSync(props: UsePlatformSyncProps) {
     handleConnectAndSyncGOG: gog.handleConnectAndSyncGOG,
     handleSyncGame: gameHandler.handleSyncGame,
     handleRemoveGame: gameHandler.handleRemoveGame,
+    handleUpdateGameStatus: statusHandler.handleUpdateGameStatus,
     handleScanEpicAchievements: epic.handleScanEpicAchievements,
     handleCleanEpicGames: epic.handleCleanEpicGames,
   };

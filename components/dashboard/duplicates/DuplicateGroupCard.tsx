@@ -2,10 +2,14 @@
 
 import type { OwnedGame } from "@/lib/types";
 import { PLATFORM_META } from "@/lib/storage";
+import {
+  GAME_STATUS_META,
+  resolveGameStatus,
+} from "@/lib/game-status/game-status.services";
 
 interface DuplicateGroupCardProps {
-  group: { title: string; games: OwnedGame[] };
-  onSelectGame: (appId: number) => void;
+  readonly group: { title: string; games: OwnedGame[] };
+  readonly onSelectGame: (appId: number) => void;
 }
 
 export function DuplicateGroupCard({
@@ -26,6 +30,7 @@ export function DuplicateGroupCard({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         {group.games.map((g) => {
           const pMeta = PLATFORM_META[g.platform] || PLATFORM_META.steam;
+          const statusMeta = GAME_STATUS_META[resolveGameStatus(g.status)];
           const pct =
             g.totalAchievements > 0
               ? Math.min(
@@ -41,12 +46,19 @@ export function DuplicateGroupCard({
               className="flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-900/90 p-3 hover:border-purple-500/50 cursor-pointer transition"
             >
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-[10px] font-bold border ${pMeta.badgeClass}`}
-                  >
-                    {pMeta.shortName}
-                  </span>
+                <div className="flex items-center justify-between gap-1">
+                  <div className="flex items-center gap-1">
+                    <span
+                      className={`rounded px-1.5 py-0.5 text-[10px] font-bold border ${pMeta.badgeClass}`}
+                    >
+                      {pMeta.shortName}
+                    </span>
+                    <span
+                      className={`rounded px-1.5 py-0.5 text-[10px] font-bold border ${statusMeta.badgeClass}`}
+                    >
+                      {statusMeta.shortLabel}
+                    </span>
+                  </div>
                   {g.totalAchievements > 0 ? (
                     <span className="text-[10px] font-black text-emerald-400">
                       {pct}% ({g.unlockedCount}/{g.totalAchievements})

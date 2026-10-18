@@ -3,21 +3,24 @@
 
 import type {
   GameDetails,
+  GameStatus,
   OwnedGame,
   UserGameProgress,
   User as UserType,
   PlatformType,
 } from "@/lib/types";
+import { assertValidGameStatus } from "@/lib/game-status/game-status.services";
+import { updateOwnedGameStatus } from "@/lib/storage";
 
 interface UseGameOwnershipTogglesProps {
-  game: GameDetails | null;
-  activePlatform: PlatformType;
-  progress: UserGameProgress;
-  currentUser: UserType | null;
-  favorites: number[];
-  setFavorites: (favs: number[]) => void;
-  ownedGames: OwnedGame[];
-  upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<any>;
+  readonly game: GameDetails | null;
+  readonly activePlatform: PlatformType;
+  readonly progress: UserGameProgress;
+  readonly currentUser: UserType | null;
+  readonly favorites: number[];
+  readonly setFavorites: (favs: number[]) => void;
+  readonly ownedGames: OwnedGame[];
+  readonly upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<unknown>;
 }
 
 export function useGameOwnershipToggles({
@@ -45,7 +48,9 @@ export function useGameOwnershipToggles({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ appId: game.id, platform: activePlatform, isFavorite: !isFav }),
         });
-      } catch {}
+      } catch (e) {
+        console.error("Failed to toggle favorite:", e);
+      }
     }
   };
 
@@ -66,9 +71,30 @@ export function useGameOwnershipToggles({
         unlockedCount: progress.unlockedIds.length,
         addedAt: new Date().toISOString(),
         source: "manual",
+        status: "backlog",
       });
     }
   };
 
-  return { handleToggleFavorite, handleToggleOwned };
+  const handleChangeGameStatus = async (status: GameStatus) => {
+    if (!game) return;
+    const validStatus = assertValidGameStatus(status);
+    const existing = ownedGames.find((g) => g.appId === game.id && g.platform === activePlatform);
+    updateOwnedGameStatus(game.id, activePlatform, validStatus);
+    await upsertOwnedGameInMemoryAndDb({
+      appId: game.id,
+      name: existing?.name || game.name,
+      headerImg: existing?.headerImg || game.headerImg,
+      platform: activePlatform,
+      totalAchievements: existing?.totalAchievements || game.totalAchievements,
+      unlockedCount: Math.max(existing?.unlockedCount || 0, progress.unlockedIds.length),
+      playtimeHours: existing?.playtimeHours,
+      lastPlayed: existing?.lastPlayed,
+      addedAt: existing?.addedAt || new Date().toISOString(),
+      source: existing?.source || "manual",
+      status: validStatus,
+    });
+  };
+
+  return { handleToggleFavorite, handleToggleOwned, handleChangeGameStatus };
 }

@@ -2,21 +2,22 @@
 
 import type { OwnedGame, PlatformType } from "@/lib/types";
 import type { LocalCollection } from "@/lib/storage";
+import { resolveGameStatus } from "@/lib/game-status/game-status.services";
 import type {
   StatusFilterType,
   AchievementFilterType,
 } from "./useLibraryFilters.types";
 
 interface FilterParams {
-  games: OwnedGame[];
-  activePlatformTab: PlatformType | "all" | "duplicates" | "wishlist" | "collections";
-  libPlatformFilter: PlatformType | "all";
-  libStatusFilter: StatusFilterType;
-  libAchievementFilter: AchievementFilterType;
-  libSearch: string;
-  wishlistIds: number[];
-  collections: LocalCollection[];
-  selectedCollId: string | null;
+  readonly games: OwnedGame[];
+  readonly activePlatformTab: PlatformType | "all" | "duplicates" | "wishlist" | "collections";
+  readonly libPlatformFilter: PlatformType | "all";
+  readonly libStatusFilter: StatusFilterType;
+  readonly libAchievementFilter: AchievementFilterType;
+  readonly libSearch: string;
+  readonly wishlistIds: number[];
+  readonly collections: LocalCollection[];
+  readonly selectedCollId: string | null;
 }
 
 export function filterGames(params: FilterParams): OwnedGame[] {
@@ -39,13 +40,14 @@ export function filterGames(params: FilterParams): OwnedGame[] {
       if (g.platform !== targetPlatform) return false;
     }
 
-    const isComplete = g.totalAchievements > 0 && g.unlockedCount >= g.totalAchievements;
-    const isInProgress = g.unlockedCount > 0 && (g.totalAchievements === 0 || g.unlockedCount < g.totalAchievements);
-    const isUnstarted = g.unlockedCount === 0;
+    const gameStatus = resolveGameStatus(g.status);
+    const isPlatinum = g.totalAchievements > 0 && g.unlockedCount >= g.totalAchievements;
 
-    if (libStatusFilter === "completed" && !isComplete) return false;
-    if (libStatusFilter === "in-progress" && !isInProgress) return false;
-    if (libStatusFilter === "unstarted" && !isUnstarted) return false;
+    if (libStatusFilter === "backlog" && gameStatus !== "backlog") return false;
+    if (libStatusFilter === "in-progress" && gameStatus !== "in-progress") return false;
+    if (libStatusFilter === "completed" && gameStatus !== "completed") return false;
+    if (libStatusFilter === "platinum" && !isPlatinum) return false;
+    if (libStatusFilter === "unstarted" && (gameStatus !== "backlog" || g.unlockedCount > 0)) return false;
 
     if (libAchievementFilter === "with-achievements" && g.totalAchievements === 0) return false;
     if (libAchievementFilter === "no-achievements" && g.totalAchievements > 0) return false;

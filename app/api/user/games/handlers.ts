@@ -1,5 +1,4 @@
 // app/api/user/games/handlers.ts
-
 import { NextResponse } from "next/server";
 import {
   getUserOwnedGames,
@@ -7,10 +6,25 @@ import {
   removeUserOwnedGame,
   removeUserPlatformGames,
   clearAllUserData,
+  setUserGameStatus,
 } from "@/lib/db";
+import { assertValidGameStatus } from "@/lib/game-status/game-status.services";
 import type { PlatformType, OwnedGame } from "@/lib/types";
 
-export async function handlePostOwnedGames(userId: string, body: any) {
+interface PostOwnedGamesBody {
+  readonly games?: OwnedGame[];
+  readonly game?: OwnedGame;
+  readonly replacePlatform?: PlatformType;
+}
+
+interface PatchGameStatusBody {
+  readonly appId?: number;
+  readonly platform?: PlatformType;
+  readonly status?: string;
+  readonly name?: string;
+}
+
+export async function handlePostOwnedGames(userId: string, body: PostOwnedGamesBody) {
   const gamesList: OwnedGame[] = Array.isArray(body?.games)
     ? body.games
     : body?.game
@@ -22,7 +36,7 @@ export async function handlePostOwnedGames(userId: string, body: any) {
   }
 
   if (body?.replacePlatform) {
-    removeUserPlatformGames(userId, body.replacePlatform as PlatformType);
+    removeUserPlatformGames(userId, body.replacePlatform);
   }
 
   if (gamesList.length > 0) {
@@ -34,6 +48,23 @@ export async function handlePostOwnedGames(userId: string, body: any) {
     success: true,
     count: gamesList.length,
     games: updatedGames,
+  });
+}
+
+export async function handlePatchOwnedGameStatus(userId: string, body: PatchGameStatusBody) {
+  const appId = Number(body?.appId);
+  const platform = (body?.platform || "steam") as PlatformType;
+  if (!appId || Number.isNaN(appId)) {
+    return NextResponse.json({ error: "Paramètre appId requis." }, { status: 400 });
+  }
+  const validStatus = assertValidGameStatus(body?.status);
+  setUserGameStatus(userId, appId, platform, validStatus, body?.name);
+  return NextResponse.json({
+    success: true,
+    appId,
+    platform,
+    status: validStatus,
+    games: getUserOwnedGames(userId),
   });
 }
 

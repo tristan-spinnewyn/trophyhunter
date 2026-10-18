@@ -1,23 +1,33 @@
 // components/dashboard/library/LibraryGameCard.types.ts
 
-import type { OwnedGame, PlatformAccount, PlatformType } from "@/lib/types";
+import type {
+  GameStatus,
+  OwnedGame,
+  PlatformAccount,
+  PlatformType,
+} from "@/lib/types";
 import type { LocalCollection } from "@/lib/storage";
 
 export interface LibraryGameCardProps {
-  game: OwnedGame;
-  steamAccount?: PlatformAccount;
-  activePlatformTab: string;
-  selectedCollId: string | null;
-  wishlistIds: number[];
-  collections: LocalCollection[];
-  onSelectGame: (appId: number) => void;
-  onToggleWishlist: (appId: number, platform: PlatformType) => void;
-  onOpenAddToCollection: (game: OwnedGame) => void;
-  onRemoveFromCollection: (
+  readonly game: OwnedGame;
+  readonly steamAccount?: PlatformAccount;
+  readonly activePlatformTab: string;
+  readonly selectedCollId: string | null;
+  readonly wishlistIds: number[];
+  readonly collections: LocalCollection[];
+  readonly onSelectGame: (appId: number) => void;
+  readonly onToggleWishlist: (appId: number, platform: PlatformType) => void;
+  readonly onOpenAddToCollection: (game: OwnedGame) => void;
+  readonly onRemoveFromCollection: (
     collectionId: string,
     appId: number,
     platform: PlatformType
   ) => void;
-  onSyncGame: (game: OwnedGame) => Promise<void>;
-  onRemoveGame: (appId: number, platform: PlatformType) => Promise<void>;
+  readonly onSyncGame: (game: OwnedGame) => Promise<void>;
+  readonly onRemoveGame: (appId: number, platform: PlatformType) => Promise<void>;
+  readonly onUpdateGameStatus?: (
+    appId: number,
+    platform: PlatformType,
+    status: GameStatus
+  ) => Promise<void> | void;
 }

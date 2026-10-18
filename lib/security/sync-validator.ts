@@ -1,5 +1,6 @@
 // lib/security/sync-validator.ts
 import type { OwnedGame, PlatformType, UserAccountProfile, UserGameProgress } from "../types";
+import { resolveGameStatus } from "../game-status/game-status.services";
 import { ALLOWED_PLATFORMS, type ValidatedSyncCollection, type ValidatedSyncPayload } from "./security.types";
 import { sanitizeExternalHref } from "./url-validator";
 
@@ -42,6 +43,7 @@ export function validateSyncPayload(input: Record<string, unknown>): ValidatedSy
       playtimeHours: typeof rec.playtimeHours === "number" ? Math.max(0, rec.playtimeHours) : undefined,
       lastPlayed: typeof rec.lastPlayed === "string" ? rec.lastPlayed.slice(0, 64) : undefined,
       addedAt: typeof rec.addedAt === "string" ? rec.addedAt.slice(0, 64) : new Date().toISOString(),
+      status: resolveGameStatus(rec.status),
     });
   }
 

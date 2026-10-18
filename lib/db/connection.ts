@@ -8,28 +8,35 @@ export { withTransaction } from "./transaction";
 
 let dbInstance: DatabaseSync | null = null;
 
+function ensureDirectoryExists(dirPath: string): void {
+  if (!fs.existsSync(dirPath)) {
+    try {
+      fs.mkdirSync(dirPath, { recursive: true });
+    } catch (err) {
+      if (err instanceof Error && "code" in err && err.code === "EEXIST") return;
+    }
+  }
+}
+
 export function getDatabasePath(): string {
   if (process.env.DATABASE_PATH) {
     const customPath = process.env.DATABASE_PATH;
-    const customDir = path.dirname(customPath);
-    if (!fs.existsSync(customDir)) {
-      try {
-        fs.mkdirSync(customDir, { recursive: true });
-      } catch {
-        // Continue and let DatabaseSync report if inaccessible
-      }
-    }
+    ensureDirectoryExists(path.dirname(customPath));
     return customPath;
   }
   const dataDir = path.join(process.cwd(), "data");
-  if (!fs.existsSync(dataDir)) {
-    try {
-      fs.mkdirSync(dataDir, { recursive: true });
-    } catch {
-      // Continue and let DatabaseSync report if inaccessible
-    }
-  }
+  ensureDirectoryExists(dataDir);
   return path.join(dataDir, "trophyhunter.db");
+}
+
+function migrateUserGamesStatusColumn(db: DatabaseSync): void {
+  const columns = db
+    .prepare("PRAGMA table_info(user_games)")
+    .all() as Array<{ readonly name: string }>;
+  const hasStatus = columns.some((col) => col.name === "status");
+  if (!hasStatus) {
+    db.exec("ALTER TABLE user_games ADD COLUMN status TEXT NOT NULL DEFAULT 'backlog';");
+  }
 }
 
 export function initDatabase(dbPath?: string): DatabaseSync {
@@ -45,6 +52,7 @@ export function initDatabase(dbPath?: string): DatabaseSync {
   db.exec("PRAGMA busy_timeout = 5000;");
 
   db.exec(SCHEMA_SQL);
+  migrateUserGamesStatusColumn(db);
   return db;
 }
 

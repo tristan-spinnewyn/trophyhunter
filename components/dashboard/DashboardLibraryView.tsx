@@ -1,11 +1,14 @@
 // components/dashboard/DashboardLibraryView.tsx
 
 import LibrarySection from "./LibrarySection";
-import type { AccountDashboardControllerParams } from "./hooks/useAccountDashboardController";
+import type {
+  useAccountDashboardController,
+  AccountDashboardControllerParams,
+} from "./hooks/useAccountDashboardController";
 
 interface DashboardLibraryViewProps {
-  controller: any;
-  props: AccountDashboardControllerParams;
+  readonly controller: ReturnType<typeof useAccountDashboardController>;
+  readonly props: AccountDashboardControllerParams;
 }
 
 export function DashboardLibraryView({
@@ -45,6 +48,7 @@ export function DashboardLibraryView({
       onRemoveFromCollection={cs.handleRemoveGameFromColl}
       onSyncGame={ps.handleSyncGame}
       onRemoveGame={ps.handleRemoveGame}
+      onUpdateGameStatus={ps.handleUpdateGameStatus}
       onConnectAndSyncSteam={ps.handleConnectAndSyncSteam}
       isSyncingSteam={ps.isSyncingSteam}
     />

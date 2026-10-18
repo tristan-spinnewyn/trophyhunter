@@ -2,9 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import LibrarySection from "@/components/dashboard/LibrarySection";
+import type { useHomePageController } from "../hooks/useHomePageController";
 
 interface HomeLibrarySectionProps {
-  controller: any;
+  readonly controller: ReturnType<typeof useHomePageController>;
 }
 
 export function HomeLibrarySection({ controller: c }: HomeLibrarySectionProps) {
@@ -39,6 +40,7 @@ export function HomeLibrarySection({ controller: c }: HomeLibrarySectionProps) {
       onRemoveFromCollection={cs.handleRemoveGameFromColl}
       onSyncGame={ps.handleSyncGame}
       onRemoveGame={ps.handleRemoveGame}
+      onUpdateGameStatus={ps.handleUpdateGameStatus}
       onConnectAndSyncSteam={ps.handleConnectAndSyncSteam}
       isSyncingSteam={ps.isSyncingSteam}
     />

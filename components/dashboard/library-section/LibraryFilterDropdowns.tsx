@@ -53,9 +53,10 @@ export function LibraryFilterDropdowns({
         className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none focus:border-sky-500"
       >
         <option value="all">Tous les statuts</option>
-        <option value="completed">🏆 Terminés à 100% (Platine)</option>
+        <option value="backlog">📚 Backlog</option>
         <option value="in-progress">🔥 En cours</option>
-        <option value="unstarted">⏳ À commencer (0%)</option>
+        <option value="completed">✅ Terminés</option>
+        <option value="platinum">🏆 Platines (100%)</option>
       </select>
 
       <select

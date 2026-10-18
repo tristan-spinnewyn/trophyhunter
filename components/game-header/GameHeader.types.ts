@@ -1,12 +1,14 @@
 // components/game-header/GameHeader.types.ts
 
-import type { GameDetails } from "@/lib/types";
+import type { GameDetails, GameStatus } from "@/lib/types";
 
 export interface GameHeaderProps {
-  game: GameDetails;
-  isFavorite: boolean;
-  onToggleFavorite: () => void;
-  isOwned?: boolean;
-  onToggleOwned?: () => void;
-  onBackToLibrary?: () => void;
+  readonly game: GameDetails;
+  readonly isFavorite: boolean;
+  readonly onToggleFavorite: () => void;
+  readonly isOwned?: boolean;
+  readonly onToggleOwned?: () => void;
+  readonly gameStatus?: GameStatus;
+  readonly onChangeGameStatus?: (status: GameStatus) => void;
+  readonly onBackToLibrary?: () => void;
 }

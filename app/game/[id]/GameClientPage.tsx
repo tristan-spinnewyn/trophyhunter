@@ -26,6 +26,8 @@ export default function GameClientPage({ id }: { id: string }) {
         onToggleFavorite={c.handleToggleFavorite}
         isOwned={c.ownedGames.some((g) => g.appId === c.game?.id)}
         onToggleOwned={c.handleToggleOwned}
+        gameStatus={c.owned?.status}
+        onChangeGameStatus={c.handleChangeGameStatus}
         onBackToLibrary={() => router.push("/")}
       />
 
