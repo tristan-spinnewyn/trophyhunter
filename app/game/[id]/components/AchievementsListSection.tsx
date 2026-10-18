@@ -5,13 +5,13 @@ import AchievementItem from "@/components/AchievementItem";
 import type { Achievement, GameDetails, UserGameProgress } from "@/lib/types";
 
 interface ListSectionProps {
-  displayedAchievements: Achievement[];
-  game: GameDetails;
-  progress: UserGameProgress;
-  revealSecrets: boolean;
-  onToggleAchievement: (id: string) => void;
-  onSaveNotes: (id: string, notes: string) => void;
-  onResetFilters: () => void;
+  readonly displayedAchievements: Achievement[];
+  readonly game: GameDetails;
+  readonly progress: UserGameProgress;
+  readonly revealSecrets: boolean;
+  readonly onToggleAchievement: (id: string) => void;
+  readonly onSaveNotes: (id: string, notes: string) => void;
+  readonly onResetFilters: () => void;
 }
 
 export function AchievementsListSection({
@@ -23,6 +23,16 @@ export function AchievementsListSection({
   onSaveNotes,
   onResetFilters,
 }: ListSectionProps) {
+  if (game.totalAchievements <= 0 && game.achievements.length === 0) {
+    return (
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center text-slate-400">
+        <p className="text-sm font-medium">
+          Ce jeu ne comporte aucun succès répertorié sur cette plateforme.
+        </p>
+      </div>
+    );
+  }
+
   if (displayedAchievements.length === 0) {
     return (
       <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center text-slate-400 space-y-2">

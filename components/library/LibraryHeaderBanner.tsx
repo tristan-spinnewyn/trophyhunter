@@ -4,19 +4,13 @@
 
 import Link from "next/link";
 import { Gamepad2, User, Plus } from "lucide-react";
+import type { GlobalDashboardStats } from "@/components/dashboard/hooks/useDashboardStats.types";
 import { LibraryGlobalStatsGrid } from "./LibraryGlobalStatsGrid";
 
 interface LibraryHeaderBannerProps {
-  ownedGamesCount: number;
-  onOpenAddGame: () => void;
-  globalStats?: {
-    totalGamesOwned: number;
-    trackedGamesCount: number;
-    totalCompletedGames: number;
-    totalAchievementsUnlocked: number;
-    connectedCount: number;
-    avgCompletion: number;
-  };
+  readonly ownedGamesCount: number;
+  readonly onOpenAddGame: () => void;
+  readonly globalStats?: GlobalDashboardStats;
 }
 
 export function LibraryHeaderBanner({

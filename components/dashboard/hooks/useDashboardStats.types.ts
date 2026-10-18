@@ -3,22 +3,24 @@
 import type { OwnedGame } from "@/lib/types";
 
 export interface GlobalDashboardStats {
-  connectedCount: number;
-  totalGamesOwned: number;
-  totalAchievementsUnlocked: number;
-  totalCompletedGames: number;
-  totalHours: number;
-  avgCompletion: number;
-  trackedGamesCount: number;
+  readonly connectedCount: number;
+  readonly totalGamesOwned: number;
+  readonly totalAchievementsUnlocked: number;
+  readonly totalCompletedGames: number;
+  readonly totalHours: number;
+  readonly avgCompletion: number;
+  readonly trackedGamesCount: number;
+  readonly finishedGamesCount: number;
+  readonly finishedGamesPercent: number;
 }
 
 export interface EpicGameCounts {
-  total: number;
-  withAch: number;
-  noAch: number;
+  readonly total: number;
+  readonly withAch: number;
+  readonly noAch: number;
 }
 
 export interface DuplicateGroup {
-  title: string;
-  games: OwnedGame[];
+  readonly title: string;
+  readonly games: OwnedGame[];
 }
