@@ -1,9 +1,9 @@
 // components/epic-modal/EpicAuthInstructions.tsx
 
 import { ExternalLink } from "lucide-react";
+import { EPIC_AUTH_CODE_URL } from "@/lib/epic/auth-input";
 
-export const EPIC_AUTH_URL =
-  "https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code";
+export const EPIC_AUTH_URL = EPIC_AUTH_CODE_URL;
 
 export function EpicAuthInstructions() {
   return (

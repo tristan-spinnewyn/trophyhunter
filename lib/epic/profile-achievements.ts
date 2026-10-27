@@ -2,7 +2,7 @@
 import type { AchSummary } from "./types";
 import { extractBestCover } from "./game-metadata";
 import { unwrapPlayerAchievement } from "./game-achievements";
-import { EPIC_PRIMARY_GRAPHQL_ENDPOINT, EPIC_USER_AGENT } from "./graphql";
+import { EPIC_PRIMARY_GRAPHQL_ENDPOINT, postEpicGraphQL } from "./graphql";
 
 export const PLAYER_GAME_ACHIEVEMENT_QUERY = `query PlayerGameAchievementProgress($epicAccountId: String!) {
   PlayerAchievement {
@@ -156,18 +156,12 @@ export async function fetchEpicAchievementsGraphQL(
   rawCompletedGames: number;
 }> {
   try {
-    const gqlRes = await fetch(EPIC_PRIMARY_GRAPHQL_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-        "User-Agent": EPIC_USER_AGENT,
-      },
-      body: JSON.stringify({
-        query: PLAYER_GAME_ACHIEVEMENT_QUERY,
-        variables: { epicAccountId: accountId },
-      }),
-    });
+    const gqlRes = await postEpicGraphQL(
+      EPIC_PRIMARY_GRAPHQL_ENDPOINT,
+      PLAYER_GAME_ACHIEVEMENT_QUERY,
+      { epicAccountId: accountId },
+      accessToken
+    );
 
     if (gqlRes.ok) {
       const gqlData = await gqlRes.json();

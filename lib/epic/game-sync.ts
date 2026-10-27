@@ -10,7 +10,7 @@ import {
   saveUserOwnedGames,
 } from "@/lib/db";
 import { normalizeGameTitle } from "@/lib/db/collections";
-import { readAuthInput, TOKEN_REQUIRED_MESSAGE, TOKEN_INVALID_MESSAGE } from "./auth-request";
+import { readAuthInput, TOKEN_REQUIRED_MESSAGE, TOKEN_INVALID_MESSAGE } from "./auth-input";
 import {
   exchangeEpicAuthInput,
   loadStoredEpicCredentials,
