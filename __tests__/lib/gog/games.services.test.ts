@@ -88,3 +88,23 @@ describe("GOG public games service", () => {
     expect(res.completedGamesCount).toBe(1);
   });
 });
+
+describe("GOG public games service when the stats page fails", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("falls back to the games embedded in the profile page", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(textResponse("Server error", 500));
+    const fallbackItems = [
+      {
+        game: { id: "1207658924", title: "The Witcher", achievementSupport: false, image: "https://images.gog-statics.com/witcher.png" },
+        stats: [],
+      },
+    ];
+
+    const result = await fetchGogPublicGames("GwentMaster", "42", {}, "2026-01-01T00:00:00.000Z", fallbackItems);
+
+    expect(result.games.map((g) => g.name)).toEqual(["The Witcher"]);
+  });
+});
