@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/profile/epic/route";
 import { initDatabase, setDbForTesting } from "@/lib/db";
-import { jsonResponse } from "../../helpers/responses";
+import { emptyThirdPartyResponse, jsonResponse } from "../../helpers/responses";
 import type { OwnedGame } from "@/lib/types";
 
 describe("GET /api/profile/epic Assets & Fallbacks", () => {
@@ -19,7 +19,7 @@ describe("GET /api/profile/epic Assets & Fallbacks", () => {
       { appName: "Cyberpunk2077", catalogItemId: "cat_cp" },
     ];
 
-    vi.spyOn(global, "fetch")
+    vi.spyOn(global, "fetch").mockImplementation(emptyThirdPartyResponse)
       .mockResolvedValueOnce(jsonResponse(mockToken))
       .mockResolvedValueOnce(jsonResponse(mockAssets));
 
@@ -41,7 +41,7 @@ describe("GET /api/profile/epic Assets & Fallbacks", () => {
       { id: "cat_hades", title: "Hades", keyImages: [{ type: "OfferImageWide", url: "https://cdn.epic.com/hades.jpg" }] },
     ];
 
-    vi.spyOn(global, "fetch")
+    vi.spyOn(global, "fetch").mockImplementation(emptyThirdPartyResponse)
       .mockResolvedValueOnce(jsonResponse(mockToken))
       .mockResolvedValueOnce(jsonResponse({ records: [] }))
       .mockResolvedValueOnce(jsonResponse(mockAssets))
@@ -78,7 +78,7 @@ describe("GET /api/profile/epic Assets & Fallbacks", () => {
       },
     };
 
-    vi.spyOn(global, "fetch")
+    vi.spyOn(global, "fetch").mockImplementation(emptyThirdPartyResponse)
       .mockResolvedValueOnce(jsonResponse(mockToken))
       .mockResolvedValueOnce(jsonResponse({ records: [] }))
       .mockResolvedValueOnce(jsonResponse(mockAssets))

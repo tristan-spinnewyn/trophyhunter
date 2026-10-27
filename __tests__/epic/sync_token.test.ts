@@ -1,7 +1,7 @@
 // __tests__/epic/sync_token.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { syncEpicGame } from "@/lib/epic-sync";
-import { jsonResponse } from "../helpers/responses";
+import { emptyThirdPartyResponse, jsonResponse } from "../helpers/responses";
 
 describe("Epic Sync Authorization Token Handling", () => {
   beforeEach(() => {
@@ -20,7 +20,7 @@ describe("Epic Sync Authorization Token Handling", () => {
   });
 
   it("accepts authorizationToken in header and exchanges with Epic OAuth", async () => {
-    vi.spyOn(global, "fetch")
+    vi.spyOn(global, "fetch").mockImplementation(emptyThirdPartyResponse)
       .mockResolvedValueOnce(
         jsonResponse({
           access_token: "mock_exchanged_token",
@@ -58,7 +58,7 @@ describe("Epic Sync Authorization Token Handling", () => {
   });
 
   it("parses JSON and URL redirect authorizationToken strings", async () => {
-    vi.spyOn(global, "fetch")
+    vi.spyOn(global, "fetch").mockImplementation(emptyThirdPartyResponse)
       .mockResolvedValueOnce(
         jsonResponse({
           access_token: "mock_token_from_json",
@@ -70,7 +70,9 @@ describe("Epic Sync Authorization Token Handling", () => {
         jsonResponse({
           data: { PlayerAchievement: { playerAchievementGameRecords: { records: [] } } },
         })
-      );
+      )
+      // No records, so the sync tries to refresh the token: Epic rejects the fake refresh token.
+      .mockResolvedValueOnce(jsonResponse({ errorCode: "invalid_grant" }, 400));
 
     const jsonString = JSON.stringify({ authorizationCode: "auth_code_from_json" });
     const req = new Request("http://localhost:3000/api/sync?platform=epic&appId=55502&name=Some%20Game", {

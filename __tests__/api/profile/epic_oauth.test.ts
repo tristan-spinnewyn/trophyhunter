@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/profile/epic/route";
 import { initDatabase, setDbForTesting } from "@/lib/db";
-import { jsonResponse } from "../../helpers/responses";
+import { emptyThirdPartyResponse, jsonResponse } from "../../helpers/responses";
 
 describe("GET /api/profile/epic OAuth Library Fetch", () => {
   beforeEach(() => {
@@ -36,7 +36,7 @@ describe("GET /api/profile/epic OAuth Library Fetch", () => {
       },
     };
 
-    vi.spyOn(global, "fetch")
+    vi.spyOn(global, "fetch").mockImplementation(emptyThirdPartyResponse)
       .mockResolvedValueOnce(jsonResponse(mockToken))
       .mockResolvedValueOnce(jsonResponse(mockLibrary))
       .mockResolvedValueOnce(jsonResponse(mockGraphQL));
