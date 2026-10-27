@@ -23,7 +23,7 @@ describe("GET /api/profile/epic Assets & Fallbacks", () => {
       .mockResolvedValueOnce(jsonResponse(mockToken))
       .mockResolvedValueOnce(jsonResponse(mockAssets));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic?code=valid-code-123"));
+    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "valid-code-123" } }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
@@ -48,7 +48,7 @@ describe("GET /api/profile/epic Assets & Fallbacks", () => {
       .mockResolvedValueOnce(jsonResponse(mockCatalogBulk))
       .mockResolvedValueOnce(jsonResponse({}, 404));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic?code=fallback-code"));
+    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "fallback-code" } }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
@@ -86,7 +86,7 @@ describe("GET /api/profile/epic Assets & Fallbacks", () => {
       .mockResolvedValueOnce(jsonResponse({}, 404))
       .mockResolvedValueOnce(jsonResponse(mockGraphQL));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic?code=codenames-code"));
+    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "codenames-code" } }));
     expect(res.status).toBe(200);
 
     const data = await res.json();

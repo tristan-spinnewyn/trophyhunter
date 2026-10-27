@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { buildEpicAuthHeaders } from "@/lib/epic/auth-headers";
 import type { UseGameSyncActionParams } from "./useGameSyncAction.types";
 import { applyGameEpicSyncData } from "./gameEpicSyncData";
 import { saveProgressApi } from "./progressApi";
@@ -33,9 +34,10 @@ export function useGameEpicSync({
     setIsSyncing(true);
     setSyncNotice(null);
     try {
-      const tokenParam = userToken ? `&authorizationToken=${encodeURIComponent(userToken.trim())}` : "";
       const userParam = epicAccount?.username ? `&user=${encodeURIComponent(epicAccount.username)}` : "";
-      const res = await fetch(`/api/sync?platform=epic&appId=${game.id}&name=${encodeURIComponent(game.name)}${userParam}${tokenParam}`);
+      const res = await fetch(`/api/sync?platform=epic&appId=${game.id}&name=${encodeURIComponent(game.name)}${userParam}`, {
+        headers: buildEpicAuthHeaders(userToken),
+      });
       const data = await res.json();
 
       if (data.requiresToken || (!data.success && data.error?.includes("authorizationToken"))) {

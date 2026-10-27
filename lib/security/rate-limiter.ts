@@ -9,10 +9,15 @@ interface BucketEntry {
 const buckets = new Map<string, BucketEntry>();
 const MAX_BUCKETS = 5000;
 
+/**
+ * Uses the right-most X-Forwarded-For entry: it is appended by the reverse proxy in front of the app,
+ * whereas left-most entries are supplied by the client and can be forged to dodge the limit.
+ */
 export function extractClientKey(request: Request, scope: string): string {
   const forwarded = request.headers.get("x-forwarded-for");
   const realIp = request.headers.get("x-real-ip");
-  const rawIp = forwarded ? forwarded.split(",")[0].trim() : realIp?.trim() || "local";
+  const proxyAppendedIp = forwarded?.split(",").map((ip) => ip.trim()).filter(Boolean).pop();
+  const rawIp = proxyAppendedIp || realIp?.trim() || "local";
   return `${scope}:${rawIp}`;
 }
 

@@ -17,6 +17,14 @@ describe("GET /api/profile/epic Basic & Validation", () => {
     expect(data.error).toContain("authorizationToken");
   });
 
+  it("ignores an authorization code passed in the query string", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch");
+    const res = await GET(new Request("http://localhost:3000/api/profile/epic?code=leaked-code"));
+
+    expect(res.status).toBe(400);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
   it("configures Epic account in username-only mode without credentials", async () => {
     const res = await GET(new Request("http://localhost:3000/api/profile/epic?user=EpicGamer99"));
     expect(res.status).toBe(200);
@@ -33,7 +41,7 @@ describe("GET /api/profile/epic Basic & Validation", () => {
       textResponse('{"errorCode":"errors.com.epicgames.account.oauth.authorization_code_not_found"}', 400)
     );
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic?code=invalid-code"));
+    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "invalid-code" } }));
     expect(res.status).toBe(401);
 
     const data = await res.json();
@@ -47,13 +55,13 @@ describe("GET /api/profile/epic Basic & Validation", () => {
 
     const jsonToken = JSON.stringify({ authorizationCode: "code_from_json_123" });
     const res1 = await GET(
-      new Request(`http://localhost:3000/api/profile/epic?authorizationToken=${encodeURIComponent(jsonToken)}`)
+      new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": jsonToken } })
     );
     expect(res1.status).toBe(401);
 
     const redirectUrl = "https://localhost/?code=a1b2c3d4e5f6";
     const res2 = await GET(
-      new Request(`http://localhost:3000/api/profile/epic?authorizationToken=${encodeURIComponent(redirectUrl)}`)
+      new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": redirectUrl } })
     );
     expect(res2.status).toBe(401);
   });

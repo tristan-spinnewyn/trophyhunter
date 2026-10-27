@@ -27,7 +27,7 @@ describe("GET /api/profile/epic Features & Errors", () => {
       .mockResolvedValueOnce(jsonResponse(mockPage2))
       .mockResolvedValueOnce(jsonResponse({ data: { PlayerAchievement: { playerAchievementGameRecords: { records: [] } } } }));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic?code=pagination-code"));
+    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "pagination-code" } }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
@@ -60,7 +60,7 @@ describe("GET /api/profile/epic Features & Errors", () => {
       .mockResolvedValueOnce(jsonResponse(mockSteamSearch))
       .mockResolvedValueOnce(jsonResponse(mockSteamAch));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic?code=resolve-code&resolveAchievements=1"));
+    const res = await GET(new Request("http://localhost:3000/api/profile/epic?resolveAchievements=1", { headers: { "x-authorization-token": "resolve-code" } }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
@@ -71,7 +71,7 @@ describe("GET /api/profile/epic Features & Errors", () => {
   it("handles external fetch failure gracefully with status 500", async () => {
     vi.spyOn(global, "fetch").mockRejectedValueOnce(new Error("Connection timed out"));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic?code=crash-code"));
+    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "crash-code" } }));
     expect(res.status).toBe(500);
 
     const data = await res.json();

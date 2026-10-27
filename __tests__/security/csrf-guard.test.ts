@@ -14,6 +14,18 @@ describe("verifySameOriginRequest", () => {
     expect(() => verifySameOriginRequest(req)).not.toThrow();
   });
 
+  it("accepts an Origin matching X-Forwarded-Host when behind a reverse proxy", () => {
+    const req = new Request("http://app:3000/api/user/account", {
+      method: "POST",
+      headers: {
+        origin: "https://trophyhunter.example.com",
+        host: "app:3000",
+        "x-forwarded-host": "trophyhunter.example.com",
+      },
+    });
+    expect(() => verifySameOriginRequest(req)).not.toThrow();
+  });
+
   it("rejects mismatched Origin, malformed Origin, or missing headers", () => {
     const crossOriginReq = new Request("https://trophyhunter.local/api/user/account", {
       method: "POST",
