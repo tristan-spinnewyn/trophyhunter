@@ -1,5 +1,5 @@
 // lib/epic/sandbox.ts
-import { normalizeGameTitle } from "../db/collections";
+import { normalizeGameTitle } from "../game-title";
 import { hashCode, normalizeTitle } from "./game-metadata";
 import { fetchEpicLibraryItems } from "./library";
 

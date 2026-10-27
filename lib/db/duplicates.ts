@@ -1,17 +1,7 @@
 // lib/db/duplicates.ts
 import { getUserOwnedGames } from "./games";
 import type { DuplicateGameGroup, OwnedGame } from "../types";
-
-export function normalizeGameTitle(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(
-      /\b(game of the year edition|goty edition|definitive edition|director's cut|remastered|enhanced edition|special edition|standard edition|deluxe edition|ultimate edition|complete edition)\b/gi,
-      ""
-    )
-    .replace(/[^a-z0-9]/gi, "")
-    .trim();
-}
+import { normalizeGameTitle } from "../game-title";
 
 export function getUserDuplicateGames(userId: string): DuplicateGameGroup[] {
   const games = getUserOwnedGames(userId);

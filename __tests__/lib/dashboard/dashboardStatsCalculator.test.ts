@@ -85,3 +85,15 @@ describe("dashboardStatsCalculator", () => {
     expect(calculateEpicCounts(games)).toEqual({ total: 2, withAch: 1, noAch: 1 });
   });
 });
+
+describe("calculateDuplicateGroups edition matching", () => {
+  it("groups the same game across platforms when one copy is an Ultimate Edition, like server-side duplicates", () => {
+    const groups = calculateDuplicateGroups([
+      baseGame({ appId: 1, name: "Control", platform: "steam" }),
+      baseGame({ appId: 2, name: "Control Ultimate Edition", platform: "epic" }),
+    ]);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].games.map((g) => g.platform)).toEqual(["steam", "epic"]);
+  });
+});
