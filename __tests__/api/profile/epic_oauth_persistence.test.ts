@@ -12,7 +12,7 @@ import {
   getUserGameProgress,
 } from "@/lib/db";
 import type { CookieRecord } from "../../helpers/cookies";
-import { jsonResponse } from "../../helpers/responses";
+import { emptyThirdPartyResponse, jsonResponse } from "../../helpers/responses";
 
 const { mockCookieStore } = vi.hoisted(() => ({
   mockCookieStore: new Map<string, CookieRecord>(),
@@ -65,7 +65,7 @@ describe("GET /api/profile/epic OAuth Persistence", () => {
       },
     };
 
-    vi.spyOn(global, "fetch")
+    vi.spyOn(global, "fetch").mockImplementation(emptyThirdPartyResponse)
       .mockResolvedValueOnce(jsonResponse(mockToken))
       .mockResolvedValueOnce(jsonResponse(mockLibrary))
       .mockResolvedValueOnce(jsonResponse({}, 404))
@@ -82,9 +82,11 @@ describe("GET /api/profile/epic OAuth Persistence", () => {
   });
 
   it("syncEpicProfileWithOAuth verifies direct access token starting with eg1~", async () => {
-    vi.spyOn(global, "fetch")
-      .mockResolvedValueOnce(jsonResponse({ account_id: "acc_eg1", display_name: "Eg1User" }))
-      .mockResolvedValueOnce(jsonResponse({ records: [] }))
+    vi.spyOn(global, "fetch").mockImplementation(emptyThirdPartyResponse)
+      .mockResolvedValueOnce(jsonResponse({ account_id: "acc_eg1", display_name: "Eg1User" })) // token verify
+      .mockResolvedValueOnce(jsonResponse({ records: [] })) // library service
+      .mockResolvedValueOnce(jsonResponse([])) // launcher assets fallback
+      .mockResolvedValueOnce(jsonResponse([])) // entitlements fallback
       .mockResolvedValueOnce(jsonResponse({ data: { PlayerAchievement: { playerAchievementGameRecords: { records: [] } } } }));
 
     const res = await syncEpicProfileWithOAuth("eg1~valid_access_token");

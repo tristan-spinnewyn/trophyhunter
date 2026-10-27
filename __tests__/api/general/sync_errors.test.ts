@@ -26,7 +26,9 @@ describe("GET /api/sync Error Handling", () => {
   });
 
   it("handles 404 profile not found", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValueOnce(textResponse("Not Found", 404));
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce(textResponse("Not Found", 404)) // profile achievements page
+      .mockResolvedValueOnce(textResponse("Not Found", 404)); // game schema, fetched in parallel
 
     const req = new Request("http://localhost:3000/api/sync?user=nonexistent_user&appId=123");
     const res = await GET(req);
