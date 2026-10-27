@@ -4,7 +4,7 @@ import {
   fetchEpicProductAchievements,
   fetchEpicPlayerUnlockedNames,
 } from "@/lib/epic/game-achievements";
-import { fetchEpicPlayerAchievements } from "@/lib/epic-sync";
+import { fetchEpicPlayerAchievements } from "@/lib/epic/graphql";
 import { jsonResponse } from "../helpers/responses";
 
 describe("Epic GraphQL Achievements Queries", () => {

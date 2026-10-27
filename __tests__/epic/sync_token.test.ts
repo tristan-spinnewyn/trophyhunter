@@ -1,6 +1,6 @@
 // __tests__/epic/sync_token.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { syncEpicGame } from "@/lib/epic-sync";
+import { syncEpicGame } from "@/lib/epic/game-sync";
 import { jsonResponse } from "../helpers/responses";
 
 describe("Epic Sync Authorization Token Handling", () => {

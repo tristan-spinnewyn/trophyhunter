@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import type { GameDetails, UserGameProgress } from "@/lib/types";
-import { isUnsplashPlaceholder } from "@/lib/epic-codenames";
+import { isUnsplashPlaceholder } from "@/lib/epic/game-metadata";
 import type { UseGameDetailsParams } from "./useGameDetails.types";
 import { triggerSteamAutoSync } from "./gameAutoSyncSteam";
 import { fetchRemoteUserProgress, fetchGameDetailsApi } from "./fetchGameData";

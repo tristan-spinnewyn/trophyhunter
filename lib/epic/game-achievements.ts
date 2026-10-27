@@ -4,8 +4,6 @@ import { isLikelyMissable } from "@/lib/steam/game-details";
 import { epicGraphQL } from "./graphql";
 import { resolveEpicSandboxId } from "./sandbox";
 
-export { resolveEpicSandboxId };
-
 const PRODUCT_ACHIEVEMENTS_QUERY = `query ProductAchievementsBySandbox($sandboxId: String!, $locale: String!) {
   Achievement {
     productAchievementsRecordBySandbox(sandboxId: $sandboxId, locale: $locale) {

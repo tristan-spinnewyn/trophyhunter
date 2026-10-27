@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { initDatabase, setDbForTesting, createUser } from "@/lib/db";
 import { storeEpicCredentials } from "@/lib/epic/credentials";
-import { syncEpicProfileWithOAuth } from "@/lib/epic/service";
+import { syncEpicProfileWithOAuth } from "@/lib/epic/profile-sync";
 import { jsonResponse } from "../helpers/responses";
 
 describe("Epic Service OAuth Synchronization", () => {

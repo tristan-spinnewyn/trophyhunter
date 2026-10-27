@@ -4,7 +4,7 @@ import {
   initDatabase, setDbForTesting, createUser, createSession,
   saveUserPlatformAccount, saveUserOwnedGames, getUserGameProgress,
 } from "@/lib/db";
-import { syncEpicGame } from "@/lib/epic-sync";
+import { syncEpicGame } from "@/lib/epic/game-sync";
 import type { CookieRecord } from "../helpers/cookies";
 import { jsonResponse } from "../helpers/responses";
 

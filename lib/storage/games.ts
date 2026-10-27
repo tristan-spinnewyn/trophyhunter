@@ -1,6 +1,6 @@
 // lib/storage/games.ts
 import type { OwnedGame, PlatformType } from "../types";
-import { resolveEpicCodename } from "../epic-codenames";
+import { resolveEpicCodename } from "../epic/game-metadata";
 import { isValidGameStatus, resolveGameStatus } from "../game-status/game-status.services";
 import { OWNED_GAMES_KEY } from "./constants";
 import { getGameProgress } from "./progress";

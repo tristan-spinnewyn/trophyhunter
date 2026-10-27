@@ -23,11 +23,10 @@ import {
   fetchEpicPlayerUnlockedNames,
   fetchEpicProductAchievements,
   getEpicGameAchievements,
-  resolveEpicSandboxId,
   unwrapPlayerAchievement,
 } from "./game-achievements";
 import { fetchEpicPlayerAchievements, type EpicPlayerAchievementRecord } from "./graphql";
-import { matchSandboxRecord } from "./sandbox";
+import { matchSandboxRecord, resolveEpicSandboxId } from "./sandbox";
 
 export function buildUnlockedSlugs(
   unlockedTitles: readonly string[],
@@ -190,8 +189,6 @@ export async function getEpicAchievementsForUser(
   }
 }
 
-
-export { refreshEpicAccessToken, fetchEpicPlayerAchievements };
 
 export interface EpicSyncResult {
   success: boolean;

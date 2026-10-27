@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import { KeyRound } from "lucide-react";
-import { parseEpicAuthInput } from "@/lib/epic/auth-parser";
+import { parseEpicAuthInput } from "@/lib/epic/auth-input";
 import { EpicAuthInstructions, EPIC_AUTH_URL } from "./epic-modal/EpicAuthInstructions";
 import { EpicAuthForm } from "./epic-modal/EpicAuthForm";
 

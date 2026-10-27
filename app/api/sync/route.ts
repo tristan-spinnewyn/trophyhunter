@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { syncEpicGame } from "@/lib/epic-sync";
+import { syncEpicGame } from "@/lib/epic/game-sync";
 import { syncSteamGame } from "@/lib/steam/sync";
 
 export async function GET(request: Request) {

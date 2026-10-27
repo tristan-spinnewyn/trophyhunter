@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { buildEpicAuthHeaders } from "@/lib/epic/auth-headers";
+import { buildEpicAuthHeaders } from "@/lib/epic/auth-input";
 import type { UseGameSyncActionParams } from "./useGameSyncAction.types";
 import { applyGameEpicSyncData } from "./gameEpicSyncData";
 import { saveProgressApi } from "./progressApi";

@@ -3,9 +3,9 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import {
   syncEpicProfileWithOAuth,
   createEpicProfileUsernameOnly,
-} from "@/lib/epic/service";
-import { parseEpicAuthInput, loadStoredEpicCredentials } from "@/lib/epic/credentials";
-import { readAuthInput } from "@/lib/epic/auth-request";
+} from "@/lib/epic/profile-sync";
+import { loadStoredEpicCredentials } from "@/lib/epic/credentials";
+import { parseEpicAuthInput, readAuthInput } from "@/lib/epic/auth-input";
 
 export async function GET(request: Request) {
   let authUser = null;

@@ -1,8 +1,13 @@
 // __tests__/epic/auth_request.test.ts
 import { describe, it, expect } from "vitest";
-import { readAuthInput, EPIC_AUTH_HEADER } from "@/lib/epic/auth-request";
-import { buildEpicAuthHeaders } from "@/lib/epic/auth-headers";
-import { EPIC_AUTH_CODE_URL, EPIC_CLIENT_ID, TOKEN_INVALID_MESSAGE } from "@/lib/epic/auth-input";
+import {
+  buildEpicAuthHeaders,
+  EPIC_AUTH_CODE_URL,
+  EPIC_AUTH_HEADER,
+  EPIC_CLIENT_ID,
+  readAuthInput,
+  TOKEN_INVALID_MESSAGE,
+} from "@/lib/epic/auth-input";
 
 describe("readAuthInput", () => {
   it.each(["authorizationToken", "authorization_token", "authorizationCode", "authorization_code", "code", "token"])(

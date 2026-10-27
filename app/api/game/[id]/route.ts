@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getSteamGameDetails } from "@/lib/steam/game-details";
-import { getEpicAchievementsForUser } from "@/lib/epic/game-details";
+import { getEpicAchievementsForUser } from "@/lib/epic/game-sync";
 import { getGogAchievementsForUser } from "@/lib/gog/service";
 import { getXboxAchievementsForUser } from "@/lib/xbox/game-details";
 

@@ -1,8 +1,7 @@
 // components/dashboard/hooks/useEpicProfileConnect.ts
 import type { OwnedGame, PlatformAccount } from "@/lib/types";
 import { replacePlatformInList } from "@/components/dashboard/utils";
-import { parseEpicAuthInput } from "@/lib/epic/auth-parser";
-import { buildEpicAuthHeaders } from "@/lib/epic/auth-headers";
+import { buildEpicAuthHeaders, parseEpicAuthInput } from "@/lib/epic/auth-input";
 
 interface UseEpicProfileConnectProps {
   ownedGames: OwnedGame[];
