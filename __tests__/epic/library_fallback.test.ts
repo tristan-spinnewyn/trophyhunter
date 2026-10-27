@@ -28,3 +28,18 @@ describe("Epic Library Fallback Strategies", () => {
     expect(items[0].namespace).toBe("b30adba602494921b77cbff2f0a82ac0");
   });
 });
+
+describe("Epic Library when every source fails", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("returns no items when library, assets and entitlements all respond with errors", async () => {
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce(jsonResponse({ error: "server" }, 500))
+      .mockResolvedValueOnce(jsonResponse({ error: "server" }, 500))
+      .mockResolvedValueOnce(jsonResponse({ error: "server" }, 500));
+
+    expect(await fetchEpicLibraryItems("fake_token", "acc_123")).toEqual([]);
+  });
+});

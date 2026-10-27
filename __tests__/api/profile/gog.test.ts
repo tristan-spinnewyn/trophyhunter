@@ -47,7 +47,9 @@ describe("GET /api/profile/gog", () => {
       <div class="user-avatar-container"><img class="user-avatar" src="https://images.gog.com/avatar.jpg" /></div>
       <div class="user-stats__item-count">42</div>
     `;
-    vi.spyOn(global, "fetch").mockResolvedValueOnce(textResponse(mockHtml));
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce(textResponse(mockHtml))
+      .mockResolvedValueOnce(jsonResponse({ page: 1, pages: 1, total: 0, _embedded: { items: [] } })); // public games/stats
 
     const res = await GET(new Request("http://localhost:3000/api/profile/gog?user=GwentMaster"));
     expect(res.status).toBe(200);

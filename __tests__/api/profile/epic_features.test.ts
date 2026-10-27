@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/profile/epic/route";
 import { initDatabase, setDbForTesting } from "@/lib/db";
-import { jsonResponse } from "../../helpers/responses";
+import { emptyThirdPartyResponse, jsonResponse } from "../../helpers/responses";
 import type { OwnedGame } from "@/lib/types";
 
 describe("GET /api/profile/epic Features & Errors", () => {
@@ -21,7 +21,7 @@ describe("GET /api/profile/epic Features & Errors", () => {
       records: [{ appName: "RocketLeague", catalogItemId: "cat_rl", metadata: { title: "Rocket League" } }],
     };
 
-    vi.spyOn(global, "fetch")
+    vi.spyOn(global, "fetch").mockImplementation(emptyThirdPartyResponse)
       .mockResolvedValueOnce(jsonResponse(mockToken))
       .mockResolvedValueOnce(jsonResponse(mockPage1))
       .mockResolvedValueOnce(jsonResponse(mockPage2))
@@ -52,7 +52,7 @@ describe("GET /api/profile/epic Features & Errors", () => {
       },
     };
 
-    vi.spyOn(global, "fetch")
+    vi.spyOn(global, "fetch").mockImplementation(emptyThirdPartyResponse)
       .mockResolvedValueOnce(jsonResponse(mockToken))
       .mockResolvedValueOnce(jsonResponse(mockLibrary))
       .mockResolvedValueOnce(jsonResponse({}, 404))
@@ -69,7 +69,7 @@ describe("GET /api/profile/epic Features & Errors", () => {
   });
 
   it("handles external fetch failure gracefully with status 500", async () => {
-    vi.spyOn(global, "fetch").mockRejectedValueOnce(new Error("Connection timed out"));
+    vi.spyOn(global, "fetch").mockImplementation(emptyThirdPartyResponse).mockRejectedValueOnce(new Error("Connection timed out"));
 
     const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "crash-code" } }));
     expect(res.status).toBe(500);

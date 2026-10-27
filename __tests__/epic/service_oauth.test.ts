@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { initDatabase, setDbForTesting, createUser } from "@/lib/db";
 import { storeEpicCredentials } from "@/lib/epic/credentials";
 import { syncEpicProfileWithOAuth } from "@/lib/epic/service";
-import { jsonResponse } from "../helpers/responses";
+import { emptyThirdPartyResponse, jsonResponse } from "../helpers/responses";
 
 describe("Epic Service OAuth Synchronization", () => {
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe("Epic Service OAuth Synchronization", () => {
       accountId: "stored_acc_123",
     });
 
-    vi.spyOn(global, "fetch")
+    vi.spyOn(global, "fetch").mockImplementation(emptyThirdPartyResponse)
       .mockResolvedValueOnce(
         jsonResponse({ account_id: "stored_acc_123", display_name: "StoredPro" })
       )
@@ -52,7 +52,7 @@ describe("Epic Service OAuth Synchronization", () => {
       accountId: "acc_refresh_123",
     });
 
-    vi.spyOn(global, "fetch")
+    vi.spyOn(global, "fetch").mockImplementation(emptyThirdPartyResponse)
       .mockResolvedValueOnce(jsonResponse({ error: "expired" }, 401))
       .mockResolvedValueOnce(
         jsonResponse({
