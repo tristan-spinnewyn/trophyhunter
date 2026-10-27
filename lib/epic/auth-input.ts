@@ -1,11 +1,16 @@
 // lib/epic/auth-input.ts
 // Client-safe: no server-only imports (db, Buffer). Imported by browser components.
 
+export const EPIC_CLIENT_ID = "34a02cf8f4414e29b15921876da36f9a";
+
+/** Epic page where the user signs in and gets an authorization code for the launcher client. */
+export const EPIC_AUTH_CODE_URL = `https://www.epicgames.com/id/api/redirect?clientId=${EPIC_CLIENT_ID}&responseType=code`;
+
 export const TOKEN_REQUIRED_MESSAGE =
   "Un code ou token d'autorisation Epic Games (authorizationToken) est requis pour synchroniser ce jeu.";
 
 export const TOKEN_INVALID_MESSAGE =
-  "Code d'autorisation Epic Games invalide ou expiré. Rendez-vous sur https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code pour obtenir un nouveau code.";
+  `Code d'autorisation Epic Games invalide ou expiré. Rendez-vous sur ${EPIC_AUTH_CODE_URL} pour obtenir un nouveau code.`;
 
 export const EPIC_AUTH_HEADER = "x-authorization-token";
 

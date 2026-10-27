@@ -2,6 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { readAuthInput, EPIC_AUTH_HEADER } from "@/lib/epic/auth-request";
 import { buildEpicAuthHeaders } from "@/lib/epic/auth-headers";
+import { EPIC_AUTH_CODE_URL, EPIC_CLIENT_ID, TOKEN_INVALID_MESSAGE } from "@/lib/epic/auth-input";
 
 describe("readAuthInput", () => {
   it.each(["authorizationToken", "authorization_token", "authorizationCode", "authorization_code", "code", "token"])(
@@ -36,5 +37,18 @@ describe("buildEpicAuthHeaders", () => {
   it("normalizes pasted Epic JSON into the auth header", () => {
     const pasted = JSON.stringify({ redirectUrl: "https://localhost", authorizationCode: "abc123" });
     expect(buildEpicAuthHeaders(pasted)).toEqual({ [EPIC_AUTH_HEADER]: "abc123" });
+  });
+});
+
+describe("EPIC_AUTH_CODE_URL", () => {
+  it("points the Epic redirect page at the launcher client id", () => {
+    expect(EPIC_CLIENT_ID).toBe("34a02cf8f4414e29b15921876da36f9a");
+    expect(EPIC_AUTH_CODE_URL).toBe(
+      `https://www.epicgames.com/id/api/redirect?clientId=${EPIC_CLIENT_ID}&responseType=code`
+    );
+  });
+
+  it("is the link offered when a code is invalid", () => {
+    expect(TOKEN_INVALID_MESSAGE).toContain(EPIC_AUTH_CODE_URL);
   });
 });

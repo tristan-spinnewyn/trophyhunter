@@ -1,7 +1,7 @@
 // components/dashboard/epic-panel/EpicTokenSection.tsx
 
 import { KeyRound } from "lucide-react";
-import { parseEpicAuthInput } from "@/lib/epic/auth-parser";
+import { EPIC_AUTH_CODE_URL, parseEpicAuthInput } from "@/lib/epic/auth-input";
 
 interface EpicTokenSectionProps {
   epicCode: string;
@@ -32,7 +32,7 @@ export function EpicTokenSection({
           ) : null}
         </button>
         <a
-          href="https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code"
+          href={EPIC_AUTH_CODE_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="text-[10px] text-purple-400 hover:underline flex items-center gap-0.5"
@@ -44,7 +44,7 @@ export function EpicTokenSection({
       {(showEpicCode || epicCode) && (
         <div className="mt-2 space-y-1.5 text-[11px] text-slate-400 bg-purple-950/20 border border-purple-500/20 rounded-xl p-2.5">
           <p className="text-[10px] text-slate-300">
-            1. Cliquez sur <a href="https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code" target="_blank" rel="noopener noreferrer" className="text-purple-400 underline font-semibold">ce lien Epic officiel</a> (authentification sécurisée sur epicgames.com).
+            1. Cliquez sur <a href={EPIC_AUTH_CODE_URL} target="_blank" rel="noopener noreferrer" className="text-purple-400 underline font-semibold">ce lien Epic officiel</a> (authentification sécurisée sur epicgames.com).
           </p>
           <p className="text-[10px] text-slate-300">
             2. Copiez la valeur de <code>authorizationCode</code> (ou tout le JSON) et collez-la ci-dessous :

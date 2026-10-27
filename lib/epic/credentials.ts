@@ -1,10 +1,12 @@
 // lib/epic/credentials.ts
 import { getUserPlatformAccounts, getUserPlatformApiKey, saveUserPlatformAccount } from "@/lib/db";
-import { parseEpicAuthInput } from "./auth-input";
+import { EPIC_AUTH_CODE_URL, EPIC_CLIENT_ID, parseEpicAuthInput } from "./auth-input";
 
-export { parseEpicAuthInput } from "./auth-input";
+export { EPIC_CLIENT_ID, parseEpicAuthInput } from "./auth-input";
 
-export const EPIC_CLIENT_ID = "34a02cf8f4414e29b15921876da36f9a";
+const AUTH_CODE_EXPIRED_MESSAGE =
+  `Code d'autorisation Epic Games expiré ou invalide (authorizationToken). Rendez-vous sur ${EPIC_AUTH_CODE_URL} pour obtenir un nouveau code.`;
+
 export const EPIC_CLIENT_SECRET = "daafbccc737745039dffe53d94fc76cf";
 export const EPIC_BASIC_AUTH = Buffer.from(
   `${EPIC_CLIENT_ID}:${EPIC_CLIENT_SECRET}`
@@ -235,7 +237,7 @@ export async function resolveEpicTokens(
     if (!cleanCode) {
       return {
         errorStatus: 401,
-        errorMsg: "Code d'autorisation Epic Games expiré ou invalide (authorizationToken). Rendez-vous sur https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code pour obtenir un nouveau code.",
+        errorMsg: AUTH_CODE_EXPIRED_MESSAGE,
       };
     }
 
@@ -245,7 +247,7 @@ export async function resolveEpicTokens(
       const errText = await tokenRes.text();
       return {
         errorStatus: 401,
-        errorMsg: "Code d'autorisation Epic Games expiré ou invalide (authorizationToken). Rendez-vous sur https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code pour obtenir un nouveau code.",
+        errorMsg: AUTH_CODE_EXPIRED_MESSAGE,
         errorDetails: errText,
       };
     }
