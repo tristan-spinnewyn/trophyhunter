@@ -1,6 +1,6 @@
 // lib/epic/profile-achievements.ts
 import type { AchSummary } from "./types";
-import { extractBestCover } from "./helpers";
+import { extractBestCover } from "./game-metadata";
 import { unwrapPlayerAchievement } from "./game-achievements";
 import { EPIC_PRIMARY_GRAPHQL_ENDPOINT, EPIC_USER_AGENT } from "./graphql";
 

@@ -2,7 +2,7 @@
 import type { Achievement } from "@/lib/types";
 import { isLikelyMissable } from "@/lib/steam/game-details";
 import { epicGraphQL } from "./graphql";
-import { resolveEpicSandboxId } from "./sandbox-resolver";
+import { resolveEpicSandboxId } from "./sandbox";
 
 export { resolveEpicSandboxId };
 

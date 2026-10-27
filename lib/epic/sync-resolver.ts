@@ -8,7 +8,7 @@ import {
   resolveEpicSandboxId,
 } from "./game-achievements";
 import { fetchEpicPlayerAchievements, type EpicPlayerAchievementRecord } from "./graphql";
-import { matchSandboxRecord } from "./sandbox-matcher";
+import { matchSandboxRecord } from "./sandbox";
 
 export async function resolveEpicGameData(
   creds: EpicCredentials,

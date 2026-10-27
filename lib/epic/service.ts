@@ -4,7 +4,7 @@ import { saveUserPlatformAccount } from "@/lib/db";
 import { fetchEpicAchievementsGraphQL } from "./profile-achievements";
 import { enrichEpicGamesWithSteamMetadata } from "./enrichment";
 import { resolveEpicTokens } from "./credentials";
-import { discoverEpicGames } from "./service-games";
+import { discoverEpicGames } from "./library";
 import { matchAndEnrichSandboxAchievements } from "./service-achievements";
 import { persistEpicSyncData } from "./service-persist";
 

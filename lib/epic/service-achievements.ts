@@ -1,7 +1,7 @@
 // lib/epic/service-achievements.ts
 import type { OwnedGame } from "@/lib/types";
-import { resolveEpicCodename, isUnsplashPlaceholder, DEFAULT_EPIC_COVER } from "@/lib/epic-codenames";
-import { isJunkHex, hashCode, normalizeTitle } from "./helpers";
+import { resolveEpicCodename, isUnsplashPlaceholder, DEFAULT_EPIC_COVER } from "./game-metadata";
+import { isJunkHex, hashCode, normalizeTitle } from "./game-metadata";
 import type { AchSummary } from "./types";
 
 function doesGameMatchSandbox(gameName: string, sId: string, ach: AchSummary): boolean {

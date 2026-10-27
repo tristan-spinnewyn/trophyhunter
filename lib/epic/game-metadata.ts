@@ -1,4 +1,5 @@
-// lib/epic/codenames-dict.ts
+// lib/epic/game-metadata.ts
+
 export const KNOWN_EPIC_CODENAMES: Record<string, string> = {
   "aa": "Aven Colony", "angelonia": "Watch Dogs 2", "barbet": "Dishonored: Death of the Outsider",
   "cacao": "Castlevania Anniversary Collection", "camellia": "Cities: Skylines", "catnip": "Control",
@@ -25,3 +26,93 @@ export const KNOWN_EPIC_CODENAMES: Record<string, string> = {
   "fennel": "For The King", "ginger": "Enter the Gungeon", "nut": "Nioh: The Complete Edition",
   "paprika": "Pathway", "tarragon": "The Talos Principle", "wasabi": "World War Z",
 };
+
+export const DEFAULT_EPIC_COVER =
+  "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80";
+
+export function isUnsplashPlaceholder(url?: string | null): boolean {
+  if (!url) return true;
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname === "images.unsplash.com";
+  } catch {
+    return false;
+  }
+}
+
+export function resolveEpicCodename(codename: string): string | null {
+  if (!codename) return null;
+  const key = codename.trim().toLowerCase();
+  return KNOWN_EPIC_CODENAMES[key] || null;
+}
+
+export function isJunkHex(str: string): boolean {
+  return /^[0-9a-f]{20,}$/i.test(str.trim());
+}
+
+export function hashCode(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return hash;
+}
+
+export function extractBestCover(
+  rawKeyImages: any,
+  customAttributes?: any
+): string {
+  if (typeof rawKeyImages === "string") {
+    try {
+      rawKeyImages = JSON.parse(rawKeyImages);
+    } catch {}
+  }
+
+  const preferred = [
+    "DieselStoreFrontWide",
+    "OfferImageWide",
+    "Thumbnail",
+    "DieselStoreFrontTall",
+    "DieselGameBox",
+    "DieselGameBoxTall",
+    "VaultClosed",
+  ];
+
+  if (Array.isArray(rawKeyImages)) {
+    for (const pType of preferred) {
+      const found = rawKeyImages.find(
+        (img: any) =>
+          (img.type === pType || img.imageType === pType) &&
+          (img.url || img.link)
+      );
+      if (found) {
+        return found.url || found.link;
+      }
+    }
+    if (
+      rawKeyImages.length > 0 &&
+      (rawKeyImages[0].url || rawKeyImages[0].link)
+    ) {
+      return rawKeyImages[0].url || rawKeyImages[0].link;
+    }
+  }
+
+  if (customAttributes && typeof customAttributes === "object") {
+    for (const key of preferred) {
+      const val = customAttributes[key]?.value;
+      if (val && typeof val === "string" && val.startsWith("http")) {
+        return val;
+      }
+    }
+  }
+
+  return "";
+}
+
+export function normalizeTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
+    .trim();
+}
