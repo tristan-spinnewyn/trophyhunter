@@ -63,7 +63,6 @@ export async function fetchLibraryServiceItems(accessToken: string): Promise<any
   return records;
 }
 
-
 export async function fetchLauncherAssets(accessToken: string): Promise<any[]> {
   try {
     const res = await fetch(
