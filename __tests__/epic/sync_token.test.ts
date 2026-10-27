@@ -19,7 +19,7 @@ describe("Epic Sync Authorization Token Handling", () => {
     expect(result.unlockedIds).toEqual([]);
   });
 
-  it("accepts authorizationToken in query and exchanges with Epic OAuth", async () => {
+  it("accepts authorizationToken in header and exchanges with Epic OAuth", async () => {
     vi.spyOn(global, "fetch")
       .mockResolvedValueOnce(
         jsonResponse({
@@ -47,9 +47,9 @@ describe("Epic Sync Authorization Token Handling", () => {
         })
       );
 
-    const req = new Request(
-      "http://localhost:3000/api/sync?platform=epic&appId=55501&name=Super%20Game&authorizationToken=code_12345"
-    );
+    const req = new Request("http://localhost:3000/api/sync?platform=epic&appId=55501&name=Super%20Game", {
+      headers: { "x-authorization-token": "code_12345" },
+    });
     const result = await syncEpicGame(req, 55501, "Super Game");
 
     expect(result.success).toBe(true);
@@ -72,12 +72,10 @@ describe("Epic Sync Authorization Token Handling", () => {
         })
       );
 
-    const jsonString = encodeURIComponent(
-      JSON.stringify({ authorizationCode: "auth_code_from_json" })
-    );
-    const req = new Request(
-      `http://localhost:3000/api/sync?platform=epic&appId=55502&name=Some%20Game&authorizationToken=${jsonString}`
-    );
+    const jsonString = JSON.stringify({ authorizationCode: "auth_code_from_json" });
+    const req = new Request("http://localhost:3000/api/sync?platform=epic&appId=55502&name=Some%20Game", {
+      headers: { "x-authorization-token": jsonString },
+    });
     const result = await syncEpicGame(req, 55502, "Some Game");
 
     expect(result.success).toBe(true);

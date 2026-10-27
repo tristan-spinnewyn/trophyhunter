@@ -52,6 +52,27 @@ describe("Auth Rate Limiting & Sync Validation API", () => {
     expect(blocked.status).toBe(429);
   });
 
+  it("returns 429 when one account is targeted from rotating IP addresses", async () => {
+    createUser("victim", "correct-password");
+    const attempt = (ip: string) =>
+      loginHandler(
+        new Request("http://localhost/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-forwarded-for": ip },
+          body: JSON.stringify({ username: "Victim", password: "wrong-password" }),
+        })
+      );
+
+    for (let i = 0; i < 10; i++) {
+      const res = await attempt(`10.9.0.${i}`);
+      expect(res.status).toBe(401);
+    }
+
+    const blocked = await attempt("10.9.1.1");
+    expect(blocked.status).toBe(429);
+    expect(blocked.headers.get("Retry-After")).toBeTruthy();
+  });
+
   it("returns 429 when register rate limit is exceeded", async () => {
     for (let i = 0; i < 10; i++) {
       await registerHandler(

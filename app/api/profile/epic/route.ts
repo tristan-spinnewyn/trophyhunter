@@ -5,6 +5,7 @@ import {
   createEpicProfileUsernameOnly,
 } from "@/lib/epic/service";
 import { parseEpicAuthInput, loadStoredEpicCredentials } from "@/lib/epic/credentials";
+import { readAuthInput } from "@/lib/epic/auth-request";
 
 export async function GET(request: Request) {
   let authUser = null;
@@ -14,16 +15,7 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const rawUser = searchParams.get("user")?.trim();
-  const rawCode = (
-    searchParams.get("authorizationToken") ||
-    searchParams.get("authorization_token") ||
-    searchParams.get("authorizationCode") ||
-    searchParams.get("authorization_code") ||
-    searchParams.get("code") ||
-    searchParams.get("token") ||
-    request.headers.get("x-authorization-token") ||
-    ""
-  ).trim();
+  const rawCode = readAuthInput(request);
 
   const code = parseEpicAuthInput(rawCode);
 
@@ -31,7 +23,7 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Paramètre 'user' (pseudo Epic Games) ou 'authorizationToken' / 'code' (code d'autorisation Epic) requis.",
+          "Paramètre 'user' (pseudo Epic Games) ou en-tête 'x-authorization-token' (authorizationToken Epic) requis.",
         requiresToken: true,
       },
       { status: 400 }
