@@ -73,44 +73,58 @@ export function storeEpicCredentials(userId: string, creds: EpicCredentials): vo
   }
 }
 
+/**
+ * Checks a bearer access token against Epic's account service.
+ * Returns null when the token is rejected or the request fails.
+ */
+export async function verifyEpicAccessToken(
+  accessToken: string
+): Promise<{ accountId: string; displayName?: string } | null> {
+  try {
+    const res = await fetch(`${EPIC_ACCOUNT_API}/verify`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return { accountId: data?.account_id, displayName: data?.display_name || data?.displayName };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Posts an OAuth grant to Epic's token endpoint with the launcher client credentials.
+ * Network errors propagate to the caller.
+ */
+export function requestEpicToken(params: Record<string, string>): Promise<Response> {
+  return fetch(`${EPIC_ACCOUNT_API}/token`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${EPIC_BASIC_AUTH}`,
+    },
+    body: new URLSearchParams(params).toString(),
+  });
+}
+
 export async function exchangeEpicAuthInput(raw: string): Promise<EpicCredentials | null> {
   const code = parseEpicAuthInput(raw);
   if (!code) return null;
 
   if (code.startsWith("eg1~")) {
-    try {
-      const verifyRes = await fetch(`${EPIC_ACCOUNT_API}/verify`, {
-        headers: { Authorization: `Bearer ${code}` },
-      });
-      if (verifyRes.ok) {
-        const data = await verifyRes.json();
-        if (data?.account_id) {
-          return {
-            accessToken: code,
-            refreshToken: null,
-            accountId: data.account_id,
-            displayName: data.display_name || data.displayName,
-          };
-        }
-      }
-    } catch {
-      // Fall through to code exchange
+    const verified = await verifyEpicAccessToken(code);
+    if (verified?.accountId) {
+      return {
+        accessToken: code,
+        refreshToken: null,
+        accountId: verified.accountId,
+        displayName: verified.displayName,
+      };
     }
   }
 
   try {
-    const tokenRes = await fetch(`${EPIC_ACCOUNT_API}/token`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Basic ${EPIC_BASIC_AUTH}`,
-      },
-      body: new URLSearchParams({
-        grant_type: "authorization_code",
-        code,
-        token_type: "eg1",
-      }).toString(),
-    });
+    const tokenRes = await requestEpicToken({ grant_type: "authorization_code", code, token_type: "eg1" });
     if (!tokenRes.ok) return null;
     const data = await tokenRes.json();
     if (!data?.access_token || !data?.account_id) return null;
@@ -129,17 +143,7 @@ export async function refreshEpicAccessToken(
   refreshToken: string
 ): Promise<{ accessToken: string; refreshToken?: string; accountId?: string } | null> {
   try {
-    const res = await fetch(`${EPIC_ACCOUNT_API}/token`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Basic ${EPIC_BASIC_AUTH}`,
-      },
-      body: new URLSearchParams({
-        grant_type: "refresh_token",
-        refresh_token: refreshToken,
-      }).toString(),
-    });
+    const res = await requestEpicToken({ grant_type: "refresh_token", refresh_token: refreshToken });
     if (!res.ok) return null;
     const data = await res.json();
     return {
@@ -197,34 +201,24 @@ export async function resolveEpicTokens(
   let displayName = rawUser || "Joueur Epic";
 
   if (cleanCode.startsWith("eg1~")) {
-    try {
-      const verifyRes = await fetch("https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/verify", {
-        headers: { Authorization: `Bearer ${cleanCode}` },
-      });
-      if (verifyRes.ok) {
-        const verifyData = await verifyRes.json();
-        accessToken = cleanCode;
-        accountId = verifyData.account_id;
-        displayName = verifyData.display_name || displayName;
-      }
-    } catch {}
+    const verified = await verifyEpicAccessToken(cleanCode);
+    if (verified) {
+      accessToken = cleanCode;
+      accountId = verified.accountId;
+      displayName = verified.displayName || displayName;
+    }
   }
 
   if (!accessToken && !cleanCode && authUser) {
     const stored = loadStoredEpicCredentials(authUser.id);
     if (stored?.accessToken) {
-      try {
-        const verifyRes = await fetch("https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/verify", {
-          headers: { Authorization: `Bearer ${stored.accessToken}` },
-        });
-        if (verifyRes.ok) {
-          const verifyData = await verifyRes.json();
-          accessToken = stored.accessToken;
-          accountId = verifyData.account_id || stored.accountId;
-          refreshToken = stored.refreshToken || "";
-          displayName = verifyData.display_name || displayName;
-        }
-      } catch {}
+      const verified = await verifyEpicAccessToken(stored.accessToken);
+      if (verified) {
+        accessToken = stored.accessToken;
+        accountId = verified.accountId || stored.accountId;
+        refreshToken = stored.refreshToken || "";
+        displayName = verified.displayName || displayName;
+      }
     }
     if (!accessToken && stored?.refreshToken) {
       const refreshed = await refreshEpicAccessToken(stored.refreshToken);
@@ -245,11 +239,7 @@ export async function resolveEpicTokens(
       };
     }
 
-    const tokenRes = await fetch("https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded", Authorization: `Basic ${EPIC_BASIC_AUTH}` },
-      body: new URLSearchParams({ grant_type: "authorization_code", code: cleanCode, token_type: "eg1" }).toString(),
-    });
+    const tokenRes = await requestEpicToken({ grant_type: "authorization_code", code: cleanCode, token_type: "eg1" });
 
     if (!tokenRes.ok) {
       const errText = await tokenRes.text();

@@ -1,7 +1,66 @@
 // __tests__/epic/credentials_tokens.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { exchangeEpicAuthInput, refreshEpicAccessToken } from "@/lib/epic/credentials";
+import {
+  EPIC_ACCOUNT_API,
+  exchangeEpicAuthInput,
+  refreshEpicAccessToken,
+  requestEpicToken,
+  verifyEpicAccessToken,
+} from "@/lib/epic/credentials";
 import { jsonResponse } from "../helpers/responses";
+
+describe("verifyEpicAccessToken", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("returns the account behind a valid bearer token", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      jsonResponse({ account_id: "acc_v", display_name: "Snake" })
+    );
+
+    expect(await verifyEpicAccessToken("tok_v")).toEqual({ accountId: "acc_v", displayName: "Snake" });
+    const [url, init] = fetchSpy.mock.calls[0];
+    expect(url).toBe(`${EPIC_ACCOUNT_API}/verify`);
+    expect(init?.headers).toEqual({ Authorization: "Bearer tok_v" });
+  });
+
+  it("falls back to the camelCase displayName field", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(jsonResponse({ account_id: "acc_c", displayName: "Camel" }));
+
+    expect(await verifyEpicAccessToken("tok_c")).toEqual({ accountId: "acc_c", displayName: "Camel" });
+  });
+
+  it("returns null when the token is rejected or the request throws", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(jsonResponse({ error: "invalid" }, 401));
+    expect(await verifyEpicAccessToken("bad")).toBeNull();
+
+    vi.spyOn(global, "fetch").mockRejectedValueOnce(new Error("Network error"));
+    expect(await verifyEpicAccessToken("offline")).toBeNull();
+  });
+});
+
+describe("requestEpicToken", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("posts form-encoded params to the token endpoint with Basic client auth", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce(jsonResponse({ access_token: "a" }));
+
+    const res = await requestEpicToken({ grant_type: "refresh_token", refresh_token: "r" });
+
+    expect(res.ok).toBe(true);
+    const [url, init] = fetchSpy.mock.calls[0];
+    expect(url).toBe(`${EPIC_ACCOUNT_API}/token`);
+    expect(init?.method).toBe("POST");
+    expect(init?.headers).toEqual({
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${Buffer.from("34a02cf8f4414e29b15921876da36f9a:daafbccc737745039dffe53d94fc76cf").toString("base64")}`,
+    });
+    expect(init?.body).toBe("grant_type=refresh_token&refresh_token=r");
+  });
+});
 
 describe("Epic Token Exchange & Refresh", () => {
   beforeEach(() => {
