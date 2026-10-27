@@ -1,10 +1,9 @@
 import { FolderPlus } from "lucide-react";
-import type { OwnedGame } from "@/lib/types";
-import type { LocalCollection } from "@/lib/storage";
+import type { OwnedGame, CollectionWithGames } from "@/lib/types";
 
 interface AddToCollectionModalProps {
   game: OwnedGame | null;
-  collections: LocalCollection[];
+  collections: CollectionWithGames[];
   onClose: () => void;
   onAddToCollection: (collectionId: string, game: OwnedGame) => void;
 }

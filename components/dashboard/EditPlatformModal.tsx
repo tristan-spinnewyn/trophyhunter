@@ -3,7 +3,7 @@
 "use client";
 
 import type { PlatformType } from "@/lib/types";
-import { PLATFORM_META } from "@/lib/storage";
+import { PLATFORM_META } from "@/lib/platforms";
 import { PlatformStatsInputs } from "./platform-modal/PlatformStatsInputs";
 
 interface EditPlatformModalProps {

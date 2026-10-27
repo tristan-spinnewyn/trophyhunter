@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import type { OwnedGame, PlatformType, GameSearchResult } from "@/lib/types";
-import { PLATFORM_META } from "@/lib/storage";
+import { PLATFORM_META } from "@/lib/platforms";
 import { mergeGamesList } from "@/components/dashboard/utils";
 import type { UseAddGameFlowProps } from "./useAddGameFlow.types";
 import { useAddGameSearch } from "./useAddGameSearch";

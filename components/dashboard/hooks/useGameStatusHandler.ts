@@ -1,7 +1,6 @@
 // components/dashboard/hooks/useGameStatusHandler.ts
 import type { GameStatus, OwnedGame, PlatformType } from "@/lib/types";
 import { assertValidGameStatus } from "@/lib/game-status/game-status.services";
-import { updateOwnedGameStatus } from "@/lib/storage";
 
 interface UseGameStatusHandlerProps {
   readonly ownedGames: OwnedGame[];
@@ -24,7 +23,6 @@ export function useGameStatusHandler({
         : item
     );
     onOwnedGamesChange(next);
-    updateOwnedGameStatus(appId, platform, validStatus);
 
     try {
       await fetch("/api/user/games", {

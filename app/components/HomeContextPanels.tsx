@@ -5,15 +5,14 @@ import CollectionsPanel from "@/components/dashboard/CollectionsPanel";
 import DuplicatesPanel from "@/components/dashboard/DuplicatesPanel";
 import GamePassPanel from "@/components/dashboard/GamePassPanel";
 import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
-import type { LocalCollection } from "@/lib/storage";
-import type { OwnedGame, PlatformType } from "@/lib/types";
+import type { CollectionWithGames, OwnedGame, PlatformType } from "@/lib/types";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
 
 interface HomeContextPanelsProps {
   readonly activePlatformTab: DashboardTabType;
   readonly ownedGames: readonly OwnedGame[];
   readonly wishlistIds: readonly number[];
-  readonly collections: LocalCollection[];
+  readonly collections: CollectionWithGames[];
   readonly selectedCollId: string | null;
   readonly setSelectedCollId: (id: string | null) => void;
   readonly isCreatingColl: boolean;

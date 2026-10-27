@@ -1,7 +1,7 @@
 // components/dashboard/nav/navTabsConfig.services.ts
 
 import type { PlatformType, UserAccountProfile } from "@/lib/types";
-import { ALL_PLATFORMS, PLATFORM_META } from "@/lib/storage";
+import { ALL_PLATFORMS, PLATFORM_META } from "@/lib/platforms";
 import type {
   DashboardTabType,
   PlatformTabItem,

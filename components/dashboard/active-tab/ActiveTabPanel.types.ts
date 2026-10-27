@@ -5,7 +5,7 @@ import type {
   PlatformType,
   OwnedGame,
 } from "@/lib/types";
-import type { LocalCollection } from "@/lib/storage";
+import type { CollectionWithGames } from "@/lib/types";
 import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
 import type {
@@ -32,7 +32,7 @@ export interface ActiveTabPanelProps {
   onAddGamePassToXbox: (item: GamePassCatalogItem) => Promise<void>;
   onToggleWishlist: (appId: number, platform: PlatformType) => Promise<void>;
 
-  collections: LocalCollection[];
+  collections: CollectionWithGames[];
   selectedCollId: string | null;
   setSelectedCollId: (id: string | null) => void;
   isCreatingColl: boolean;

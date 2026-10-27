@@ -1,7 +1,6 @@
 // components/dashboard/DashboardModals.types.ts
 
-import type { GameSearchResult, OwnedGame, PlatformType } from "@/lib/types";
-import type { LocalCollection } from "@/lib/storage";
+import type { GameSearchResult, OwnedGame, PlatformType, CollectionWithGames } from "@/lib/types";
 
 export interface DashboardModalsProps {
   // Edit Platform Modal (Optional)
@@ -29,7 +28,7 @@ export interface DashboardModalsProps {
 
   // Add to Collection Modal
   gameToAddToColl: OwnedGame | null;
-  collections: LocalCollection[];
+  collections: CollectionWithGames[];
   onCloseAddToColl: () => void;
   onAddToCollection: (collId: string, game: OwnedGame) => void;
 

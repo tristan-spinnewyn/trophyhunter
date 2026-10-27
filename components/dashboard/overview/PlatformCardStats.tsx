@@ -1,7 +1,7 @@
 // components/dashboard/overview/PlatformCardStats.tsx
 
 import type { PlatformAccount } from "@/lib/types";
-import type { PLATFORM_META } from "@/lib/storage";
+import type { PLATFORM_META } from "@/lib/platforms";
 
 interface PlatformCardStatsProps {
   account: PlatformAccount;

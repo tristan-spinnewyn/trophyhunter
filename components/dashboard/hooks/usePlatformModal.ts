@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { PlatformType } from "@/lib/types";
-import { PLATFORM_META } from "@/lib/storage";
+import { PLATFORM_META } from "@/lib/platforms";
 import type { UsePlatformModalProps, PlatformFormData } from "./usePlatformModal.types";
 import {
   INITIAL_PLATFORM_FORM,

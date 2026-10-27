@@ -2,7 +2,7 @@
 
 import { Gamepad2, Plus } from "lucide-react";
 import type { UserAccountProfile } from "@/lib/types";
-import { PLATFORM_META } from "@/lib/storage";
+import { PLATFORM_META } from "@/lib/platforms";
 import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
 import { SteamMissingGamesNotice } from "./SteamMissingGamesNotice";
 

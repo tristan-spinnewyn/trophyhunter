@@ -98,5 +98,6 @@ describe("useGameOwnershipToggles", () => {
         status: "completed",
       })
     );
+    expect(localStorage.getItem("trophyhunter_owned_games")).toBeNull();
   });
 });

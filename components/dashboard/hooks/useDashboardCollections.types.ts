@@ -1,13 +1,12 @@
 // components/dashboard/hooks/useDashboardCollections.types.ts
 
-import type { User as UserType } from "@/lib/types";
-import type { LocalCollection } from "@/lib/storage";
+import type { User as UserType, CollectionWithGames } from "@/lib/types";
 
 export interface UseDashboardCollectionsProps {
   currentUser?: UserType | null;
   initialWishlist?: number[];
-  initialCollections?: LocalCollection[];
+  initialCollections?: CollectionWithGames[];
   onWishlistChange?: (wishlist: number[]) => void;
-  onCollectionsChange?: (collections: LocalCollection[]) => void;
+  onCollectionsChange?: (collections: CollectionWithGames[]) => void;
   setBannerMsg: (msg: { type: "success" | "error"; text: string } | null) => void;
 }

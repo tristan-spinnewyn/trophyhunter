@@ -2,7 +2,7 @@
 
 import { Layers } from "lucide-react";
 import type { UserAccountProfile, PlatformType } from "@/lib/types";
-import { ALL_PLATFORMS } from "@/lib/storage";
+import { ALL_PLATFORMS } from "@/lib/platforms";
 import { PlatformCard } from "./PlatformCard";
 
 interface OverviewPlatformsGridProps {

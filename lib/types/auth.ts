@@ -29,6 +29,16 @@ export interface Collection {
   gameIds?: number[];
 }
 
+/** A collection as the client holds it: its display fields and the app ids it contains. */
+export interface CollectionWithGames {
+  id: string;
+  name: string;
+  description?: string;
+  color?: string;
+  icon?: string;
+  gameIds: number[];
+}
+
 export interface DatabaseSyncPayload {
   profile?: UserAccountProfile;
   games?: OwnedGame[];
