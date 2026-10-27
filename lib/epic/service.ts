@@ -1,7 +1,7 @@
 // lib/epic/service.ts
 import type { OwnedGame, PlatformAccount } from "@/lib/types";
 import { saveUserPlatformAccount } from "@/lib/db";
-import { fetchEpicAchievementsGraphQL } from "./achievements";
+import { fetchEpicAchievementsGraphQL } from "./profile-achievements";
 import { enrichEpicGamesWithSteamMetadata } from "./enrichment";
 import { resolveEpicTokens } from "./credentials";
 import { discoverEpicGames } from "./service-games";
