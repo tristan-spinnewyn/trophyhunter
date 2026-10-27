@@ -3,7 +3,7 @@ import type { OwnedGame, PlatformAccount } from "@/lib/types";
 import { saveUserPlatformAccount } from "@/lib/db";
 import { fetchEpicAchievementsGraphQL } from "./achievements";
 import { enrichEpicGamesWithSteamMetadata } from "./enrichment";
-import { resolveEpicTokens } from "./service-auth";
+import { resolveEpicTokens } from "./credentials";
 import { discoverEpicGames } from "./service-games";
 import { matchAndEnrichSandboxAchievements } from "./service-achievements";
 import { persistEpicSyncData } from "./service-persist";

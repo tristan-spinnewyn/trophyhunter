@@ -2,7 +2,7 @@
 import type { AchSummary } from "./types";
 import { PLAYER_GAME_ACHIEVEMENT_QUERY } from "./achievements-query";
 import { parseEpicAchievementRecords, mergeEpicSummaries } from "./achievements-parser";
-import { EPIC_PRIMARY_GRAPHQL_ENDPOINT, EPIC_USER_AGENT } from "./graphql-client";
+import { EPIC_PRIMARY_GRAPHQL_ENDPOINT, EPIC_USER_AGENT } from "./graphql";
 
 export async function fetchEpicAchievementsGraphQL(
   accountId: string,

@@ -8,7 +8,7 @@ import {
 } from "@/lib/db";
 import { epicAchievementId } from "./game-achievements";
 import type { AchSummary } from "./types";
-import type { ResolvedEpicAuth } from "./service-auth";
+import type { ResolvedEpicAuth } from "./credentials";
 
 export function persistEpicSyncData(
   auth: ResolvedEpicAuth,

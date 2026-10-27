@@ -1,7 +1,7 @@
 // lib/epic/product-achievements.ts
 import type { Achievement } from "@/lib/types";
 import { isLikelyMissable } from "@/lib/steam/game-details";
-import { epicGraphQL } from "./graphql-client";
+import { epicGraphQL } from "./graphql";
 
 const PRODUCT_ACHIEVEMENTS_QUERY = `query ProductAchievementsBySandbox($sandboxId: String!, $locale: String!) {
   Achievement {
