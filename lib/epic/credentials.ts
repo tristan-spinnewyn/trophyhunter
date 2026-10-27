@@ -1,8 +1,8 @@
 // lib/epic/credentials.ts
 import { getUserPlatformAccounts, getUserPlatformApiKey, saveUserPlatformAccount } from "@/lib/db";
-import { parseEpicAuthInput } from "./auth-parser";
+import { parseEpicAuthInput } from "./auth-input";
 
-export { parseEpicAuthInput } from "./auth-parser";
+export { parseEpicAuthInput } from "./auth-input";
 
 export const EPIC_CLIENT_ID = "34a02cf8f4414e29b15921876da36f9a";
 export const EPIC_CLIENT_SECRET = "daafbccc737745039dffe53d94fc76cf";
