@@ -11,11 +11,11 @@ describe("rate-limiter", () => {
     resetRateLimiterForTesting();
   });
 
-  it("extracts client key from x-forwarded-for, x-real-ip, or fallback", () => {
+  it("extracts client key from the proxy-appended x-forwarded-for entry, x-real-ip, or fallback", () => {
     const req1 = new Request("http://localhost/api", {
       headers: { "x-forwarded-for": "203.0.113.10, 10.0.0.1" },
     });
-    expect(extractClientKey(req1, "login")).toBe("login:203.0.113.10");
+    expect(extractClientKey(req1, "login")).toBe("login:10.0.0.1");
 
     const req2 = new Request("http://localhost/api", {
       headers: { "x-real-ip": "198.51.100.5" },
@@ -24,6 +24,16 @@ describe("rate-limiter", () => {
 
     const req3 = new Request("http://localhost/api");
     expect(extractClientKey(req3, "login")).toBe("login:local");
+  });
+
+  it("ignores client-spoofed entries prepended to x-forwarded-for", () => {
+    const spoofed = new Request("http://localhost/api", {
+      headers: { "x-forwarded-for": "1.2.3.4, 198.51.100.7" },
+    });
+    const otherSpoof = new Request("http://localhost/api", {
+      headers: { "x-forwarded-for": "5.6.7.8, 198.51.100.7" },
+    });
+    expect(extractClientKey(spoofed, "login")).toBe(extractClientKey(otherSpoof, "login"));
   });
 
   it("allows requests within threshold and blocks when exceeded", () => {

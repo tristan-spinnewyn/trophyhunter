@@ -8,7 +8,8 @@ export class CsrfOriginError extends Error {
 
 export function verifySameOriginRequest(request: Request): void {
   const originHeader = request.headers.get("origin");
-  const hostHeader = request.headers.get("host");
+  // Browsers cannot forge X-Forwarded-Host in a cross-site request, so trusting it here is safe.
+  const hostHeader = request.headers.get("x-forwarded-host") || request.headers.get("host");
 
   if (!originHeader || !hostHeader) {
     throw new CsrfOriginError("Missing Origin or Host header");

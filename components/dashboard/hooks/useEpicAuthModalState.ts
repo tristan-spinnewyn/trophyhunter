@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { buildEpicAuthHeaders } from "@/lib/epic/auth-headers";
 import type { OwnedGame } from "@/lib/types";
 
 interface UseEpicAuthModalStateProps {
@@ -50,7 +51,8 @@ export function useEpicAuthModalState({
       const res = await fetch(
         `/api/sync?platform=epic&appId=${epicAuthModalGame.appId}&name=${encodeURIComponent(
           epicAuthModalGame.name
-        )}&authorizationToken=${encodeURIComponent(token)}`
+        )}`,
+        { headers: buildEpicAuthHeaders(token) }
       );
       const data = await res.json();
       if (!res.ok || !data.success) {

@@ -41,7 +41,7 @@ describe("GET /api/profile/epic OAuth Library Fetch", () => {
       .mockResolvedValueOnce(jsonResponse(mockLibrary))
       .mockResolvedValueOnce(jsonResponse(mockGraphQL));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic?code=lib-code-123"));
+    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "lib-code-123" } }));
     expect(res.status).toBe(200);
 
     const data = await res.json();

@@ -71,7 +71,7 @@ describe("GET /api/profile/epic OAuth Persistence", () => {
       .mockResolvedValueOnce(jsonResponse({}, 404))
       .mockResolvedValueOnce(jsonResponse(mockGql));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic?code=oauth-hero-code"));
+    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "oauth-hero-code" } }));
     expect(res.status).toBe(200);
 
     expect(getUserPlatformAccounts(user.id).epic?.displayName).toBe("EpicHero");

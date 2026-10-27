@@ -5,14 +5,20 @@ import { setAuthSessionCookie } from "@/lib/auth";
 import { checkRateLimit, extractClientKey } from "@/lib/security";
 
 const LOGIN_RATE_LIMIT = { windowMs: 60_000, maxRequests: 15 };
+// Per-account limit: stops brute force on one account even when the attacker rotates IP addresses.
+const LOGIN_ACCOUNT_RATE_LIMIT = { windowMs: 15 * 60_000, maxRequests: 10 };
+
+function tooManyAttemptsResponse(retryAfterSeconds: number) {
+  return NextResponse.json(
+    { error: "Trop de tentatives de connexion. Veuillez réessayer plus tard." },
+    { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } }
+  );
+}
 
 export async function POST(req: Request) {
   const rateLimit = checkRateLimit(extractClientKey(req, "auth_login"), LOGIN_RATE_LIMIT);
   if (!rateLimit.allowed) {
-    return NextResponse.json(
-      { error: "Trop de tentatives de connexion. Veuillez réessayer plus tard." },
-      { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } }
-    );
+    return tooManyAttemptsResponse(rateLimit.retryAfterSeconds);
   }
 
   try {
@@ -24,6 +30,12 @@ export async function POST(req: Request) {
         { error: "Veuillez fournir un nom d'utilisateur et un mot de passe." },
         { status: 400 }
       );
+    }
+
+    const accountKey = `auth_login_account:${username.trim().toLowerCase()}`;
+    const accountLimit = checkRateLimit(accountKey, LOGIN_ACCOUNT_RATE_LIMIT);
+    if (!accountLimit.allowed) {
+      return tooManyAttemptsResponse(accountLimit.retryAfterSeconds);
     }
 
     const user = authenticateUser(username, password);
