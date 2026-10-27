@@ -55,6 +55,27 @@ const PLAYER_PROFILE_ACH_QUERY = `query PlayerProfileAchievements($epicAccountId
   }
 }`;
 
+/**
+ * Sends one GraphQL request to a single Epic endpoint, with the launcher headers.
+ * Network errors propagate to the caller.
+ */
+export function postEpicGraphQL(
+  endpoint: string,
+  query: string,
+  variables: Record<string, unknown>,
+  accessToken: string
+): Promise<Response> {
+  return fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+      "User-Agent": EPIC_USER_AGENT,
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+}
+
 export async function epicGraphQL<T = Record<string, unknown>>(
   query: string,
   variables: Record<string, unknown>,
@@ -62,15 +83,7 @@ export async function epicGraphQL<T = Record<string, unknown>>(
 ): Promise<T | null> {
   for (const endpoint of EPIC_GRAPHQL_ENDPOINTS) {
     try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-          "User-Agent": EPIC_USER_AGENT,
-        },
-        body: JSON.stringify({ query, variables }),
-      });
+      const res = await postEpicGraphQL(endpoint, query, variables, accessToken);
       if (res.status === 401 || res.status === 403) {
         throw new EpicAuthError();
       }
@@ -89,15 +102,12 @@ export async function fetchEpicPlayerAchievements(
   accessToken: string
 ): Promise<EpicPlayerAchievementRecord[]> {
   try {
-    const res = await fetch(EPIC_PRIMARY_GRAPHQL_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-        "User-Agent": EPIC_USER_AGENT,
-      },
-      body: JSON.stringify({ query: PLAYER_PROFILE_ACH_QUERY, variables: { epicAccountId: accountId } }),
-    });
+    const res = await postEpicGraphQL(
+      EPIC_PRIMARY_GRAPHQL_ENDPOINT,
+      PLAYER_PROFILE_ACH_QUERY,
+      { epicAccountId: accountId },
+      accessToken
+    );
     if (!res.ok) return [];
     const json = await res.json();
     const records: EpicPlayerAchievementRecord[] =
