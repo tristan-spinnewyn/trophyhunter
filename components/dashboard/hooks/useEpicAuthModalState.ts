@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { buildEpicAuthHeaders } from "@/lib/epic/auth-headers";
+import { buildEpicAuthHeaders } from "@/lib/epic/auth-input";
 import type { OwnedGame } from "@/lib/types";
 
 interface UseEpicAuthModalStateProps {

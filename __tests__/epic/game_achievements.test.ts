@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { initDatabase, setDbForTesting, createUser } from "@/lib/db";
 import { storeEpicCredentials } from "@/lib/epic/credentials";
 import { getEpicGameAchievements } from "@/lib/epic/game-achievements";
-import { getEpicAchievementsForUser } from "@/lib/epic/game-details";
+import { getEpicAchievementsForUser } from "@/lib/epic/game-sync";
 import { jsonResponse } from "../helpers/responses";
 
 describe("Epic Game Achievements Combination", () => {

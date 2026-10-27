@@ -1,7 +1,7 @@
 // __tests__/epic/achievements_parser.test.ts
 import { describe, it, expect } from "vitest";
 import { epicAchievementId, unwrapPlayerAchievement } from "@/lib/epic/game-achievements";
-import { parseEpicAchievementRecords, mergeEpicSummaries } from "@/lib/epic/achievements-parser";
+import { parseEpicAchievementRecords, mergeEpicSummaries } from "@/lib/epic/profile-achievements";
 
 describe("Epic Achievements Parser", () => {
   it("generates formatted slugs from achievement names", () => {

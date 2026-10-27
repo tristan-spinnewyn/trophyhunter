@@ -1,6 +1,6 @@
 // __tests__/epic/credentials_parsing.test.ts
 import { describe, it, expect } from "vitest";
-import { parseEpicAuthInput } from "@/lib/epic/credentials";
+import { parseEpicAuthInput } from "@/lib/epic/auth-input";
 
 describe("Epic Credentials Parsing", () => {
   it("parses auth input from JSON payloads", () => {

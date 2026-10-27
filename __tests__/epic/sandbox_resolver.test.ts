@@ -1,8 +1,8 @@
 // __tests__/epic/sandbox_resolver.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { initDatabase, setDbForTesting, createUser, saveEpicGameSandboxes, getEpicGameSandbox } from "@/lib/db";
-import { resolveEpicSandboxId } from "@/lib/epic/game-achievements";
-import { resolveEpicGameData } from "@/lib/epic/sync-resolver";
+import { resolveEpicSandboxId } from "@/lib/epic/sandbox";
+import { resolveEpicGameData } from "@/lib/epic/game-sync";
 import { jsonResponse } from "../helpers/responses";
 
 describe("Epic Sandbox Resolution", () => {

@@ -1,6 +1,6 @@
 // components/dashboard/utils.ts
 import type { OwnedGame, PlatformType } from "@/lib/types";
-import { isUnsplashPlaceholder } from "@/lib/epic-codenames";
+import { isUnsplashPlaceholder } from "@/lib/epic/game-metadata";
 import { isValidGameStatus, resolveGameStatus } from "@/lib/game-status/game-status.services";
 
 export function mergeGamesList(

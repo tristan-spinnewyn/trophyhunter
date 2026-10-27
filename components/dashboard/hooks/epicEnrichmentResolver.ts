@@ -1,6 +1,6 @@
 // components/dashboard/hooks/epicEnrichmentResolver.ts
 import type { OwnedGame } from "@/lib/types";
-import { isUnsplashPlaceholder } from "@/lib/epic-codenames";
+import { isUnsplashPlaceholder } from "@/lib/epic/game-metadata";
 
 export async function resolveSingleEpicGame(game: OwnedGame): Promise<OwnedGame> {
   try {

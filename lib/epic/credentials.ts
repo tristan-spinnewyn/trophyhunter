@@ -2,8 +2,6 @@
 import { getUserPlatformAccounts, getUserPlatformApiKey, saveUserPlatformAccount } from "@/lib/db";
 import { EPIC_AUTH_CODE_URL, EPIC_CLIENT_ID, parseEpicAuthInput } from "./auth-input";
 
-export { EPIC_CLIENT_ID, parseEpicAuthInput } from "./auth-input";
-
 const AUTH_CODE_EXPIRED_MESSAGE =
   `Code d'autorisation Epic Games expiré ou invalide (authorizationToken). Rendez-vous sur ${EPIC_AUTH_CODE_URL} pour obtenir un nouveau code.`;
 

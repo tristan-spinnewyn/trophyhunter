@@ -1,7 +1,7 @@
 // __tests__/api/profile/epic_oauth_persistence.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/profile/epic/route";
-import { syncEpicProfileWithOAuth } from "@/lib/epic/service";
+import { syncEpicProfileWithOAuth } from "@/lib/epic/profile-sync";
 import {
   initDatabase,
   setDbForTesting,

@@ -5,7 +5,7 @@ import {
   resolveEpicCodename,
   DEFAULT_EPIC_COVER,
   KNOWN_EPIC_CODENAMES,
-} from "@/lib/epic-codenames";
+} from "@/lib/epic/game-metadata";
 
 describe("Epic Codenames Utilities", () => {
   it("detects placeholder urls correctly", () => {
