@@ -8,7 +8,21 @@ import {
   getUserGameProgress,
   getAllUserGameProgress,
   resetUserGameProgress,
+  saveUserOwnedGames,
+  getUserOwnedGames,
 } from "@/lib/db";
+import type { OwnedGame } from "@/lib/types";
+
+/** A game imported from a platform with an achievement count but no per-achievement detail. */
+function importGame(userId: string, unlockedCount: number): void {
+  const game: OwnedGame = {
+    appId: 500, name: "Imported", headerImg: "", platform: "steam",
+    totalAchievements: 60, unlockedCount, addedAt: "2026-01-01",
+  };
+  saveUserOwnedGames(userId, [game]);
+}
+
+const countOf = (userId: string) => getUserOwnedGames(userId).find((g) => g.appId === 500)?.unlockedCount;
 
 describe("Database Game Progress", () => {
   beforeEach(() => {
@@ -48,5 +62,54 @@ describe("Database Game Progress", () => {
 
     resetUserGameProgress(user.id, 400, "steam");
     expect(getUserGameProgress(user.id, 400, "steam")).toBeNull();
+  });
+
+  describe("keeps the game's unlocked count consistent with its checklist", () => {
+    it("does not wipe an imported count when saving a note on a game without checklist", () => {
+      const user = createUser("NoteUser", "password123");
+      importGame(user.id, 38);
+
+      saveUserGameProgress(user.id, 500, "steam", { unlockedIds: [], notes: { ACH_1: "later" } });
+
+      expect(countOf(user.id)).toBe(38);
+    });
+
+    it("does not wipe an imported count when pinning targets", () => {
+      const user = createUser("PinUser", "password123");
+      importGame(user.id, 38);
+
+      saveUserGameProgress(user.id, 500, "steam", { unlockedIds: [], notes: {}, pinnedIds: ["ACH_9"] });
+
+      expect(countOf(user.id)).toBe(38);
+    });
+
+    it("follows the checklist once achievements are ticked", () => {
+      const user = createUser("TickUser", "password123");
+      importGame(user.id, 0);
+
+      saveUserGameProgress(user.id, 500, "steam", { unlockedIds: ["A", "B", "C"], notes: {} });
+
+      expect(countOf(user.id)).toBe(3);
+    });
+
+    it("goes back to zero when the last ticked achievement is unticked", () => {
+      const user = createUser("UntickUser", "password123");
+      importGame(user.id, 0);
+      saveUserGameProgress(user.id, 500, "steam", { unlockedIds: ["A"], notes: {} });
+
+      saveUserGameProgress(user.id, 500, "steam", { unlockedIds: [], notes: {} });
+
+      expect(countOf(user.id)).toBe(0);
+    });
+
+    it("resets the count with the checklist", () => {
+      const user = createUser("ResetUser", "password123");
+      importGame(user.id, 0);
+      saveUserGameProgress(user.id, 500, "steam", { unlockedIds: ["A", "B"], notes: {} });
+
+      resetUserGameProgress(user.id, 500, "steam");
+
+      expect(countOf(user.id)).toBe(0);
+    });
   });
 });

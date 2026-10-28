@@ -2,7 +2,7 @@
 
 import { describe, it, expect, vi } from "vitest";
 import confetti from "canvas-confetti";
-import { fireCompletionConfetti, getProgressTier } from "@/components/progress/progressTier";
+import { fireCompletionConfetti, getProgressTier, getUntrackedUnlockedCount } from "@/components/progress/progressTier";
 
 vi.mock("canvas-confetti", () => ({
   default: vi.fn(),
@@ -54,5 +54,20 @@ describe("progressTier", () => {
         })
       );
     });
+  });
+});
+
+describe("getUntrackedUnlockedCount", () => {
+  it("returns the platform count when no achievement is ticked yet", () => {
+    expect(getUntrackedUnlockedCount(0, 38)).toBe(38);
+  });
+
+  it("returns null once the checklist is used, since it is then the source of truth", () => {
+    expect(getUntrackedUnlockedCount(3, 38)).toBeNull();
+  });
+
+  it("returns null when the platform reported nothing", () => {
+    expect(getUntrackedUnlockedCount(0, 0)).toBeNull();
+    expect(getUntrackedUnlockedCount(0, undefined)).toBeNull();
   });
 });
