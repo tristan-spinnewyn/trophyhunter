@@ -1,6 +1,7 @@
 // lib/epic/sandbox.ts
 import { normalizeGameTitle } from "../game-title";
 import { hashCode, normalizeTitle } from "./game-metadata";
+import type { EpicPlayerAchievementRecord } from "./graphql";
 import { fetchEpicLibraryItems } from "./library";
 
 export async function resolveEpicSandboxId(
@@ -40,10 +41,10 @@ export async function resolveEpicSandboxId(
 }
 
 export function matchSandboxRecord(
-  records: any[],
+  records: readonly EpicPlayerAchievementRecord[],
   normTitle: string,
   knownSandbox?: string | null
-): any | null {
+): EpicPlayerAchievementRecord | null {
   for (const rec of records) {
     const sId = (rec.sandboxId || "").toLowerCase();
     const cleanSid = sId

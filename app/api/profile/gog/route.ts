@@ -6,6 +6,7 @@ import {
   saveUserOwnedGames,
   saveUserPlatformAccount,
 } from "@/lib/db";
+import { errorMessage } from "@/lib/error-message";
 import { fetchGogProfile, GogSyncError } from "@/lib/gog/service";
 
 export async function GET(request: Request) {
@@ -64,7 +65,7 @@ export async function GET(request: Request) {
     console.error("GOG profile API error:", err);
     const status = err instanceof GogSyncError ? err.status : 500;
     const message =
-      err instanceof Error ? err.message : "Impossible de joindre le profil GOG.";
+      errorMessage(err, "Impossible de joindre le profil GOG.");
     return NextResponse.json(
       { error: message, details: message },
       { status }

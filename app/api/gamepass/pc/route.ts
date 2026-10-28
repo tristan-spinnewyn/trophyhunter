@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { fetchPcGamePassCatalog } from "@/lib/gamepass/catalog.services";
 import { GamePassCatalogError } from "@/lib/gamepass/gamepass.types";
+import { errorMessage } from "@/lib/error-message";
 
 export async function GET(request: Request) {
   try {
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
         { status: error.statusCode }
       );
     }
-    const details = error instanceof Error ? error.message : "Erreur interne";
+    const details = errorMessage(error, "Erreur interne");
     return NextResponse.json(
       { error: "Impossible de charger le catalogue PC Game Pass.", details },
       { status: 500 }

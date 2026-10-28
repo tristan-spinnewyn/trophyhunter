@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server";
 import type { GameSearchResult } from "@/lib/types";
+import { errorMessage } from "@/lib/error-message";
+
+/** An entry of the Steam store search API (store.steampowered.com/api/storesearch). */
+interface SteamStoreSearchItem {
+  id: number;
+  name: string;
+  tiny_image?: string;
+  price?: { final?: number };
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -28,9 +37,9 @@ export async function GET(request: Request) {
     }
 
     const data = await response.json();
-    const items = data.items || [];
+    const items: SteamStoreSearchItem[] = data.items || [];
 
-    const games: GameSearchResult[] = items.map((item: any) => ({
+    const games: GameSearchResult[] = items.map((item) => ({
       id: item.id,
       name: item.name,
       img: item.tiny_image || `https://cdn.akamai.steamstatic.com/steam/apps/${item.id}/header.jpg`,
@@ -40,10 +49,10 @@ export async function GET(request: Request) {
     }));
 
     return NextResponse.json({ games });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Search API error:", error);
     return NextResponse.json(
-      { error: "Impossible de rechercher les jeux Steam.", details: error.message },
+      { error: "Impossible de rechercher les jeux Steam.", details: errorMessage(error, "Erreur interne") },
       { status: 500 }
     );
   }
