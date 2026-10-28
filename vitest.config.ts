@@ -14,7 +14,14 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'text-summary', 'json-summary', 'lcov'],
-      include: ['lib/**/*.{ts,tsx}', 'app/api/**/*.{ts,tsx}'],
+      // All logic modules, front-end hooks and services included. React components
+      // (.tsx outside lib/) are not measured yet.
+      include: [
+        'lib/**/*.{ts,tsx}',
+        'app/**/*.ts',
+        'components/**/*.ts',
+        'context/**/*.ts',
+      ],
       exclude: [
         '**/__tests__/**',
         '**/*.d.ts',
