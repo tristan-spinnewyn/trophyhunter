@@ -1,6 +1,6 @@
-// __tests__/lib/dashboard/utils.test.ts
+// __tests__/lib/library/game-list.test.ts
 import { describe, it, expect } from "vitest";
-import { mergeGamesList, replacePlatformInList } from "@/components/dashboard/utils";
+import { mergeGamesList, replacePlatformInList } from "@/lib/library/game-list";
 import type { OwnedGame } from "@/lib/types";
 
 describe("dashboard utils (mergeGamesList & replacePlatformInList)", () => {

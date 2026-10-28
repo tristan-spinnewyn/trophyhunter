@@ -3,8 +3,8 @@
 
 import { useState } from "react";
 import type { OwnedGame } from "@/lib/types";
-import { mergeGamesList } from "@/components/dashboard/utils";
-import { parseBulkImportText } from "./bulkImportParser";
+import { mergeGamesList } from "@/lib/library/game-list";
+import { parseBulkImportText } from "@/lib/library/bulk-import";
 
 export interface UseBulkImportProps {
   ownedGames: OwnedGame[];

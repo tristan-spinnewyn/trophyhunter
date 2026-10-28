@@ -1,6 +1,6 @@
 // components/dashboard/hooks/useEpicProfileConnect.ts
 import type { OwnedGame, PlatformAccount } from "@/lib/types";
-import { replacePlatformInList } from "@/components/dashboard/utils";
+import { replacePlatformInList } from "@/lib/library/game-list";
 import { buildEpicAuthHeaders, parseEpicAuthInput } from "@/lib/epic/auth-input";
 
 interface UseEpicProfileConnectProps {

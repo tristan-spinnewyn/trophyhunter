@@ -1,11 +1,12 @@
 // components/dashboard/DashboardNavTabs.tsx
 
 import { Layers } from "lucide-react";
-import type { DashboardTabType, DashboardNavTabsProps } from "./nav/DashboardNavTabs.types";
+import type { LibraryTab } from "@/lib/library/library-filters";
+import type { DashboardNavTabsProps } from "./nav/DashboardNavTabs.types";
 import { NavPlatformTabs } from "./nav/NavPlatformTabs";
 import { NavFeatureTabs } from "./nav/NavFeatureTabs";
 
-export type { DashboardTabType, DashboardNavTabsProps };
+export type { DashboardNavTabsProps };
 
 export default function DashboardNavTabs({
   activePlatformTab,

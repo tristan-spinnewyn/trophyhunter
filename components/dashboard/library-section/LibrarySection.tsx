@@ -10,15 +10,11 @@ import type {
   UserAccountProfile,
 } from "@/lib/types";
 import type { CollectionWithGames } from "@/lib/types";
-import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
-import type {
-  StatusFilterType,
-  AchievementFilterType,
-  SortOrderType,
-} from "@/components/dashboard/hooks/useLibraryFilters";
+import type { LibraryTab, StatusFilterType, AchievementFilterType } from "@/lib/library/library-filters";
+import type { SortOrderType } from "@/lib/library/library-sort";
 
 export interface LibrarySectionProps {
-  readonly activePlatformTab: DashboardTabType;
+  readonly activePlatformTab: LibraryTab;
   readonly filteredGames: OwnedGame[];
   readonly totalOwnedGamesCount: number;
   readonly platformGameCount: number;

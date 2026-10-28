@@ -6,16 +6,12 @@ import type {
   OwnedGame,
 } from "@/lib/types";
 import type { CollectionWithGames } from "@/lib/types";
-import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
+import type { LibraryTab, AchievementFilterType } from "@/lib/library/library-filters";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
-import type {
-  GlobalDashboardStats,
-  EpicGameCounts,
-} from "@/components/dashboard/hooks/useDashboardStats";
-import type { AchievementFilterType } from "@/components/dashboard/hooks/useLibraryFilters";
+import type { GlobalDashboardStats, EpicGameCounts } from "@/lib/library/library-stats";
 
 export interface ActiveTabPanelProps {
-  activePlatformTab: DashboardTabType;
+  activePlatformTab: LibraryTab;
   globalStats: GlobalDashboardStats;
   accountProfile: UserAccountProfile;
   ownedGames: readonly OwnedGame[];
@@ -25,7 +21,7 @@ export interface ActiveTabPanelProps {
   epicCounts: EpicGameCounts;
   libAchievementFilter: AchievementFilterType;
   setLibAchievementFilter: (val: AchievementFilterType) => void;
-  onSelectTab: (tab: DashboardTabType) => void;
+  onSelectTab: (tab: LibraryTab) => void;
   openEditPlatform: (plat: PlatformType) => void;
   handleDisconnectPlatform: (plat: PlatformType) => void;
   onSelectGame: (appId: number) => void;

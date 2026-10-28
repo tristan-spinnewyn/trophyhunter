@@ -2,16 +2,12 @@
 
 import { Search } from "lucide-react";
 import type { PlatformType } from "@/lib/types";
-import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
-import type {
-  StatusFilterType,
-  AchievementFilterType,
-  SortOrderType,
-} from "@/components/dashboard/hooks/useLibraryFilters";
+import type { LibraryTab, StatusFilterType, AchievementFilterType } from "@/lib/library/library-filters";
 import { LibraryFilterDropdowns } from "./LibraryFilterDropdowns";
+import type { SortOrderType } from "@/lib/library/library-sort";
 
 interface LibrarySectionFiltersProps {
-  activePlatformTab: DashboardTabType;
+  activePlatformTab: LibraryTab;
   libSearch: string;
   setLibSearch: (val: string) => void;
   libPlatformFilter: PlatformType | "all";

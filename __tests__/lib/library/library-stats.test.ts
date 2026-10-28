@@ -1,4 +1,4 @@
-// __tests__/lib/dashboard/dashboardStatsCalculator.test.ts
+// __tests__/lib/library/library-stats.test.ts
 
 import { describe, it, expect } from "vitest";
 import type { OwnedGame, UserAccountProfile } from "@/lib/types";
@@ -7,7 +7,7 @@ import {
   calculatePlatformCounts,
   calculateEpicCounts,
   calculateGlobalStats,
-} from "@/components/dashboard/hooks/dashboardStatsCalculator";
+} from "@/lib/library/library-stats";
 
 const baseGame = (overrides: Partial<OwnedGame>): OwnedGame => ({
   appId: 1,

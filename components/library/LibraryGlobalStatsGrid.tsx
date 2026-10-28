@@ -1,7 +1,7 @@
 // components/library/LibraryGlobalStatsGrid.tsx
 
 import { Gamepad2, CheckCircle2, Trophy, Award, Sparkles } from "lucide-react";
-import type { GlobalDashboardStats } from "@/components/dashboard/hooks/useDashboardStats.types";
+import type { GlobalDashboardStats } from "@/lib/library/library-stats";
 
 interface LibraryGlobalStatsGridProps {
   readonly ownedGamesCount: number;

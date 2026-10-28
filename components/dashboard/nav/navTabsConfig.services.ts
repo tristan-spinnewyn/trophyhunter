@@ -2,11 +2,8 @@
 
 import type { PlatformType, UserAccountProfile } from "@/lib/types";
 import { ALL_PLATFORMS, PLATFORM_META } from "@/lib/platforms";
-import type {
-  DashboardTabType,
-  PlatformTabItem,
-  FeatureTabItem,
-} from "./DashboardNavTabs.types";
+import type { LibraryTab } from "@/lib/library/library-filters";
+import type { PlatformTabItem, FeatureTabItem } from "./DashboardNavTabs.types";
 
 const PLATFORM_ACTIVE_STYLES: Record<PlatformType, string> = {
   steam: "border-sky-500/50 bg-sky-500/15 text-sky-200 shadow-sm shadow-sky-500/10",
@@ -16,7 +13,7 @@ const PLATFORM_ACTIVE_STYLES: Record<PlatformType, string> = {
 };
 
 export function buildPlatformTabItems(
-  activePlatformTab: DashboardTabType,
+  activePlatformTab: LibraryTab,
   platformCounts: Record<string, number>,
   accountProfile: UserAccountProfile
 ): PlatformTabItem[] {
@@ -44,7 +41,7 @@ export interface FeatureTabCounts {
 }
 
 export function buildFeatureTabItems(
-  activePlatformTab: DashboardTabType,
+  activePlatformTab: LibraryTab,
   counts: FeatureTabCounts
 ): FeatureTabItem[] {
   return [

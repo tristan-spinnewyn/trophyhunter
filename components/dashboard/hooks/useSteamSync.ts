@@ -1,7 +1,7 @@
 // components/dashboard/hooks/useSteamSync.ts
 import { useState } from "react";
 import type { OwnedGame, PlatformAccount, User as UserType } from "@/lib/types";
-import { mergeGamesList } from "@/components/dashboard/utils";
+import { mergeGamesList } from "@/lib/library/game-list";
 import { useSteamSingleGameSync } from "./useSteamSingleGameSync";
 import { syncSteamAchievementsBatch } from "./steamAchievementsBatch";
 

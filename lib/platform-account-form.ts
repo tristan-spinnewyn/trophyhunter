@@ -1,7 +1,22 @@
-// components/dashboard/hooks/platformModalForm.ts
+// lib/platform-account-form.ts
 
 import type { PlatformAccount, PlatformType } from "@/lib/types";
-import type { PlatformFormData } from "./usePlatformModal.types";
+
+/** The platform account modal's fields, as typed by the user. */
+export interface PlatformFormData {
+  username: string;
+  displayName: string;
+  level: string;
+  gamesOwned: string;
+  totalAchievements: string;
+  completedGames: string;
+  hoursPlayed: string;
+  gamerScore: string;
+  platinum: string;
+  gold: string;
+  silver: string;
+  bronze: string;
+}
 
 export const INITIAL_PLATFORM_FORM: PlatformFormData = {
   username: "",

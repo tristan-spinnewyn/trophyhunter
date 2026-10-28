@@ -1,6 +1,6 @@
-// __tests__/lib/dashboard/libraryFilterUtils.test.ts
+// __tests__/lib/library/library-filters.test.ts
 import { describe, it, expect } from "vitest";
-import { filterGames } from "@/components/dashboard/hooks/libraryFilterUtils";
+import { filterGames } from "@/lib/library/library-filters";
 import type { OwnedGame } from "@/lib/types";
 
 const SAMPLE_GAMES: OwnedGame[] = [
@@ -57,5 +57,49 @@ describe("filterGames with GameStatus", () => {
       activePlatformTab: "gamepass",
     });
     expect(gamepassTabAll).toHaveLength(4);
+  });
+});
+
+describe("filterGames tabs, achievements and search", () => {
+  const base = {
+    games: SAMPLE_GAMES,
+    activePlatformTab: "all" as const,
+    libPlatformFilter: "all" as const,
+    libStatusFilter: "all" as const,
+    libAchievementFilter: "all" as const,
+    libSearch: "",
+    wishlistIds: [2],
+    collections: [{ id: "c1", name: "RPG", gameIds: [3] }],
+    selectedCollId: null as string | null,
+  };
+  const ids = (list: OwnedGame[]) => list.map((g) => g.appId);
+
+  it("shows only wishlisted games on the wishlist tab", () => {
+    expect(ids(filterGames({ ...base, activePlatformTab: "wishlist" }))).toEqual([2]);
+  });
+
+  it("shows the selected collection, or everything when none is selected", () => {
+    expect(ids(filterGames({ ...base, activePlatformTab: "collections", selectedCollId: "c1" }))).toEqual([3]);
+    expect(ids(filterGames({ ...base, activePlatformTab: "collections", selectedCollId: "missing" }))).toEqual([]);
+    expect(ids(filterGames({ ...base, activePlatformTab: "collections" }))).toEqual([1, 2, 3, 4]);
+  });
+
+  it("uses the platform tab, or the platform filter on feature tabs", () => {
+    expect(ids(filterGames({ ...base, activePlatformTab: "xbox" }))).toEqual([2]);
+    expect(ids(filterGames({ ...base, activePlatformTab: "all", libPlatformFilter: "gog" }))).toEqual([4]);
+    expect(ids(filterGames({ ...base, activePlatformTab: "duplicates", libPlatformFilter: "gog" }))).toEqual([1, 2, 3, 4]);
+  });
+
+  it("filters unstarted games and by achievement support", () => {
+    const noAch: OwnedGame = { ...SAMPLE_GAMES[0], appId: 5, name: "No Achievements", totalAchievements: 0 };
+    const games = [...SAMPLE_GAMES, noAch];
+    expect(ids(filterGames({ ...base, games, libStatusFilter: "unstarted" }))).toEqual([1, 5]);
+    expect(ids(filterGames({ ...base, games, libAchievementFilter: "no-achievements" }))).toEqual([5]);
+    expect(ids(filterGames({ ...base, games, libAchievementFilter: "with-achievements" }))).toEqual([1, 2, 3, 4]);
+  });
+
+  it("searches by name or app id, case-insensitively", () => {
+    expect(ids(filterGames({ ...base, libSearch: "platinum" }))).toEqual([4]);
+    expect(ids(filterGames({ ...base, libSearch: "3" }))).toEqual([3]);
   });
 });

@@ -1,7 +1,14 @@
-// components/dashboard/hooks/librarySortUtils.ts
+// lib/library/library-sort.ts
 
 import type { OwnedGame } from "@/lib/types";
-import type { SortOrderType } from "./useLibraryFilters.types";
+
+export type SortOrderType =
+  | "default"
+  | "achievements-desc"
+  | "achievements-asc"
+  | "completion-desc"
+  | "name-asc"
+  | "playtime-desc";
 
 export function sortGames(list: OwnedGame[], order: SortOrderType): OwnedGame[] {
   return [...list].sort((a, b) => {

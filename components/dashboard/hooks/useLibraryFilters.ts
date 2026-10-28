@@ -3,16 +3,12 @@
 
 import { useState, useMemo } from "react";
 import type { PlatformType } from "@/lib/types";
-import type {
-  UseLibraryFiltersProps,
-  StatusFilterType,
-  AchievementFilterType,
-  SortOrderType,
-} from "./useLibraryFilters.types";
-import { filterGames } from "./libraryFilterUtils";
-import { sortGames } from "./librarySortUtils";
+import type { UseLibraryFiltersProps } from "./useLibraryFilters.types";
+import { filterGames } from "@/lib/library/library-filters";
+import { sortGames } from "@/lib/library/library-sort";
+import type { StatusFilterType, AchievementFilterType } from "@/lib/library/library-filters";
+import type { SortOrderType } from "@/lib/library/library-sort";
 
-export type { StatusFilterType, AchievementFilterType, SortOrderType };
 
 export function useLibraryFilters({
   ownedGames,

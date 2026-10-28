@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useUserData } from "@/context/UserDataContext";
-import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
+import type { LibraryTab } from "@/lib/library/library-filters";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
 import { addGamePassItemToXboxLibrary } from "@/components/dashboard/gamepass/gamepassLibraryAction.services";
 import { useDashboardCollections } from "@/components/dashboard/hooks/useDashboardCollections";
@@ -21,7 +21,7 @@ export function useHomePageController() {
 
   const steamAccount = accountProfile.accounts.steam;
   const [bannerMsg, setBannerMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [activePlatformTab, setActivePlatformTab] = useState<DashboardTabType>("all");
+  const [activePlatformTab, setActivePlatformTab] = useState<LibraryTab>("all");
 
   const platformInputs = usePlatformInputs({ accountProfile, initialSteamApiKey: steamApiKey });
   const collectionsState = useDashboardCollections({
@@ -55,7 +55,7 @@ export function useHomePageController() {
     ownedGames, activePlatformTab, wishlistIds, collections, selectedCollId: collectionsState.selectedCollId,
   });
 
-  const handleSelectTab = (tab: DashboardTabType) => {
+  const handleSelectTab = (tab: LibraryTab) => {
     setActivePlatformTab(tab);
     libraryFilters.setLibPlatformFilter(
       tab === "all" || tab === "duplicates" || tab === "wishlist" || tab === "collections" || tab === "gamepass"
