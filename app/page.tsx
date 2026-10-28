@@ -2,8 +2,8 @@
 
 "use client";
 
-import DashboardBanners from "@/components/dashboard/DashboardBanners";
-import DashboardNavTabs from "@/components/dashboard/DashboardNavTabs";
+import FeedbackBanners from "@/components/ui/FeedbackBanners";
+import LibraryNavTabs from "@/components/library/LibraryNavTabs";
 import { LibraryHeaderBanner } from "@/components/library/LibraryHeaderBanner";
 import { FeaturedGamesSection } from "@/components/library/FeaturedGamesSection";
 import { useHomePageController } from "./hooks/useHomePageController";
@@ -28,13 +28,13 @@ export default function HomePage() {
         trackingSummary={c.trackingSummary}
       />
 
-      <DashboardBanners
+      <FeedbackBanners
         bannerMsg={c.bannerMsg}
         onDismissBanner={() => c.setBannerMsg(null)}
         syncProgressText={c.platformSync.syncProgressText}
       />
 
-      <DashboardNavTabs
+      <LibraryNavTabs
         activePlatformTab={c.activePlatformTab}
         onSelectTab={c.handleSelectTab}
         ownedGamesCount={c.ownedGames.length}

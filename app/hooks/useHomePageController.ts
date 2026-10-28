@@ -7,13 +7,13 @@ import { isFeatureTab, parseLibraryTab, type LibraryTab } from "@/lib/library/li
 import { calculateTrackingSummary } from "@/lib/library/library-tracking";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
 import { addGamePassItemToXboxLibrary } from "@/lib/gamepass/library-action.services";
-import { useDashboardCollections } from "@/components/dashboard/hooks/useDashboardCollections";
-import { useDashboardStats } from "@/components/dashboard/hooks/useDashboardStats";
-import { useLibraryFilters } from "@/components/dashboard/hooks/useLibraryFilters";
-import { useAddGameFlow } from "@/components/dashboard/hooks/useAddGameFlow";
-import { useBulkImport } from "@/components/dashboard/hooks/useBulkImport";
-import { usePlatformSync } from "@/components/dashboard/hooks/usePlatformSync";
-import { usePlatformInputs } from "@/components/dashboard/hooks/usePlatformInputs";
+import { useLibraryCollections } from "@/components/library/hooks/useLibraryCollections";
+import { useCollectionStats } from "@/components/library/hooks/useCollectionStats";
+import { useLibraryFilters } from "@/components/library/hooks/useLibraryFilters";
+import { useAddGameFlow } from "@/components/library/hooks/useAddGameFlow";
+import { useBulkImport } from "@/components/library/hooks/useBulkImport";
+import { usePlatformSync } from "@/components/platform-sync/hooks/usePlatformSync";
+import { usePlatformInputs } from "@/components/platform-sync/hooks/usePlatformInputs";
 
 export function useHomePageController() {
   const {
@@ -30,7 +30,7 @@ export function useHomePageController() {
   );
 
   const platformInputs = usePlatformInputs({ accountProfile, initialSteamApiKey: steamApiKey });
-  const collectionsState = useDashboardCollections({
+  const collectionsState = useLibraryCollections({
     currentUser, initialWishlist: wishlistIds, initialCollections: collections,
     onWishlistChange: setWishlistIds, onCollectionsChange: setCollections, setBannerMsg,
   });
@@ -56,7 +56,7 @@ export function useHomePageController() {
     steamUsername: steamAccount?.username, onCloseModal: () => addGameFlow.setIsAddGameOpen(false),
   });
 
-  const stats = useDashboardStats(ownedGames);
+  const stats = useCollectionStats(ownedGames);
   const libraryFilters = useLibraryFilters({
     ownedGames, activePlatformTab, wishlistIds, collections, selectedCollId: collectionsState.selectedCollId,
   });

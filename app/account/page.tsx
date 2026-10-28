@@ -3,7 +3,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import AccountDashboard from "@/components/AccountDashboard";
+import AccountDashboard from "@/components/accounts/AccountDashboard";
 import { useUserData } from "@/context/UserDataContext";
 import { ALL_PLATFORMS, countConnectedPlatforms } from "@/lib/platforms";
 

@@ -1,9 +1,9 @@
 // app/components/HomeContextPanels.tsx
 
 import { useRouter } from "next/navigation";
-import CollectionsPanel from "@/components/dashboard/CollectionsPanel";
-import DuplicatesPanel from "@/components/dashboard/DuplicatesPanel";
-import GamePassPanel from "@/components/dashboard/GamePassPanel";
+import CollectionsPanel from "@/components/library/CollectionsPanel";
+import DuplicatesPanel from "@/components/library/DuplicatesPanel";
+import GamePassPanel from "@/components/library/GamePassPanel";
 import type { LibraryTab } from "@/lib/library/library-filters";
 import type { CollectionWithGames, OwnedGame, PlatformType } from "@/lib/types";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";

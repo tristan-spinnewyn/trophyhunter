@@ -1,7 +1,7 @@
 // app/components/HomeModalsContainer.tsx
 
-import AddGameModal from "@/components/dashboard/AddGameModal";
-import AddToCollectionModal from "@/components/dashboard/AddToCollectionModal";
+import AddGameModal from "@/components/library/AddGameModal";
+import AddToCollectionModal from "@/components/library/AddToCollectionModal";
 import EpicAuthModal from "@/components/EpicAuthModal";
 import type { useHomePageController } from "../hooks/useHomePageController";
 
