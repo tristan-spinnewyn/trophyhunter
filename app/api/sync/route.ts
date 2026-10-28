@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { syncEpicGame } from "@/lib/epic/game-sync";
-import { syncSteamGame } from "@/lib/steam/sync";
+import { syncSteamGame } from "@/lib/steam/game-sync";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

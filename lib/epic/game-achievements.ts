@@ -1,6 +1,6 @@
 // lib/epic/game-achievements.ts
 import type { Achievement } from "@/lib/types";
-import { isLikelyMissable } from "@/lib/steam/game-details";
+import { isLikelyMissable } from "@/lib/steam/game-metadata";
 import { epicGraphQL } from "./graphql";
 import { resolveEpicSandboxId } from "./sandbox";
 
