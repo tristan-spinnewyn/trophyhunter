@@ -1,10 +1,13 @@
 version: 2
 updates:
-  # Vérification quotidienne des dépendances npm / pnpm
+  # Daily check of npm / pnpm dependencies
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "daily"
+    # Matches minimumReleaseAge in pnpm-workspace.yaml
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
@@ -12,7 +15,7 @@ updates:
     commit-message:
       prefix: "chore(deps)"
 
-  # Vérification hebdomadaire des GitHub Actions
+  # Weekly check of GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -24,7 +27,7 @@ updates:
     commit-message:
       prefix: "chore(actions)"
 
-  # Vérification hebdomadaire des dépendances de base Docker
+  # Weekly check of Docker base images
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
