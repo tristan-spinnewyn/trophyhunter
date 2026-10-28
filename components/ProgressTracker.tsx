@@ -4,13 +4,14 @@
 import { useEffect, useRef } from "react";
 import { Trophy, Award } from "lucide-react";
 import type { ProgressTrackerProps } from "./progress/ProgressTracker.types";
-import { fireCompletionConfetti, getProgressTier } from "./progress/progressTier";
+import { fireCompletionConfetti, getProgressTier, getUntrackedUnlockedCount } from "./progress/progressTier";
 import { ProgressTrackerActions } from "./progress/ProgressTrackerActions";
 import { ProgressBar } from "./progress/ProgressBar";
 
 export default function ProgressTracker({
   total,
   unlockedCount,
+  importedUnlockedCount,
   onReset,
   onSync,
   isSyncing = false,
@@ -32,6 +33,7 @@ export default function ProgressTracker({
   }, [isComplete, unlockedCount, total]);
 
   const tier = getProgressTier(isComplete, percent, total);
+  const untrackedCount = getUntrackedUnlockedCount(unlockedCount, importedUnlockedCount);
 
   return (
     <div
@@ -83,6 +85,12 @@ export default function ProgressTracker({
       </div>
 
       <ProgressBar total={total} unlockedCount={unlockedCount} percent={percent} isComplete={isComplete} />
+
+      {untrackedCount !== null && (
+        <p className="mt-3 text-xs text-slate-400">
+          Ta plateforme indique {untrackedCount} succès débloqués. Synchronise pour cocher le détail.
+        </p>
+      )}
     </div>
   );
 }

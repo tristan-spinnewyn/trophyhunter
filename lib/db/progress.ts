@@ -35,6 +35,8 @@ export function saveUserGameProgress(
   const pinnedJson = JSON.stringify(progress.pinnedIds || []);
   const huntingMetaJson = progress.huntingMeta ? JSON.stringify(progress.huntingMeta) : null;
   const lastPlayed = progress.lastPlayed || now;
+  const unlockedCount = progress.unlockedIds?.length || 0;
+  const hadChecklist = (getUserGameProgress(userId, appId, platform)?.unlockedIds.length ?? 0) > 0;
 
   db.prepare(
     `INSERT INTO user_game_progress (
@@ -49,9 +51,17 @@ export function saveUserGameProgress(
        updated_at = excluded.updated_at`
   ).run(crypto.randomUUID(), userId, appId, platform, unlockedJson, notesJson, pinnedJson, huntingMetaJson, lastPlayed, now);
 
-  db.prepare(
-    `UPDATE user_games SET unlocked_count = ?, last_played = ? WHERE user_id = ? AND app_id = ? AND platform = ?`
-  ).run(progress.unlockedIds?.length || 0, lastPlayed, userId, appId, platform);
+  // Once a game has a checklist, it is the source of truth for its count. Without one, saving a
+  // note, a pin or a hunting override must not wipe the count imported from the platform.
+  if (unlockedCount > 0 || hadChecklist) {
+    db.prepare(
+      `UPDATE user_games SET unlocked_count = ?, last_played = ? WHERE user_id = ? AND app_id = ? AND platform = ?`
+    ).run(unlockedCount, lastPlayed, userId, appId, platform);
+  } else {
+    db.prepare(
+      `UPDATE user_games SET last_played = ? WHERE user_id = ? AND app_id = ? AND platform = ?`
+    ).run(lastPlayed, userId, appId, platform);
+  }
 }
 
 export function resetUserGameProgress(

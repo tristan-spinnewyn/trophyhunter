@@ -46,3 +46,12 @@ export function getProgressTier(
     color: "from-amber-600 to-amber-800 text-amber-600 border-amber-700/50",
   };
 }
+
+/**
+ * Achievements the platform reports as unlocked while the checklist is still empty
+ * (imported counts without per-achievement detail). Null once the checklist is used.
+ */
+export function getUntrackedUnlockedCount(checklistCount: number, importedCount: number | undefined): number | null {
+  if (checklistCount > 0 || !importedCount) return null;
+  return importedCount;
+}
