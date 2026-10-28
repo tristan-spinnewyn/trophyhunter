@@ -2,15 +2,12 @@
 
 import type { PlatformType } from "@/lib/types";
 import { PLATFORM_META } from "@/lib/platforms";
+import type { PlatformFormData } from "@/lib/platform-account-form";
 
 interface PlatformTrophyInputsProps {
   editingPlatform: PlatformType;
-  platForm: {
-    totalAchievements: string;
-    completedGames: string;
-    gamerScore: string;
-  };
-  setPlatForm: (val: any) => void;
+  platForm: PlatformFormData;
+  setPlatForm: (val: PlatformFormData) => void;
 }
 
 export function PlatformTrophyInputs({

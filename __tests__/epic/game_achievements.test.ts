@@ -1,7 +1,6 @@
 // __tests__/epic/game_achievements.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { initDatabase, setDbForTesting, createUser } from "@/lib/db";
-import { storeEpicCredentials } from "@/lib/epic/credentials";
 import { getEpicGameAchievements } from "@/lib/epic/game-achievements";
 import { getEpicAchievementsForUser } from "@/lib/epic/game-sync";
 import { jsonResponse } from "../helpers/responses";

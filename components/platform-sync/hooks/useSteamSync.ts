@@ -4,6 +4,7 @@ import type { OwnedGame, PlatformAccount, User as UserType } from "@/lib/types";
 import { mergeGamesList } from "@/lib/library/game-list";
 import { useSteamSingleGameSync } from "./useSteamSingleGameSync";
 import { syncSteamAchievementsBatch } from "./steamAchievementsBatch";
+import { errorMessage } from "@/lib/error-message";
 
 export interface UseSteamSyncProps {
   ownedGames: OwnedGame[];
@@ -97,8 +98,8 @@ export function useSteamSync({
         type: "success",
         text: `Compte Steam "${fetchedAccount.displayName}" synchronisé ! ${steamGamesToSync.length} jeux importés et sauvegardés dans SQLite.`,
       });
-    } catch (err: any) {
-      setBannerMsg({ type: "error", text: err.message || "Erreur lors de la synchronisation Steam." });
+    } catch (err: unknown) {
+      setBannerMsg({ type: "error", text: errorMessage(err, "Erreur lors de la synchronisation Steam.") });
     } finally {
       setIsSyncingSteam(false);
       setSyncProgressText(null);
