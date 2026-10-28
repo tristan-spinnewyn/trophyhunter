@@ -4,7 +4,7 @@
 
 import DashboardBanners from "@/components/dashboard/DashboardBanners";
 import DashboardNavTabs from "@/components/dashboard/DashboardNavTabs";
-import { DashboardActiveTabSection } from "@/components/dashboard/DashboardActiveTabSection";
+import ActiveTabPanel from "@/components/dashboard/ActiveTabPanel";
 import { DashboardLibraryView } from "@/components/dashboard/DashboardLibraryView";
 import { DashboardModalsContainer } from "@/components/dashboard/DashboardModalsContainer";
 import {
@@ -34,7 +34,7 @@ export default function AccountDashboard(props: AccountDashboardControllerParams
         collectionsCount={c.collectionsState.collections.length}
       />
 
-      <DashboardActiveTabSection
+      <ActiveTabPanel
         controller={c}
         props={props}
       />

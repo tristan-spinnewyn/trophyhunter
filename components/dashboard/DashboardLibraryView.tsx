@@ -1,20 +1,12 @@
 // components/dashboard/DashboardLibraryView.tsx
 
 import LibrarySection from "./library-section/LibrarySection";
-import type {
-  useAccountDashboardController,
-  AccountDashboardControllerParams,
-} from "./hooks/useAccountDashboardController";
-
-interface DashboardLibraryViewProps {
-  readonly controller: ReturnType<typeof useAccountDashboardController>;
-  readonly props: AccountDashboardControllerParams;
-}
+import type { DashboardSectionProps } from "./hooks/useAccountDashboardController";
 
 export function DashboardLibraryView({
   controller: c,
   props,
-}: DashboardLibraryViewProps) {
+}: DashboardSectionProps) {
   const { platformInputs: pi, collectionsState: cs, platformSync: ps, addGameFlow: ag, stats, libraryFilters: lf } = c;
 
   return (

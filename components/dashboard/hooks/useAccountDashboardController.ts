@@ -103,3 +103,9 @@ export function useAccountDashboardController(params: AccountDashboardController
     steamAccount, platformInputs, collectionsState, platformSync, addGameFlow, bulkImport, stats, libraryFilters,
   };
 }
+
+/** What each dashboard section receives: the controller state and the dashboard's own props. */
+export interface DashboardSectionProps {
+  readonly controller: ReturnType<typeof useAccountDashboardController>;
+  readonly props: AccountDashboardControllerParams;
+}

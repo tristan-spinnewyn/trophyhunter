@@ -4,69 +4,68 @@ import OverviewPanel from "@/components/dashboard/OverviewPanel";
 import DuplicatesPanel from "@/components/dashboard/DuplicatesPanel";
 import CollectionsPanel from "@/components/dashboard/CollectionsPanel";
 import GamePassPanel from "@/components/dashboard/GamePassPanel";
-import type { ActiveTabPanelProps } from "./active-tab/ActiveTabPanel.types";
+import type { DashboardSectionProps } from "./hooks/useAccountDashboardController";
 import { PlatformTabSwitcher } from "./active-tab/PlatformTabSwitcher";
 
-export type { ActiveTabPanelProps };
+export default function ActiveTabPanel({ controller: c, props }: DashboardSectionProps) {
+  const { collectionsState: cs, platformSync: ps, stats } = c;
+  const onSelectTab = c.handleSelectTab;
 
-export default function ActiveTabPanel(props: ActiveTabPanelProps) {
-  const { activePlatformTab, onSelectTab } = props;
-
-  if (activePlatformTab === "all") {
+  if (c.activePlatformTab === "all") {
     return (
       <OverviewPanel
-        globalStats={props.globalStats}
+        globalStats={stats.globalStats}
         accountProfile={props.accountProfile}
-        platformCounts={props.platformCounts}
+        platformCounts={stats.platformCounts}
         onSelectPlatform={onSelectTab}
-        onEditPlatform={props.openEditPlatform}
-        onDisconnectPlatform={props.handleDisconnectPlatform}
+        onEditPlatform={ps.openEditPlatform}
+        onDisconnectPlatform={ps.handleDisconnectPlatform}
         onSelectGame={props.onSelectGame}
       />
     );
   }
 
-  if (activePlatformTab === "gamepass") {
+  if (c.activePlatformTab === "gamepass") {
     return (
       <GamePassPanel
         ownedGames={props.ownedGames}
-        wishlistIds={props.wishlistIds}
-        onAddGameToXbox={props.onAddGamePassToXbox}
-        onToggleWishlist={props.onToggleWishlist}
+        wishlistIds={cs.wishlistIds}
+        onAddGameToXbox={c.handleAddGamePassToXbox}
+        onToggleWishlist={cs.handleToggleWishlist}
         onSelectGame={(appId) => props.onSelectGame(appId)}
         onBackToAll={() => onSelectTab("all")}
       />
     );
   }
 
-  if (activePlatformTab === "duplicates") {
+  if (c.activePlatformTab === "duplicates") {
     return (
       <DuplicatesPanel
-        duplicateGroups={props.duplicateGroups}
+        duplicateGroups={stats.duplicateGroups}
         onSelectGame={props.onSelectGame}
         onBackToAll={() => onSelectTab("all")}
       />
     );
   }
 
-  if (activePlatformTab === "collections") {
+  if (c.activePlatformTab === "collections") {
     return (
       <CollectionsPanel
-        collections={props.collections}
-        selectedCollId={props.selectedCollId}
-        setSelectedCollId={props.setSelectedCollId}
-        isCreatingColl={props.isCreatingColl}
-        setIsCreatingColl={props.setIsCreatingColl}
-        newCollName={props.newCollName}
-        setNewCollName={props.setNewCollName}
-        newCollDesc={props.newCollDesc}
-        setNewCollDesc={props.setNewCollDesc}
-        handleCreateCollection={props.handleCreateCollection}
-        handleDeleteCollection={props.handleDeleteCollection}
+        collections={cs.collections}
+        selectedCollId={cs.selectedCollId}
+        setSelectedCollId={cs.setSelectedCollId}
+        isCreatingColl={cs.isCreatingColl}
+        setIsCreatingColl={cs.setIsCreatingColl}
+        newCollName={cs.newCollName}
+        setNewCollName={cs.setNewCollName}
+        newCollDesc={cs.newCollDesc}
+        setNewCollDesc={cs.setNewCollDesc}
+        handleCreateCollection={cs.handleCreateCollection}
+        handleDeleteCollection={cs.handleDeleteCollection}
         onBackToAll={() => onSelectTab("all")}
       />
     );
   }
 
-  return <PlatformTabSwitcher {...props} />;
+  return <PlatformTabSwitcher controller={c} props={props} />;
 }

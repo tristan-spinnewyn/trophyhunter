@@ -1,17 +1,12 @@
 // components/dashboard/DashboardModalsContainer.tsx
 
 import DashboardModals from "./DashboardModals";
-import type { AccountDashboardControllerParams } from "./hooks/useAccountDashboardController";
-
-interface DashboardModalsContainerProps {
-  controller: any;
-  props: AccountDashboardControllerParams;
-}
+import type { DashboardSectionProps } from "./hooks/useAccountDashboardController";
 
 export function DashboardModalsContainer({
   controller: c,
   props,
-}: DashboardModalsContainerProps) {
+}: DashboardSectionProps) {
   const { collectionsState: cs, platformSync: ps, addGameFlow: ag, bulkImport: bi } = c;
 
   return (
