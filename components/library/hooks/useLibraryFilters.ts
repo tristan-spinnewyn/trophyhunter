@@ -5,7 +5,7 @@ import { useState, useMemo } from "react";
 import type { PlatformType } from "@/lib/types";
 import type { UseLibraryFiltersProps } from "./useLibraryFilters.types";
 import { filterGames } from "@/lib/library/library-filters";
-import { sortGames } from "@/lib/library/library-sort";
+import { DEFAULT_SORT_ORDER, sortGames } from "@/lib/library/library-sort";
 import type { AchievementFilterType } from "@/lib/library/library-filters";
 import type { SortOrderType } from "@/lib/library/library-sort";
 
@@ -19,7 +19,7 @@ export function useLibraryFilters({
 }: UseLibraryFiltersProps) {
   const [libPlatformFilter, setLibPlatformFilter] = useState<PlatformType | "all">("all");
   const [libAchievementFilter, setLibAchievementFilter] = useState<AchievementFilterType>("all");
-  const [libSortOrder, setLibSortOrder] = useState<SortOrderType>("default");
+  const [libSortOrder, setLibSortOrder] = useState<SortOrderType>(DEFAULT_SORT_ORDER);
   const [libSearch, setLibSearch] = useState("");
 
   const filteredGames = useMemo(() => {
