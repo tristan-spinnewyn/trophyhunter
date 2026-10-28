@@ -1,74 +1,76 @@
 // components/accounts/active-tab/PlatformTabSwitcher.tsx
 
-import PlatformSteamPanel from "@/components/accounts/PlatformSteamPanel";
-import PlatformXboxPanel from "@/components/accounts/PlatformXboxPanel";
-import PlatformEpicPanel from "@/components/accounts/PlatformEpicPanel";
-import PlatformGogPanel from "@/components/accounts/PlatformGogPanel";
+import type { PlatformType } from "@/lib/types";
+import { ALL_PLATFORMS } from "@/lib/platforms";
+import { PlatformConnectionPanel, type PlatformConnectionPanelProps } from "../PlatformConnectionPanel";
+import { EpicLibraryTools } from "../EpicLibraryTools";
 import type { DashboardSectionProps } from "../hooks/useAccountDashboardController";
 
-export function PlatformTabSwitcher({ controller: c, props }: DashboardSectionProps) {
+type PlatformFields = Pick<
+  PlatformConnectionPanelProps,
+  "identifier" | "onIdentifierChange" | "secret" | "onSecretChange" | "isSyncing" | "onSync" | "onOpenGuidedAuth" | "extra"
+>;
+
+/** Maps the controller's per-platform inputs and actions onto the shared connection panel. */
+function platformFields(platform: PlatformType, { controller: c }: DashboardSectionProps): PlatformFields {
   const { platformInputs: pi, platformSync: ps, stats } = c;
-  const { accountProfile } = props;
-  const platformCounts = stats.platformCounts;
 
-  if (c.activePlatformTab === "steam") {
-    return (
-      <PlatformSteamPanel
-        steamAccount={accountProfile.accounts.steam} displayName={c.displayName}
-        platformCounts={platformCounts} steamInput={pi.steamInput}
-        setSteamInput={pi.setSteamInput} steamApiKey={pi.steamApiKey}
-        setSteamApiKey={pi.setSteamApiKey} showApiKeyInput={pi.showApiKeyInput}
-        setShowApiKeyInput={pi.setShowApiKeyInput} isSyncingSteam={ps.isSyncingSteam}
-        syncProgressText={ps.syncProgressText} onConnectAndSyncSteam={ps.handleConnectAndSyncSteam}
-        gameCount={platformCounts.steam || 0}
-      />
-    );
+  switch (platform) {
+    case "steam":
+      return {
+        identifier: pi.steamInput, onIdentifierChange: pi.setSteamInput,
+        secret: pi.steamApiKey, onSecretChange: pi.setSteamApiKey,
+        isSyncing: ps.isSyncingSteam, onSync: () => ps.handleConnectAndSyncSteam(),
+      };
+    case "xbox":
+      return {
+        identifier: pi.xboxInput, onIdentifierChange: pi.setXboxInput,
+        secret: pi.xboxApiKey, onSecretChange: pi.setXboxApiKey,
+        isSyncing: ps.isSyncingXbox, onSync: () => ps.handleConnectAndSyncXbox(),
+      };
+    case "epic":
+      return {
+        identifier: pi.epicInput, onIdentifierChange: pi.setEpicInput,
+        secret: pi.epicCode, onSecretChange: pi.setEpicCode,
+        isSyncing: ps.isSyncingEpic, onSync: () => ps.handleConnectAndSyncEpic(),
+        onOpenGuidedAuth: ps.openEpicAuthModalForLibrary,
+        extra: (
+          <EpicLibraryTools
+            epicCounts={stats.epicCounts}
+            isSyncingEpic={ps.isSyncingEpic}
+            onScanEpicAchievements={ps.handleScanEpicAchievements}
+            onCleanEpicGames={() => ps.handleCleanEpicGames(stats.epicCounts.noAch, stats.epicCounts.withAch)}
+          />
+        ),
+      };
+    case "gog":
+      return {
+        identifier: pi.gogInput, onIdentifierChange: pi.setGogInput,
+        secret: pi.gogToken, onSecretChange: pi.setGogToken,
+        isSyncing: ps.isSyncingGOG, onSync: () => ps.handleConnectAndSyncGOG(),
+      };
   }
+}
 
-  if (c.activePlatformTab === "xbox") {
-    return (
-      <PlatformXboxPanel
-        accountProfile={accountProfile} platformCounts={platformCounts}
-        xboxInput={pi.xboxInput} setXboxInput={pi.setXboxInput}
-        xboxApiKey={pi.xboxApiKey} setXboxApiKey={pi.setXboxApiKey}
-        showXboxApiKey={pi.showXboxApiKey} setShowXboxApiKey={pi.setShowXboxApiKey}
-        isSyncingXbox={ps.isSyncingXbox} onConnectAndSyncXbox={ps.handleConnectAndSyncXbox}
-        openEditPlatform={ps.openEditPlatform} handleDisconnectPlatform={ps.handleDisconnectPlatform}
-        gameCount={platformCounts.xbox || 0}
-      />
-    );
-  }
+function isPlatform(tab: string): tab is PlatformType {
+  return (ALL_PLATFORMS as readonly string[]).includes(tab);
+}
 
-  if (c.activePlatformTab === "epic") {
-    return (
-      <PlatformEpicPanel
-        accountProfile={accountProfile} epicCounts={stats.epicCounts}
-        epicInput={pi.epicInput} setEpicInput={pi.setEpicInput}
-        epicCode={pi.epicCode} setEpicCode={pi.setEpicCode}
-        showEpicCode={pi.showEpicCode} setShowEpicCode={pi.setShowEpicCode}
-        isSyncingEpic={ps.isSyncingEpic} syncProgressText={ps.syncProgressText}
-        onConnectAndSyncEpic={ps.handleConnectAndSyncEpic} onScanEpicAchievements={ps.handleScanEpicAchievements}
-        onCleanEpicGames={() => ps.handleCleanEpicGames(stats.epicCounts.noAch, stats.epicCounts.withAch)}
-        openEditPlatform={ps.openEditPlatform}
-        handleDisconnectPlatform={ps.handleDisconnectPlatform} gameCount={platformCounts.epic || 0}
-        onOpenEpicModal={ps.openEpicAuthModalForLibrary}
-      />
-    );
-  }
+export function PlatformTabSwitcher(section: DashboardSectionProps) {
+  const { controller: c, props } = section;
+  const platform = c.activePlatformTab;
+  if (!isPlatform(platform)) return null;
 
-  if (c.activePlatformTab === "gog") {
-    return (
-      <PlatformGogPanel
-        accountProfile={accountProfile} platformCounts={platformCounts}
-        gogInput={pi.gogInput} setGogInput={pi.setGogInput}
-        gogToken={pi.gogToken} setGogToken={pi.setGogToken}
-        showGogToken={pi.showGogToken} setShowGogToken={pi.setShowGogToken}
-        isSyncingGOG={ps.isSyncingGOG} onConnectAndSyncGOG={ps.handleConnectAndSyncGOG}
-        openEditPlatform={ps.openEditPlatform} handleDisconnectPlatform={ps.handleDisconnectPlatform}
-        gameCount={platformCounts.gog || 0}
-      />
-    );
-  }
-
-  return null;
+  return (
+    <PlatformConnectionPanel
+      key={platform}
+      platform={platform}
+      account={props.accountProfile.accounts[platform]}
+      gameCount={c.stats.platformCounts[platform] || 0}
+      syncProgressText={c.platformSync.syncProgressText}
+      onEdit={c.platformSync.openEditPlatform}
+      onDisconnect={c.platformSync.handleDisconnectPlatform}
+      {...platformFields(platform, section)}
+    />
+  );
 }

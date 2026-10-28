@@ -45,14 +45,12 @@ describe("usePlatformInputs", () => {
     expect(localStorage.getItem("trophyhunter_xbox_api_key")).toBeNull();
   });
 
-  it("toggles the secret fields", () => {
+  it("stores the secrets typed in the connection panel", () => {
     const { result } = renderHook(() => usePlatformInputs({ accountProfile: { displayName: "P", accounts: {} } }));
     act(() => {
-      result.current.setShowApiKeyInput(true);
-      result.current.setShowEpicCode(true);
       result.current.setEpicCode("code");
       result.current.setGogToken("tok");
     });
-    expect(result.current).toMatchObject({ showApiKeyInput: true, showEpicCode: true, epicCode: "code", gogToken: "tok" });
+    expect(result.current).toMatchObject({ epicCode: "code", gogToken: "tok" });
   });
 });
