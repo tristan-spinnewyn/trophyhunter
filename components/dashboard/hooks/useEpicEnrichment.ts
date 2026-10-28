@@ -11,7 +11,7 @@ interface UseEpicEnrichmentProps {
   setSyncProgressText: (text: string | null) => void;
   setIsSyncingEpic: (val: boolean) => void;
   isSyncingEpic: boolean;
-  persistGamesToSQLite: (games: OwnedGame[]) => Promise<void>;
+  persistGames: (games: OwnedGame[]) => Promise<void>;
 }
 
 export function useEpicEnrichment({
@@ -21,7 +21,7 @@ export function useEpicEnrichment({
   setSyncProgressText,
   setIsSyncingEpic,
   isSyncingEpic,
-  persistGamesToSQLite,
+  persistGames,
 }: UseEpicEnrichmentProps) {
   const hasAutoEnrichedEpicRef = useRef(false);
 
@@ -51,7 +51,7 @@ export function useEpicEnrichment({
         const resolvedBatch = await Promise.all(batch.map(resolveSingleEpicGame));
         workingGames = mergeGamesList(workingGames, resolvedBatch);
         onOwnedGamesChange(workingGames);
-        await persistGamesToSQLite(resolvedBatch);
+        await persistGames(resolvedBatch);
       }
     } finally {
       setSyncProgressText(null);

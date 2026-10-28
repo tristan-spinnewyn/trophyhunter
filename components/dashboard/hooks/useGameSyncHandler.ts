@@ -15,8 +15,8 @@ interface UseGameSyncHandlerProps {
   accountProfile: UserAccountProfile;
   ownedGames: OwnedGame[];
   onOwnedGamesChange: (games: OwnedGame[]) => void;
-  removeGameFromSQLite: (appId: number, platform: PlatformType) => Promise<void>;
-  persistGamesToSQLite: (games: OwnedGame[]) => Promise<void>;
+  removeGame: (appId: number, platform: PlatformType) => Promise<void>;
+  persistGames: (games: OwnedGame[]) => Promise<void>;
   setBannerMsg: (msg: { type: "success" | "error"; text: string } | null) => void;
   syncSingleSteamGame: (username: string, game: OwnedGame) => Promise<OwnedGame>;
   enrichEpicGamesAchievements: (epicGamesList: OwnedGame[], allCurrentGames: OwnedGame[], forceAll?: boolean) => Promise<OwnedGame[]>;
@@ -27,8 +27,8 @@ export function useGameSyncHandler({
   accountProfile,
   ownedGames,
   onOwnedGamesChange,
-  removeGameFromSQLite,
-  persistGamesToSQLite,
+  removeGame,
+  persistGames,
   setBannerMsg,
   syncSingleSteamGame,
   enrichEpicGamesAchievements,
@@ -37,7 +37,7 @@ export function useGameSyncHandler({
   const handleRemoveGame = async (appId: number, platform: PlatformType) => {
     const next = ownedGames.filter((item) => !(item.appId === appId && item.platform === platform));
     onOwnedGamesChange(next);
-    await removeGameFromSQLite(appId, platform);
+    await removeGame(appId, platform);
   };
 
   const syncEpicGameWithData = async (g: OwnedGame, data: EpicSyncResponseData) => {
@@ -48,7 +48,7 @@ export function useGameSyncHandler({
     };
     const next = mergeGamesList(ownedGames, [updatedGame]);
     onOwnedGamesChange(next);
-    await persistGamesToSQLite([updatedGame]);
+    await persistGames([updatedGame]);
     setBannerMsg({
       type: "success",
       text: `Succès Epic de "${g.name}" synchronisés (${updatedGame.unlockedCount}/${updatedGame.totalAchievements}) !`,
@@ -61,7 +61,7 @@ export function useGameSyncHandler({
       const synced = await syncSingleSteamGame(steamAccount.username, g);
       const next = mergeGamesList(ownedGames, [synced]);
       onOwnedGamesChange(next);
-      await persistGamesToSQLite([synced]);
+      await persistGames([synced]);
       setBannerMsg({
         type: "success",
         text: `Succès de "${synced.name}" synchronisés (${synced.unlockedCount}/${synced.totalAchievements}) !`,

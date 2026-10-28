@@ -62,12 +62,12 @@ export function useAccountDashboardController(params: AccountDashboardController
   const addGameFlow = useAddGameFlow({
     ownedGames, onOwnedGamesChange, steamUsername: steamAccount?.username,
     syncSingleSteamGame: platformSync.syncSingleSteamGame,
-    persistGamesToSQLite: platformSync.persistGamesToSQLite, setBannerMsg,
+    persistGames: platformSync.persistGames, setBannerMsg,
   });
 
   const bulkImport = useBulkImport({
     ownedGames, onOwnedGamesChange, syncSingleSteamGame: platformSync.syncSingleSteamGame,
-    persistGamesToSQLite: platformSync.persistGamesToSQLite, setBannerMsg,
+    persistGames: platformSync.persistGames, setBannerMsg,
     steamUsername: steamAccount?.username, onCloseModal: () => addGameFlow.setIsAddGameOpen(false),
   });
 
@@ -91,7 +91,7 @@ export function useAccountDashboardController(params: AccountDashboardController
       item,
       ownedGames,
       onOwnedGamesChange,
-      persistGamesToSQLite: platformSync.persistGamesToSQLite,
+      persistGames: platformSync.persistGames,
       setBannerMsg,
     });
   };

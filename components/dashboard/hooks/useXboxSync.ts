@@ -13,11 +13,11 @@ interface UseXboxSyncProps {
   readonly xboxInput: string;
   readonly xboxApiKey: string;
   readonly updateAccountProfileInMemory: (account: PlatformAccount) => void;
-  readonly persistAccountToSQLite: (
+  readonly persistAccount: (
     account: PlatformAccount,
     plainApiKey?: string
   ) => Promise<void>;
-  readonly persistGamesToSQLite: (games: OwnedGame[]) => Promise<void>;
+  readonly persistGames: (games: OwnedGame[]) => Promise<void>;
 }
 
 interface XboxSyncApiResponse {
@@ -35,8 +35,8 @@ export function useXboxSync({
   xboxInput,
   xboxApiKey,
   updateAccountProfileInMemory,
-  persistAccountToSQLite,
-  persistGamesToSQLite,
+  persistAccount,
+  persistGames,
 }: UseXboxSyncProps) {
   const [isSyncingXbox, setIsSyncingXbox] = useState(false);
 
@@ -59,12 +59,12 @@ export function useXboxSync({
         throw new Error(data.error || "Impossible de synchroniser avec Xbox.");
       }
       updateAccountProfileInMemory(data.account);
-      await persistAccountToSQLite(data.account, trimmedKey || undefined);
+      await persistAccount(data.account, trimmedKey || undefined);
       const discovered = Array.isArray(data.discoveredGames) ? data.discoveredGames : [];
       if (discovered.length > 0) {
         const merged = mergeGamesList(ownedGames, discovered);
         onOwnedGamesChange(merged);
-        await persistGamesToSQLite(discovered);
+        await persistGames(discovered);
       }
       setBannerMsg({
         type: "success",
