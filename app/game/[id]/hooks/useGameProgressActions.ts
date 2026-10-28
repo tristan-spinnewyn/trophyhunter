@@ -25,7 +25,7 @@ export interface UseGameProgressActionsParams {
   favorites: number[];
   setFavorites: (favs: number[]) => void;
   ownedGames: OwnedGame[];
-  upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<any>;
+  upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<void>;
   setIsSyncing: (s: boolean) => void;
   setSyncNotice: (n: { type: "success" | "error"; msg: string } | null) => void;
 }

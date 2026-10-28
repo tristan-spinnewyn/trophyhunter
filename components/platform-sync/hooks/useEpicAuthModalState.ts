@@ -4,10 +4,12 @@
 import { useState } from "react";
 import { buildEpicAuthHeaders } from "@/lib/epic/auth-input";
 import type { OwnedGame } from "@/lib/types";
+import { errorMessage } from "@/lib/error-message";
+import type { EpicSyncResponseData } from "@/lib/epic/sync-response.types";
 
 interface UseEpicAuthModalStateProps {
   handleConnectAndSyncEpic: (overrideUser?: string, codeOverride?: string) => Promise<void>;
-  syncEpicGameWithData: (g: OwnedGame, data: any) => Promise<void>;
+  syncEpicGameWithData: (g: OwnedGame, data: EpicSyncResponseData) => Promise<void>;
 }
 
 export function useEpicAuthModalState({
@@ -39,8 +41,8 @@ export function useEpicAuthModalState({
       try {
         await handleConnectAndSyncEpic(undefined, token);
         setIsEpicAuthModalOpen(false);
-      } catch (err: any) {
-        setEpicAuthModalError(err.message || "Erreur de synchronisation Epic Games.");
+      } catch (err: unknown) {
+        setEpicAuthModalError(errorMessage(err, "Erreur de synchronisation Epic Games."));
       } finally {
         setIsEpicModalSyncing(false);
       }
@@ -61,8 +63,8 @@ export function useEpicAuthModalState({
       await syncEpicGameWithData(epicAuthModalGame, data);
       setIsEpicAuthModalOpen(false);
       setEpicAuthModalGame(null);
-    } catch (err: any) {
-      setEpicAuthModalError(err.message || "Erreur de validation du code Epic.");
+    } catch (err: unknown) {
+      setEpicAuthModalError(errorMessage(err, "Erreur de validation du code Epic."));
     } finally {
       setIsEpicModalSyncing(false);
     }

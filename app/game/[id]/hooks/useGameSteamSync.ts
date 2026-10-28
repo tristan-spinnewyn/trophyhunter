@@ -3,6 +3,7 @@
 
 import type { UseGameSyncActionParams } from "./useGameSyncAction.types";
 import type { UserGameProgress } from "@/lib/types";
+import { errorMessage } from "@/lib/error-message";
 
 export function useGameSteamSync({
   game,
@@ -42,7 +43,6 @@ export function useGameSteamSync({
       const updatedProgress: UserGameProgress = {
         ...progress,
         unlockedIds: matched,
-        lastPlayed: new Date().toISOString(),
       };
       setProgress(updatedProgress);
 
@@ -62,8 +62,8 @@ export function useGameSteamSync({
         type: "success",
         msg: `Synchronisation réussie : ${matched.length}/${game.totalAchievements} succès débloqués !`,
       });
-    } catch (err: any) {
-      setSyncNotice({ type: "error", msg: err.message || "Erreur lors de la synchronisation." });
+    } catch (err: unknown) {
+      setSyncNotice({ type: "error", msg: errorMessage(err, "Erreur lors de la synchronisation.") });
     } finally {
       setIsSyncing(false);
     }

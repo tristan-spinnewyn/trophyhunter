@@ -1,15 +1,16 @@
 // app/game/[id]/hooks/gameEpicSyncData.ts
 
 import type { GameDetails, OwnedGame, UserGameProgress } from "@/lib/types";
+import type { EpicSyncResponseData } from "@/lib/epic/sync-response.types";
 
 interface ApplySyncDataParams {
-  data: any;
+  data: EpicSyncResponseData;
   game: GameDetails;
   setGame?: (g: GameDetails) => void;
   owned?: OwnedGame;
   progress: UserGameProgress;
   setProgress: (p: UserGameProgress) => void;
-  upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<any>;
+  upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<void>;
 }
 
 export async function applyGameEpicSyncData({
@@ -35,7 +36,7 @@ export async function applyGameEpicSyncData({
     .map((a) => a.id);
 
   const newUnlockedIds = Array.from(new Set([...progress.unlockedIds, ...matched, ...(returnedUnlockedIds.length > 0 && matched.length === 0 ? returnedUnlockedIds : [])]));
-  const updatedProgress: UserGameProgress = { ...progress, unlockedIds: newUnlockedIds, lastPlayed: new Date().toISOString() };
+  const updatedProgress: UserGameProgress = { ...progress, unlockedIds: newUnlockedIds };
   setProgress(updatedProgress);
 
   const resolvedTotal = data.totalAchievements || currentAchievements.length || game.totalAchievements;

@@ -1,7 +1,6 @@
 // components/library/LibraryNavTabs.tsx
 
 import { Layers } from "lucide-react";
-import type { LibraryTab } from "@/lib/library/library-filters";
 import type { LibraryNavTabsProps } from "./nav/LibraryNavTabs.types";
 import { NavPlatformTabs } from "./nav/NavPlatformTabs";
 import { NavFeatureTabs } from "./nav/NavFeatureTabs";

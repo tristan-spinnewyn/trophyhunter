@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import type { User as UserType } from "@/lib/types";
 import { AuthGateHeader } from "./AuthGateHeader";
 import { AuthGateForm } from "./AuthGateForm";
+import { errorMessage } from "@/lib/error-message";
 
 interface AuthGateProps {
   onAuthSuccess: (user: UserType) => void;
@@ -55,8 +56,8 @@ export default function AuthGate({ onAuthSuccess }: AuthGateProps) {
 
       setSuccessMsg(mode === "register" ? "Compte créé avec succès ! Chargement de votre espace..." : "Connexion réussie ! Chargement de votre espace...");
       setTimeout(() => { onAuthSuccess(data.user); }, 600);
-    } catch (err: any) {
-      setErrorMsg(err.message || "Erreur de connexion.");
+    } catch (err: unknown) {
+      setErrorMsg(errorMessage(err, "Erreur de connexion."));
     } finally {
       setIsLoading(false);
     }

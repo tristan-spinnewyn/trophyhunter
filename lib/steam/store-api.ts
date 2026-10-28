@@ -1,10 +1,10 @@
 // lib/steam/store-api.ts
 // HTTP calls to the Steam Web API and store search.
 import { cleanTitleForSearch, findBestSteamMatch } from "./game-metadata";
-import type { DiscoveredGameData } from "./types";
+import type { DiscoveredGameData, SteamSchemaAchievement, SteamStoreGameInfo } from "./types";
 
 export type AchFetchResult =
-  | { type: "schema"; list: any[] }
+  | { type: "schema"; list: SteamSchemaAchievement[] }
   | { type: "html"; html: string }
   | null;
 
@@ -38,7 +38,7 @@ export async function fetchSteamAchievementsByAppId(steamAppId: string): Promise
 export async function searchSteamStoreFallback(nameParam: string, fastMode = false): Promise<{
   matchedAppId?: string;
   matchedImage?: string;
-  gameInfo?: any;
+  gameInfo?: SteamStoreGameInfo;
   achResult?: AchFetchResult;
 }> {
   try {
@@ -110,6 +110,8 @@ export async function fetchOwnedGamesFromSteamApi(
             playtimeHours: g.playtime_forever
               ? Math.round((g.playtime_forever / 60) * 10) / 10
               : 0,
+            // Steam reports the last session as Unix seconds, 0 when never played.
+            lastPlayed: g.rtime_last_played ? new Date(g.rtime_last_played * 1000).toISOString() : undefined,
           });
         }
       }

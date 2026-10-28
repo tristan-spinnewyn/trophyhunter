@@ -1,6 +1,6 @@
 // components/library/hooks/useLibraryFilters.types.ts
 
-import type { OwnedGame, PlatformType, CollectionWithGames } from "@/lib/types";
+import type { OwnedGame, CollectionWithGames } from "@/lib/types";
 import type { LibraryTab } from "@/lib/library/library-filters";
 
 

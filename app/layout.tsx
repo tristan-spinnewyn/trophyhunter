@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#090d16",
+  themeColor: "#020617",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -21,8 +21,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "TrophyHunter - Chasseur de Platine Steam en Français",
-  description: "Application mobile de suivi des succès Steam et guides de platine en français",
+  title: "TrophyHunter : suivi de tes jeux",
+  description: "Suis tes jeux Steam, Xbox, Epic Games et GOG : en cours, à jouer, terminés, avec tes succès en bonus.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

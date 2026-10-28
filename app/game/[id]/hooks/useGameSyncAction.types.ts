@@ -19,7 +19,7 @@ export interface UseGameSyncActionParams {
   accountProfile: UserAccountProfile;
   steamUser: string;
   currentUser: UserType | null;
-  upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<any>;
+  upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<void>;
   setIsSyncing: (s: boolean) => void;
   setSyncNotice: (n: { type: "success" | "error"; msg: string } | null) => void;
 }

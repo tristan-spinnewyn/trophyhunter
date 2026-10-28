@@ -14,7 +14,7 @@ interface AutoSyncParams {
   owned?: OwnedGame;
   currentProgress: UserGameProgress;
   currentUser: UserType | null;
-  upsertOwnedGameInMemoryAndDb: (game: OwnedGame) => Promise<any>;
+  upsertOwnedGameInMemoryAndDb: (game: OwnedGame) => Promise<void>;
   onSynced: (updated: UserGameProgress, count: number) => void;
 }
 
@@ -49,7 +49,6 @@ export function triggerSteamAutoSync({
       const updated: UserGameProgress = {
         ...currentProgress,
         unlockedIds: matched,
-        lastPlayed: new Date().toISOString(),
       };
 
       await upsertOwnedGameInMemoryAndDb({

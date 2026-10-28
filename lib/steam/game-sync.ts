@@ -2,6 +2,7 @@
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getUserGameProgress, saveUserGameProgress } from "@/lib/db";
 import { stripHtmlTags } from "./html";
+import { SteamSyncError, type SteamSchemaAchievement } from "./types";
 
 const normalize = (s: string) => s.replace(/[’']/g, "'").trim().toLowerCase();
 
@@ -66,7 +67,7 @@ export interface XmlSyncParseResult {
   unlockedIds: string[];
 }
 
-export function parseSteamSyncXml(html: string, schemaAchievements: any[] | null): XmlSyncParseResult {
+export function parseSteamSyncXml(html: string, schemaAchievements: SteamSchemaAchievement[] | null): XmlSyncParseResult {
   let gameName = "";
   const unlockedTitles: string[] = [];
   const unlockedIds: string[] = [];
@@ -140,9 +141,7 @@ export interface ValidatedSteamSyncInput {
 
 export function validateAndBuildSteamSyncUrls(rawUser: string, appId: string): ValidatedSteamSyncInput {
   if (!/^\d{1,10}$/.test(appId)) {
-    const err: any = new Error("Paramètre 'appId' invalide (chiffres uniquement).");
-    err.status = 400;
-    throw err;
+    throw new SteamSyncError("Paramètre 'appId' invalide (chiffres uniquement).", 400);
   }
 
   let userIdentifier = rawUser;
@@ -158,15 +157,11 @@ export function validateAndBuildSteamSyncUrls(rawUser: string, appId: string): V
 
   if (isVanity) {
     if (!/^[a-zA-Z0-9_-]{2,64}$/.test(userIdentifier)) {
-      const err: any = new Error("Pseudo ou identifiant Steam personnalisé invalide.");
-      err.status = 400;
-      throw err;
+      throw new SteamSyncError("Pseudo ou identifiant Steam personnalisé invalide.", 400);
     }
   } else {
     if (!/^\d{16,20}$/.test(userIdentifier)) {
-      const err: any = new Error("SteamID64 invalide (16 à 20 chiffres attendus).");
-      err.status = 400;
-      throw err;
+      throw new SteamSyncError("SteamID64 invalide (16 à 20 chiffres attendus).", 400);
     }
   }
 
@@ -212,9 +207,7 @@ export async function syncSteamGame(rawUser: string, appId: string): Promise<Ste
 
   if (!response.ok) {
     if (response.status === 404) {
-      const err: any = new Error(`Profil Steam introuvable pour "${rawUser}". Vérifiez l'ID ou le pseudo.`);
-      err.status = 404;
-      throw err;
+      throw new SteamSyncError(`Profil Steam introuvable pour "${rawUser}". Vérifiez l'ID ou le pseudo.`, 404);
     }
     throw new Error(`Erreur Steam (${response.status})`);
   }
@@ -227,19 +220,14 @@ export async function syncSteamGame(rawUser: string, appId: string): Promise<Ste
     html.includes("profile_private_info") || html.includes("Vous n'avez pas la permission de voir") ||
     html.includes("<privacyState>private</privacyState>") || html.includes("<privacyState>friendsonly</privacyState>")
   ) {
-    const err: any = new Error("Ce profil Steam (ou ses Détails des jeux) est en privé. Pour synchroniser sans clé, passez les 'Détails des jeux' en Public dans vos paramètres de confidentialité Steam.");
-    err.status = 403;
-    err.isPrivate = true;
-    throw err;
+    throw new SteamSyncError("Ce profil Steam (ou ses Détails des jeux) est en privé. Pour synchroniser sans clé, passez les 'Détails des jeux' en Public dans vos paramètres de confidentialité Steam.", 403, { isPrivate: true });
   }
 
   if (html.includes("The specified profile could not be found") || html.includes("Profil introuvable") || html.includes("<error>The specified profile could not be found")) {
-    const err: any = new Error("Profil introuvable. Avez-vous renseigné le bon SteamID ou pseudo personnalisé ?");
-    err.status = 404;
-    throw err;
+    throw new SteamSyncError("Profil introuvable. Avez-vous renseigné le bon SteamID ou pseudo personnalisé ?", 404);
   }
 
-  let schemaAchievements: any[] | null = null;
+  let schemaAchievements: SteamSchemaAchievement[] | null = null;
   try {
     const parsed = JSON.parse(globalHtml);
     if (Array.isArray(parsed?.response?.achievements)) schemaAchievements = parsed.response.achievements;
@@ -259,7 +247,6 @@ export async function syncSteamGame(rawUser: string, appId: string): Promise<Ste
       saveUserGameProgress(authUser.id, appIdNum, "steam", {
         ...existingProg,
         unlockedIds: mergedIds,
-        lastPlayed: new Date().toISOString(),
       });
     }
   } catch (saveErr) {

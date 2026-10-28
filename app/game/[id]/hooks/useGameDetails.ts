@@ -19,7 +19,7 @@ export interface UseGameDetailsParams {
   currentUser: UserType | null;
   accountProfile: UserAccountProfile;
   steamUser: string;
-  upsertOwnedGameInMemoryAndDb: (game: OwnedGame) => Promise<any>;
+  upsertOwnedGameInMemoryAndDb: (game: OwnedGame) => Promise<void>;
 }
 
 export function useGameDetails({

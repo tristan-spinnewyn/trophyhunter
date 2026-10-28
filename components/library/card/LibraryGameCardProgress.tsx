@@ -1,6 +1,7 @@
 // components/library/card/LibraryGameCardProgress.tsx
 
 import type { OwnedGame } from "@/lib/types";
+import { formatLastSession } from "@/lib/library/last-session";
 
 interface LibraryGameCardProgressProps {
   game: OwnedGame;
@@ -17,6 +18,11 @@ export function LibraryGameCardProgress({
 }: LibraryGameCardProgressProps) {
   const hasAchievements = g.totalAchievements > 0;
   const unit = g.platform === "epic" ? "XP" : "succès";
+  const lastSession = formatLastSession(g.lastPlayed);
+  const hasPlaytime = g.playtimeHours !== undefined && g.playtimeHours > 0;
+  const activity = [hasPlaytime ? `${g.playtimeHours} h` : null, lastSession ? `joué ${lastSession}` : null]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <button
@@ -27,30 +33,25 @@ export function LibraryGameCardProgress({
       <h3 className="truncate text-sm font-semibold text-white group-hover:text-sky-300">
         {g.name}
       </h3>
-      <div className="mt-1 flex items-center justify-between gap-2 text-xs text-slate-400">
-        <span className="truncate tabular-nums">
-          {hasAchievements ? `${g.unlockedCount} / ${g.totalAchievements} ${unit}` : "Aucun succès"}
-          {g.playtimeHours !== undefined && g.playtimeHours > 0 && (
-            <span className="text-slate-500"> · {g.playtimeHours} h</span>
-          )}
-        </span>
-        {hasAchievements && (
-          <span
-            className={`font-medium tabular-nums ${
-              isPlatinum ? "text-amber-400" : pct > 0 ? "text-slate-200" : "text-slate-500"
-            }`}
-          >
-            {pct}%
+      <p className="mt-1 truncate text-xs text-slate-300">
+        {activity || (
+          <span className="text-slate-500">
+            {g.unlockedCount > 0 ? "Temps de jeu inconnu" : "Pas encore lancé"}
           </span>
         )}
-      </div>
+      </p>
 
       {hasAchievements && (
-        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-slate-800">
-          <div
-            className={`h-full rounded-full ${isPlatinum ? "bg-amber-400" : "bg-sky-500"}`}
-            style={{ width: `${pct}%` }}
-          />
+        <div className="mt-2 flex items-center gap-2" title={`${pct} % des ${unit}`}>
+          <div className="h-1 flex-1 overflow-hidden rounded-full bg-slate-800">
+            <div
+              className={`h-full rounded-full ${isPlatinum ? "bg-amber-400" : "bg-slate-500"}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <span className={`shrink-0 text-[11px] tabular-nums ${isPlatinum ? "text-amber-400" : "text-slate-500"}`}>
+            {g.unlockedCount}/{g.totalAchievements} {unit}
+          </span>
         </div>
       )}
     </button>

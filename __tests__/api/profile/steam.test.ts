@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/profile/steam/route";
 import { initDatabase, setDbForTesting } from "@/lib/db";
-import { jsonResponse, textResponse } from "../../helpers/responses";
+import { textResponse } from "../../helpers/responses";
 import type { OwnedGame } from "@/lib/types";
 
 describe("GET /api/profile/steam Public Scraper", () => {

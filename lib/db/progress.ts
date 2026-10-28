@@ -55,12 +55,16 @@ export function saveUserGameProgress(
   // note, a pin or a hunting override must not wipe the count imported from the platform.
   if (unlockedCount > 0 || hadChecklist) {
     db.prepare(
-      `UPDATE user_games SET unlocked_count = ?, last_played = ? WHERE user_id = ? AND app_id = ? AND platform = ?`
-    ).run(unlockedCount, lastPlayed, userId, appId, platform);
-  } else {
+      `UPDATE user_games SET unlocked_count = ? WHERE user_id = ? AND app_id = ? AND platform = ?`
+    ).run(unlockedCount, userId, appId, platform);
+  }
+  // Only an explicit activity (e.g. ticking an achievement) dates the game, and never backwards;
+  // a sync passes no date.
+  if (progress.lastPlayed) {
     db.prepare(
-      `UPDATE user_games SET last_played = ? WHERE user_id = ? AND app_id = ? AND platform = ?`
-    ).run(lastPlayed, userId, appId, platform);
+      `UPDATE user_games SET last_played = MAX(COALESCE(last_played, ''), ?)
+       WHERE user_id = ? AND app_id = ? AND platform = ?`
+    ).run(progress.lastPlayed, userId, appId, platform);
   }
 }
 

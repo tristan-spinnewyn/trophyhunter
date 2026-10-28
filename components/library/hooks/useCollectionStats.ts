@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import type { OwnedGame } from "@/lib/types";
 import type {
   EpicGameCounts,
-  DuplicateGroup,
 } from "@/lib/library/library-stats";
 import {
   calculateDuplicateGroups,
