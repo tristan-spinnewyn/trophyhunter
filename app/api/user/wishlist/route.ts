@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getUserWishlist, setGameWishlist } from "@/lib/db";
 import type { PlatformType } from "@/lib/types";
+import { errorMessage } from "@/lib/error-message";
 
 export async function GET() {
   const user = await getAuthenticatedUser();
@@ -32,10 +33,10 @@ export async function POST(req: Request) {
 
     setGameWishlist(user.id, Number(appId), platform as PlatformType, Boolean(isWishlist));
     return NextResponse.json({ success: true, isWishlist: Boolean(isWishlist) });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Wishlist error:", err);
     return NextResponse.json(
-      { error: err.message || "Erreur de mise à jour de la liste d'envies." },
+      { error: errorMessage(err, "Erreur de mise à jour de la liste d'envies.") },
       { status: 400 }
     );
   }
