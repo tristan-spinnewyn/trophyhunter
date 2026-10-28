@@ -12,11 +12,11 @@ interface UseGogSyncProps {
   readonly gogInput: string;
   readonly gogToken: string;
   readonly updateAccountProfileInMemory: (account: PlatformAccount) => void;
-  readonly persistAccountToSQLite: (
+  readonly persistAccount: (
     account: PlatformAccount,
     plainApiKey?: string
   ) => Promise<void>;
-  readonly persistGamesToSQLite: (games: OwnedGame[]) => Promise<void>;
+  readonly persistGames: (games: OwnedGame[]) => Promise<void>;
 }
 
 export function useGogSync({
@@ -26,8 +26,8 @@ export function useGogSync({
   gogInput,
   gogToken,
   updateAccountProfileInMemory,
-  persistAccountToSQLite,
-  persistGamesToSQLite,
+  persistAccount,
+  persistGames,
 }: UseGogSyncProps) {
   const [isSyncingGOG, setIsSyncingGOG] = useState(false);
 
@@ -54,7 +54,7 @@ export function useGogSync({
         throw new Error(data.error || "Impossible de joindre GOG.");
       }
       updateAccountProfileInMemory(data.account);
-      await persistAccountToSQLite(
+      await persistAccount(
         data.account,
         gogToken.trim() || undefined
       );
@@ -64,7 +64,7 @@ export function useGogSync({
       ) {
         const merged = mergeGamesList(ownedGames, data.discoveredGames);
         onOwnedGamesChange(merged);
-        await persistGamesToSQLite(data.discoveredGames);
+        await persistGames(data.discoveredGames);
       }
       setBannerMsg({
         type: "success",

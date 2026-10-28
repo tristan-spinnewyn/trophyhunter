@@ -1,6 +1,6 @@
 // components/settings/settingsBackupUtils.ts
 
-export async function fetchExportJsonFromSQLite(): Promise<string> {
+export async function fetchExportJson(): Promise<string> {
   const res = await fetch("/api/user/sync");
   if (!res.ok) throw new Error("Export failed");
   const syncData = await res.json();

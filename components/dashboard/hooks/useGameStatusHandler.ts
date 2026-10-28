@@ -31,7 +31,7 @@ export function useGameStatusHandler({
         body: JSON.stringify({ appId, platform, status: validStatus }),
       });
     } catch (e) {
-      console.error("Failed to update game status in SQLite:", e);
+      console.error("Failed to update game status on the server:", e);
     }
   };
 

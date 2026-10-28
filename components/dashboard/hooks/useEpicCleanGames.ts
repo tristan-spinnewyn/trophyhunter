@@ -5,14 +5,14 @@ import type { OwnedGame } from "@/lib/types";
 interface UseEpicCleanGamesProps {
   ownedGames: OwnedGame[];
   onOwnedGamesChange: (games: OwnedGame[]) => void;
-  persistGamesToSQLite: (games: OwnedGame[], replacePlatform?: "epic") => Promise<void>;
+  persistGames: (games: OwnedGame[], replacePlatform?: "epic") => Promise<void>;
   setBannerMsg: (msg: { type: "success" | "error"; text: string } | null) => void;
 }
 
 export function useEpicCleanGames({
   ownedGames,
   onOwnedGamesChange,
-  persistGamesToSQLite,
+  persistGames,
   setBannerMsg,
 }: UseEpicCleanGamesProps) {
   const handleCleanEpicGames = async (
@@ -30,7 +30,7 @@ export function useEpicCleanGames({
       (g) => !(g.platform === "epic" && (g.totalAchievements === 0 || !g.totalAchievements))
     );
     onOwnedGamesChange(filtered);
-    await persistGamesToSQLite(
+    await persistGames(
       filtered.filter((g) => g.platform === "epic"),
       "epic"
     );

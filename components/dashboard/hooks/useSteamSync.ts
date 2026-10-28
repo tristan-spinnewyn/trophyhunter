@@ -17,11 +17,11 @@ export interface UseSteamSyncProps {
   steamInput: string;
   steamApiKey: string;
   updateAccountProfileInMemory: (account: PlatformAccount) => void;
-  persistAccountToSQLite: (
+  persistAccount: (
     account: PlatformAccount,
     plainApiKey?: string
   ) => Promise<void>;
-  persistGamesToSQLite: (games: OwnedGame[]) => Promise<void>;
+  persistGames: (games: OwnedGame[]) => Promise<void>;
 }
 
 export function useSteamSync({
@@ -34,8 +34,8 @@ export function useSteamSync({
   steamInput,
   steamApiKey,
   updateAccountProfileInMemory,
-  persistAccountToSQLite,
-  persistGamesToSQLite,
+  persistAccount,
+  persistGames,
 }: UseSteamSyncProps) {
   const [isSyncingSteam, setIsSyncingSteam] = useState(false);
   const { syncSingleSteamGame } = useSteamSingleGameSync({ currentUser });
@@ -90,8 +90,8 @@ export function useSteamSync({
       };
 
       updateAccountProfileInMemory(finalAccount);
-      await persistAccountToSQLite(finalAccount, steamApiKey.trim() || undefined);
-      await persistGamesToSQLite(mergedGames);
+      await persistAccount(finalAccount, steamApiKey.trim() || undefined);
+      await persistGames(mergedGames);
 
       setBannerMsg({
         type: "success",

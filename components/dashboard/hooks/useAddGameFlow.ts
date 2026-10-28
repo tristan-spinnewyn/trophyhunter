@@ -14,7 +14,7 @@ export interface UseAddGameFlowProps {
     steamUsername: string,
     game: OwnedGame
   ) => Promise<OwnedGame>;
-  persistGamesToSQLite: (games: OwnedGame[]) => Promise<void>;
+  persistGames: (games: OwnedGame[]) => Promise<void>;
   setBannerMsg: (
     msg: { type: "success" | "error"; text: string } | null
   ) => void;
@@ -27,7 +27,7 @@ export function useAddGameFlow({
   onOwnedGamesChange,
   steamUsername,
   syncSingleSteamGame,
-  persistGamesToSQLite,
+  persistGames,
   setBannerMsg,
 }: UseAddGameFlowProps) {
   const [isAddGameOpen, setIsAddGameOpen] = useState(false);
@@ -78,7 +78,7 @@ export function useAddGameFlow({
       } catch {}
     }
 
-    await persistGamesToSQLite([newGame]);
+    await persistGames([newGame]);
 
     setBannerMsg({
       type: "success",

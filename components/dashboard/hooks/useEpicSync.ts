@@ -16,8 +16,8 @@ export interface UseEpicSyncProps {
   epicCode: string;
   setEpicCode: (val: string) => void;
   updateAccountProfileInMemory: (account: PlatformAccount) => void;
-  persistAccountToSQLite: (account: PlatformAccount) => Promise<void>;
-  persistGamesToSQLite: (
+  persistAccount: (account: PlatformAccount) => Promise<void>;
+  persistGames: (
     games: OwnedGame[],
     replacePlatform?: "epic"
   ) => Promise<void>;
@@ -33,25 +33,25 @@ export function useEpicSync({
   epicCode,
   setEpicCode,
   updateAccountProfileInMemory,
-  persistAccountToSQLite,
-  persistGamesToSQLite,
+  persistAccount,
+  persistGames,
   onRequireToken,
 }: UseEpicSyncProps) {
   const [isSyncingEpic, setIsSyncingEpic] = useState(false);
 
   const { enrichEpicGamesAchievements } = useEpicEnrichment({
     ownedGames, onOwnedGamesChange, setBannerMsg, setSyncProgressText,
-    setIsSyncingEpic, isSyncingEpic, persistGamesToSQLite,
+    setIsSyncingEpic, isSyncingEpic, persistGames,
   });
 
   const { handleCleanEpicGames } = useEpicCleanGames({
-    ownedGames, onOwnedGamesChange, persistGamesToSQLite, setBannerMsg,
+    ownedGames, onOwnedGamesChange, persistGames, setBannerMsg,
   });
 
   const { handleConnectAndSyncEpic } = useEpicProfileConnect({
     ownedGames, onOwnedGamesChange, setBannerMsg, setSyncProgressText,
     setIsSyncingEpic, epicInput, epicCode, setEpicCode,
-    updateAccountProfileInMemory, persistAccountToSQLite, persistGamesToSQLite,
+    updateAccountProfileInMemory, persistAccount, persistGames,
     enrichEpicGamesAchievements, onRequireToken,
   });
 

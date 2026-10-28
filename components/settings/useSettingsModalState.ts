@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import type { SettingsModalProps, StatusMsg } from "./SettingsModal.types";
-import { fetchExportJsonFromSQLite, parseSyncPayload, saveSteamAccountApi } from "./settingsBackupUtils";
+import { fetchExportJson, parseSyncPayload, saveSteamAccountApi } from "./settingsBackupUtils";
 
 export function useSettingsModalState(props: SettingsModalProps) {
   const { isOpen, initialSteamUser = "", initialSteamApiKey = "", onSteamUserSaved, onRefreshData, onDataReset } = props;
@@ -38,7 +38,7 @@ export function useSettingsModalState(props: SettingsModalProps) {
 
   const handleExport = async () => {
     try {
-      const data = await fetchExportJsonFromSQLite();
+      const data = await fetchExportJson();
       await navigator.clipboard.writeText(data);
       setCopied(true);
       setStatusMsg({ type: "success", text: "Données SQLite copiées dans le presse-papier !" });
@@ -50,7 +50,7 @@ export function useSettingsModalState(props: SettingsModalProps) {
 
   const handleDownload = async () => {
     try {
-      const data = await fetchExportJsonFromSQLite();
+      const data = await fetchExportJson();
       const blob = new Blob([data], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

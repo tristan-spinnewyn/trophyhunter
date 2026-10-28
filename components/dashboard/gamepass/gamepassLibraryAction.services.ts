@@ -8,7 +8,7 @@ export interface AddGamePassToLibraryParams {
   readonly item: GamePassCatalogItem;
   readonly ownedGames: readonly OwnedGame[];
   readonly onOwnedGamesChange: (games: OwnedGame[]) => void;
-  readonly persistGamesToSQLite: (games: OwnedGame[]) => Promise<void>;
+  readonly persistGames: (games: OwnedGame[]) => Promise<void>;
   readonly setBannerMsg: (msg: { type: "success" | "error"; text: string } | null) => void;
 }
 
@@ -31,11 +31,11 @@ export function buildOwnedGameFromGamePass(
 export async function addGamePassItemToXboxLibrary(
   params: AddGamePassToLibraryParams
 ): Promise<OwnedGame> {
-  const { item, ownedGames, onOwnedGamesChange, persistGamesToSQLite, setBannerMsg } = params;
+  const { item, ownedGames, onOwnedGamesChange, persistGames, setBannerMsg } = params;
   const newGame = buildOwnedGameFromGamePass(item);
   const updatedList = mergeGamesList([...ownedGames], [newGame]);
   onOwnedGamesChange(updatedList);
-  await persistGamesToSQLite([newGame]);
+  await persistGames([newGame]);
   setBannerMsg({
     type: "success",
     text: `"${item.name}" (PC Game Pass / Xbox) ajouté à votre bibliothèque !`,

@@ -10,7 +10,7 @@ export interface UseBulkImportProps {
   ownedGames: OwnedGame[];
   onOwnedGamesChange: (games: OwnedGame[]) => void;
   syncSingleSteamGame: (user: string, game: OwnedGame) => Promise<OwnedGame>;
-  persistGamesToSQLite: (games: OwnedGame[]) => Promise<void>;
+  persistGames: (games: OwnedGame[]) => Promise<void>;
   setBannerMsg: (msg: { type: "success" | "error"; text: string } | null) => void;
   steamUsername?: string;
   onCloseModal?: () => void;
@@ -20,7 +20,7 @@ export function useBulkImport({
   ownedGames,
   onOwnedGamesChange,
   syncSingleSteamGame,
-  persistGamesToSQLite,
+  persistGames,
   setBannerMsg,
   steamUsername,
   onCloseModal,
@@ -56,7 +56,7 @@ export function useBulkImport({
         onOwnedGamesChange(merged);
       }
 
-      await persistGamesToSQLite(merged);
+      await persistGames(merged);
 
       setBulkImportText("");
       if (onCloseModal) onCloseModal();

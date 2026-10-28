@@ -41,12 +41,12 @@ export function useHomePageController() {
   const addGameFlow = useAddGameFlow({
     ownedGames, onOwnedGamesChange: setOwnedGames, steamUsername: steamAccount?.username,
     syncSingleSteamGame: platformSync.syncSingleSteamGame,
-    persistGamesToSQLite: platformSync.persistGamesToSQLite, setBannerMsg,
+    persistGames: platformSync.persistGames, setBannerMsg,
   });
 
   const bulkImport = useBulkImport({
     ownedGames, onOwnedGamesChange: setOwnedGames, syncSingleSteamGame: platformSync.syncSingleSteamGame,
-    persistGamesToSQLite: platformSync.persistGamesToSQLite, setBannerMsg,
+    persistGames: platformSync.persistGames, setBannerMsg,
     steamUsername: steamAccount?.username, onCloseModal: () => addGameFlow.setIsAddGameOpen(false),
   });
 
@@ -69,7 +69,7 @@ export function useHomePageController() {
       item,
       ownedGames,
       onOwnedGamesChange: setOwnedGames,
-      persistGamesToSQLite: platformSync.persistGamesToSQLite,
+      persistGames: platformSync.persistGames,
       setBannerMsg,
     });
   };

@@ -13,8 +13,8 @@ interface UseEpicProfileConnectProps {
   epicCode: string;
   setEpicCode: (val: string) => void;
   updateAccountProfileInMemory: (account: PlatformAccount) => void;
-  persistAccountToSQLite: (account: PlatformAccount) => Promise<void>;
-  persistGamesToSQLite: (games: OwnedGame[], replacePlatform?: "epic") => Promise<void>;
+  persistAccount: (account: PlatformAccount) => Promise<void>;
+  persistGames: (games: OwnedGame[], replacePlatform?: "epic") => Promise<void>;
   enrichEpicGamesAchievements: (epicGamesList: OwnedGame[], allCurrentGames: OwnedGame[], forceAll?: boolean) => Promise<OwnedGame[]>;
   onRequireToken?: () => void;
 }
@@ -29,8 +29,8 @@ export function useEpicProfileConnect({
   epicCode,
   setEpicCode,
   updateAccountProfileInMemory,
-  persistAccountToSQLite,
-  persistGamesToSQLite,
+  persistAccount,
+  persistGames,
   enrichEpicGamesAchievements,
   onRequireToken,
 }: UseEpicProfileConnectProps) {
@@ -61,19 +61,19 @@ export function useEpicProfileConnect({
 
       if (data?.requiresToken && (!data.discoveredGames || data.discoveredGames.length === 0) && onRequireToken) {
         updateAccountProfileInMemory(data.account);
-        await persistAccountToSQLite(data.account);
+        await persistAccount(data.account);
         onRequireToken();
         return;
       }
 
       updateAccountProfileInMemory(data.account);
-      await persistAccountToSQLite(data.account);
+      await persistAccount(data.account);
 
       let currentMerged = ownedGames;
       if (Array.isArray(data.discoveredGames) && data.discoveredGames.length > 0) {
         currentMerged = replacePlatformInList(ownedGames, "epic", data.discoveredGames);
         onOwnedGamesChange(currentMerged);
-        await persistGamesToSQLite(currentMerged.filter((g) => g.platform === "epic"), "epic");
+        await persistGames(currentMerged.filter((g) => g.platform === "epic"), "epic");
         currentMerged = await enrichEpicGamesAchievements(currentMerged.filter((g) => g.platform === "epic"), currentMerged);
       }
 

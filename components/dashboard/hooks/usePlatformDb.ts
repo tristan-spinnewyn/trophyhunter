@@ -34,7 +34,7 @@ export function usePlatformDb({
     return nextProfile;
   };
 
-  const persistAccountToSQLite = async (
+  const persistAccount = async (
     account: PlatformAccount,
     plainApiKey?: string
   ) => {
@@ -45,11 +45,11 @@ export function usePlatformDb({
         body: JSON.stringify({ account, plainApiKey }),
       });
     } catch (e) {
-      console.error("Failed to persist account to SQLite:", e);
+      console.error("Failed to persist account on the server:", e);
     }
   };
 
-  const persistGamesToSQLite = async (
+  const persistGames = async (
     games: OwnedGame[],
     replacePlatform?: PlatformType
   ) => {
@@ -61,21 +61,21 @@ export function usePlatformDb({
         body: JSON.stringify({ games, replacePlatform }),
       });
     } catch (e) {
-      console.error("Failed to persist games to SQLite:", e);
+      console.error("Failed to persist games on the server:", e);
     }
   };
 
-  const removeAccountFromSQLite = async (platform: PlatformType) => {
+  const removeAccount = async (platform: PlatformType) => {
     try {
       await fetch(`/api/user/account?platform=${platform}`, {
         method: "DELETE",
       });
     } catch (e) {
-      console.error("Failed to remove account from SQLite:", e);
+      console.error("Failed to remove account on the server:", e);
     }
   };
 
-  const removeGameFromSQLite = async (
+  const removeGame = async (
     appId: number,
     platform?: PlatformType
   ) => {
@@ -85,15 +85,15 @@ export function usePlatformDb({
         method: "DELETE",
       });
     } catch (e) {
-      console.error("Failed to remove game from SQLite:", e);
+      console.error("Failed to remove game on the server:", e);
     }
   };
 
   return {
     updateAccountProfileInMemory,
-    persistAccountToSQLite,
-    persistGamesToSQLite,
-    removeAccountFromSQLite,
-    removeGameFromSQLite,
+    persistAccount,
+    persistGames,
+    removeAccount,
+    removeGame,
   };
 }

@@ -37,20 +37,20 @@ describe("components/dashboard/gamepass/gamepassLibraryAction.services", () => {
 
   it("addGamePassItemToXboxLibrary updates state, persists to SQLite and triggers banner", async () => {
     const onOwnedGamesChange = vi.fn();
-    const persistGamesToSQLite = vi.fn().mockResolvedValue(undefined);
+    const persistGames = vi.fn().mockResolvedValue(undefined);
     const setBannerMsg = vi.fn();
 
     const created = await addGamePassItemToXboxLibrary({
       item: SAMPLE_ITEM,
       ownedGames: [],
       onOwnedGamesChange,
-      persistGamesToSQLite,
+      persistGames,
       setBannerMsg,
     });
 
     expect(created.appId).toBe(1615431074);
     expect(onOwnedGamesChange).toHaveBeenCalledTimes(1);
-    expect(persistGamesToSQLite).toHaveBeenCalledWith([created]);
+    expect(persistGames).toHaveBeenCalledWith([created]);
     expect(setBannerMsg).toHaveBeenCalledWith({
       type: "success",
       text: '"1000xRESIST" (PC Game Pass / Xbox) ajouté à votre bibliothèque !',

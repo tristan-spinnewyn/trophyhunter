@@ -52,22 +52,22 @@ export function usePlatformSync(props: UsePlatformSyncProps) {
     ownedGames, onOwnedGamesChange, onSteamUserChange, currentUser,
     setBannerMsg, setSyncProgressText, steamInput, steamApiKey,
     updateAccountProfileInMemory: db.updateAccountProfileInMemory,
-    persistAccountToSQLite: db.persistAccountToSQLite,
-    persistGamesToSQLite: db.persistGamesToSQLite,
+    persistAccount: db.persistAccount,
+    persistGames: db.persistGames,
   });
 
   const xbox = useXboxSync({
     ownedGames, onOwnedGamesChange, setBannerMsg, xboxInput, xboxApiKey,
     updateAccountProfileInMemory: db.updateAccountProfileInMemory,
-    persistAccountToSQLite: db.persistAccountToSQLite,
-    persistGamesToSQLite: db.persistGamesToSQLite,
+    persistAccount: db.persistAccount,
+    persistGames: db.persistGames,
   });
 
   const gog = useGogSync({
     ownedGames, onOwnedGamesChange, setBannerMsg, gogInput, gogToken,
     updateAccountProfileInMemory: db.updateAccountProfileInMemory,
-    persistAccountToSQLite: db.persistAccountToSQLite,
-    persistGamesToSQLite: db.persistGamesToSQLite,
+    persistAccount: db.persistAccount,
+    persistGames: db.persistGames,
   });
 
   const epicModal = useEpicAuthModalState({
@@ -79,15 +79,15 @@ export function usePlatformSync(props: UsePlatformSyncProps) {
     ownedGames, onOwnedGamesChange, setBannerMsg, setSyncProgressText,
     epicInput, epicCode, setEpicCode,
     updateAccountProfileInMemory: db.updateAccountProfileInMemory,
-    persistAccountToSQLite: db.persistAccountToSQLite,
-    persistGamesToSQLite: db.persistGamesToSQLite,
+    persistAccount: db.persistAccount,
+    persistGames: db.persistGames,
     onRequireToken: epicModal.openEpicAuthModalForLibrary,
   });
 
   const gameHandler = useGameSyncHandler({
     accountProfile, ownedGames, onOwnedGamesChange,
-    removeGameFromSQLite: db.removeGameFromSQLite,
-    persistGamesToSQLite: db.persistGamesToSQLite,
+    removeGame: db.removeGame,
+    persistGames: db.persistGames,
     setBannerMsg, syncSingleSteamGame: steam.syncSingleSteamGame,
     enrichEpicGamesAchievements: epic.enrichEpicGamesAchievements,
     onEpicTokenRequired: (g, err) => {
@@ -100,8 +100,8 @@ export function usePlatformSync(props: UsePlatformSyncProps) {
   const modal = usePlatformModal({
     accountProfile, onAccountChange, onSteamUserChange, setSteamInput,
     setBannerMsg, updateAccountProfileInMemory: db.updateAccountProfileInMemory,
-    persistAccountToSQLite: db.persistAccountToSQLite,
-    removeAccountFromSQLite: db.removeAccountFromSQLite,
+    persistAccount: db.persistAccount,
+    removeAccount: db.removeAccount,
     handleConnectAndSyncSteam: steam.handleConnectAndSyncSteam,
   });
 
@@ -111,8 +111,8 @@ export function usePlatformSync(props: UsePlatformSyncProps) {
     syncProgressText, ...modal, ...epicModal,
     syncSingleSteamGame: steam.syncSingleSteamGame,
     enrichEpicGamesAchievements: epic.enrichEpicGamesAchievements,
-    persistGamesToSQLite: db.persistGamesToSQLite,
-    removeGameFromSQLite: db.removeGameFromSQLite,
+    persistGames: db.persistGames,
+    removeGame: db.removeGame,
     handleConnectAndSyncSteam: steam.handleConnectAndSyncSteam,
     handleConnectAndSyncXbox: xbox.handleConnectAndSyncXbox,
     handleConnectAndSyncEpic: epic.handleConnectAndSyncEpic,

@@ -15,7 +15,7 @@ export interface UsePlatformModalProps {
     msg: { type: "success" | "error"; text: string } | null
   ) => void;
   updateAccountProfileInMemory: (account: PlatformAccount) => void;
-  persistAccountToSQLite: (account: PlatformAccount) => Promise<void>;
-  removeAccountFromSQLite: (platform: PlatformType) => Promise<void>;
+  persistAccount: (account: PlatformAccount) => Promise<void>;
+  removeAccount: (platform: PlatformType) => Promise<void>;
   handleConnectAndSyncSteam: (targetUser?: string) => Promise<void>;
 }

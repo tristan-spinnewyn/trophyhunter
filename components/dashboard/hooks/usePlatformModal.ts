@@ -18,8 +18,8 @@ export function usePlatformModal({
   setSteamInput,
   setBannerMsg,
   updateAccountProfileInMemory,
-  persistAccountToSQLite,
-  removeAccountFromSQLite,
+  persistAccount,
+  removeAccount,
   handleConnectAndSyncSteam,
 }: UsePlatformModalProps) {
   const [editingPlatform, setEditingPlatform] = useState<PlatformType | null>(null);
@@ -44,7 +44,7 @@ export function usePlatformModal({
     const newAcc = buildAccountFromForm(editingPlatform, platForm, existing);
 
     updateAccountProfileInMemory(newAcc);
-    await persistAccountToSQLite(newAcc);
+    await persistAccount(newAcc);
     setEditingPlatform(null);
     setBannerMsg({
       type: "success",
@@ -59,7 +59,7 @@ export function usePlatformModal({
       ...accountProfile,
       accounts: nextAccounts,
     });
-    await removeAccountFromSQLite(platform);
+    await removeAccount(platform);
     if (platform === "steam") {
       onSteamUserChange("");
     }
