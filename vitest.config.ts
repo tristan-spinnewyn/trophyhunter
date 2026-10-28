@@ -14,13 +14,12 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'text-summary', 'json-summary', 'lcov'],
-      // All logic modules, front-end hooks and services included. React components
-      // (.tsx outside lib/) are not measured yet.
+      // Logic modules, hooks, services and React components are all measured.
       include: [
         'lib/**/*.{ts,tsx}',
-        'app/**/*.ts',
-        'components/**/*.ts',
-        'context/**/*.ts',
+        'app/**/*.{ts,tsx}',
+        'components/**/*.{ts,tsx}',
+        'context/**/*.{ts,tsx}',
       ],
       exclude: [
         '**/__tests__/**',
