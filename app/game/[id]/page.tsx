@@ -1,22 +1,19 @@
 import { Suspense } from "react";
 import GameClientPage from "./GameClientPage";
+import { GameClientLoading } from "./components/GameClientLoading";
 
-export default async function GamePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+type GameParams = Promise<{ id: string }>;
+
+/** Reads the URL inside Suspense so the shared App Shell stays instant for every game link. */
+async function GameRoute({ params }: { params: GameParams }) {
   const { id } = await params;
+  return <GameClientPage id={id} />;
+}
 
+export default function GamePage({ params }: { params: GameParams }) {
   return (
-    <Suspense
-      fallback={
-        <div className="py-24 text-center text-slate-400">
-          Chargement du jeu...
-        </div>
-      }
-    >
-      <GameClientPage id={id} />
+    <Suspense fallback={<GameClientLoading />}>
+      <GameRoute params={params} />
     </Suspense>
   );
 }
