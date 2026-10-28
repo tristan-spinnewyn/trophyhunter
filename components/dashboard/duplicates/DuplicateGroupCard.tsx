@@ -56,7 +56,7 @@ export function DuplicateGroupCard({
                     <span
                       className={`rounded px-1.5 py-0.5 text-[11px] font-bold border ${statusMeta.badgeClass}`}
                     >
-                      {statusMeta.shortLabel}
+                      {statusMeta.label}
                     </span>
                   </div>
                   {g.totalAchievements > 0 ? (

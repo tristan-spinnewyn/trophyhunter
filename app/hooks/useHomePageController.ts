@@ -1,8 +1,10 @@
 // app/hooks/useHomePageController.ts
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useUserData } from "@/context/UserDataContext";
-import type { LibraryTab } from "@/lib/library/library-filters";
+import { isFeatureTab, parseLibraryTab, type LibraryTab } from "@/lib/library/library-filters";
+import { calculateTrackingSummary } from "@/lib/library/library-tracking";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
 import { addGamePassItemToXboxLibrary } from "@/lib/gamepass/library-action.services";
 import { useDashboardCollections } from "@/components/dashboard/hooks/useDashboardCollections";
@@ -21,7 +23,11 @@ export function useHomePageController() {
 
   const steamAccount = accountProfile.accounts.steam;
   const [bannerMsg, setBannerMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [activePlatformTab, setActivePlatformTab] = useState<LibraryTab>("all");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [activePlatformTab, setActivePlatformTab] = useState<LibraryTab>(() =>
+    parseLibraryTab(searchParams.get("tab"))
+  );
 
   const platformInputs = usePlatformInputs({ accountProfile, initialSteamApiKey: steamApiKey });
   const collectionsState = useDashboardCollections({
@@ -50,18 +56,18 @@ export function useHomePageController() {
     steamUsername: steamAccount?.username, onCloseModal: () => addGameFlow.setIsAddGameOpen(false),
   });
 
-  const stats = useDashboardStats(accountProfile, ownedGames);
+  const stats = useDashboardStats(ownedGames);
   const libraryFilters = useLibraryFilters({
     ownedGames, activePlatformTab, wishlistIds, collections, selectedCollId: collectionsState.selectedCollId,
   });
 
+  const trackingSummary = useMemo(() => calculateTrackingSummary(ownedGames), [ownedGames]);
+
   const handleSelectTab = (tab: LibraryTab) => {
     setActivePlatformTab(tab);
-    libraryFilters.setLibPlatformFilter(
-      tab === "all" || tab === "duplicates" || tab === "wishlist" || tab === "collections" || tab === "gamepass"
-        ? "all"
-        : tab
-    );
+    libraryFilters.setLibPlatformFilter(isFeatureTab(tab) ? "all" : tab);
+    // Keep the tab in the URL so a refresh or a shared link reopens the same view.
+    router.replace(tab === "all" ? "/" : `/?tab=${tab}`, { scroll: false });
   };
 
   const handleAddGamePassToXbox = async (item: GamePassCatalogItem) => {
@@ -77,6 +83,6 @@ export function useHomePageController() {
   return {
     accountProfile, ownedGames, currentUser, setIsAuthOpen, steamAccount, bannerMsg, setBannerMsg,
     activePlatformTab, handleSelectTab, handleAddGamePassToXbox, platformInputs, collectionsState,
-    platformSync, addGameFlow, bulkImport, stats, libraryFilters,
+    platformSync, addGameFlow, bulkImport, stats, libraryFilters, trackingSummary,
   };
 }

@@ -3,6 +3,7 @@ import LibraryGameCard from "@/components/dashboard/LibraryGameCard";
 import { LibrarySectionHeader } from "./LibrarySectionHeader";
 import { LibrarySectionFilters } from "./LibrarySectionFilters";
 import { LibrarySectionEmptyState } from "./LibrarySectionEmptyState";
+import { LibraryStatusSections } from "./LibraryStatusSections";
 import type {
   GameStatus,
   OwnedGame,
@@ -10,7 +11,7 @@ import type {
   UserAccountProfile,
 } from "@/lib/types";
 import type { CollectionWithGames } from "@/lib/types";
-import type { LibraryTab, StatusFilterType, AchievementFilterType } from "@/lib/library/library-filters";
+import type { LibraryTab, AchievementFilterType } from "@/lib/library/library-filters";
 import type { SortOrderType } from "@/lib/library/library-sort";
 
 export interface LibrarySectionProps {
@@ -25,8 +26,6 @@ export interface LibrarySectionProps {
   readonly setLibSearch: (val: string) => void;
   readonly libPlatformFilter: PlatformType | "all";
   readonly setLibPlatformFilter: (val: PlatformType | "all") => void;
-  readonly libStatusFilter: StatusFilterType;
-  readonly setLibStatusFilter: (val: StatusFilterType) => void;
   readonly libAchievementFilter: AchievementFilterType;
   readonly setLibAchievementFilter: (val: AchievementFilterType) => void;
   readonly libSortOrder: SortOrderType;
@@ -49,8 +48,6 @@ export interface LibrarySectionProps {
     platform: PlatformType,
     status: GameStatus
   ) => Promise<void> | void;
-  readonly onConnectAndSyncSteam: () => Promise<void>;
-  readonly isSyncingSteam: boolean;
 }
 
 
@@ -66,8 +63,6 @@ export default function LibrarySection({
   setLibSearch,
   libPlatformFilter,
   setLibPlatformFilter,
-  libStatusFilter,
-  setLibStatusFilter,
   libAchievementFilter,
   setLibAchievementFilter,
   libSortOrder,
@@ -82,8 +77,6 @@ export default function LibrarySection({
   onSyncGame,
   onRemoveGame,
   onUpdateGameStatus,
-  onConnectAndSyncSteam,
-  isSyncingSteam,
 }: LibrarySectionProps) {
   return (
     <section className="space-y-4">
@@ -103,8 +96,6 @@ export default function LibrarySection({
         setLibSearch={setLibSearch}
         libPlatformFilter={libPlatformFilter}
         setLibPlatformFilter={setLibPlatformFilter}
-        libStatusFilter={libStatusFilter}
-        setLibStatusFilter={setLibStatusFilter}
         libAchievementFilter={libAchievementFilter}
         setLibAchievementFilter={setLibAchievementFilter}
         libSortOrder={libSortOrder}
@@ -112,8 +103,9 @@ export default function LibrarySection({
       />
 
       {filteredGames.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-          {filteredGames.map((g) => (
+        <LibraryStatusSections
+          games={filteredGames}
+          renderGame={(g) => (
             <LibraryGameCard
               key={`${g.platform}_${g.appId}`}
               game={g}
@@ -130,13 +122,12 @@ export default function LibrarySection({
               onRemoveGame={onRemoveGame}
               onUpdateGameStatus={onUpdateGameStatus}
             />
-          ))}
-        </div>
+          )}
+        />
       ) : (
         <LibrarySectionEmptyState
           totalOwnedGamesCount={totalOwnedGamesCount}
-          isSyncingSteam={isSyncingSteam}
-          onConnectAndSyncSteam={onConnectAndSyncSteam}
+          onOpenAddGame={onOpenAddGame}
         />
       )}
     </section>

@@ -9,23 +9,15 @@ import { DuplicateGroupCard } from "./duplicates/DuplicateGroupCard";
 interface DuplicatesPanelProps {
   duplicateGroups: Array<{ title: string; games: OwnedGame[] }>;
   onSelectGame: (appId: number) => void;
-  onBackToAll: () => void;
 }
 
 export default function DuplicatesPanel({
   duplicateGroups,
   onSelectGame,
-  onBackToAll,
 }: DuplicatesPanelProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <button
-          onClick={onBackToAll}
-          className="text-xs text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1"
-        >
-          ← Retour à la Vue Globale
-        </button>
         <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg border border-purple-500/40 bg-purple-500/10 text-purple-300 flex items-center gap-1.5">
           <Copy className="h-3.5 w-3.5" />
           {duplicateGroups.length} doublon(s) détecté(s)

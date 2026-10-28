@@ -6,6 +6,7 @@ import type { UserAccountProfile, PlatformType } from "@/lib/types";
 import { XboxProfileCard } from "./xbox-panel/XboxProfileCard";
 import { XboxSyncForm } from "./xbox-panel/XboxSyncForm";
 import { XboxStatsCards } from "./xbox-panel/XboxStatsCards";
+import { PlatformCollectionLink } from "./PlatformCollectionLink";
 
 interface PlatformXboxPanelProps {
   accountProfile: UserAccountProfile;
@@ -20,7 +21,7 @@ interface PlatformXboxPanelProps {
   onConnectAndSyncXbox: () => void;
   openEditPlatform: (plat: PlatformType) => void;
   handleDisconnectPlatform: (plat: PlatformType) => void;
-  onBackToAll: () => void;
+  gameCount: number;
 }
 
 export default function PlatformXboxPanel({
@@ -36,23 +37,13 @@ export default function PlatformXboxPanel({
   onConnectAndSyncXbox,
   openEditPlatform,
   handleDisconnectPlatform,
-  onBackToAll,
+  gameCount,
 }: PlatformXboxPanelProps) {
   const xboxAccount = accountProfile.accounts.xbox;
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <button
-          onClick={onBackToAll}
-          className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
-        >
-          ← Retour à la Vue Globale
-        </button>
-        <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-300">
-          Espace Dédié Xbox Live & PC Game Pass
-        </span>
-      </div>
+      <PlatformCollectionLink platform="xbox" gameCount={gameCount} />
 
       <div className="relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-slate-900 via-slate-900/95 to-emerald-950/40 p-5 sm:p-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">

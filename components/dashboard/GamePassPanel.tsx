@@ -9,19 +9,13 @@ import { isGameInLibrary } from "@/lib/gamepass/catalog-filter.services";
 import { useGamePassCatalog } from "./hooks/useGamePassCatalog";
 
 export default function GamePassPanel({
-  ownedGames, wishlistIds, onAddGameToXbox, onToggleWishlist, onSelectGame, onBackToAll,
+  ownedGames, wishlistIds, onAddGameToXbox, onToggleWishlist, onSelectGame,
 }: GamePassPanelProps) {
   const gp = useGamePassCatalog(ownedGames);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <button
-          onClick={onBackToAll}
-          className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
-        >
-          ← Retour à la Vue Globale
-        </button>
         <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 flex items-center gap-1.5">
           <MonitorPlay className="h-3.5 w-3.5" />
           {gp.filteredGames.length} / {gp.catalog.length} jeux PC Game Pass

@@ -12,9 +12,6 @@ const panel = (name: string) => ({
 });
 
 vi.mock("@/components/dashboard/OverviewPanel", () => panel("overview"));
-vi.mock("@/components/dashboard/GamePassPanel", () => panel("gamepass"));
-vi.mock("@/components/dashboard/DuplicatesPanel", () => panel("duplicates"));
-vi.mock("@/components/dashboard/CollectionsPanel", () => panel("collections"));
 vi.mock("@/components/dashboard/PlatformSteamPanel", () => panel("steam"));
 vi.mock("@/components/dashboard/PlatformXboxPanel", () => panel("xbox"));
 vi.mock("@/components/dashboard/PlatformEpicPanel", () => panel("epic"));
@@ -30,28 +27,10 @@ function makeSection(activePlatformTab: string) {
   const controller = {
     activePlatformTab,
     handleSelectTab,
-    handleAddGamePassToXbox: fn("addGamePass"),
     displayName: "Gabe",
     stats: {
-      globalStats: { connectedCount: 2 },
-      platformCounts: { steam: 3 },
-      duplicateGroups: [{ title: "Portal", games: [] }],
+      platformCounts: { steam: 3, xbox: 1, epic: 5, gog: 0 },
       epicCounts: { total: 5, withAch: 2, noAch: 3 },
-    },
-    collectionsState: {
-      wishlistIds: [7],
-      handleToggleWishlist: fn("toggleWishlist"),
-      collections: [{ id: "c1", name: "RPG", gameIds: [] }],
-      selectedCollId: "c1",
-      setSelectedCollId: fn("setSelectedCollId"),
-      isCreatingColl: false,
-      setIsCreatingColl: fn("setIsCreatingColl"),
-      newCollName: "New",
-      setNewCollName: fn("setNewCollName"),
-      newCollDesc: "Desc",
-      setNewCollDesc: fn("setNewCollDesc"),
-      handleCreateCollection: fn("createCollection"),
-      handleDeleteCollection: fn("deleteCollection"),
     },
     platformInputs: {
       steamInput: "gabe", setSteamInput: fn("setSteamInput"),
@@ -80,7 +59,6 @@ function makeSection(activePlatformTab: string) {
       openEpicAuthModalForLibrary: fn("openEpicModal"),
       handleConnectAndSyncGOG: fn("syncGog"),
     },
-    libraryFilters: { libAchievementFilter: "all", setLibAchievementFilter: fn("setAchFilter") },
   };
   const props = {
     accountProfile: { displayName: "Gabe", accounts: { steam: { platform: "steam", username: "gabe" } } },
@@ -107,7 +85,6 @@ describe("ActiveTabPanel", () => {
 
     expect(Object.keys(received)).toEqual(["overview"]);
     expect(received.overview).toEqual({
-      globalStats: c.stats.globalStats,
       accountProfile: props.accountProfile,
       platformCounts: c.stats.platformCounts,
       onSelectPlatform: c.handleSelectTab,
@@ -117,32 +94,12 @@ describe("ActiveTabPanel", () => {
     });
   });
 
-  it("wires the Game Pass panel and its back and select callbacks", () => {
-    const { controller: c, props, handleSelectTab } = render("gamepass");
-
-    expect(received.gamepass).toMatchObject({
-      ownedGames: props.ownedGames,
-      wishlistIds: c.collectionsState.wishlistIds,
-      onAddGameToXbox: c.handleAddGamePassToXbox,
-      onToggleWishlist: c.collectionsState.handleToggleWishlist,
-    });
-    (received.gamepass.onSelectGame as (id: number) => void)(42);
-    expect(props.onSelectGame).toHaveBeenCalledWith(42);
-    (received.gamepass.onBackToAll as () => void)();
-    expect(handleSelectTab).toHaveBeenCalledWith("all");
-  });
-
-  it("wires the duplicates and collections panels", () => {
-    const dup = render("duplicates");
-    expect(received.duplicates).toMatchObject({
-      duplicateGroups: dup.controller.stats.duplicateGroups,
-      onSelectGame: dup.props.onSelectGame,
-    });
-
-    const { controller: c } = render("collections");
-    const { wishlistIds, handleToggleWishlist, ...collectionProps } = c.collectionsState;
-    void wishlistIds; void handleToggleWishlist;
-    expect(received.collections).toMatchObject(collectionProps);
+  it("only knows the overview and the platform panels: library views live on the home page", () => {
+    for (const tab of ["gamepass", "duplicates", "collections", "wishlist"]) {
+      for (const k of Object.keys(received)) delete received[k];
+      render(tab);
+      expect(Object.keys(received)).toEqual([]);
+    }
   });
 
   it("wires the Steam panel to the Steam inputs and sync state", () => {
@@ -158,6 +115,7 @@ describe("ActiveTabPanel", () => {
       showApiKeyInput: pi.showApiKeyInput, setShowApiKeyInput: pi.setShowApiKeyInput,
       isSyncingSteam: true, syncProgressText: "50%",
       onConnectAndSyncSteam: c.platformSync.handleConnectAndSyncSteam,
+      gameCount: 3,
     });
   });
 
@@ -168,6 +126,7 @@ describe("ActiveTabPanel", () => {
       setXboxInput: xbox.controller.platformInputs.setXboxInput,
       onConnectAndSyncXbox: xbox.controller.platformSync.handleConnectAndSyncXbox,
       openEditPlatform: xbox.controller.platformSync.openEditPlatform,
+      gameCount: 1,
     });
 
     const gog = render("gog");
@@ -175,6 +134,7 @@ describe("ActiveTabPanel", () => {
       gogInput: "goguser", gogToken: "tok", showGogToken: false, isSyncingGOG: false,
       setGogToken: gog.controller.platformInputs.setGogToken,
       onConnectAndSyncGOG: gog.controller.platformSync.handleConnectAndSyncGOG,
+      gameCount: 0,
     });
   });
 
@@ -184,8 +144,7 @@ describe("ActiveTabPanel", () => {
     expect(received.epic).toMatchObject({
       epicCounts: c.stats.epicCounts,
       epicInput: "epicuser", epicCode: "code", showEpicCode: true, isSyncingEpic: true,
-      libAchievementFilter: "all",
-      setLibAchievementFilter: c.libraryFilters.setLibAchievementFilter,
+      gameCount: 5,
       onConnectAndSyncEpic: c.platformSync.handleConnectAndSyncEpic,
       onScanEpicAchievements: c.platformSync.handleScanEpicAchievements,
       onOpenEpicModal: c.platformSync.openEpicAuthModalForLibrary,

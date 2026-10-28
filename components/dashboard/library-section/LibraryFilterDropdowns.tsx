@@ -2,7 +2,7 @@
 
 import type { PlatformType } from "@/lib/types";
 import { ALL_PLATFORMS, PLATFORM_META } from "@/lib/platforms";
-import type { LibraryTab, StatusFilterType, AchievementFilterType } from "@/lib/library/library-filters";
+import type { LibraryTab, AchievementFilterType } from "@/lib/library/library-filters";
 import type { SortOrderType } from "@/lib/library/library-sort";
 
 /** Filters that narrow the list are highlighted so the user sees why games are missing. */
@@ -18,8 +18,6 @@ interface LibraryFilterDropdownsProps {
   activePlatformTab: LibraryTab;
   libPlatformFilter: PlatformType | "all";
   setLibPlatformFilter: (val: PlatformType | "all") => void;
-  libStatusFilter: StatusFilterType;
-  setLibStatusFilter: (val: StatusFilterType) => void;
   libAchievementFilter: AchievementFilterType;
   setLibAchievementFilter: (val: AchievementFilterType) => void;
   libSortOrder: SortOrderType;
@@ -30,8 +28,6 @@ export function LibraryFilterDropdowns({
   activePlatformTab,
   libPlatformFilter,
   setLibPlatformFilter,
-  libStatusFilter,
-  setLibStatusFilter,
   libAchievementFilter,
   setLibAchievementFilter,
   libSortOrder,
@@ -53,18 +49,6 @@ export function LibraryFilterDropdowns({
         </select>
       )}
 
-      <select
-        value={libStatusFilter}
-        onChange={(e) => setLibStatusFilter(e.target.value as StatusFilterType)}
-        aria-label="Statut"
-        className={selectClass(libStatusFilter !== "all")}
-      >
-        <option value="all">Tous les statuts</option>
-        <option value="backlog">📚 Backlog</option>
-        <option value="in-progress">🔥 En cours</option>
-        <option value="completed">✅ Terminés</option>
-        <option value="platinum">🏆 Platines (100%)</option>
-      </select>
 
       <select
         value={libAchievementFilter}

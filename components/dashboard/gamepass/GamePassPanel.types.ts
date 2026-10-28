@@ -9,5 +9,4 @@ export interface GamePassPanelProps {
   readonly onAddGameToXbox: (item: GamePassCatalogItem) => Promise<void>;
   readonly onToggleWishlist: (appId: number, platform: PlatformType) => Promise<void>;
   readonly onSelectGame: (appId: number, name: string) => void;
-  readonly onBackToAll: () => void;
 }

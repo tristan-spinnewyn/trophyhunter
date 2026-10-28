@@ -3,10 +3,9 @@
 "use client";
 
 import DashboardBanners from "@/components/dashboard/DashboardBanners";
-import DashboardNavTabs from "@/components/dashboard/DashboardNavTabs";
 import ActiveTabPanel from "@/components/dashboard/ActiveTabPanel";
-import { DashboardLibraryView } from "@/components/dashboard/DashboardLibraryView";
-import { DashboardModalsContainer } from "@/components/dashboard/DashboardModalsContainer";
+import { AccountPlatformTabs } from "@/components/dashboard/AccountPlatformTabs";
+import { AccountModals } from "@/components/dashboard/AccountModals";
 import {
   useAccountDashboardController,
   type AccountDashboardControllerParams,
@@ -23,31 +22,16 @@ export default function AccountDashboard(props: AccountDashboardControllerParams
         syncProgressText={c.platformSync.syncProgressText}
       />
 
-      <DashboardNavTabs
-        activePlatformTab={c.activePlatformTab}
+      <AccountPlatformTabs
+        activeTab={c.activePlatformTab}
         onSelectTab={c.handleSelectTab}
-        ownedGamesCount={props.ownedGames.length}
         platformCounts={c.stats.platformCounts}
         accountProfile={props.accountProfile}
-        duplicateCount={c.stats.duplicateGroups.length}
-        wishlistCount={c.collectionsState.wishlistIds.length}
-        collectionsCount={c.collectionsState.collections.length}
       />
 
-      <ActiveTabPanel
-        controller={c}
-        props={props}
-      />
+      <ActiveTabPanel controller={c} props={props} />
 
-      <DashboardLibraryView
-        controller={c}
-        props={props}
-      />
-
-      <DashboardModalsContainer
-        controller={c}
-        props={props}
-      />
+      <AccountModals controller={c} />
     </div>
   );
 }

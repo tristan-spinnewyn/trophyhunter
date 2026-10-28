@@ -7,10 +7,9 @@ import PlatformGogPanel from "@/components/dashboard/PlatformGogPanel";
 import type { DashboardSectionProps } from "../hooks/useAccountDashboardController";
 
 export function PlatformTabSwitcher({ controller: c, props }: DashboardSectionProps) {
-  const { platformInputs: pi, platformSync: ps, libraryFilters: lf, stats } = c;
+  const { platformInputs: pi, platformSync: ps, stats } = c;
   const { accountProfile } = props;
   const platformCounts = stats.platformCounts;
-  const back = () => c.handleSelectTab("all");
 
   if (c.activePlatformTab === "steam") {
     return (
@@ -21,7 +20,7 @@ export function PlatformTabSwitcher({ controller: c, props }: DashboardSectionPr
         setSteamApiKey={pi.setSteamApiKey} showApiKeyInput={pi.showApiKeyInput}
         setShowApiKeyInput={pi.setShowApiKeyInput} isSyncingSteam={ps.isSyncingSteam}
         syncProgressText={ps.syncProgressText} onConnectAndSyncSteam={ps.handleConnectAndSyncSteam}
-        onBackToAll={back}
+        gameCount={platformCounts.steam || 0}
       />
     );
   }
@@ -35,7 +34,7 @@ export function PlatformTabSwitcher({ controller: c, props }: DashboardSectionPr
         showXboxApiKey={pi.showXboxApiKey} setShowXboxApiKey={pi.setShowXboxApiKey}
         isSyncingXbox={ps.isSyncingXbox} onConnectAndSyncXbox={ps.handleConnectAndSyncXbox}
         openEditPlatform={ps.openEditPlatform} handleDisconnectPlatform={ps.handleDisconnectPlatform}
-        onBackToAll={back}
+        gameCount={platformCounts.xbox || 0}
       />
     );
   }
@@ -48,11 +47,10 @@ export function PlatformTabSwitcher({ controller: c, props }: DashboardSectionPr
         epicCode={pi.epicCode} setEpicCode={pi.setEpicCode}
         showEpicCode={pi.showEpicCode} setShowEpicCode={pi.setShowEpicCode}
         isSyncingEpic={ps.isSyncingEpic} syncProgressText={ps.syncProgressText}
-        libAchievementFilter={lf.libAchievementFilter} setLibAchievementFilter={lf.setLibAchievementFilter}
         onConnectAndSyncEpic={ps.handleConnectAndSyncEpic} onScanEpicAchievements={ps.handleScanEpicAchievements}
         onCleanEpicGames={() => ps.handleCleanEpicGames(stats.epicCounts.noAch, stats.epicCounts.withAch)}
         openEditPlatform={ps.openEditPlatform}
-        handleDisconnectPlatform={ps.handleDisconnectPlatform} onBackToAll={back}
+        handleDisconnectPlatform={ps.handleDisconnectPlatform} gameCount={platformCounts.epic || 0}
         onOpenEpicModal={ps.openEpicAuthModalForLibrary}
       />
     );
@@ -67,7 +65,7 @@ export function PlatformTabSwitcher({ controller: c, props }: DashboardSectionPr
         showGogToken={pi.showGogToken} setShowGogToken={pi.setShowGogToken}
         isSyncingGOG={ps.isSyncingGOG} onConnectAndSyncGOG={ps.handleConnectAndSyncGOG}
         openEditPlatform={ps.openEditPlatform} handleDisconnectPlatform={ps.handleDisconnectPlatform}
-        onBackToAll={back}
+        gameCount={platformCounts.gog || 0}
       />
     );
   }

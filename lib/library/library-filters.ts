@@ -1,7 +1,7 @@
 // lib/library/library-filters.ts
 
 import type { OwnedGame, PlatformType, CollectionWithGames } from "@/lib/types";
-import { resolveGameStatus } from "@/lib/game-status/game-status.services";
+import { ALL_PLATFORMS } from "@/lib/platforms";
 
 /** Which slice of the library is shown: one platform, everything, or a feature view. */
 export type LibraryTab =
@@ -12,20 +12,24 @@ export type LibraryTab =
   | "collections"
   | "gamepass";
 
-export type StatusFilterType =
-  | "all"
-  | "backlog"
-  | "in-progress"
-  | "completed"
-  | "platinum"
-  | "unstarted";
+const FEATURE_TABS = ["all", "duplicates", "wishlist", "collections", "gamepass"] as const;
+
+export function isFeatureTab(tab: LibraryTab): tab is Exclude<LibraryTab, PlatformType> {
+  return (FEATURE_TABS as readonly string[]).includes(tab);
+}
+
+/** Reads a tab from untrusted input such as the `?tab=` query parameter. */
+export function parseLibraryTab(value: string | null): LibraryTab {
+  const known: readonly string[] = [...FEATURE_TABS, ...ALL_PLATFORMS];
+  return value && known.includes(value) ? (value as LibraryTab) : "all";
+}
+
 export type AchievementFilterType = "all" | "with-achievements" | "no-achievements";
 
 interface FilterParams {
   readonly games: OwnedGame[];
   readonly activePlatformTab: LibraryTab;
   readonly libPlatformFilter: PlatformType | "all";
-  readonly libStatusFilter: StatusFilterType;
   readonly libAchievementFilter: AchievementFilterType;
   readonly libSearch: string;
   readonly wishlistIds: number[];
@@ -35,18 +39,11 @@ interface FilterParams {
 
 export function filterGames(params: FilterParams): OwnedGame[] {
   const {
-    games, activePlatformTab, libPlatformFilter, libStatusFilter,
+    games, activePlatformTab, libPlatformFilter,
     libAchievementFilter, libSearch, wishlistIds, collections, selectedCollId,
   } = params;
 
-  const isFeatureTab =
-    activePlatformTab === "all" ||
-    activePlatformTab === "duplicates" ||
-    activePlatformTab === "wishlist" ||
-    activePlatformTab === "collections" ||
-    activePlatformTab === "gamepass";
-
-  const targetPlatform = !isFeatureTab ? activePlatformTab : libPlatformFilter;
+  const targetPlatform = isFeatureTab(activePlatformTab) ? libPlatformFilter : activePlatformTab;
 
   return games.filter((g) => {
     if (activePlatformTab === "wishlist") {
@@ -59,15 +56,6 @@ export function filterGames(params: FilterParams): OwnedGame[] {
     } else if (targetPlatform !== "all" && activePlatformTab !== "duplicates") {
       if (g.platform !== targetPlatform) return false;
     }
-
-    const gameStatus = resolveGameStatus(g.status);
-    const isPlatinum = g.totalAchievements > 0 && g.unlockedCount >= g.totalAchievements;
-
-    if (libStatusFilter === "backlog" && gameStatus !== "backlog") return false;
-    if (libStatusFilter === "in-progress" && gameStatus !== "in-progress") return false;
-    if (libStatusFilter === "completed" && gameStatus !== "completed") return false;
-    if (libStatusFilter === "platinum" && !isPlatinum) return false;
-    if (libStatusFilter === "unstarted" && (gameStatus !== "backlog" || g.unlockedCount > 0)) return false;
 
     if (libAchievementFilter === "with-achievements" && g.totalAchievements === 0) return false;
     if (libAchievementFilter === "no-achievements" && g.totalAchievements > 0) return false;

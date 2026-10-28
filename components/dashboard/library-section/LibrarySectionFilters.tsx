@@ -2,7 +2,7 @@
 
 import { Search } from "lucide-react";
 import type { PlatformType } from "@/lib/types";
-import type { LibraryTab, StatusFilterType, AchievementFilterType } from "@/lib/library/library-filters";
+import type { LibraryTab, AchievementFilterType } from "@/lib/library/library-filters";
 import { LibraryFilterDropdowns } from "./LibraryFilterDropdowns";
 import type { SortOrderType } from "@/lib/library/library-sort";
 
@@ -12,8 +12,6 @@ interface LibrarySectionFiltersProps {
   setLibSearch: (val: string) => void;
   libPlatformFilter: PlatformType | "all";
   setLibPlatformFilter: (val: PlatformType | "all") => void;
-  libStatusFilter: StatusFilterType;
-  setLibStatusFilter: (val: StatusFilterType) => void;
   libAchievementFilter: AchievementFilterType;
   setLibAchievementFilter: (val: AchievementFilterType) => void;
   libSortOrder: SortOrderType;
@@ -26,8 +24,6 @@ export function LibrarySectionFilters({
   setLibSearch,
   libPlatformFilter,
   setLibPlatformFilter,
-  libStatusFilter,
-  setLibStatusFilter,
   libAchievementFilter,
   setLibAchievementFilter,
   libSortOrder,
@@ -51,8 +47,6 @@ export function LibrarySectionFilters({
         activePlatformTab={activePlatformTab}
         libPlatformFilter={libPlatformFilter}
         setLibPlatformFilter={setLibPlatformFilter}
-        libStatusFilter={libStatusFilter}
-        setLibStatusFilter={setLibStatusFilter}
         libAchievementFilter={libAchievementFilter}
         setLibAchievementFilter={setLibAchievementFilter}
         libSortOrder={libSortOrder}

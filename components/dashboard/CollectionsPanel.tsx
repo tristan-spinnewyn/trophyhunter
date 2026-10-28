@@ -19,7 +19,6 @@ interface CollectionsPanelProps {
   setNewCollDesc: (val: string) => void;
   handleCreateCollection: () => void;
   handleDeleteCollection: (id: string) => void;
-  onBackToAll: () => void;
 }
 
 export default function CollectionsPanel({
@@ -34,17 +33,10 @@ export default function CollectionsPanel({
   setNewCollDesc,
   handleCreateCollection,
   handleDeleteCollection,
-  onBackToAll,
 }: CollectionsPanelProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <button
-          onClick={onBackToAll}
-          className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
-        >
-          ← Retour à la Vue Globale
-        </button>
         <button
           onClick={() => setIsCreatingColl(!isCreatingColl)}
           className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-500 shadow-md transition"

@@ -1,47 +1,51 @@
 // components/dashboard/library-section/LibrarySectionEmptyState.tsx
 
-import { Gamepad2, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { Gamepad2, Link2, Plus } from "lucide-react";
 
 interface LibrarySectionEmptyStateProps {
   totalOwnedGamesCount: number;
-  isSyncingSteam: boolean;
-  onConnectAndSyncSteam: () => Promise<void>;
+  onOpenAddGame: () => void;
 }
 
 export function LibrarySectionEmptyState({
   totalOwnedGamesCount,
-  isSyncingSteam,
-  onConnectAndSyncSteam,
+  onOpenAddGame,
 }: LibrarySectionEmptyStateProps) {
+  if (totalOwnedGamesCount > 0) {
+    return (
+      <p className="rounded-xl border border-dashed border-slate-800 p-6 text-center text-sm text-slate-400">
+        Aucun jeu ne correspond à ces filtres.
+      </p>
+    );
+  }
+
   return (
-    <div className="rounded-2xl border border-slate-800/80 bg-slate-950/50 p-8 text-center space-y-3">
+    <div className="rounded-xl border border-dashed border-slate-800 p-8 text-center space-y-4">
       <Gamepad2 className="h-8 w-8 text-slate-500 mx-auto" />
       <div className="space-y-1">
-        <p className="text-sm font-bold text-white">
-          {totalOwnedGamesCount === 0
-            ? "Votre bibliothèque est encore vide"
-            : "Aucun jeu ne correspond à ce filtre"}
-        </p>
-        <p className="text-xs text-slate-400 max-w-md mx-auto">
-          {totalOwnedGamesCount === 0
-            ? "Cliquez sur « Importer Jeux & Succès » en haut avec votre SteamID pour importer automatiquement vos jeux et vos succès débloqués !"
-            : "Essayez de modifier vos filtres de plateforme ou de statut."}
+        <p className="text-base font-semibold text-white">Ta collection est vide</p>
+        <p className="text-sm text-slate-400 max-w-md mx-auto">
+          Lie un compte pour importer tes jeux automatiquement, ou ajoute-les un par un.
         </p>
       </div>
-      {totalOwnedGamesCount === 0 && (
-        <button
-          onClick={() => onConnectAndSyncSteam()}
-          disabled={isSyncingSteam}
-          className="inline-flex items-center gap-2 rounded-xl bg-sky-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-sky-400"
+      <div className="flex flex-wrap justify-center gap-2">
+        <Link
+          href="/account"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-sky-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-sky-400"
         >
-          <RefreshCw
-            className={`h-3.5 w-3.5 ${
-              isSyncingSteam ? "animate-spin" : ""
-            }`}
-          />
-          Importer mes jeux Steam maintenant
+          <Link2 className="h-4 w-4" />
+          Lier un compte
+        </Link>
+        <button
+          type="button"
+          onClick={onOpenAddGame}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-200 hover:bg-slate-800"
+        >
+          <Plus className="h-4 w-4" />
+          Ajouter un jeu
         </button>
-      )}
+      </div>
     </div>
   );
 }

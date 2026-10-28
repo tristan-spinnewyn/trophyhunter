@@ -1,6 +1,6 @@
 // lib/platforms.ts
 // Client-safe display metadata for the supported game platforms.
-import type { PlatformType } from "./types";
+import type { PlatformType, UserAccountProfile } from "./types";
 
 export const ALL_PLATFORMS: PlatformType[] = [
   "steam",
@@ -63,3 +63,7 @@ export const PLATFORM_META: Record<
     supportsAutoSync: true,
   },
 };
+
+export function countConnectedPlatforms(profile: UserAccountProfile): number {
+  return ALL_PLATFORMS.filter((p) => Boolean(profile.accounts[p])).length;
+}

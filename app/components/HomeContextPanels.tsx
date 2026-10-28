@@ -26,7 +26,6 @@ interface HomeContextPanelsProps {
   readonly duplicateGroups: Array<{ title: string; games: OwnedGame[] }>;
   readonly onAddGamePassToXbox: (item: GamePassCatalogItem) => Promise<void>;
   readonly onToggleWishlist: (appId: number, platform: PlatformType) => Promise<void>;
-  readonly onBackToAll: () => void;
 }
 
 export function HomeContextPanels({
@@ -47,7 +46,6 @@ export function HomeContextPanels({
   duplicateGroups,
   onAddGamePassToXbox,
   onToggleWishlist,
-  onBackToAll,
 }: HomeContextPanelsProps) {
   const router = useRouter();
 
@@ -61,7 +59,6 @@ export function HomeContextPanels({
         onSelectGame={(appId, name) =>
           router.push(`/game/${appId}?name=${encodeURIComponent(name)}&platform=xbox`)
         }
-        onBackToAll={onBackToAll}
       />
     );
   }
@@ -80,7 +77,6 @@ export function HomeContextPanels({
         setNewCollDesc={setNewCollDesc}
         handleCreateCollection={handleCreateCollection}
         handleDeleteCollection={handleDeleteCollection}
-        onBackToAll={onBackToAll}
       />
     );
   }
@@ -90,7 +86,6 @@ export function HomeContextPanels({
       <DuplicatesPanel
         duplicateGroups={duplicateGroups}
         onSelectGame={(appId) => router.push(`/game/${appId}`)}
-        onBackToAll={onBackToAll}
       />
     );
   }

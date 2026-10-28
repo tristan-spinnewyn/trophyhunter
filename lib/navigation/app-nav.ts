@@ -15,8 +15,8 @@ export const APP_NAV_ITEMS: readonly AppNavItem[] = [
   {
     id: "library",
     href: "/",
-    label: "Bibliothèque",
-    shortLabel: "Bibliothèque",
+    label: "Ma collection",
+    shortLabel: "Collection",
     sections: ["/game"],
   },
   {

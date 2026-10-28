@@ -3,13 +3,10 @@
 "use client";
 
 import type { UserAccountProfile, PlatformType } from "@/lib/types";
-import type { GlobalDashboardStats } from "@/lib/library/library-stats";
-import { OverviewGlobalStats } from "./overview/OverviewGlobalStats";
 import { OverviewPlatformsGrid } from "./overview/OverviewPlatformsGrid";
 import { OverviewRareShowcase } from "./overview/OverviewRareShowcase";
 
 interface OverviewPanelProps {
-  readonly globalStats: GlobalDashboardStats;
   readonly accountProfile: UserAccountProfile;
   readonly platformCounts: Record<string, number>;
   readonly onSelectPlatform: (platform: PlatformType) => void;
@@ -19,7 +16,6 @@ interface OverviewPanelProps {
 }
 
 export default function OverviewPanel({
-  globalStats,
   accountProfile,
   platformCounts,
   onSelectPlatform,
@@ -31,11 +27,6 @@ export default function OverviewPanel({
 
   return (
     <>
-      <OverviewGlobalStats
-        globalStats={globalStats}
-        steamAccount={steamAccount}
-      />
-
       <OverviewPlatformsGrid
         accountProfile={accountProfile}
         platformCounts={platformCounts}
