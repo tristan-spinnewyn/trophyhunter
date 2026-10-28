@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getUserPlatformApiKey } from "@/lib/db";
-import { syncSteamProfile } from "@/lib/steam/service";
+import { syncSteamProfile } from "@/lib/steam/profile-sync";
 import { errorMessage, errorStatus } from "@/lib/error-message";
 
 export async function GET(request: Request) {
