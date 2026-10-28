@@ -7,7 +7,7 @@ interface GameClientErrorProps {
 
 export function GameClientError({ error }: GameClientErrorProps) {
   return (
-    <div className="rounded-3xl border border-rose-500/30 bg-rose-500/10 p-8 text-center space-y-4 my-8">
+    <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-8 text-center space-y-4 my-8">
       <AlertCircle className="h-10 w-10 text-rose-400 mx-auto" />
       <h3 className="text-base font-bold text-white">
         Oups ! Une erreur est survenue

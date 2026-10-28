@@ -23,17 +23,17 @@ export function AuthGateForm({
   displayName, setDisplayName, isLoading, errorMsg, successMsg, onSubmit,
 }: FormProps) {
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6">
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 sm:p-8 backdrop-blur-xl space-y-6">
       <div className="grid grid-cols-2 rounded-2xl border border-slate-800 bg-slate-950 p-1">
         <button
           type="button" onClick={() => setMode("login")}
-          className={`rounded-xl py-2 text-xs font-bold transition ${mode === "login" ? "bg-sky-600 text-white shadow-md shadow-sky-600/20" : "text-slate-400 hover:text-white"}`}
+          className={`rounded-xl py-2 text-xs font-bold transition ${mode === "login" ? "bg-sky-600 text-white" : "text-slate-400 hover:text-white"}`}
         >
           Se connecter
         </button>
         <button
           type="button" onClick={() => setMode("register")}
-          className={`rounded-xl py-2 text-xs font-bold transition ${mode === "register" ? "bg-sky-600 text-white shadow-md shadow-sky-600/20" : "text-slate-400 hover:text-white"}`}
+          className={`rounded-xl py-2 text-xs font-bold transition ${mode === "register" ? "bg-sky-600 text-white" : "text-slate-400 hover:text-white"}`}
         >
           Créer un profil
         </button>
@@ -79,7 +79,7 @@ export function AuthGateForm({
 
         <button
           type="submit" disabled={isLoading}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 px-5 py-3 text-sm font-bold text-white transition hover:brightness-110 shadow-lg shadow-sky-500/25 disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 px-5 py-3 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-50"
         >
           {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
           {mode === "login" ? "Accéder à ma bibliothèque" : "Démarrer avec SQLite"}

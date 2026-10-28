@@ -22,13 +22,13 @@ export function SteamApiKeyInput({
           className="text-[11px] font-semibold text-slate-300 hover:text-sky-300 flex items-center gap-1"
         >
           <span>{showApiKeyInput ? "▼" : "▶"} Clé API Steam (Optionnelle)</span>
-          {steamApiKey && <span className="text-[10px] text-emerald-400 font-bold">• Active</span>}
+          {steamApiKey && <span className="text-[11px] text-emerald-400 font-bold">• Active</span>}
         </button>
         <a
           href="https://steamcommunity.com/dev/apikey"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[10px] text-sky-400 hover:underline"
+          className="text-[11px] text-sky-400 hover:underline"
         >
           Obtenir ma clé ↗
         </a>

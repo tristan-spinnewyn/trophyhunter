@@ -34,7 +34,7 @@ export function LibrarySectionFilters({
   setLibSortOrder,
 }: LibrarySectionFiltersProps) {
   return (
-    <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+    <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap xl:flex-nowrap">
       <div className="relative col-span-2 sm:flex-1 sm:min-w-[200px]">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
         <input

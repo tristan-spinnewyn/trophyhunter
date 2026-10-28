@@ -29,7 +29,7 @@ export function GogSyncForm({
           <Sparkles className="h-3.5 w-3.5 text-violet-400" />
           Synchronisation GOG Web API
         </span>
-        <span className="text-[10px] font-semibold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-md">
+        <span className="text-[11px] font-semibold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-md">
           Web API
         </span>
       </div>
@@ -46,7 +46,7 @@ export function GogSyncForm({
         <button
           onClick={() => onConnectAndSyncGOG()}
           disabled={isSyncingGOG || !gogInput.trim()}
-          className="shrink-0 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 px-3.5 py-2 text-xs font-bold text-white hover:brightness-110 disabled:opacity-50 transition flex items-center gap-1.5 shadow-md shadow-violet-500/20"
+          className="shrink-0 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 px-3.5 py-2 text-xs font-bold text-white hover:brightness-110 disabled:opacity-50 transition flex items-center gap-1.5"
         >
           <RefreshCw
             className={`h-3.5 w-3.5 ${isSyncingGOG ? "animate-spin" : ""}`}
@@ -64,14 +64,14 @@ export function GogSyncForm({
           >
             <span>{showGogToken ? "▼" : "▶"} Jeton Web GOG (Optionnel)</span>
             {gogToken ? (
-              <span className="text-[10px] text-violet-400 font-bold">• Actif</span>
+              <span className="text-[11px] text-violet-400 font-bold">• Actif</span>
             ) : null}
           </button>
           <a
             href="https://embed.gog.com/userData.json"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] text-violet-400 hover:underline"
+            className="text-[11px] text-violet-400 hover:underline"
           >
             Profil GOG ↗
           </a>
@@ -89,7 +89,7 @@ export function GogSyncForm({
         )}
       </div>
 
-      <p className="text-[10px] text-slate-400">
+      <p className="text-[11px] text-slate-400">
         Scrape et synchronise directement votre profil public GOG sans nécessiter l&apos;application client GOG Galaxy.
       </p>
     </div>

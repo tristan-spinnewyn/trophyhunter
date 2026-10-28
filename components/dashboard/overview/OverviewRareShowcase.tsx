@@ -15,7 +15,7 @@ export function OverviewRareShowcase({
   if (!rareShowcase || rareShowcase.length === 0) return null;
 
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5 space-y-3">
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
           <Star className="h-4 w-4 fill-amber-400" />
@@ -45,7 +45,7 @@ export function OverviewRareShowcase({
               <div className="truncate text-[11px] text-slate-400">
                 {item.gameName}
               </div>
-              <div className="mt-0.5 inline-block rounded bg-amber-500/15 px-1.5 py-0.2 text-[10px] font-semibold text-amber-300">
+              <div className="mt-0.5 inline-block rounded bg-amber-500/15 px-1.5 py-px text-[11px] font-semibold text-amber-300">
                 Ultra Rare • {item.percent}% des joueurs
               </div>
             </div>

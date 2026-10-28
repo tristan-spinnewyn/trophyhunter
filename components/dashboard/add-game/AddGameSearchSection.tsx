@@ -24,17 +24,18 @@ export function AddGameSearchSection({
 }: AddGameSearchSectionProps) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-semibold text-slate-300">
-        2. Chercher et ajouter un jeu en 1 clic :
+      <label htmlFor="add-game-search" className="text-sm font-medium text-slate-300">
+        Rechercher un jeu
       </label>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
         <input
+          id="add-game-search"
           type="text"
           value={addGameQuery}
           onChange={(e) => handleSearchAddGame(e.target.value)}
-          placeholder="Ex: Elden Ring, God of War, Hades..."
-          className="w-full rounded-xl border border-slate-700 bg-slate-950 py-2 pl-9 pr-3 text-xs text-white outline-none focus:border-sky-500"
+          placeholder="Elden Ring, Hades…"
+          className="w-full rounded-lg border border-slate-700 bg-slate-950 py-2 pl-9 pr-3 text-sm text-white outline-none focus:border-sky-500"
         />
       </div>
 

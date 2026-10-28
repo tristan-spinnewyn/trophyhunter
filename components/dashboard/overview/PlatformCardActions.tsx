@@ -19,30 +19,39 @@ export function PlatformCardActions({
   onDisconnectPlatform,
 }: PlatformCardActionsProps) {
   return (
-    <div className="mt-3 flex items-center gap-1.5 pt-2 border-t border-slate-800/80">
+    <div className="mt-3 flex items-center gap-1">
       <button
+        type="button"
         onClick={() => onSelectPlatform(plat)}
-        className="flex-1 flex items-center justify-center gap-1 rounded-xl bg-slate-800 py-1.5 text-xs font-bold text-sky-400 transition hover:bg-slate-700 hover:text-white"
+        className={`flex h-8 flex-1 items-center justify-center gap-1 rounded-lg text-sm font-medium transition ${
+          acc
+            ? "border border-slate-800 text-slate-200 hover:bg-slate-800"
+            : "border border-sky-500/40 text-sky-300 hover:bg-sky-500/10"
+        }`}
       >
-        <span>Ouvrir l&apos;espace</span>
-        <ChevronRight className="h-3 w-3" />
+        <span>{acc ? "Ouvrir" : "Lier le compte"}</span>
+        <ChevronRight className="h-4 w-4" />
       </button>
 
       <button
+        type="button"
         onClick={() => onEditPlatform(plat)}
         title="Modifier les statistiques ou l'identifiant"
-        className="rounded-xl border border-slate-700 bg-slate-900 p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white"
+        aria-label="Modifier les statistiques ou l'identifiant"
+        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-800 hover:text-white"
       >
-        <Edit3 className="h-3.5 w-3.5" />
+        <Edit3 className="h-4 w-4" />
       </button>
 
       {acc && (
         <button
+          type="button"
           onClick={() => onDisconnectPlatform(plat)}
-          title="Supprimer ce compte"
-          className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-1.5 text-rose-400 hover:bg-rose-500/20"
+          title="Délier ce compte"
+          aria-label="Délier ce compte"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-800 hover:text-rose-400"
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <Trash2 className="h-4 w-4" />
         </button>
       )}
     </div>

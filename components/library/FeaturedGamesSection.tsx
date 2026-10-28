@@ -17,7 +17,7 @@ export function FeaturedGamesSection({ ownedGames }: FeaturedGamesSectionProps) 
   const router = useRouter();
 
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Flame className="h-4 w-4 text-amber-400" />
@@ -37,7 +37,7 @@ export function FeaturedGamesSection({ ownedGames }: FeaturedGamesSectionProps) 
             <button
               key={game.id}
               onClick={() => router.push(`/game/${game.id}`)}
-              className="group relative flex flex-col items-center overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/60 p-1.5 transition-all hover:border-sky-500/50 hover:bg-slate-900 hover:shadow-lg hover:shadow-sky-500/10 text-left"
+              className="group relative flex flex-col items-center overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/60 p-1.5 transition-all hover:border-sky-500/50 hover:bg-slate-900 text-left"
             >
               <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-slate-900">
                 <img
@@ -55,7 +55,7 @@ export function FeaturedGamesSection({ ownedGames }: FeaturedGamesSectionProps) 
                 <div className="text-[11px] font-bold text-slate-200 truncate group-hover:text-sky-300">
                   {game.name}
                 </div>
-                <div className="text-[10px] text-slate-500 font-medium">
+                <div className="text-[11px] text-slate-500 font-medium">
                   {game.count}
                 </div>
               </div>

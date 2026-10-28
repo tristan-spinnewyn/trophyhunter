@@ -41,7 +41,7 @@ export function CollectionsList({
           >
             <Folder className="h-3 w-3 text-indigo-400" />
             <span>{coll.name}</span>
-            <span className="rounded-full bg-slate-800 px-1.5 py-0.2 text-[10px] font-bold">
+            <span className="rounded-full bg-slate-800 px-1.5 py-px text-[11px] font-bold">
               {coll.gameIds.length}
             </span>
           </button>

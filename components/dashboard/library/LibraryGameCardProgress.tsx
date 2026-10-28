@@ -15,40 +15,44 @@ export function LibraryGameCardProgress({
   pct,
   onSelectGame,
 }: LibraryGameCardProgressProps) {
+  const hasAchievements = g.totalAchievements > 0;
+  const unit = g.platform === "epic" ? "XP" : "succès";
+
   return (
-    <div onClick={() => onSelectGame(g.appId)} className="cursor-pointer">
-      <h4 className="truncate text-sm font-bold text-white group-hover:text-sky-400">
+    <button
+      type="button"
+      onClick={() => onSelectGame(g.appId)}
+      className="block w-full text-left"
+    >
+      <h3 className="truncate text-sm font-semibold text-white group-hover:text-sky-300">
         {g.name}
-      </h4>
-      <div className="mt-1 flex items-center justify-between text-[11px] text-slate-400">
-        <span>
-          {g.totalAchievements > 0
-            ? `${g.unlockedCount} / ${g.totalAchievements} succès`
-            : "⚪ Aucun succès répertorié"}
+      </h3>
+      <div className="mt-1 flex items-center justify-between gap-2 text-xs text-slate-400">
+        <span className="truncate tabular-nums">
+          {hasAchievements ? `${g.unlockedCount} / ${g.totalAchievements} ${unit}` : "Aucun succès"}
+          {g.playtimeHours !== undefined && g.playtimeHours > 0 && (
+            <span className="text-slate-500"> · {g.playtimeHours} h</span>
+          )}
         </span>
-        <span
-          className={`font-bold ${
-            isPlatinum
-              ? "text-amber-400"
-              : pct > 0
-              ? "text-sky-400"
-              : "text-slate-500"
-          }`}
-        >
-          {g.totalAchievements > 0 ? `${pct}%` : "—"}
-        </span>
+        {hasAchievements && (
+          <span
+            className={`font-medium tabular-nums ${
+              isPlatinum ? "text-amber-400" : pct > 0 ? "text-slate-200" : "text-slate-500"
+            }`}
+          >
+            {pct}%
+          </span>
+        )}
       </div>
 
-      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
-        <div
-          className={`h-full rounded-full transition-all ${
-            isPlatinum
-              ? "bg-gradient-to-r from-amber-400 to-emerald-400"
-              : "bg-sky-500"
-          }`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
+      {hasAchievements && (
+        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-slate-800">
+          <div
+            className={`h-full rounded-full ${isPlatinum ? "bg-amber-400" : "bg-sky-500"}`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      )}
+    </button>
   );
 }

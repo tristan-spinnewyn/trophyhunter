@@ -35,7 +35,7 @@ export function EpicSyncForm({
           <Sparkles className="h-3.5 w-3.5 text-purple-400" />
           Connexion Epic Games (Zero mot de passe)
         </span>
-        <span className="text-[10px] font-semibold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-md">
+        <span className="text-[11px] font-semibold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-md">
           OAuth Epic
         </span>
       </div>
@@ -52,7 +52,7 @@ export function EpicSyncForm({
         <button
           onClick={() => onConnectAndSyncEpic()}
           disabled={isSyncingEpic}
-          className="shrink-0 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 px-3.5 py-2 text-xs font-bold text-white hover:brightness-110 disabled:opacity-50 transition flex items-center gap-1.5 shadow-md shadow-purple-500/20"
+          className="shrink-0 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 px-3.5 py-2 text-xs font-bold text-white hover:brightness-110 disabled:opacity-50 transition flex items-center gap-1.5"
         >
           <RefreshCw
             className={`h-3.5 w-3.5 ${
@@ -77,7 +77,7 @@ export function EpicSyncForm({
           <span className="truncate">{syncProgressText}</span>
         </div>
       ) : (
-        <p className="text-[10px] text-slate-400">
+        <p className="text-[11px] text-slate-400">
           Zero mot de passe partagé. Importe automatiquement vos jeux et succès Epic Games.
         </p>
       )}

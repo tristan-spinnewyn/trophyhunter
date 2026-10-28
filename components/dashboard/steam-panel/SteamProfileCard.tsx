@@ -20,7 +20,7 @@ export function SteamProfileCard({ steamAccount, displayName }: ProfileCardProps
           <img
             src={safeAvatarUrl}
             alt={steamAccount?.displayName || displayName}
-            className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl object-cover border-2 border-sky-500/50 shadow-lg shadow-sky-500/20"
+            className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl object-cover border-2 border-sky-500/50"
           />
         ) : (
           <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border border-slate-700 bg-slate-800 text-sky-400">
@@ -30,7 +30,7 @@ export function SteamProfileCard({ steamAccount, displayName }: ProfileCardProps
         {steamAccount?.level && (
           <div
             title="Niveau Steam"
-            className="absolute -bottom-1.5 -right-1.5 flex h-7 min-w-7 items-center justify-center rounded-full border-2 border-slate-950 bg-gradient-to-br from-amber-400 to-amber-600 px-1.5 text-[11px] font-black text-slate-950 shadow"
+            className="absolute -bottom-1.5 -right-1.5 flex h-7 min-w-7 items-center justify-center rounded-full border-2 border-slate-950 bg-gradient-to-br from-amber-400 to-amber-600 px-1.5 text-[11px] font-semibold text-slate-950 shadow"
           >
             {steamAccount.level}
           </div>
@@ -39,12 +39,12 @@ export function SteamProfileCard({ steamAccount, displayName }: ProfileCardProps
 
       <div className="space-y-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-xl sm:text-2xl font-black text-white">
+          <h2 className="text-xl sm:text-2xl font-semibold text-white">
             {steamAccount?.displayName || displayName}
           </h2>
           {steamAccount?.onlineState && (
             <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                 isOnline ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30" : "bg-slate-800 text-slate-400 border border-slate-700"
               }`}
             >

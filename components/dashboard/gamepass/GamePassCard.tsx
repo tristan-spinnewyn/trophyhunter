@@ -17,7 +17,7 @@ export function GamePassCard({
   item, isOwned, isWishlisted, onAddGameToXbox, onToggleWishlist, onSelectGame,
 }: GamePassCardProps) {
   return (
-    <div className="group flex flex-col justify-between rounded-2xl border border-slate-800/90 bg-slate-950/80 overflow-hidden transition hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-950/30">
+    <div className="group flex flex-col justify-between rounded-2xl border border-slate-800/90 bg-slate-950/80 overflow-hidden transition hover:border-emerald-500/50">
       <div>
         <div
           onClick={() => onSelectGame(item.appId, item.name)}
@@ -36,11 +36,11 @@ export function GamePassCard({
             </div>
           )}
           <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-            <span className="rounded-lg bg-emerald-950/90 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+            <span className="rounded-lg bg-emerald-950/90 border border-emerald-500/40 px-2 py-0.5 text-[11px] font-bold text-emerald-300">
               {item.category}
             </span>
             {item.hasXboxAchievements && (
-              <span className="flex items-center gap-1 rounded-lg bg-amber-950/90 border border-amber-500/40 px-1.5 py-0.5 text-[10px] font-bold text-amber-300">
+              <span className="flex items-center gap-1 rounded-lg bg-amber-950/90 border border-amber-500/40 px-1.5 py-0.5 text-[11px] font-bold text-amber-300">
                 <Trophy className="h-2.5 w-2.5" />
                 Succès
               </span>

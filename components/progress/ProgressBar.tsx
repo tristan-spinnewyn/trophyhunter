@@ -12,7 +12,7 @@ interface ProgressBarProps {
 export function ProgressBar({ total, unlockedCount, percent, isComplete }: ProgressBarProps) {
   if (total <= 0) {
     return (
-      <div className="mt-3 border-t border-slate-800/80 pt-2.5 text-[11px] text-slate-400">
+      <div className="mt-3 border-t border-slate-800 pt-2.5 text-xs text-slate-400">
         Aucun succès répertorié pour ce jeu sur cette plateforme.
       </div>
     );
@@ -20,23 +20,26 @@ export function ProgressBar({ total, unlockedCount, percent, isComplete }: Progr
 
   return (
     <div className="mt-4">
-      <div className="relative h-3 w-full overflow-hidden rounded-full bg-slate-800/80 p-0.5">
+      <div
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percent}
+        aria-label="Progression des succès"
+        className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800"
+      >
         <div
           className={`h-full rounded-full transition-all duration-500 ease-out ${
-            isComplete
-              ? "bg-gradient-to-r from-amber-400 via-sky-400 to-emerald-400 shadow-md shadow-sky-400/30"
-              : percent >= 75
-              ? "bg-gradient-to-r from-amber-500 to-yellow-400"
-              : "bg-gradient-to-r from-sky-500 to-cyan-400"
+            isComplete ? "bg-amber-400" : "bg-sky-500"
           }`}
           style={{ width: `${percent}%` }}
         />
       </div>
-      <div className="mt-1.5 flex justify-between text-[11px] text-slate-400">
+      <div className="mt-2 flex justify-between text-xs text-slate-500">
         <span>{total - unlockedCount} succès restants</span>
         {isComplete ? (
-          <span className="font-semibold text-emerald-400 flex items-center gap-1">
-            <CheckCircle2 className="h-3 w-3" /> Platine Débloqué !
+          <span className="font-medium text-amber-400 flex items-center gap-1">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Platine débloqué
           </span>
         ) : (
           <span>Objectif 100%</span>

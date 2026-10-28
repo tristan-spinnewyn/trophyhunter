@@ -11,33 +11,22 @@ interface PlatformCardStatsProps {
 export function PlatformCardStats({ account: acc, meta }: PlatformCardStatsProps) {
   return (
     <>
-      <div className="grid grid-cols-3 gap-1.5 rounded-xl bg-slate-900/90 p-2 text-center">
-        <div>
-          <div className="text-xs font-black text-white">
-            {acc.stats.gamesOwned}
+      <dl className="grid grid-cols-3 gap-2 text-center">
+        {[
+          { label: "Jeux", value: acc.stats.gamesOwned },
+          { label: meta.trophyLabel, value: acc.stats.totalAchievements },
+          { label: meta.completeLabel, value: acc.stats.completedGames },
+        ].map(({ label, value }) => (
+          <div key={label} className="rounded-lg bg-slate-950/50 py-1.5">
+            <dt className="sr-only">{label}</dt>
+            <dd className="text-sm font-semibold tabular-nums text-white">{value}</dd>
+            <dd aria-hidden className="truncate text-[11px] text-slate-500">{label}</dd>
           </div>
-          <div className="text-[10px] text-slate-400">Jeux</div>
-        </div>
-        <div>
-          <div className="text-xs font-black text-emerald-400">
-            {acc.stats.totalAchievements}
-          </div>
-          <div className="text-[10px] text-slate-400">
-            {meta.trophyLabel}
-          </div>
-        </div>
-        <div>
-          <div className="text-xs font-black text-amber-400">
-            {acc.stats.completedGames}
-          </div>
-          <div className="text-[10px] text-slate-400">
-            {meta.completeLabel}
-          </div>
-        </div>
-      </div>
+        ))}
+      </dl>
 
       {acc.stats.gamerScore ? (
-        <div className="rounded-lg bg-emerald-950/30 border border-emerald-500/20 px-2.5 py-1 text-[11px] font-bold text-emerald-300 text-center">
+        <div className="text-center text-xs font-medium tabular-nums text-emerald-300">
           {acc.stats.gamerScore.toLocaleString("fr-FR")} G
         </div>
       ) : null}

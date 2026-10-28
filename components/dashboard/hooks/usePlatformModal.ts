@@ -53,6 +53,11 @@ export function usePlatformModal({
   };
 
   const handleDisconnectPlatform = async (platform: PlatformType) => {
+    const confirmed = window.confirm(
+      `Délier ton compte ${PLATFORM_META[platform].name} ? Les identifiants enregistrés seront supprimés.`
+    );
+    if (!confirmed) return;
+
     const nextAccounts = { ...accountProfile.accounts };
     delete nextAccounts[platform];
     onAccountChange({

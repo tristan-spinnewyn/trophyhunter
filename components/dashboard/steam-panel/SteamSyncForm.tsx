@@ -33,7 +33,7 @@ export function SteamSyncForm({
           <Sparkles className="h-3.5 w-3.5" />
           Synchronisation Steam
         </label>
-        <span className="text-[10px] text-emerald-400 font-medium">
+        <span className="text-[11px] text-emerald-400 font-medium">
           {steamApiKey ? "Clé API Active ✓" : "Sans Clé ou Avec Clé"}
         </span>
       </div>
@@ -49,7 +49,7 @@ export function SteamSyncForm({
         <button
           onClick={onConnectAndSyncSteam}
           disabled={isSyncingSteam || !steamInput.trim()}
-          className="flex items-center gap-1.5 rounded-xl bg-sky-500 px-3.5 py-2 text-xs font-bold text-slate-950 shadow-lg shadow-sky-500/20 transition hover:bg-sky-400 disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-xl bg-sky-500 px-3.5 py-2 text-xs font-bold text-slate-950 transition hover:bg-sky-400 disabled:opacity-50"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${isSyncingSteam ? "animate-spin" : ""}`} />
           <span>{isSyncingSteam ? "Sync..." : "Importer"}</span>
@@ -69,7 +69,7 @@ export function SteamSyncForm({
           <span className="truncate">{syncProgressText}</span>
         </div>
       ) : (
-        <p className="text-[10px] text-slate-400">
+        <p className="text-[11px] text-slate-400">
           Importe automatiquement vos jeux et succès Steam sans mot de passe.
         </p>
       )}

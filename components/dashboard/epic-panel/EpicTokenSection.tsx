@@ -28,14 +28,14 @@ export function EpicTokenSection({
         >
           <span>{showEpicCode ? "▼" : "▶"} Token / Code Epic (authorizationToken)</span>
           {epicCode ? (
-            <span className="text-[10px] text-purple-400 font-bold">• Token saisi</span>
+            <span className="text-[11px] text-purple-400 font-bold">• Token saisi</span>
           ) : null}
         </button>
         <a
           href={EPIC_AUTH_CODE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[10px] text-purple-400 hover:underline flex items-center gap-0.5"
+          className="text-[11px] text-purple-400 hover:underline flex items-center gap-0.5"
         >
           Obtenir le token ↗
         </a>
@@ -43,10 +43,10 @@ export function EpicTokenSection({
 
       {(showEpicCode || epicCode) && (
         <div className="mt-2 space-y-1.5 text-[11px] text-slate-400 bg-purple-950/20 border border-purple-500/20 rounded-xl p-2.5">
-          <p className="text-[10px] text-slate-300">
+          <p className="text-[11px] text-slate-300">
             1. Cliquez sur <a href={EPIC_AUTH_CODE_URL} target="_blank" rel="noopener noreferrer" className="text-purple-400 underline font-semibold">ce lien Epic officiel</a> (authentification sécurisée sur epicgames.com).
           </p>
-          <p className="text-[10px] text-slate-300">
+          <p className="text-[11px] text-slate-300">
             2. Copiez la valeur de <code>authorizationCode</code> (ou tout le JSON) et collez-la ci-dessous :
           </p>
           <input
