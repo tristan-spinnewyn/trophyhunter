@@ -133,7 +133,7 @@ describe("lib/steam/store-api", () => {
       expect(fetchSpy).not.toHaveBeenCalled();
     });
 
-    it("upserts each owned game with its playtime in hours and returns the game count", async () => {
+    it("upserts each owned game with its playtime in hours and its real last session, and returns the game count", async () => {
       routeFetch([
         [
           OWNED_GAMES_URL,
@@ -142,8 +142,8 @@ describe("lib/steam/store-api", () => {
               response: {
                 game_count: 3,
                 games: [
-                  { appid: 570, name: "Dota 2", playtime_forever: 125 },
-                  { appid: 440, name: "TF2" },
+                  { appid: 570, name: "Dota 2", playtime_forever: 125, rtime_last_played: 1760000000 },
+                  { appid: 440, name: "TF2", rtime_last_played: 0 },
                   { name: "No app id" },
                 ],
               },
@@ -154,8 +154,8 @@ describe("lib/steam/store-api", () => {
 
       await expect(fetchOwnedGamesFromSteamApi("key", "7656", upsert)).resolves.toBe(3);
       expect(upsert.mock.calls).toEqual([
-        [570, { name: "Dota 2", playtimeHours: 2.1 }],
-        [440, { name: "TF2", playtimeHours: 0 }],
+        [570, { name: "Dota 2", playtimeHours: 2.1, lastPlayed: "2025-10-09T08:53:20.000Z" }],
+        [440, { name: "TF2", playtimeHours: 0, lastPlayed: undefined }],
       ]);
     });
 
