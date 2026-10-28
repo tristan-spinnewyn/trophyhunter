@@ -23,32 +23,27 @@ export default function DashboardNavTabs({
   return (
     <nav
       aria-label="Navigation de la bibliothèque"
-      className="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 rounded-2xl border border-slate-800/80 bg-slate-900/75 p-2 backdrop-blur-xl shadow-lg"
+      className="-mx-4 flex items-center gap-1 overflow-x-auto scrollbar-none px-4 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
     >
-      <div className="flex flex-wrap items-center gap-1 rounded-xl border border-slate-800/60 bg-slate-950/70 p-1">
+      <div className="flex shrink-0 items-center gap-1">
         <button
           type="button"
           onClick={() => onSelectTab("all")}
-          className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition-all duration-150 ${
+          aria-pressed={isAllActive}
+          className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition ${
             isAllActive
-              ? "bg-gradient-to-r from-sky-500 to-sky-400 text-slate-950 shadow-md shadow-sky-500/20"
-              : "text-slate-300 hover:bg-slate-900 hover:text-white"
+              ? "border-slate-700 bg-slate-800 text-white"
+              : "border-transparent text-slate-400 hover:bg-slate-900 hover:text-white"
           }`}
         >
           <Layers className="h-3.5 w-3.5 shrink-0" />
-          <span>Vue Globale</span>
-          <span
-            className={`rounded-md px-1.5 py-0.5 text-[10px] font-extrabold tabular-nums ${
-              isAllActive
-                ? "bg-slate-950/25 text-slate-950"
-                : "bg-slate-800/90 text-slate-400"
-            }`}
-          >
+          <span>Tous</span>
+          <span className="text-xs tabular-nums text-slate-500">
             {ownedGamesCount}
           </span>
         </button>
 
-        <div className="hidden sm:block h-4 w-px bg-slate-800/80 mx-0.5" />
+        
 
         <NavPlatformTabs
           activePlatformTab={activePlatformTab}
@@ -57,6 +52,8 @@ export default function DashboardNavTabs({
           accountProfile={accountProfile}
         />
       </div>
+
+      <div aria-hidden className="mx-1 h-5 w-px shrink-0 bg-slate-800" />
 
       <NavFeatureTabs
         activePlatformTab={activePlatformTab}

@@ -4,6 +4,7 @@
 import React, { Suspense } from "react";
 import { UserDataProvider, useUserData } from "@/context/UserDataContext";
 import Navbar from "@/components/navbar/Navbar";
+import { MobileTabBar } from "@/components/navbar/MobileTabBar";
 import AuthModal from "@/components/AuthModal";
 import SettingsModal from "@/components/SettingsModal";
 
@@ -33,9 +34,12 @@ function AppShellContent({ children }: { readonly children: React.ReactNode }) {
       <Suspense fallback={<div className="h-14 bg-slate-950 border-b border-slate-800" />}>
         <Navbar />
       </Suspense>
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-24 sm:pt-8 md:pb-10">
         <Suspense fallback={null}>{children}</Suspense>
       </main>
+      <Suspense fallback={null}>
+        <MobileTabBar />
+      </Suspense>
 
       <AuthModal
         isOpen={isAuthOpen}

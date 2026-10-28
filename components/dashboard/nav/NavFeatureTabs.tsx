@@ -35,30 +35,23 @@ export function NavFeatureTabs({
   });
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <div className="flex shrink-0 items-center gap-1">
       {items.map((item) => (
         <button
           key={item.id}
           type="button"
           onClick={() => onSelectTab(item.id)}
-          className={`group flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-150 ${
+          aria-pressed={item.isActive}
+          className={`group flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition ${
             item.isActive
               ? item.activeClass
-              : "border-slate-800/80 bg-slate-950/60 text-slate-300 hover:border-slate-700 hover:bg-slate-900 hover:text-white"
+              : "border-transparent text-slate-400 hover:bg-slate-900 hover:text-white"
           }`}
         >
           {FEATURE_ICONS[item.id](`h-3.5 w-3.5 shrink-0 ${item.iconColorClass}`)}
           <span>{item.label}</span>
           {typeof item.count === "number" && item.count > 0 && (
-            <span
-              className={`rounded-md px-1.5 py-0.5 text-[10px] font-extrabold tabular-nums ${
-                item.isActive
-                  ? item.activeBadgeClass
-                  : "bg-slate-800/90 text-slate-400 group-hover:text-slate-200"
-              }`}
-            >
-              {item.count}
-            </span>
+            <span className="text-xs tabular-nums text-slate-500">{item.count}</span>
           )}
         </button>
       ))}

@@ -21,7 +21,6 @@ export interface FeatureTabItem {
   readonly isActive: boolean;
   readonly activeClass: string;
   readonly iconColorClass: string;
-  readonly activeBadgeClass: string;
 }
 
 export interface DashboardNavTabsProps {

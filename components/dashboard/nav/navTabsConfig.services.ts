@@ -1,16 +1,11 @@
 // components/dashboard/nav/navTabsConfig.services.ts
 
-import type { PlatformType, UserAccountProfile } from "@/lib/types";
+import type { UserAccountProfile } from "@/lib/types";
 import { ALL_PLATFORMS, PLATFORM_META } from "@/lib/platforms";
 import type { LibraryTab } from "@/lib/library/library-filters";
 import type { PlatformTabItem, FeatureTabItem } from "./DashboardNavTabs.types";
 
-const PLATFORM_ACTIVE_STYLES: Record<PlatformType, string> = {
-  steam: "border-sky-500/50 bg-sky-500/15 text-sky-200 shadow-sm shadow-sky-500/10",
-  xbox: "border-emerald-500/50 bg-emerald-500/15 text-emerald-200 shadow-sm shadow-emerald-500/10",
-  epic: "border-purple-500/50 bg-purple-500/15 text-purple-200 shadow-sm shadow-purple-500/10",
-  gog: "border-violet-500/50 bg-violet-500/15 text-violet-200 shadow-sm shadow-violet-500/10",
-};
+const ACTIVE_TAB_CLASS = "border-slate-700 bg-slate-800 text-white";
 
 export function buildPlatformTabItems(
   activePlatformTab: LibraryTab,
@@ -29,7 +24,7 @@ export function buildPlatformTabItems(
       count,
       isConnected,
       isActive: activePlatformTab === platform,
-      activeClass: PLATFORM_ACTIVE_STYLES[platform],
+      activeClass: ACTIVE_TAB_CLASS,
     };
   });
 }
@@ -49,36 +44,32 @@ export function buildFeatureTabItems(
       id: "gamepass",
       label: "PC Game Pass",
       isActive: activePlatformTab === "gamepass",
-      activeClass: "border-emerald-500/50 bg-emerald-500/15 text-emerald-200 shadow-sm shadow-emerald-500/10",
+      activeClass: ACTIVE_TAB_CLASS,
       iconColorClass: "text-emerald-400",
-      activeBadgeClass: "bg-emerald-950/80 text-emerald-200",
     },
     {
       id: "duplicates",
       label: "Doublons",
       count: Math.max(0, counts.duplicateCount),
       isActive: activePlatformTab === "duplicates",
-      activeClass: "border-purple-500/50 bg-purple-500/15 text-purple-200 shadow-sm shadow-purple-500/10",
+      activeClass: ACTIVE_TAB_CLASS,
       iconColorClass: "text-purple-400",
-      activeBadgeClass: "bg-purple-950/80 text-purple-200",
     },
     {
       id: "wishlist",
       label: "Liste d'envies",
       count: Math.max(0, counts.wishlistCount),
       isActive: activePlatformTab === "wishlist",
-      activeClass: "border-rose-500/50 bg-rose-500/15 text-rose-200 shadow-sm shadow-rose-500/10",
+      activeClass: ACTIVE_TAB_CLASS,
       iconColorClass: "text-rose-400",
-      activeBadgeClass: "bg-rose-950/80 text-rose-200",
     },
     {
       id: "collections",
       label: "Collections",
       count: Math.max(0, counts.collectionsCount),
       isActive: activePlatformTab === "collections",
-      activeClass: "border-indigo-500/50 bg-indigo-500/15 text-indigo-200 shadow-sm shadow-indigo-500/10",
+      activeClass: ACTIVE_TAB_CLASS,
       iconColorClass: "text-indigo-400",
-      activeBadgeClass: "bg-indigo-950/80 text-indigo-200",
     },
   ];
 }

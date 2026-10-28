@@ -1,7 +1,8 @@
 // components/navbar/NavbarNavLinks.tsx
 
 import Link from "next/link";
-import { Gamepad2, User } from "lucide-react";
+import { APP_NAV_ITEMS, isNavItemActive } from "@/lib/navigation/app-nav";
+import { APP_NAV_ICONS } from "./appNavIcons";
 
 interface NavLinksProps {
   pathname: string;
@@ -9,45 +10,33 @@ interface NavLinksProps {
 }
 
 export function NavbarNavLinks({ pathname, ownedGamesCount }: NavLinksProps) {
-  const isLibraryActive = pathname === "/";
-  const isAccountActive = pathname === "/account";
-
   return (
-    <div className="hidden md:flex items-center gap-1">
-      <Link
-        href="/"
-        className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition ${
-          isLibraryActive
-            ? "bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20"
-            : "text-slate-400 hover:text-white hover:bg-slate-900"
-        }`}
-      >
-        <Gamepad2 className="h-4 w-4" />
-        <span>Bibliothèque</span>
-        {ownedGamesCount > 0 && (
-          <span
-            className={`rounded-md px-1.5 py-0.2 text-[10px] ${
-              isLibraryActive
-                ? "bg-slate-950/20 text-slate-950 font-black"
-                : "bg-slate-800 text-slate-400"
+    <nav aria-label="Navigation principale" className="hidden md:flex items-center gap-1">
+      {APP_NAV_ITEMS.map((item) => {
+        const isActive = isNavItemActive(item, pathname);
+        const Icon = APP_NAV_ICONS[item.id];
+        const count = item.id === "library" ? ownedGamesCount : 0;
+        return (
+          <Link
+            key={item.id}
+            href={item.href}
+            aria-current={isActive ? "page" : undefined}
+            className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+              isActive
+                ? "bg-slate-800 text-white"
+                : "text-slate-400 hover:text-white hover:bg-slate-900"
             }`}
           >
-            {ownedGamesCount}
-          </span>
-        )}
-      </Link>
-
-      <Link
-        href="/account"
-        className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition ${
-          isAccountActive
-            ? "bg-purple-600 text-white shadow-md shadow-purple-600/20"
-            : "text-slate-400 hover:text-white hover:bg-slate-900"
-        }`}
-      >
-        <User className="h-4 w-4" />
-        <span>Comptes & Plateformes</span>
-      </Link>
-    </div>
+            <Icon className="h-4 w-4" />
+            <span>{item.label}</span>
+            {count > 0 && (
+              <span className="rounded-md bg-slate-700/70 px-1.5 text-[11px] tabular-nums text-slate-300">
+                {count}
+              </span>
+            )}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

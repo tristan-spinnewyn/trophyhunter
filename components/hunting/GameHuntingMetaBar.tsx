@@ -15,33 +15,33 @@ export function GameHuntingMetaBar({ meta, onSaveOverride }: GameHuntingMetaBarP
   const [isEditing, setIsEditing] = useState(false);
 
   return (
-    <div className="mt-3 pt-3 border-t border-slate-800/80 space-y-2.5">
+    <div className="mt-4 space-y-2.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1 font-bold ${meta.difficultyBadgeClass}`}>
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+          <span className={`flex items-center gap-1.5 rounded-md border px-2 py-1 font-medium ${meta.difficultyBadgeClass}`}>
             <Flame className="h-3.5 w-3.5" />
             Difficulté : {meta.difficultyRating}/10 • {meta.difficultyLabel}
           </span>
 
-          <span className="flex items-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-800/80 px-2.5 py-1 font-semibold text-slate-200">
+          <span className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-slate-950/40 px-2 py-1 font-medium text-slate-300">
             <Clock className="h-3.5 w-3.5 text-sky-400" />
             ~{meta.estimatedHours}h
           </span>
 
-          <span className="flex items-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-800/80 px-2.5 py-1 font-semibold text-slate-200">
+          <span className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-slate-950/40 px-2 py-1 font-medium text-slate-300">
             <Repeat className="h-3.5 w-3.5 text-indigo-400" />
             {meta.minPlaythroughs} {meta.minPlaythroughs > 1 ? "runs min." : "run min."}
           </span>
 
           {meta.missableCount > 0 && (
-            <span className="flex items-center gap-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 font-semibold text-amber-300">
+            <span className="flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 font-medium text-amber-300">
               <AlertTriangle className="h-3.5 w-3.5" />
               {meta.missableCount} {meta.missableCount > 1 ? "manquables" : "manquable"}
             </span>
           )}
 
           {meta.onlineCount > 0 && (
-            <span className="flex items-center gap-1.5 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-2.5 py-1 font-semibold text-cyan-300">
+            <span className="flex items-center gap-1.5 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2 py-1 font-medium text-cyan-300">
               <Globe className="h-3.5 w-3.5" />
               {meta.onlineCount} en ligne
             </span>
@@ -52,7 +52,7 @@ export function GameHuntingMetaBar({ meta, onSaveOverride }: GameHuntingMetaBarP
           <button
             type="button"
             onClick={() => setIsEditing(!isEditing)}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-800/60 px-2.5 py-1 text-[11px] font-medium text-slate-300 transition hover:bg-slate-700 hover:text-white"
+            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-slate-400 transition hover:bg-slate-800 hover:text-white"
           >
             <SlidersHorizontal className="h-3 w-3" />
             {meta.isCustomOverride ? "Infos personnalisées" : "Ajuster"}

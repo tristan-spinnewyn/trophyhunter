@@ -2,8 +2,7 @@
 
 "use client";
 
-import Link from "next/link";
-import { Gamepad2, User, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import type { GlobalDashboardStats } from "@/lib/library/library-stats";
 import { LibraryGlobalStatsGrid } from "./LibraryGlobalStatsGrid";
 
@@ -19,38 +18,25 @@ export function LibraryHeaderBanner({
   globalStats,
 }: LibraryHeaderBannerProps) {
   return (
-    <div className="rounded-3xl border border-slate-800/90 bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-950 p-5 sm:p-6 shadow-xl space-y-5">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 border border-sky-500/30 text-sky-400 shrink-0 shadow-inner">
-            <Gamepad2 className="h-6 w-6" />
-          </div>
-          <div>
-            <h2 className="text-lg sm:text-xl font-black tracking-tight text-white flex items-center gap-2">
-              Ma Bibliothèque Multi-Plateforme
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-400">
-              {ownedGamesCount} jeux suivis • Steam, Xbox, Epic Games & GOG
-            </p>
-          </div>
+    <section className="space-y-4">
+      <div className="flex items-end justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
+            Ma bibliothèque
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            {ownedGamesCount} {ownedGamesCount > 1 ? "jeux suivis" : "jeu suivi"} sur Steam, Xbox, Epic Games et GOG
+          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Link
-            href="/account"
-            className="flex items-center gap-2 rounded-xl border border-purple-500/40 bg-purple-500/10 px-4 py-2.5 text-xs font-bold text-purple-300 hover:bg-purple-500/20 hover:border-purple-500/60 transition shadow-sm"
-          >
-            <User className="h-4 w-4 text-purple-400" />
-            <span>Comptes & Plateformes</span>
-          </Link>
-          <button
-            onClick={onOpenAddGame}
-            className="flex items-center gap-2 rounded-xl bg-sky-500 px-4 py-2.5 text-xs font-bold text-slate-950 shadow-md shadow-sky-500/20 hover:bg-sky-400 transition"
-          >
-            <Plus className="h-4 w-4 stroke-[2.5]" />
-            <span>Ajouter un jeu</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={onOpenAddGame}
+          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-sky-500 px-3.5 py-2 text-sm font-semibold text-slate-950 hover:bg-sky-400 transition"
+        >
+          <Plus className="h-4 w-4 stroke-[2.5]" />
+          <span>Ajouter<span className="hidden sm:inline"> un jeu</span></span>
+        </button>
       </div>
 
       {globalStats && (
@@ -59,6 +45,6 @@ export function LibraryHeaderBanner({
           globalStats={globalStats}
         />
       )}
-    </div>
+    </section>
   );
 }

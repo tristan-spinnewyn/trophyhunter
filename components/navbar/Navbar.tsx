@@ -15,7 +15,6 @@ interface NavbarProps {
 export default function Navbar({ onSelectGame }: NavbarProps) {
   const pathname = usePathname();
   const {
-    accountProfile,
     ownedGames,
     currentUser,
     handleLogout,
@@ -23,11 +22,9 @@ export default function Navbar({ onSelectGame }: NavbarProps) {
     setIsSettingsOpen,
   } = useUserData();
 
-  const steamAcc = accountProfile?.accounts?.steam;
-
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 py-3">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-slate-950/85 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 h-14">
         <NavbarBrand />
 
         <NavbarNavLinks
@@ -38,8 +35,6 @@ export default function Navbar({ onSelectGame }: NavbarProps) {
         <NavbarSearch onSelectGame={onSelectGame} />
 
         <NavbarUserActions
-          pathname={pathname}
-          steamAcc={steamAcc}
           currentUser={currentUser}
           onLogout={handleLogout}
           onOpenAuth={() => setIsAuthOpen(true)}
