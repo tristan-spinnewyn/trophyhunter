@@ -41,6 +41,7 @@ export default function GameClientPage({ id }: { id: string }) {
         <GameClientSidebar
           game={c.game}
           progress={c.progress}
+          importedUnlockedCount={c.owned?.unlockedCount}
           onResetProgress={c.handleResetProgress}
           onSync={c.handleSync}
           isSyncing={c.isSyncing}

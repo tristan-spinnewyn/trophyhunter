@@ -8,6 +8,7 @@ import type { GameDetails, PlatformType, UserGameProgress, UserAccountProfile } 
 interface SidebarProps {
   game: GameDetails;
   progress: UserGameProgress;
+  importedUnlockedCount?: number;
   onResetProgress: () => void;
   onSync: () => void;
   isSyncing: boolean;
@@ -21,6 +22,7 @@ interface SidebarProps {
 export function GameClientSidebar({
   game,
   progress,
+  importedUnlockedCount,
   onResetProgress,
   onSync,
   isSyncing,
@@ -38,6 +40,7 @@ export function GameClientSidebar({
       <ProgressTracker
         total={game.totalAchievements}
         unlockedCount={progress.unlockedIds.length}
+        importedUnlockedCount={importedUnlockedCount}
         onReset={onResetProgress}
         onSync={onSync}
         isSyncing={isSyncing}
