@@ -1,5 +1,5 @@
 // lib/epic/profile-sync.ts
-import type { OwnedGame, PlatformAccount } from "@/lib/types";
+import type { OwnedGame, PlatformAccount, User } from "@/lib/types";
 import {
   saveUserPlatformAccount,
   saveUserOwnedGames,
@@ -96,7 +96,7 @@ export function matchAndEnrichSandboxAchievements(
 
 export function persistEpicSyncData(
   auth: ResolvedEpicAuth,
-  authUser: any,
+  authUser: User,
   discoveredGames: OwnedGame[],
   gameNamespaceMap: Map<number, string>,
   achBySandbox: Map<string, AchSummary>,
@@ -137,8 +137,8 @@ export function persistEpicSyncData(
           const rec = sId ? achBySandbox.get(sId) : null;
           const playerAchs = rec?.playerAchievements || [];
           const unlockedNames: string[] = playerAchs
-            .filter((p: any) => p.unlocked && p.achievementName)
-            .map((p: any) => p.achievementName);
+            .filter((p) => p.unlocked && p.achievementName)
+            .map((p) => p.achievementName);
           const unlockedIds =
             unlockedNames.length > 0
               ? unlockedNames.map(epicAchievementId)
@@ -160,10 +160,10 @@ export function persistEpicSyncData(
 export async function syncEpicProfileWithOAuth(
   code: string,
   rawUser?: string,
-  authUser?: any
+  authUser?: User | null
 ): Promise<
   | { success: true; account: PlatformAccount; discoveredGames: OwnedGame[] }
-  | { success: false; status: number; error: string; details?: any }
+  | { success: false; status: number; error: string; details?: string }
 > {
   const nowIso = new Date().toISOString();
   const tokenResult = await resolveEpicTokens(code, rawUser, authUser);
@@ -208,7 +208,7 @@ export async function syncEpicProfileWithOAuth(
 
 export function createEpicProfileUsernameOnly(
   rawUser: string,
-  authUser?: any
+  authUser?: User | null
 ): { success: true; account: PlatformAccount; discoveredGames: OwnedGame[]; notice: string } {
   const nowIso = new Date().toISOString();
   const account: PlatformAccount = {

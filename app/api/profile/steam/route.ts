@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getUserPlatformApiKey } from "@/lib/db";
-import { syncSteamProfile } from "@/lib/steam/service";
+import { syncSteamProfile } from "@/lib/steam/profile-sync";
+import { errorMessage, errorStatus } from "@/lib/error-message";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -30,15 +31,13 @@ export async function GET(request: Request) {
   try {
     const result = await syncSteamProfile(rawUser, apiKey, authUser?.id);
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Steam Profile API error:", error);
-    const status = error.status || 500;
+    const status = errorStatus(error, 500);
     return NextResponse.json(
       {
-        error:
-          error.message ||
-          "Impossible de récupérer les informations du profil Steam.",
-        details: error.message,
+        error: errorMessage(error, "Impossible de récupérer les informations du profil Steam."),
+        details: errorMessage(error, ""),
       },
       { status }
     );
