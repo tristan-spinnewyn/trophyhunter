@@ -2,7 +2,7 @@
 import { useState } from "react";
 import type { LibraryTab } from "@/lib/library/library-filters";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
-import { addGamePassItemToXboxLibrary } from "@/components/dashboard/gamepass/gamepassLibraryAction.services";
+import { addGamePassItemToXboxLibrary } from "@/lib/gamepass/library-action.services";
 import { usePlatformInputs } from "./usePlatformInputs";
 import { useDashboardCollections } from "./useDashboardCollections";
 import { usePlatformSync } from "./usePlatformSync";

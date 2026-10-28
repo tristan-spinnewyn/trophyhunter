@@ -1,4 +1,4 @@
-// __tests__/lib/dashboard/useGameStatusHandler.test.ts
+// __tests__/components/dashboard/useGameStatusHandler.test.ts
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useGameStatusHandler } from "@/components/dashboard/hooks/useGameStatusHandler";
 import { InvalidGameStatusError } from "@/lib/game-status/game-status.types";

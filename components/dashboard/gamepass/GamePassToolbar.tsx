@@ -1,7 +1,7 @@
 // components/dashboard/gamepass/GamePassToolbar.tsx
 
 import { Search, RefreshCw } from "lucide-react";
-import type { GamePassFeatureFilter } from "./GamePassPanel.types";
+import type { GamePassFeatureFilter } from "@/lib/gamepass/gamepass.types";
 
 interface GamePassToolbarProps {
   readonly searchQuery: string;

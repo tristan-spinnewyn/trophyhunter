@@ -1,6 +1,6 @@
 // __tests__/lib/game/guide-urls.test.ts
 import { describe, it, expect } from "vitest";
-import { buildGuideUrls } from "@/components/achievement/achievementRarity";
+import { buildGuideUrls } from "@/lib/game/guide-urls";
 
 describe("buildGuideUrls", () => {
   it("builds consistent guide URLs across platforms", () => {

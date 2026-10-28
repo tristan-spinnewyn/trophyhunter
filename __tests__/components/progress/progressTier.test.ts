@@ -1,4 +1,4 @@
-// __tests__/lib/progress/progressTier.test.ts
+// __tests__/components/progress/progressTier.test.ts
 
 import { describe, it, expect, vi } from "vitest";
 import confetti from "canvas-confetti";

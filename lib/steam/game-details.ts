@@ -1,7 +1,8 @@
 // lib/steam/game-details.ts
 import type { Achievement, GameDetails } from "@/lib/types";
 import { getDb } from "@/lib/db";
-import { buildPsthcGuideUrl, cleanTitleForSearch, isLikelyMissable } from "./game-metadata";
+import { buildPsthcGuideUrl } from "@/lib/game/guide-urls";
+import { cleanTitleForSearch, isLikelyMissable } from "./game-metadata";
 import { stripHtmlTags } from "./html";
 import { fetchSteamAchievementsByAppId, searchSteamStoreFallback, type AchFetchResult } from "./store-api";
 

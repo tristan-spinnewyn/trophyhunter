@@ -66,9 +66,3 @@ export function findBestSteamMatch(
   }
   return items[0];
 }
-
-export function buildPsthcGuideUrl(gameName: string): string {
-  const cleanName = cleanTitleForSearch(gameName).trim();
-  const query = cleanName.length > 0 ? cleanName : gameName.trim();
-  return `https://www.google.com/search?q=${encodeURIComponent(`site:psthc.fr ${query} guide`)}`;
-}

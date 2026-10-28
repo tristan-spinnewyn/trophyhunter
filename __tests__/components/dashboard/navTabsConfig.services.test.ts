@@ -1,4 +1,4 @@
-// __tests__/lib/dashboard/navTabsConfig.services.test.ts
+// __tests__/components/dashboard/navTabsConfig.services.test.ts
 
 import { describe, it, expect } from "vitest";
 import {

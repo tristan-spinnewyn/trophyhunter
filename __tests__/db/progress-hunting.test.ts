@@ -1,4 +1,4 @@
-// __tests__/lib/hunting/useHuntingActions.test.ts
+// __tests__/db/progress-hunting.test.ts
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { DatabaseSync } from "node:sqlite";

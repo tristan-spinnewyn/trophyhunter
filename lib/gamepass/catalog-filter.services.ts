@@ -1,8 +1,7 @@
-// components/dashboard/gamepass/gamepassFilter.services.ts
+// lib/gamepass/catalog-filter.services.ts
 
 import type { OwnedGame } from "@/lib/types";
-import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
-import type { GamePassFilterParams } from "./GamePassPanel.types";
+import type { GamePassCatalogItem, GamePassFilterParams } from "./gamepass.types";
 
 export function normalizeGameTitle(rawTitle: string): string {
   return rawTitle

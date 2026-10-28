@@ -5,7 +5,7 @@ import { MonitorPlay } from "lucide-react";
 import type { GamePassPanelProps } from "./gamepass/GamePassPanel.types";
 import { GamePassToolbar } from "./gamepass/GamePassToolbar";
 import { GamePassCard } from "./gamepass/GamePassCard";
-import { isGameInLibrary } from "./gamepass/gamepassFilter.services";
+import { isGameInLibrary } from "@/lib/gamepass/catalog-filter.services";
 import { useGamePassCatalog } from "./hooks/useGamePassCatalog";
 
 export default function GamePassPanel({
