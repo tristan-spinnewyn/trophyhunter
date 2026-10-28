@@ -1,61 +1,36 @@
-# 🏆 TrophyHunter - Chasseur de Platine Multi-Plateforme (Mobile & Web)
+# 🎮 TrophyHunter
 
-Application mobile PWA conçue pour les chasseurs de succès et de platine sur **Steam, Xbox Live, Epic Games Store et GOG Galaxy**, avec guides et checklists en **français**, **sans mot de passe requis**.
-
----
-
-## 📱 Comment l'ouvrir sur ton smartphone
-
-1. Assure-toi que ton téléphone est connecté au **même réseau Wi-Fi** que ton PC.
-2. Ouvre le navigateur de ton téléphone (Safari sur iPhone, Chrome sur Android) et va sur :
-   ```text
-   http://192.168.1.17:3000
-   ```
-3. **Installe l'application sur ton écran d'accueil** :
-   * **Sur iPhone (Safari)** : Appuie sur le bouton **Partager** (rectangle avec flèche vers le haut) puis sur **« Sur l'écran d'accueil »**.
-   * **Sur Android (Chrome)** : Appuie sur les **3 petits points** en haut à droite puis sur **« Installer l'application »** ou **« Ajouter à l'écran d'accueil »**.
-
-L'application s'ouvrira en plein écran comme une vraie application native !
+A self-hosted game tracker for **Steam, Xbox, Epic Games and GOG**: what you are playing, what is next, what you finished. Achievements come as a bonus, with checklists and French guides for the games you want to complete. The interface is in French and installs on a phone as a PWA.
 
 ---
 
-## 🚀 Commandes utiles (avec pnpm)
+## ✨ Features
 
-Pour lancer l'application en mode développement ou production :
+* **Collection organised by status**: *À jouer*, *En cours*, *En pause*, *Terminé*, *Abandonné*. In-progress games come first; the archive (paused, finished, abandoned) is folded. Sorted by recent activity by default, using the real last session reported by the platform when available.
+* **Platform accounts** (Steam, Xbox, Epic Games, GOG): import your games, playtime and achievements without sharing a password. Optional keys or tokens (Steam API key, OpenXBL key, Epic authorization code, GOG session token) unlock private profiles and achievement details.
+* **Library views**: one tab per platform, PC Game Pass catalogue, cross-platform duplicates, wishlist and custom collections.
+* **Achievements as a bonus**: per-game checklist with rarity, missable and secret achievements (spoilers hidden), personal notes, an "active hunt" list of pinned targets, and links to the PSTHC guide, Steam guides and French YouTube videos.
+* **Backup**: export and import your data as JSON from the settings.
+
+---
+
+## 🚀 Commands (pnpm)
 
 ```bash
-# Lancer le serveur de développement
-pnpm dev
-
-# Compiler pour la production
-pnpm build
-
-# Démarrer en production (optimisé et ultra rapide)
-pnpm start
+pnpm dev            # development server on http://localhost:3000
+pnpm build          # production build
+pnpm start          # production server
+pnpm test           # unit tests
+pnpm test:coverage  # unit tests with the 80% coverage gate
 ```
 
 ---
 
-## ✨ Fonctionnalités incluses
+## 📱 Install it on your phone
 
-* **👤 Système de Compte & Synchronisation Steam (0 Clé API)** :
-  * Renseigne ton **SteamID64**, ton pseudo personnalisé ou l'URL de ton profil public.
-  * Récupération automatique de ton **Avatar, Niveau Steam, Statut en ligne** et de tes **statistiques officielles** (Jeux possédés, Succès totaux, Jeux terminés à 100%, Badges, DLC, Vitrine des succès les plus rares).
-  * **Import automatique de tes jeux possédés** et **cochage automatique des succès débloqués** sur toute ta bibliothèque en 1 clic !
-* **🎮 Comptes Multi-Plateformes & Espaces Dédiés (Steam, Xbox, Epic Games, GOG Galaxy)** :
-  * Lie tes comptes **Xbox Live**, **Epic Games Store** et **GOG Galaxy** via les APIs officielles sans saisir tes mots de passe.
-  * Suis ton **Gamerscore Xbox (G)**, tes **Platines et succès XP Epic Games**, tes jeux **100% GOG**, et filtre précisément les jeux Epic avec succès vs sans succès.
-* **📚 Bibliothèque « Mes Jeux Possédés »** :
-  * Onglets dédiés par plateforme (*Steam, Xbox, Epic Games, GOG*) et filtres par statut (*Tous, 100% Platinés 🏆, En cours, À commencer*).
-  * Ajoute n'importe quel jeu en 1 clic ou via l'outil d'**import massif Steam**.
-* **🔍 Recherche instantanée & Succès 100% en français** :
-  * Noms officiels, descriptions, rareté et icônes extraits directement.
-* **⚠️ Détection des succès manquables & gestion des secrets** :
-  * Repère automatiquement les trophées à ne pas rater pendant ton run et masque les spoilers par défaut.
-* **🏆 Guides intégrés en 1 clic** :
-  * Lien direct vers le guide **PSTHC** du jeu (la référence FR), **YouTube FR** et **Steam Guides**.
-* **🎉 Célébration 100%, Notes & Sauvegarde JSON** :
-  * Pluie de confettis au Platine, notes personnelles par succès et sauvegarde/restauration locale (`localStorage` + export JSON).
+1. Connect your phone to the same Wi-Fi network as the machine running the app.
+2. Open `http://<your-machine-local-ip>:3000` in the phone's browser.
+3. Add it to the home screen: **Share → Add to Home Screen** in Safari (iPhone), or **⋮ → Install app** in Chrome (Android). It then opens full screen like a native app.
 
 ---
 
@@ -67,10 +42,9 @@ pnpm start
 
 ---
 
-## 🛡️ Qualité de Code, CI & Protection de Branche
+## 🛡️ Code quality and CI
 
-* **Protection de la branche `main`** : Aucun push direct autorisé. Tout changement passe obligatoirement par une Pull Request.
-* **Intégration Continue (CI)** : Obligation d'avoir le check `ci` vert (`lint`, `tsc`, `test:coverage`, `test:diff-coverage`, `build`) avant tout merge.
-* **Couverture de code >= 80%** : Vitest et le script de diff coverage vérifient qu'au moins 80% des lignes/instructions/fonctions sont couvertes par les tests unitaires.
-* **Dependabot & Auto-Merge** : Surveillance automatique quotidienne des dépendances (npm/pnpm, GitHub Actions, Docker) avec approbation et merge automatique dès que la CI est verte.
-
+* **Protected `main`**: no direct pushes; every change goes through a pull request, merged by squash, and the branch must be up to date with `main` before merging.
+* **Required `ci` check**: lint, type check, unit tests with coverage, coverage of new code, production build and Docker build.
+* **Coverage ≥ 80%**: Vitest and the diff coverage script require at least 80% of lines, statements and functions covered, on the whole code base and on new code.
+* **Dependabot**: daily npm checks and weekly GitHub Actions and Docker checks; non-major updates are approved and merged automatically once CI is green.

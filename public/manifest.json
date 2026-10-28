@@ -1,11 +1,11 @@
 {
-  "name": "TrophyHunter - Chasseur de Platine Steam",
+  "name": "TrophyHunter : suivi de tes jeux",
   "short_name": "TrophyHunter",
-  "description": "Guides des succès et suivi de platine Steam en français sur mobile",
+  "description": "Suis tes jeux Steam, Xbox, Epic Games et GOG : en cours, à jouer, terminés, avec tes succès en bonus.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#090d16",
-  "theme_color": "#0ea5e9",
+  "background_color": "#020617",
+  "theme_color": "#020617",
   "orientation": "portrait-primary",
   "icons": [
     {
