@@ -28,23 +28,23 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Installation de su-exec pour exécuter node en utilisateur non-privilégié après avoir vérifié les volumes
+# su-exec drops root privileges once the entrypoint has fixed volume permissions
 RUN apk add --no-cache su-exec
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Préparer les répertoires nécessaires avec les bonnes permissions
-RUN mkdir -p /app/data /app/.data \
+# Data directory (database and encryption key), readable by the app user only
+RUN mkdir -p /app/data \
     && chown -R nextjs:nodejs /app \
-    && chmod -R 775 /app/data /app/.data
+    && chmod 700 /app/data
 
-# Copie des fichiers statiques et du serveur standalone produit par Next.js
+# Static assets and the standalone server produced by Next.js
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Script de démarrage pour initialiser les permissions sur les volumes montés
+# Entrypoint fixes permissions on mounted volumes before starting the server
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh && chmod +x /usr/local/bin/docker-entrypoint.sh
 
