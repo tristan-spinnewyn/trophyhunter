@@ -2,32 +2,32 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { DashboardSectionProps } from "@/components/accounts/hooks/useAccountDashboardController";
+import type { PlatformConnectionPanelProps } from "@/components/accounts/PlatformConnectionPanel";
 
 const received: Record<string, Record<string, unknown>> = {};
-const panel = (name: string) => ({
+
+vi.mock("@/components/accounts/OverviewPanel", () => ({
   default: (props: Record<string, unknown>) => {
-    received[name] = props;
+    received.overview = props;
     return null;
   },
-});
-
-vi.mock("@/components/accounts/OverviewPanel", () => panel("overview"));
-vi.mock("@/components/accounts/PlatformSteamPanel", () => panel("steam"));
-vi.mock("@/components/accounts/PlatformXboxPanel", () => panel("xbox"));
-vi.mock("@/components/accounts/PlatformEpicPanel", () => panel("epic"));
-vi.mock("@/components/accounts/PlatformGogPanel", () => panel("gog"));
+}));
+vi.mock("@/components/accounts/PlatformConnectionPanel", () => ({
+  PlatformConnectionPanel: (props: PlatformConnectionPanelProps) => {
+    received[props.platform] = props as unknown as Record<string, unknown>;
+    return null;
+  },
+}));
 
 const { default: AccountTabPanel } = await import("@/components/accounts/AccountTabPanel");
 
 const fn = (name: string) => Object.assign(vi.fn(), { mockName: name });
 
 function makeSection(activePlatformTab: string) {
-  const handleSelectTab = vi.fn();
   const handleCleanEpicGames = vi.fn();
   const controller = {
     activePlatformTab,
-    handleSelectTab,
-    displayName: "Gabe",
+    handleSelectTab: vi.fn(),
     stats: {
       platformCounts: { steam: 3, xbox: 1, epic: 5, gog: 0 },
       epicCounts: { total: 5, withAch: 2, noAch: 3 },
@@ -35,16 +35,12 @@ function makeSection(activePlatformTab: string) {
     platformInputs: {
       steamInput: "gabe", setSteamInput: fn("setSteamInput"),
       steamApiKey: "key", setSteamApiKey: fn("setSteamApiKey"),
-      showApiKeyInput: true, setShowApiKeyInput: fn("setShowApiKeyInput"),
       xboxInput: "chief", setXboxInput: fn("setXboxInput"),
       xboxApiKey: "xkey", setXboxApiKey: fn("setXboxApiKey"),
-      showXboxApiKey: false, setShowXboxApiKey: fn("setShowXboxApiKey"),
       epicInput: "epicuser", setEpicInput: fn("setEpicInput"),
       epicCode: "code", setEpicCode: fn("setEpicCode"),
-      showEpicCode: true, setShowEpicCode: fn("setShowEpicCode"),
       gogInput: "goguser", setGogInput: fn("setGogInput"),
       gogToken: "tok", setGogToken: fn("setGogToken"),
-      showGogToken: false, setShowGogToken: fn("setShowGogToken"),
     },
     platformSync: {
       openEditPlatform: fn("openEditPlatform"),
@@ -66,7 +62,7 @@ function makeSection(activePlatformTab: string) {
     onSelectGame: fn("selectGame"),
   };
   const section = { controller, props } as unknown as DashboardSectionProps;
-  return { section, controller, props, handleSelectTab, handleCleanEpicGames };
+  return { section, controller, props, handleCleanEpicGames };
 }
 
 function render(tab: string) {
@@ -102,54 +98,66 @@ describe("AccountTabPanel", () => {
     }
   });
 
-  it("wires the Steam panel to the Steam inputs and sync state", () => {
-    const { controller: c, props } = render("steam");
-    const pi = c.platformInputs;
-
-    expect(received.steam).toMatchObject({
-      steamAccount: props.accountProfile.accounts.steam,
-      displayName: "Gabe",
-      platformCounts: c.stats.platformCounts,
-      steamInput: pi.steamInput, setSteamInput: pi.setSteamInput,
-      steamApiKey: pi.steamApiKey, setSteamApiKey: pi.setSteamApiKey,
-      showApiKeyInput: pi.showApiKeyInput, setShowApiKeyInput: pi.setShowApiKeyInput,
-      isSyncingSteam: true, syncProgressText: "50%",
-      onConnectAndSyncSteam: c.platformSync.handleConnectAndSyncSteam,
-      gameCount: 3,
-    });
+  it("renders the same connection panel for every platform, with the shared account actions", () => {
+    for (const platform of ["steam", "xbox", "epic", "gog"]) {
+      const { controller: c } = render(platform);
+      expect(received[platform]).toMatchObject({
+        platform,
+        syncProgressText: "50%",
+        onEdit: c.platformSync.openEditPlatform,
+        onDisconnect: c.platformSync.handleDisconnectPlatform,
+      });
+    }
   });
 
-  it("wires the Xbox and GOG panels to their own inputs", () => {
+  it("wires Steam to its identifier, API key, sync state and account", () => {
+    const { controller: c, props } = render("steam");
+
+    expect(received.steam).toMatchObject({
+      account: props.accountProfile.accounts.steam,
+      gameCount: 3,
+      identifier: "gabe", onIdentifierChange: c.platformInputs.setSteamInput,
+      secret: "key", onSecretChange: c.platformInputs.setSteamApiKey,
+      isSyncing: true,
+    });
+    (received.steam.onSync as () => void)();
+    expect(c.platformSync.handleConnectAndSyncSteam).toHaveBeenCalledWith();
+  });
+
+  it("wires Xbox and GOG to their own inputs", () => {
     const xbox = render("xbox");
     expect(received.xbox).toMatchObject({
-      xboxInput: "chief", xboxApiKey: "xkey", showXboxApiKey: false, isSyncingXbox: false,
-      setXboxInput: xbox.controller.platformInputs.setXboxInput,
-      onConnectAndSyncXbox: xbox.controller.platformSync.handleConnectAndSyncXbox,
-      openEditPlatform: xbox.controller.platformSync.openEditPlatform,
-      gameCount: 1,
+      account: undefined, gameCount: 1,
+      identifier: "chief", onIdentifierChange: xbox.controller.platformInputs.setXboxInput,
+      secret: "xkey", onSecretChange: xbox.controller.platformInputs.setXboxApiKey,
+      isSyncing: false,
     });
 
     const gog = render("gog");
     expect(received.gog).toMatchObject({
-      gogInput: "goguser", gogToken: "tok", showGogToken: false, isSyncingGOG: false,
-      setGogToken: gog.controller.platformInputs.setGogToken,
-      onConnectAndSyncGOG: gog.controller.platformSync.handleConnectAndSyncGOG,
       gameCount: 0,
+      identifier: "goguser", onIdentifierChange: gog.controller.platformInputs.setGogInput,
+      secret: "tok", onSecretChange: gog.controller.platformInputs.setGogToken,
     });
+    (received.gog.onSync as () => void)();
+    expect(gog.controller.platformSync.handleConnectAndSyncGOG).toHaveBeenCalled();
   });
 
-  it("wires the Epic panel and passes the Epic counts to the cleanup action", () => {
+  it("gives Epic its guided authorization and keeps the Epic library tools", () => {
     const { controller: c, handleCleanEpicGames } = render("epic");
 
     expect(received.epic).toMatchObject({
-      epicCounts: c.stats.epicCounts,
-      epicInput: "epicuser", epicCode: "code", showEpicCode: true, isSyncingEpic: true,
       gameCount: 5,
-      onConnectAndSyncEpic: c.platformSync.handleConnectAndSyncEpic,
-      onScanEpicAchievements: c.platformSync.handleScanEpicAchievements,
-      onOpenEpicModal: c.platformSync.openEpicAuthModalForLibrary,
+      identifier: "epicuser", onIdentifierChange: c.platformInputs.setEpicInput,
+      secret: "code", onSecretChange: c.platformInputs.setEpicCode,
+      isSyncing: true,
+      onOpenGuidedAuth: c.platformSync.openEpicAuthModalForLibrary,
     });
-    (received.epic.onCleanEpicGames as () => void)();
+    expect(received.epic.extra).toBeTruthy();
+
+    const tools = received.epic.extra as { props: { onCleanEpicGames: () => void; epicCounts: unknown } };
+    expect(tools.props.epicCounts).toEqual(c.stats.epicCounts);
+    tools.props.onCleanEpicGames();
     expect(handleCleanEpicGames).toHaveBeenCalledWith(3, 2);
   });
 });

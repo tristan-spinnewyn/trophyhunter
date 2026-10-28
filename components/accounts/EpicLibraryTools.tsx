@@ -1,4 +1,4 @@
-// components/accounts/epic-panel/EpicLibraryTools.tsx
+// components/accounts/EpicLibraryTools.tsx
 
 import { RefreshCw, Trash2 } from "lucide-react";
 

@@ -25,7 +25,6 @@ export function useAccountDashboardController(params: AccountDashboardController
     onSteamUserChange, currentUser, initialSteamApiKey = "",
   } = params;
 
-  const steamAccount = accountProfile.accounts.steam;
   const [bannerMsg, setBannerMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [activePlatformTab, setActivePlatformTab] = useState<AccountTab>("all");
 
@@ -40,11 +39,10 @@ export function useAccountDashboardController(params: AccountDashboardController
   });
 
   const stats = useCollectionStats(ownedGames);
-  const displayName = steamAccount?.displayName || steamAccount?.username || "Joueur Steam";
 
   return {
-    bannerMsg, setBannerMsg, activePlatformTab, handleSelectTab: setActivePlatformTab, displayName,
-    steamAccount, platformInputs, platformSync, stats,
+    bannerMsg, setBannerMsg, activePlatformTab, handleSelectTab: setActivePlatformTab,
+    platformInputs, platformSync, stats,
   };
 }
 

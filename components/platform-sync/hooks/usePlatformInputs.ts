@@ -21,19 +21,15 @@ export function usePlatformInputs({
 
   const [steamInput, setSteamInput] = useState(steamAccount?.username || "");
   const [steamApiKey, setSteamApiKey] = useState(initialSteamApiKey);
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
 
   const [xboxInput, setXboxInput] = useState(xboxAccount?.username || "");
   const [xboxApiKey, setXboxApiKeyState] = useState("");
-  const [showXboxApiKey, setShowXboxApiKey] = useState(false);
 
   const [epicInput, setEpicInput] = useState(epicAccount?.username || "");
   const [epicCode, setEpicCode] = useState("");
-  const [showEpicCode, setShowEpicCode] = useState(false);
 
   const [gogInput, setGogInput] = useState(gogAccount?.username || "");
   const [gogToken, setGogToken] = useState("");
-  const [showGogToken, setShowGogToken] = useState(false);
 
   const setXboxApiKey = (val: string) => {
     setXboxApiKeyState(val);
@@ -79,9 +75,9 @@ export function usePlatformInputs({
   }, [gogAccount?.username]);
 
   return {
-    steamInput, setSteamInput, steamApiKey, setSteamApiKey, showApiKeyInput, setShowApiKeyInput,
-    xboxInput, setXboxInput, xboxApiKey, setXboxApiKey, showXboxApiKey, setShowXboxApiKey,
-    epicInput, setEpicInput, epicCode, setEpicCode, showEpicCode, setShowEpicCode,
-    gogInput, setGogInput, gogToken, setGogToken, showGogToken, setShowGogToken,
+    steamInput, setSteamInput, steamApiKey, setSteamApiKey,
+    xboxInput, setXboxInput, xboxApiKey, setXboxApiKey,
+    epicInput, setEpicInput, epicCode, setEpicCode,
+    gogInput, setGogInput, gogToken, setGogToken,
   };
 }
