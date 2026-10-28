@@ -2,12 +2,13 @@
 
 import type { ReactNode } from "react";
 import { Copy, Heart, Folder, MonitorPlay } from "lucide-react";
-import type { DashboardTabType, FeatureTabId } from "./DashboardNavTabs.types";
+import type { LibraryTab } from "@/lib/library/library-filters";
+import type { FeatureTabId } from "./DashboardNavTabs.types";
 import { buildFeatureTabItems } from "./navTabsConfig.services";
 
 interface NavFeatureTabsProps {
-  readonly activePlatformTab: DashboardTabType;
-  readonly onSelectTab: (tab: DashboardTabType) => void;
+  readonly activePlatformTab: LibraryTab;
+  readonly onSelectTab: (tab: LibraryTab) => void;
   readonly duplicateCount: number;
   readonly wishlistCount: number;
   readonly collectionsCount: number;

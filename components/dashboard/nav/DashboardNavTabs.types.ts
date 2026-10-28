@@ -1,14 +1,7 @@
 // components/dashboard/nav/DashboardNavTabs.types.ts
 
 import type { UserAccountProfile, PlatformType } from "@/lib/types";
-
-export type DashboardTabType =
-  | PlatformType
-  | "all"
-  | "duplicates"
-  | "wishlist"
-  | "collections"
-  | "gamepass";
+import type { LibraryTab } from "@/lib/library/library-filters";
 
 export type FeatureTabId = "gamepass" | "duplicates" | "wishlist" | "collections";
 
@@ -32,8 +25,8 @@ export interface FeatureTabItem {
 }
 
 export interface DashboardNavTabsProps {
-  readonly activePlatformTab: DashboardTabType;
-  readonly onSelectTab: (tab: DashboardTabType) => void;
+  readonly activePlatformTab: LibraryTab;
+  readonly onSelectTab: (tab: LibraryTab) => void;
   readonly ownedGamesCount: number;
   readonly platformCounts: Record<string, number>;
   readonly accountProfile: UserAccountProfile;

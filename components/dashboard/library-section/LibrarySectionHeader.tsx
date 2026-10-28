@@ -3,11 +3,11 @@
 import { Gamepad2, Plus } from "lucide-react";
 import type { UserAccountProfile } from "@/lib/types";
 import { PLATFORM_META } from "@/lib/platforms";
-import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
+import type { LibraryTab } from "@/lib/library/library-filters";
 import { SteamMissingGamesNotice } from "./SteamMissingGamesNotice";
 
 interface LibrarySectionHeaderProps {
-  activePlatformTab: DashboardTabType;
+  activePlatformTab: LibraryTab;
   filteredCount: number;
   totalOwnedGamesCount: number;
   platformGameCount: number;

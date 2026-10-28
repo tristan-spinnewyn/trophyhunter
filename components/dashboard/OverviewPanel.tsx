@@ -3,7 +3,7 @@
 "use client";
 
 import type { UserAccountProfile, PlatformType } from "@/lib/types";
-import type { GlobalDashboardStats } from "./hooks/useDashboardStats.types";
+import type { GlobalDashboardStats } from "@/lib/library/library-stats";
 import { OverviewGlobalStats } from "./overview/OverviewGlobalStats";
 import { OverviewPlatformsGrid } from "./overview/OverviewPlatformsGrid";
 import { OverviewRareShowcase } from "./overview/OverviewRareShowcase";

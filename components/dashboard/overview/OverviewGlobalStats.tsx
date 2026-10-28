@@ -2,7 +2,7 @@
 
 import { Gamepad2, CheckCircle2, Trophy, Award, Sparkles } from "lucide-react";
 import type { UserAccountProfile } from "@/lib/types";
-import type { GlobalDashboardStats } from "../hooks/useDashboardStats.types";
+import type { GlobalDashboardStats } from "@/lib/library/library-stats";
 
 interface OverviewGlobalStatsProps {
   readonly globalStats: GlobalDashboardStats;

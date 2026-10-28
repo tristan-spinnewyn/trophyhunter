@@ -4,12 +4,12 @@ import { useRouter } from "next/navigation";
 import CollectionsPanel from "@/components/dashboard/CollectionsPanel";
 import DuplicatesPanel from "@/components/dashboard/DuplicatesPanel";
 import GamePassPanel from "@/components/dashboard/GamePassPanel";
-import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
+import type { LibraryTab } from "@/lib/library/library-filters";
 import type { CollectionWithGames, OwnedGame, PlatformType } from "@/lib/types";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
 
 interface HomeContextPanelsProps {
-  readonly activePlatformTab: DashboardTabType;
+  readonly activePlatformTab: LibraryTab;
   readonly ownedGames: readonly OwnedGame[];
   readonly wishlistIds: readonly number[];
   readonly collections: CollectionWithGames[];

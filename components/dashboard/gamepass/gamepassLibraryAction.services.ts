@@ -2,7 +2,7 @@
 
 import type { OwnedGame } from "@/lib/types";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
-import { mergeGamesList } from "@/components/dashboard/utils";
+import { mergeGamesList } from "@/lib/library/game-list";
 
 export interface AddGamePassToLibraryParams {
   readonly item: GamePassCatalogItem;

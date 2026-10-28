@@ -1,7 +1,7 @@
 // components/dashboard/hooks/useEpicEnrichment.ts
 import { useRef, useEffect } from "react";
 import type { OwnedGame } from "@/lib/types";
-import { mergeGamesList } from "@/components/dashboard/utils";
+import { mergeGamesList } from "@/lib/library/game-list";
 import { resolveSingleEpicGame } from "./epicEnrichmentResolver";
 
 interface UseEpicEnrichmentProps {

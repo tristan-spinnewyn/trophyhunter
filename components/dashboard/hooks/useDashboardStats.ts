@@ -6,15 +6,14 @@ import type {
   GlobalDashboardStats,
   EpicGameCounts,
   DuplicateGroup,
-} from "./useDashboardStats.types";
+} from "@/lib/library/library-stats";
 import {
   calculateDuplicateGroups,
   calculatePlatformCounts,
   calculateEpicCounts,
   calculateGlobalStats,
-} from "./dashboardStatsCalculator";
+} from "@/lib/library/library-stats";
 
-export type { GlobalDashboardStats, EpicGameCounts, DuplicateGroup };
 
 export function useDashboardStats(
   accountProfile: UserAccountProfile,

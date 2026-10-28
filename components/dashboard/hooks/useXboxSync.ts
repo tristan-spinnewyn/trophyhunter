@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { OwnedGame, PlatformAccount } from "@/lib/types";
-import { mergeGamesList } from "@/components/dashboard/utils";
+import { mergeGamesList } from "@/lib/library/game-list";
 
 interface UseXboxSyncProps {
   readonly ownedGames: OwnedGame[];

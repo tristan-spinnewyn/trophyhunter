@@ -1,16 +1,29 @@
-// components/dashboard/hooks/libraryFilterUtils.ts
+// lib/library/library-filters.ts
 
 import type { OwnedGame, PlatformType, CollectionWithGames } from "@/lib/types";
-import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
 import { resolveGameStatus } from "@/lib/game-status/game-status.services";
-import type {
-  StatusFilterType,
-  AchievementFilterType,
-} from "./useLibraryFilters.types";
+
+/** Which slice of the library is shown: one platform, everything, or a feature view. */
+export type LibraryTab =
+  | PlatformType
+  | "all"
+  | "duplicates"
+  | "wishlist"
+  | "collections"
+  | "gamepass";
+
+export type StatusFilterType =
+  | "all"
+  | "backlog"
+  | "in-progress"
+  | "completed"
+  | "platinum"
+  | "unstarted";
+export type AchievementFilterType = "all" | "with-achievements" | "no-achievements";
 
 interface FilterParams {
   readonly games: OwnedGame[];
-  readonly activePlatformTab: DashboardTabType;
+  readonly activePlatformTab: LibraryTab;
   readonly libPlatformFilter: PlatformType | "all";
   readonly libStatusFilter: StatusFilterType;
   readonly libAchievementFilter: AchievementFilterType;

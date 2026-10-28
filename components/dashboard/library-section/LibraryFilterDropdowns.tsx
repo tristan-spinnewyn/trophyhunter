@@ -2,15 +2,11 @@
 
 import type { PlatformType } from "@/lib/types";
 import { ALL_PLATFORMS, PLATFORM_META } from "@/lib/platforms";
-import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
-import type {
-  StatusFilterType,
-  AchievementFilterType,
-  SortOrderType,
-} from "@/components/dashboard/hooks/useLibraryFilters";
+import type { LibraryTab, StatusFilterType, AchievementFilterType } from "@/lib/library/library-filters";
+import type { SortOrderType } from "@/lib/library/library-sort";
 
 interface LibraryFilterDropdownsProps {
-  activePlatformTab: DashboardTabType;
+  activePlatformTab: LibraryTab;
   libPlatformFilter: PlatformType | "all";
   setLibPlatformFilter: (val: PlatformType | "all") => void;
   libStatusFilter: StatusFilterType;

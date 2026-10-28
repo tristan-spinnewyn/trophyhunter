@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import { Gamepad2, User, Plus } from "lucide-react";
-import type { GlobalDashboardStats } from "@/components/dashboard/hooks/useDashboardStats.types";
+import type { GlobalDashboardStats } from "@/lib/library/library-stats";
 import { LibraryGlobalStatsGrid } from "./LibraryGlobalStatsGrid";
 
 interface LibraryHeaderBannerProps {

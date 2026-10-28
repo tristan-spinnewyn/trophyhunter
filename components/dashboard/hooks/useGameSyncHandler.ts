@@ -1,6 +1,6 @@
 // components/dashboard/hooks/useGameSyncHandler.ts
 import type { PlatformType, OwnedGame, UserAccountProfile } from "@/lib/types";
-import { mergeGamesList } from "@/components/dashboard/utils";
+import { mergeGamesList } from "@/lib/library/game-list";
 
 interface EpicSyncResponseData {
   readonly success?: boolean;

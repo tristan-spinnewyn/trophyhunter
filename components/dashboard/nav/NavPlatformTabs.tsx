@@ -1,12 +1,12 @@
 // components/dashboard/nav/NavPlatformTabs.tsx
 
 import type { UserAccountProfile } from "@/lib/types";
-import type { DashboardTabType } from "./DashboardNavTabs.types";
+import type { LibraryTab } from "@/lib/library/library-filters";
 import { buildPlatformTabItems } from "./navTabsConfig.services";
 
 interface NavPlatformTabsProps {
-  readonly activePlatformTab: DashboardTabType;
-  readonly onSelectTab: (tab: DashboardTabType) => void;
+  readonly activePlatformTab: LibraryTab;
+  readonly onSelectTab: (tab: LibraryTab) => void;
   readonly platformCounts: Record<string, number>;
   readonly accountProfile: UserAccountProfile;
 }

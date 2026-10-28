@@ -1,14 +1,32 @@
-// components/dashboard/hooks/dashboardStatsCalculator.ts
+// lib/library/library-stats.ts
 
 import type { OwnedGame, UserAccountProfile } from "@/lib/types";
 import { ALL_PLATFORMS } from "@/lib/platforms";
 import { normalizeGameTitle } from "@/lib/game-title";
 import { resolveGameStatus } from "@/lib/game-status/game-status.services";
-import type {
-  GlobalDashboardStats,
-  EpicGameCounts,
-  DuplicateGroup,
-} from "./useDashboardStats.types";
+
+export interface GlobalDashboardStats {
+  readonly connectedCount: number;
+  readonly totalGamesOwned: number;
+  readonly totalAchievementsUnlocked: number;
+  readonly totalCompletedGames: number;
+  readonly totalHours: number;
+  readonly avgCompletion: number;
+  readonly trackedGamesCount: number;
+  readonly finishedGamesCount: number;
+  readonly finishedGamesPercent: number;
+}
+
+export interface EpicGameCounts {
+  readonly total: number;
+  readonly withAch: number;
+  readonly noAch: number;
+}
+
+export interface DuplicateGroup {
+  readonly title: string;
+  readonly games: OwnedGame[];
+}
 
 export function calculateDuplicateGroups(ownedGames: OwnedGame[]): DuplicateGroup[] {
   const groups = new Map<string, OwnedGame[]>();

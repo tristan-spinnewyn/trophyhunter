@@ -3,12 +3,13 @@
 import { useState } from "react";
 import type { PlatformType } from "@/lib/types";
 import { PLATFORM_META } from "@/lib/platforms";
-import type { UsePlatformModalProps, PlatformFormData } from "./usePlatformModal.types";
+import type { UsePlatformModalProps } from "./usePlatformModal.types";
 import {
   INITIAL_PLATFORM_FORM,
   createFormFromAccount,
   buildAccountFromForm,
-} from "./platformModalForm";
+} from "@/lib/platform-account-form";
+import type { PlatformFormData } from "@/lib/platform-account-form";
 
 export function usePlatformModal({
   accountProfile,

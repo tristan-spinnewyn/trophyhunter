@@ -6,21 +6,6 @@ import type {
   UserAccountProfile,
 } from "@/lib/types";
 
-export interface PlatformFormData {
-  username: string;
-  displayName: string;
-  level: string;
-  gamesOwned: string;
-  totalAchievements: string;
-  completedGames: string;
-  hoursPlayed: string;
-  gamerScore: string;
-  platinum: string;
-  gold: string;
-  silver: string;
-  bronze: string;
-}
-
 export interface UsePlatformModalProps {
   accountProfile: UserAccountProfile;
   onAccountChange: (profile: UserAccountProfile) => void;
