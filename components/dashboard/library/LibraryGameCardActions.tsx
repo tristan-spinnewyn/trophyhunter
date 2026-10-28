@@ -1,8 +1,7 @@
 // components/dashboard/library/LibraryGameCardActions.tsx
 
 import { ChevronRight } from "lucide-react";
-import type { OwnedGame, PlatformType } from "@/lib/types";
-import type { LocalCollection } from "@/lib/storage";
+import type { OwnedGame, PlatformType, CollectionWithGames } from "@/lib/types";
 import { LibraryCardActionButtons } from "./LibraryCardActionButtons";
 
 interface LibraryGameCardActionsProps {
@@ -10,7 +9,7 @@ interface LibraryGameCardActionsProps {
   activePlatformTab: string;
   selectedCollId: string | null;
   wishlistIds: number[];
-  collections: LocalCollection[];
+  collections: CollectionWithGames[];
   canSync: boolean;
   onSelectGame: (appId: number) => void;
   onToggleWishlist: (appId: number, platform: PlatformType) => void;

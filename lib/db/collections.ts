@@ -5,7 +5,7 @@ import type { Collection } from "../types";
 export { createCollection } from "./collections-create";
 export { addGameToCollection, removeGameFromCollection, getCollectionGames } from "./collections-games";
 export { setGameWishlist, setGameFavorite, getUserFavoriteAppIds, getUserWishlist } from "./wishlist";
-export { normalizeGameTitle, getUserDuplicateGames } from "./duplicates";
+export { getUserDuplicateGames } from "./duplicates";
 export { clearAllUserData } from "./clear";
 
 export function getUserCollections(userId: string): Collection[] {

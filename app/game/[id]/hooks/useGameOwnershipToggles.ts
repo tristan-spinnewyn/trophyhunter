@@ -10,7 +10,6 @@ import type {
   PlatformType,
 } from "@/lib/types";
 import { assertValidGameStatus } from "@/lib/game-status/game-status.services";
-import { updateOwnedGameStatus } from "@/lib/storage";
 
 interface UseGameOwnershipTogglesProps {
   readonly game: GameDetails | null;
@@ -80,7 +79,6 @@ export function useGameOwnershipToggles({
     if (!game) return;
     const validStatus = assertValidGameStatus(status);
     const existing = ownedGames.find((g) => g.appId === game.id && g.platform === activePlatform);
-    updateOwnedGameStatus(game.id, activePlatform, validStatus);
     await upsertOwnedGameInMemoryAndDb({
       appId: game.id,
       name: existing?.name || game.name,

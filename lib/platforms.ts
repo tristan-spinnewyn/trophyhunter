@@ -1,26 +1,6 @@
-// lib/storage/constants.ts
-import type { PlatformType } from "../types";
-
-export const PREFIX = "trophyhunter_game_";
-export const FAV_KEY = "trophyhunter_favorites";
-export const RECENT_KEY = "trophyhunter_recent_games";
-export const STEAM_USER_KEY = "trophyhunter_steam_user";
-export const STEAM_API_KEY = "trophyhunter_steam_api_key";
-export const ACCOUNT_KEY = "trophyhunter_user_account";
-export const OWNED_GAMES_KEY = "trophyhunter_owned_games";
-export const WISHLIST_KEY = "trophyhunter_wishlist";
-export const COLLECTIONS_KEY = "trophyhunter_collections";
-
-export function normalizeGameTitle(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(
-      /\b(game of the year edition|goty edition|definitive edition|director's cut|remastered|enhanced edition|special edition|standard edition|deluxe edition)\b/gi,
-      ""
-    )
-    .replace(/[^a-z0-9]/gi, "")
-    .trim();
-}
+// lib/platforms.ts
+// Client-safe display metadata for the supported game platforms.
+import type { PlatformType } from "./types";
 
 export const ALL_PLATFORMS: PlatformType[] = [
   "steam",

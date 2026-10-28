@@ -1,7 +1,7 @@
 // components/dashboard/duplicates/DuplicateGroupCard.tsx
 
 import type { OwnedGame } from "@/lib/types";
-import { PLATFORM_META } from "@/lib/storage";
+import { PLATFORM_META } from "@/lib/platforms";
 import {
   GAME_STATUS_META,
   resolveGameStatus,

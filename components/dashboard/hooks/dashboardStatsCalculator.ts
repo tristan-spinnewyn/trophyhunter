@@ -1,7 +1,8 @@
 // components/dashboard/hooks/dashboardStatsCalculator.ts
 
 import type { OwnedGame, UserAccountProfile } from "@/lib/types";
-import { ALL_PLATFORMS, normalizeGameTitle } from "@/lib/storage";
+import { ALL_PLATFORMS } from "@/lib/platforms";
+import { normalizeGameTitle } from "@/lib/game-title";
 import { resolveGameStatus } from "@/lib/game-status/game-status.services";
 import type {
   GlobalDashboardStats,

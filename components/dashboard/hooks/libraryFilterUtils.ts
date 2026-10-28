@@ -1,7 +1,6 @@
 // components/dashboard/hooks/libraryFilterUtils.ts
 
-import type { OwnedGame, PlatformType } from "@/lib/types";
-import type { LocalCollection } from "@/lib/storage";
+import type { OwnedGame, PlatformType, CollectionWithGames } from "@/lib/types";
 import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
 import { resolveGameStatus } from "@/lib/game-status/game-status.services";
 import type {
@@ -17,7 +16,7 @@ interface FilterParams {
   readonly libAchievementFilter: AchievementFilterType;
   readonly libSearch: string;
   readonly wishlistIds: number[];
-  readonly collections: LocalCollection[];
+  readonly collections: CollectionWithGames[];
   readonly selectedCollId: string | null;
 }
 

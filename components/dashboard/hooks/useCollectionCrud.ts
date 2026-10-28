@@ -2,8 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { PlatformType, OwnedGame, User as UserType } from "@/lib/types";
-import type { LocalCollection } from "@/lib/storage";
+import type { PlatformType, OwnedGame, User as UserType, CollectionWithGames } from "@/lib/types";
 import {
   createCollectionApi,
   deleteCollectionApi,
@@ -13,8 +12,8 @@ import {
 
 interface UseCollectionCrudProps {
   currentUser?: UserType | null;
-  initialCollections?: LocalCollection[];
-  onCollectionsChange?: (collections: LocalCollection[]) => void;
+  initialCollections?: CollectionWithGames[];
+  onCollectionsChange?: (collections: CollectionWithGames[]) => void;
   setBannerMsg: (msg: { type: "success" | "error"; text: string } | null) => void;
 }
 
@@ -24,7 +23,7 @@ export function useCollectionCrud({
   onCollectionsChange,
   setBannerMsg,
 }: UseCollectionCrudProps) {
-  const [collections, setCollections] = useState<LocalCollection[]>(initialCollections);
+  const [collections, setCollections] = useState<CollectionWithGames[]>(initialCollections);
   const [selectedCollId, setSelectedCollId] = useState<string | null>(null);
   const [newCollName, setNewCollName] = useState("");
   const [newCollDesc, setNewCollDesc] = useState("");
@@ -42,7 +41,7 @@ export function useCollectionCrud({
     let createdId = currentUser ? await createCollectionApi(trimmed, desc) : null;
     if (!createdId) createdId = "coll_" + Date.now();
 
-    const newColl: LocalCollection = { id: createdId, name: trimmed, description: desc, color: "#6366f1", gameIds: [] };
+    const newColl: CollectionWithGames = { id: createdId, name: trimmed, description: desc, color: "#6366f1", gameIds: [] };
     const next = [...collections, newColl];
     setCollections(next);
     if (onCollectionsChange) onCollectionsChange(next);

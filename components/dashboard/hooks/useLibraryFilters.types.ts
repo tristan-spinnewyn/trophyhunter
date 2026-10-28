@@ -1,7 +1,6 @@
 // components/dashboard/hooks/useLibraryFilters.types.ts
 
-import type { OwnedGame, PlatformType } from "@/lib/types";
-import type { LocalCollection } from "@/lib/storage";
+import type { OwnedGame, PlatformType, CollectionWithGames } from "@/lib/types";
 import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
 
 export type StatusFilterType =
@@ -24,6 +23,6 @@ export interface UseLibraryFiltersProps {
   ownedGames: OwnedGame[];
   activePlatformTab: DashboardTabType;
   wishlistIds: number[];
-  collections: LocalCollection[];
+  collections: CollectionWithGames[];
   selectedCollId: string | null;
 }

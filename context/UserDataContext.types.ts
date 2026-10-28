@@ -1,7 +1,6 @@
 // context/UserDataContext.types.ts
 
-import type { UserAccountProfile, OwnedGame, User as UserType } from "@/lib/types";
-import type { LocalCollection } from "@/lib/storage";
+import type { UserAccountProfile, OwnedGame, User as UserType, CollectionWithGames } from "@/lib/types";
 
 export interface UserDataContextType {
   readonly currentUser: UserType | null;
@@ -14,8 +13,8 @@ export interface UserDataContextType {
   readonly setFavorites: React.Dispatch<React.SetStateAction<number[]>>;
   readonly wishlistIds: number[];
   readonly setWishlistIds: React.Dispatch<React.SetStateAction<number[]>>;
-  readonly collections: LocalCollection[];
-  readonly setCollections: React.Dispatch<React.SetStateAction<LocalCollection[]>>;
+  readonly collections: CollectionWithGames[];
+  readonly setCollections: React.Dispatch<React.SetStateAction<CollectionWithGames[]>>;
   readonly steamUser: string;
   readonly setSteamUser: React.Dispatch<React.SetStateAction<string>>;
   readonly steamApiKey: string;

@@ -2,7 +2,7 @@
 
 import { Trophy, Clock } from "lucide-react";
 import type { OwnedGame } from "@/lib/types";
-import { PLATFORM_META } from "@/lib/storage";
+import { PLATFORM_META } from "@/lib/platforms";
 
 interface LibraryGameCardCoverProps {
   game: OwnedGame;

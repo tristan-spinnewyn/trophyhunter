@@ -1,8 +1,7 @@
 // context/useUserDataState.ts
 
 import { useState, useEffect } from "react";
-import type { UserAccountProfile, OwnedGame, User as UserType } from "@/lib/types";
-import type { LocalCollection } from "@/lib/storage";
+import type { UserAccountProfile, OwnedGame, User as UserType, CollectionWithGames } from "@/lib/types";
 import {
   fetchRemoteUserData,
   persistGameToServer,
@@ -23,7 +22,7 @@ export function useUserDataState() {
   const [ownedGames, setOwnedGames] = useState<OwnedGame[]>([]);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [wishlistIds, setWishlistIds] = useState<number[]>([]);
-  const [collections, setCollections] = useState<LocalCollection[]>([]);
+  const [collections, setCollections] = useState<CollectionWithGames[]>([]);
 
   const applySyncData = (syncData: SyncResponsePayload) => {
     if (Array.isArray(syncData?.games)) setOwnedGames(syncData.games);

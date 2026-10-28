@@ -1,7 +1,7 @@
 // components/dashboard/platform-modal/PlatformTrophyInputs.tsx
 
 import type { PlatformType } from "@/lib/types";
-import { PLATFORM_META } from "@/lib/storage";
+import { PLATFORM_META } from "@/lib/platforms";
 
 interface PlatformTrophyInputsProps {
   editingPlatform: PlatformType;

@@ -6,7 +6,7 @@ import type {
   PlatformType,
   UserAccountProfile,
 } from "@/lib/types";
-import type { LocalCollection } from "@/lib/storage";
+import type { CollectionWithGames } from "@/lib/types";
 import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
 import type {
   StatusFilterType,
@@ -34,7 +34,7 @@ export interface LibrarySectionProps {
   readonly setLibSortOrder: (val: SortOrderType) => void;
   readonly selectedCollId: string | null;
   readonly wishlistIds: number[];
-  readonly collections: LocalCollection[];
+  readonly collections: CollectionWithGames[];
   readonly onSelectGame: (appId: number) => void;
   readonly onToggleWishlist: (appId: number, platform: PlatformType) => void;
   readonly onOpenAddToCollection: (game: OwnedGame) => void;

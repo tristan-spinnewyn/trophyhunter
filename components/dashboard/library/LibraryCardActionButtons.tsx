@@ -1,15 +1,14 @@
 // components/dashboard/library/LibraryCardActionButtons.tsx
 
 import { Heart, FolderPlus, Unlink, RefreshCw, Trash2 } from "lucide-react";
-import type { OwnedGame, PlatformType } from "@/lib/types";
-import type { LocalCollection } from "@/lib/storage";
+import type { OwnedGame, PlatformType, CollectionWithGames } from "@/lib/types";
 
 interface LibraryCardActionButtonsProps {
   game: OwnedGame;
   activePlatformTab: string;
   selectedCollId: string | null;
   wishlistIds: number[];
-  collections: LocalCollection[];
+  collections: CollectionWithGames[];
   canSync: boolean;
   onToggleWishlist: (appId: number, platform: PlatformType) => void;
   onOpenAddToCollection: (game: OwnedGame) => void;

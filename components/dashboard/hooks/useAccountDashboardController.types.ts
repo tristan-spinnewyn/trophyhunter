@@ -5,7 +5,7 @@ import type {
   OwnedGame,
   User as UserType,
 } from "@/lib/types";
-import type { LocalCollection } from "@/lib/storage";
+import type { CollectionWithGames } from "@/lib/types";
 
 export interface AccountDashboardControllerParams {
   accountProfile: UserAccountProfile;
@@ -18,7 +18,7 @@ export interface AccountDashboardControllerParams {
   onOpenAuthModal?: () => void;
   initialSteamApiKey?: string;
   initialWishlist?: number[];
-  initialCollections?: LocalCollection[];
+  initialCollections?: CollectionWithGames[];
   onWishlistChange?: (wishlist: number[]) => void;
-  onCollectionsChange?: (collections: LocalCollection[]) => void;
+  onCollectionsChange?: (collections: CollectionWithGames[]) => void;
 }

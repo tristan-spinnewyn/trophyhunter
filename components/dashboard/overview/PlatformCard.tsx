@@ -2,7 +2,7 @@
 
 import { Check } from "lucide-react";
 import type { PlatformType, PlatformAccount } from "@/lib/types";
-import { PLATFORM_META } from "@/lib/storage";
+import { PLATFORM_META } from "@/lib/platforms";
 import { PlatformCardStats } from "./PlatformCardStats";
 import { PlatformCardActions } from "./PlatformCardActions";
 

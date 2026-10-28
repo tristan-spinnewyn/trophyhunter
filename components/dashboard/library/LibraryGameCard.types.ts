@@ -6,7 +6,7 @@ import type {
   PlatformAccount,
   PlatformType,
 } from "@/lib/types";
-import type { LocalCollection } from "@/lib/storage";
+import type { CollectionWithGames } from "@/lib/types";
 
 export interface LibraryGameCardProps {
   readonly game: OwnedGame;
@@ -14,7 +14,7 @@ export interface LibraryGameCardProps {
   readonly activePlatformTab: string;
   readonly selectedCollId: string | null;
   readonly wishlistIds: number[];
-  readonly collections: LocalCollection[];
+  readonly collections: CollectionWithGames[];
   readonly onSelectGame: (appId: number) => void;
   readonly onToggleWishlist: (appId: number, platform: PlatformType) => void;
   readonly onOpenAddToCollection: (game: OwnedGame) => void;

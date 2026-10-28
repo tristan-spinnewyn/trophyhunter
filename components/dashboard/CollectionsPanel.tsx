@@ -3,12 +3,12 @@
 "use client";
 
 import { FolderPlus } from "lucide-react";
-import type { LocalCollection } from "@/lib/storage";
+import type { CollectionWithGames } from "@/lib/types";
 import { CreateCollectionForm } from "./collections/CreateCollectionForm";
 import { CollectionsList } from "./collections/CollectionsList";
 
 interface CollectionsPanelProps {
-  collections: LocalCollection[];
+  collections: CollectionWithGames[];
   selectedCollId: string | null;
   setSelectedCollId: (id: string | null) => void;
   isCreatingColl: boolean;

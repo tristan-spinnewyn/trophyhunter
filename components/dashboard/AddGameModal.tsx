@@ -3,7 +3,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { ALL_PLATFORMS, PLATFORM_META } from "@/lib/storage";
+import { ALL_PLATFORMS, PLATFORM_META } from "@/lib/platforms";
 import type { AddGameModalProps } from "./AddGameModal.types";
 import { AddGameSearchSection } from "./add-game/AddGameSearchSection";
 import { AddGameBulkImportSection } from "./add-game/AddGameBulkImportSection";

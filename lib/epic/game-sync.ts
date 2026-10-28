@@ -9,7 +9,7 @@ import {
   saveUserGameProgress,
   saveUserOwnedGames,
 } from "@/lib/db";
-import { normalizeGameTitle } from "@/lib/db/collections";
+import { normalizeGameTitle } from "@/lib/game-title";
 import { readAuthInput, TOKEN_REQUIRED_MESSAGE, TOKEN_INVALID_MESSAGE } from "./auth-input";
 import {
   exchangeEpicAuthInput,
