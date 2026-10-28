@@ -100,14 +100,14 @@ export async function resolveEpicGameData(
   }
 
   let knownSandbox = authUser ? getEpicGameSandbox(authUser.id, numAppId) : null;
-  let matchedRecord = matchSandboxRecord(records, normTitle, knownSandbox) as EpicPlayerAchievementRecord | null;
+  let matchedRecord = matchSandboxRecord(records, normTitle, knownSandbox);
 
   if (!matchedRecord && !knownSandbox && records.length > 0 && creds.accessToken) {
     try {
       const libSandbox = await resolveEpicSandboxId(numAppId, gameName, creds.accessToken);
       if (libSandbox) {
         knownSandbox = libSandbox;
-        matchedRecord = matchSandboxRecord(records, normTitle, knownSandbox) as EpicPlayerAchievementRecord | null;
+        matchedRecord = matchSandboxRecord(records, normTitle, knownSandbox);
       }
     } catch {}
   }
