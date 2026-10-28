@@ -1,7 +1,7 @@
 // components/accounts/AccountModals.tsx
 
 import EditPlatformModal from "./EditPlatformModal";
-import EpicAuthModal from "@/components/EpicAuthModal";
+import EpicAuthModal from "@/components/epic-auth/EpicAuthModal";
 import type { DashboardSectionProps } from "./hooks/useAccountDashboardController";
 
 /** Dialogs of the accounts page: edit a platform account and authorize Epic Games. */

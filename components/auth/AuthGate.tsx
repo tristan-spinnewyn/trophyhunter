@@ -1,10 +1,10 @@
-// components/AuthGate.tsx
+// components/auth/AuthGate.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import type { User as UserType } from "@/lib/types";
-import { AuthGateHeader } from "./auth/AuthGateHeader";
-import { AuthGateForm } from "./auth/AuthGateForm";
+import { AuthGateHeader } from "./AuthGateHeader";
+import { AuthGateForm } from "./AuthGateForm";
 
 interface AuthGateProps {
   onAuthSuccess: (user: UserType) => void;

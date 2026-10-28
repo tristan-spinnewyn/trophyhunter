@@ -3,7 +3,7 @@
 
 import { usePathname } from "next/navigation";
 import { useUserData } from "@/context/UserDataContext";
-import { NavbarSearch } from "@/components/NavbarSearch";
+import { NavbarSearch } from "@/components/navbar/NavbarSearch";
 import { NavbarBrand } from "./NavbarBrand";
 import { NavbarNavLinks } from "./NavbarNavLinks";
 import { NavbarUserActions } from "./NavbarUserActions";

@@ -1,12 +1,12 @@
-// components/EpicAuthModal.tsx
+// components/epic-auth/EpicAuthModal.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { KeyRound } from "lucide-react";
 import { parseEpicAuthInput } from "@/lib/epic/auth-input";
-import { EpicAuthInstructions, EPIC_AUTH_URL } from "./epic-modal/EpicAuthInstructions";
-import { EpicAuthForm } from "./epic-modal/EpicAuthForm";
-import { Modal } from "./ui/Modal";
+import { EpicAuthInstructions, EPIC_AUTH_URL } from "./EpicAuthInstructions";
+import { EpicAuthForm } from "./EpicAuthForm";
+import { Modal } from "../ui/Modal";
 
 export { EPIC_AUTH_URL };
 

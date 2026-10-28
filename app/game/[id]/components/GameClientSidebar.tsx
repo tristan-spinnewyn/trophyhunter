@@ -1,7 +1,7 @@
 // app/game/[id]/components/GameClientSidebar.tsx
 "use client";
 
-import ProgressTracker from "@/components/ProgressTracker";
+import ProgressTracker from "@/components/progress/ProgressTracker";
 import { GameSyncNotice } from "./GameSyncNotice";
 import type { GameDetails, PlatformType, UserGameProgress, UserAccountProfile } from "@/lib/types";
 

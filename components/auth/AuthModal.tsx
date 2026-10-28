@@ -1,9 +1,9 @@
-// components/AuthModal.tsx
+// components/auth/AuthModal.tsx
 "use client";
-import { Modal } from "./ui/Modal";
-import { useAuthModalFlow } from "./auth/useAuthModalFlow";
-import { AuthModalLoggedIn } from "./auth/AuthModalLoggedIn";
-import { AuthModalForm } from "./auth/AuthModalForm";
+import { Modal } from "../ui/Modal";
+import { useAuthModalFlow } from "./useAuthModalFlow";
+import { AuthModalLoggedIn } from "./AuthModalLoggedIn";
+import { AuthModalForm } from "./AuthModalForm";
 import type { User as UserType } from "@/lib/types";
 
 export interface AuthModalProps {

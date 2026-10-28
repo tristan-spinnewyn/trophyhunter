@@ -1,7 +1,7 @@
 // app/game/[id]/components/AchievementsListSection.tsx
 "use client";
 
-import AchievementItem from "@/components/AchievementItem";
+import AchievementItem from "@/components/achievement/AchievementItem";
 import type { Achievement, GameDetails, UserGameProgress } from "@/lib/types";
 import { isAchievementPinned } from "@/lib/hunting/pinned-targets.services";
 

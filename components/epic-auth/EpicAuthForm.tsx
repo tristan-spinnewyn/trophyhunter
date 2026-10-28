@@ -1,4 +1,4 @@
-// components/epic-modal/EpicAuthForm.tsx
+// components/epic-auth/EpicAuthForm.tsx
 "use client";
 
 import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
