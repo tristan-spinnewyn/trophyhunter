@@ -14,6 +14,7 @@ export function HomeLibrarySection({ controller: c }: HomeLibrarySectionProps) {
 
   return (
     <LibrarySection
+      isLoading={c.isLoadingCollection}
       activePlatformTab={c.activePlatformTab}
       filteredGames={lf.filteredGames}
       totalOwnedGamesCount={c.ownedGames.length}

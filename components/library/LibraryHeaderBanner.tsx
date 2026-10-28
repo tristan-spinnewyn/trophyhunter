@@ -10,12 +10,14 @@ interface LibraryHeaderBannerProps {
   readonly ownedGamesCount: number;
   readonly onOpenAddGame: () => void;
   readonly trackingSummary: TrackingSummary;
+  readonly isLoading?: boolean;
 }
 
 export function LibraryHeaderBanner({
   ownedGamesCount,
   onOpenAddGame,
   trackingSummary,
+  isLoading = false,
 }: LibraryHeaderBannerProps) {
   return (
     <section className="space-y-4">
@@ -24,9 +26,13 @@ export function LibraryHeaderBanner({
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
             Ma collection
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
-            {ownedGamesCount} {ownedGamesCount > 1 ? "jeux" : "jeu"} sur Steam, Xbox, Epic Games et GOG
-          </p>
+          {isLoading ? (
+            <div className="mt-2 h-4 w-48 animate-pulse rounded bg-slate-800" />
+          ) : (
+            <p className="mt-1 text-sm text-slate-400">
+              {ownedGamesCount} {ownedGamesCount > 1 ? "jeux" : "jeu"} sur Steam, Xbox, Epic Games et GOG
+            </p>
+          )}
         </div>
 
         <button

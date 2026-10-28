@@ -4,9 +4,11 @@
 import { useState, useEffect } from "react";
 import type { SettingsModalProps, StatusMsg } from "./SettingsModal.types";
 import { fetchExportJson, parseSyncPayload, saveSteamAccountApi } from "./settingsBackupUtils";
+import { useConfirm } from "@/components/ui/confirm/useConfirm";
 
 export function useSettingsModalState(props: SettingsModalProps) {
   const { isOpen, initialSteamUser = "", initialSteamApiKey = "", onSteamUserSaved, onRefreshData, onDataReset } = props;
+  const confirm = useConfirm();
   const [importText, setImportText] = useState("");
   const [copied, setCopied] = useState(false);
   const [steamUser, setSteamUser] = useState(initialSteamUser);
@@ -79,7 +81,12 @@ export function useSettingsModalState(props: SettingsModalProps) {
   };
 
   const handleClearAll = async () => {
-    if (window.confirm("ATTENTION : Cette action supprimera définitivement toute votre progression de la base SQLite. Confirmer ?")) {
+    const confirmed = await confirm({
+      title: "Tout supprimer ?",
+      message: "Ta collection, ta progression et tes notes seront définitivement effacées. Cette action est irréversible.",
+      confirmLabel: "Tout supprimer",
+    });
+    if (confirmed) {
       try {
         await fetch("/api/user/games?all=true", { method: "DELETE" });
         onDataReset();
