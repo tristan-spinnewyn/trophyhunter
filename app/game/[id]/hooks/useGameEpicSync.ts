@@ -6,6 +6,7 @@ import { buildEpicAuthHeaders } from "@/lib/epic/auth-input";
 import type { UseGameSyncActionParams } from "./useGameSyncAction.types";
 import { applyGameEpicSyncData } from "./gameEpicSyncData";
 import { saveProgressApi } from "./progressApi";
+import { errorMessage } from "@/lib/error-message";
 
 export function useGameEpicSync({
   game,
@@ -56,9 +57,9 @@ export function useGameEpicSync({
       setSyncNotice({ type: "success", msg: `Synchronisation Epic réussie : ${newUnlockedIds.length}/${resolvedTotal} succès débloqués !` });
       setIsEpicAuthModalOpen(false);
       setEpicAuthModalError(null);
-    } catch (err: any) {
-      setSyncNotice({ type: "error", msg: err.message || "Erreur de synchronisation Epic Games." });
-      if (userToken) setEpicAuthModalError(err.message || "Erreur de validation du code Epic.");
+    } catch (err: unknown) {
+      setSyncNotice({ type: "error", msg: errorMessage(err, "Erreur de synchronisation Epic Games.") });
+      if (userToken) setEpicAuthModalError(errorMessage(err, "Erreur de validation du code Epic."));
     } finally {
       setIsSyncing(false);
     }

@@ -11,6 +11,7 @@ import {
 } from "./profile-scraper";
 import { fetchOwnedGamesFromSteamApi, resolveMissingGameNamesViaStore } from "./store-api";
 import type { DiscoveredGameData, SteamParsedProfile } from "./types";
+import { SteamSyncError } from "./types";
 
 export interface RawSteamProfileResponses {
   xml: string;
@@ -34,9 +35,7 @@ export async function fetchRawSteamProfilePages(baseUrl: string, rawUser: string
   ]);
 
   if (!htmlRes.ok) {
-    const error: any = new Error(`Impossible de joindre le profil Steam (${htmlRes.status}).`);
-    error.status = htmlRes.status;
-    throw error;
+    throw new SteamSyncError(`Impossible de joindre le profil Steam (${htmlRes.status}).`, htmlRes.status);
   }
 
   const [xml, html, badgesHtml, recHtml] = await Promise.all([
@@ -51,9 +50,7 @@ export async function fetchRawSteamProfilePages(baseUrl: string, rawUser: string
     html.includes("Profil introuvable") ||
     xml.includes("The specified profile could not be found")
   ) {
-    const error: any = new Error(`Profil Steam introuvable pour "${rawUser}". Vérifiez votre SteamID64 ou votre URL personnalisée.`);
-    error.status = 404;
-    throw error;
+    throw new SteamSyncError(`Profil Steam introuvable pour "${rawUser}". Vérifiez votre SteamID64 ou votre URL personnalisée.`, 404);
   }
 
   return { xml, html, badgesHtml, recHtml };

@@ -1,15 +1,7 @@
 // components/platform-sync/hooks/useGameSyncHandler.ts
 import type { PlatformType, OwnedGame, UserAccountProfile } from "@/lib/types";
 import { mergeGamesList } from "@/lib/library/game-list";
-
-interface EpicSyncResponseData {
-  readonly success?: boolean;
-  readonly requiresToken?: boolean;
-  readonly error?: string;
-  readonly count?: number;
-  readonly unlockedCount?: number;
-  readonly totalAchievements?: number;
-}
+import type { EpicSyncResponseData } from "@/lib/epic/sync-response.types";
 
 interface UseGameSyncHandlerProps {
   accountProfile: UserAccountProfile;

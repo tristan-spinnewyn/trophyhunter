@@ -5,6 +5,7 @@ import { buildPsthcGuideUrl } from "@/lib/game/guide-urls";
 import { cleanTitleForSearch, isLikelyMissable } from "./game-metadata";
 import { stripHtmlTags } from "./html";
 import { fetchSteamAchievementsByAppId, searchSteamStoreFallback, type AchFetchResult } from "./store-api";
+import type { SteamStoreGameInfo } from "./types";
 
 export function parseAchievementsResult(achResult: AchFetchResult, effectiveAppId: string): Achievement[] {
   const achievements: Achievement[] = [];
@@ -17,7 +18,7 @@ export function parseAchievementsResult(achResult: AchFetchResult, effectiveAppI
       const rawDesc = item.localized_desc || "";
       const isHidden = !!item.hidden;
       const displayDesc = rawDesc || (isHidden ? "Succès secret (Masqué par le jeu)" : "");
-      const percent = parseFloat(item.player_percent_unlocked) || 0;
+      const percent = parseFloat(String(item.player_percent_unlocked ?? "")) || 0;
       const icon = item.icon
         ? (item.icon.startsWith("http")
             ? item.icon
@@ -67,7 +68,7 @@ export async function getSteamGameDetails({
   authUserId,
 }: GetGameDetailsOptions): Promise<GameDetails> {
   let achResult: AchFetchResult = null;
-  let gameInfo: any = null;
+  let gameInfo: SteamStoreGameInfo | null | undefined = null;
   let effectiveAppId = appId;
   let matchedSearchImage = "";
 

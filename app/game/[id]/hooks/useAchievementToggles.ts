@@ -17,7 +17,7 @@ interface UseAchievementTogglesProps {
   progress: UserGameProgress;
   setProgress: (p: UserGameProgress) => void;
   currentUser: UserType | null;
-  upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<any>;
+  upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<void>;
 }
 
 export function useAchievementToggles({

@@ -6,19 +6,13 @@ import type { PlatformType } from "@/lib/types";
 import { PLATFORM_META } from "@/lib/platforms";
 import { PlatformStatsInputs } from "./platform-modal/PlatformStatsInputs";
 import { Modal } from "@/components/ui/Modal";
+import type { PlatformFormData } from "@/lib/platform-account-form";
 
 interface EditPlatformModalProps {
   editingPlatform: PlatformType | null;
   onClose: () => void;
-  platForm: {
-    username: string;
-    level: string;
-    gamesOwned: string;
-    totalAchievements: string;
-    completedGames: string;
-    gamerScore: string;
-  };
-  setPlatForm: (val: any) => void;
+  platForm: PlatformFormData;
+  setPlatForm: (val: PlatformFormData) => void;
   onSave: () => void;
 }
 
