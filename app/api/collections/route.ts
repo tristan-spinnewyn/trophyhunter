@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getUserCollections, createCollection } from "@/lib/db";
+import { errorMessage } from "@/lib/error-message";
 
 export async function GET() {
   const user = await getAuthenticatedUser();
@@ -38,10 +39,10 @@ export async function POST(req: Request) {
     );
 
     return NextResponse.json({ collection }, { status: 201 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Create collection error:", err);
     return NextResponse.json(
-      { error: err.message || "Erreur lors de la création de la collection." },
+      { error: errorMessage(err, "Erreur lors de la création de la collection.") },
       { status: 400 }
     );
   }

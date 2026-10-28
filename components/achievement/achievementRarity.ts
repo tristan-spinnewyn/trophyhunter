@@ -1,7 +1,7 @@
 // components/achievement/achievementRarity.ts
 
 import type { RarityBadge } from "./AchievementItem.types";
-import { buildPsthcGuideUrl } from "@/lib/steam/game-details-utils";
+import { buildPsthcGuideUrl } from "@/lib/steam/game-metadata";
 
 export function getRarityBadge(percent: number): RarityBadge {
   if (percent <= 5.0) {

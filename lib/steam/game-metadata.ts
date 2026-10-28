@@ -1,4 +1,6 @@
-// lib/steam/game-details-utils.ts
+// lib/steam/game-metadata.ts
+// Client-safe: achievement and title helpers shared by Steam, Xbox, Epic and the UI.
+
 export const MISSABLE_KEYWORDS = [
   "sans mourir",
   "en moins de",
