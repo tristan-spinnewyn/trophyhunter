@@ -2,8 +2,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import GameHeader from "@/components/GameHeader";
-import FilterToolbar from "@/components/FilterToolbar";
+import GameHeader from "@/components/game-header/GameHeader";
+import FilterToolbar from "@/components/filter-toolbar/FilterToolbar";
 import EpicAuthModal from "@/components/EpicAuthModal";
 import { ActiveHuntPanel } from "@/components/hunting/ActiveHuntPanel";
 import { useGameClientController } from "./hooks/useGameClientController";

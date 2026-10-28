@@ -1,14 +1,42 @@
 // components/dashboard/LibraryGameCard.tsx
 "use client";
-
 import { resolveGameStatus } from "@/lib/game-status/game-status.services";
-import type { LibraryGameCardProps } from "./library/LibraryGameCard.types";
 import { LibraryGameCardCover } from "./library/LibraryGameCardCover";
 import { LibraryGameCardProgress } from "./library/LibraryGameCardProgress";
 import { LibraryGameStatusSelector } from "./library/LibraryGameStatusSelector";
 import { LibraryGameCardActions } from "./library/LibraryGameCardActions";
+import type {
+  GameStatus,
+  OwnedGame,
+  PlatformAccount,
+  PlatformType,
+} from "@/lib/types";
+import type { CollectionWithGames } from "@/lib/types";
 
-export type { LibraryGameCardProps };
+export interface LibraryGameCardProps {
+  readonly game: OwnedGame;
+  readonly steamAccount?: PlatformAccount;
+  readonly activePlatformTab: string;
+  readonly selectedCollId: string | null;
+  readonly wishlistIds: number[];
+  readonly collections: CollectionWithGames[];
+  readonly onSelectGame: (appId: number) => void;
+  readonly onToggleWishlist: (appId: number, platform: PlatformType) => void;
+  readonly onOpenAddToCollection: (game: OwnedGame) => void;
+  readonly onRemoveFromCollection: (
+    collectionId: string,
+    appId: number,
+    platform: PlatformType
+  ) => void;
+  readonly onSyncGame: (game: OwnedGame) => Promise<void>;
+  readonly onRemoveGame: (appId: number, platform: PlatformType) => Promise<void>;
+  readonly onUpdateGameStatus?: (
+    appId: number,
+    platform: PlatformType,
+    status: GameStatus
+  ) => Promise<void> | void;
+}
+
 
 export default function LibraryGameCard({
   game: g,

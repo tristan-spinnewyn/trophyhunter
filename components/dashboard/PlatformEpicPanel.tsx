@@ -1,14 +1,34 @@
 // components/dashboard/PlatformEpicPanel.tsx
 
 "use client";
-
-import type { PlatformEpicPanelProps } from "./PlatformEpicPanel.types";
 import { EpicProfileCard } from "./epic-panel/EpicProfileCard";
 import { EpicSyncForm } from "./epic-panel/EpicSyncForm";
 import { EpicAchievementsFilterBar } from "./epic-panel/EpicAchievementsFilterBar";
 import { EpicStatsCards } from "./epic-panel/EpicStatsCards";
+import type { UserAccountProfile, PlatformType } from "@/lib/types";
 
-export type { PlatformEpicPanelProps };
+export interface PlatformEpicPanelProps {
+  accountProfile: UserAccountProfile;
+  epicCounts: { total: number; withAch: number; noAch: number };
+  epicInput: string;
+  setEpicInput: (val: string) => void;
+  epicCode: string;
+  setEpicCode: (val: string) => void;
+  showEpicCode: boolean;
+  setShowEpicCode: (val: boolean) => void;
+  isSyncingEpic: boolean;
+  syncProgressText: string | null;
+  libAchievementFilter: "all" | "with-achievements" | "no-achievements";
+  setLibAchievementFilter: (val: "all" | "with-achievements" | "no-achievements") => void;
+  onConnectAndSyncEpic: () => void;
+  onScanEpicAchievements: () => void;
+  onCleanEpicGames: () => void;
+  openEditPlatform: (plat: PlatformType) => void;
+  handleDisconnectPlatform: (plat: PlatformType) => void;
+  onBackToAll: () => void;
+  onOpenEpicModal?: () => void;
+}
+
 
 export default function PlatformEpicPanel({
   accountProfile,

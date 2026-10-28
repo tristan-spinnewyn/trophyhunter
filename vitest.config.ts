@@ -17,7 +17,6 @@ export default defineConfig({
       include: ['lib/**/*.{ts,tsx}', 'app/api/**/*.{ts,tsx}'],
       exclude: [
         '**/__tests__/**',
-        'lib/types.ts',
         '**/*.d.ts',
       ],
       thresholds: {

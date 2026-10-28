@@ -1,11 +1,18 @@
 // components/AuthModal.tsx
 "use client";
-
 import { X } from "lucide-react";
-import type { AuthModalProps } from "./auth/AuthModal.types";
 import { useAuthModalFlow } from "./auth/useAuthModalFlow";
 import { AuthModalLoggedIn } from "./auth/AuthModalLoggedIn";
 import { AuthModalForm } from "./auth/AuthModalForm";
+import type { User as UserType } from "@/lib/types";
+
+export interface AuthModalProps {
+  readonly isOpen: boolean;
+  readonly onClose: () => void;
+  readonly currentUser: UserType | null;
+  readonly onAuthSuccess: (user: UserType) => void;
+  readonly onLogout: () => void;
+}
 
 export default function AuthModal({
   isOpen,

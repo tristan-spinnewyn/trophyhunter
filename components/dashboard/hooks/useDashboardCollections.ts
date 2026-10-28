@@ -1,9 +1,17 @@
 // components/dashboard/hooks/useDashboardCollections.ts
 "use client";
-
-import type { UseDashboardCollectionsProps } from "./useDashboardCollections.types";
 import { useWishlist } from "./useWishlist";
 import { useCollectionCrud } from "./useCollectionCrud";
+import type { User as UserType, CollectionWithGames } from "@/lib/types";
+
+export interface UseDashboardCollectionsProps {
+  currentUser?: UserType | null;
+  initialWishlist?: number[];
+  initialCollections?: CollectionWithGames[];
+  onWishlistChange?: (wishlist: number[]) => void;
+  onCollectionsChange?: (collections: CollectionWithGames[]) => void;
+  setBannerMsg: (msg: { type: "success" | "error"; text: string } | null) => void;
+}
 
 export function useDashboardCollections({
   currentUser,

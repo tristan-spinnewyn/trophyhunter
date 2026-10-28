@@ -1,8 +1,6 @@
 // components/dashboard/hooks/usePlatformSync.ts
 "use client";
-
 import { useState } from "react";
-import type { UsePlatformSyncProps } from "./usePlatformSync.types";
 import { usePlatformDb } from "./usePlatformDb";
 import { useSteamSync } from "./useSteamSync";
 import { useXboxSync } from "./useXboxSync";
@@ -12,6 +10,33 @@ import { usePlatformModal } from "./usePlatformModal";
 import { useEpicAuthModalState } from "./useEpicAuthModalState";
 import { useGameSyncHandler } from "./useGameSyncHandler";
 import { useGameStatusHandler } from "./useGameStatusHandler";
+import type {
+  OwnedGame,
+  UserAccountProfile,
+  User as UserType,
+} from "@/lib/types";
+
+export interface UsePlatformSyncProps {
+  accountProfile: UserAccountProfile;
+  ownedGames: OwnedGame[];
+  onAccountChange: (profile: UserAccountProfile) => void;
+  onOwnedGamesChange: (games: OwnedGame[]) => void;
+  onSteamUserChange: (steamUser: string) => void;
+  currentUser?: UserType | null;
+  setBannerMsg: (
+    msg: { type: "success" | "error"; text: string } | null
+  ) => void;
+  steamInput: string;
+  setSteamInput: (val: string) => void;
+  steamApiKey: string;
+  xboxInput: string;
+  xboxApiKey: string;
+  epicInput: string;
+  epicCode: string;
+  setEpicCode: (val: string) => void;
+  gogInput: string;
+  gogToken: string;
+}
 
 export function usePlatformSync(props: UsePlatformSyncProps) {
   const { accountProfile, ownedGames, onAccountChange, onOwnedGamesChange, onSteamUserChange,

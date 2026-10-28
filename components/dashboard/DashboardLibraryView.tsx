@@ -1,6 +1,6 @@
 // components/dashboard/DashboardLibraryView.tsx
 
-import LibrarySection from "./LibrarySection";
+import LibrarySection from "./library-section/LibrarySection";
 import type {
   useAccountDashboardController,
   AccountDashboardControllerParams,

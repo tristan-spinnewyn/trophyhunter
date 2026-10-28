@@ -1,12 +1,12 @@
-// components/Navbar.tsx
+// components/navbar/Navbar.tsx
 "use client";
 
 import { usePathname } from "next/navigation";
 import { useUserData } from "@/context/UserDataContext";
 import { NavbarSearch } from "@/components/NavbarSearch";
-import { NavbarBrand } from "./navbar/NavbarBrand";
-import { NavbarNavLinks } from "./navbar/NavbarNavLinks";
-import { NavbarUserActions } from "./navbar/NavbarUserActions";
+import { NavbarBrand } from "./NavbarBrand";
+import { NavbarNavLinks } from "./NavbarNavLinks";
+import { NavbarUserActions } from "./NavbarUserActions";
 
 interface NavbarProps {
   onSelectGame?: (appId: number) => void;

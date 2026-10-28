@@ -1,10 +1,23 @@
-// components/GameHeader.tsx
+// components/game-header/GameHeader.tsx
 "use client";
+import { GameHeaderActions } from "./GameHeaderActions";
+import { GameHeaderGuides } from "./GameHeaderGuides";
+import { GameHuntingMetaBar } from "../hunting/GameHuntingMetaBar";
+import type { GameDetails, GameStatus } from "@/lib/types";
+import type { GameHuntingMeta, GameHuntingOverride } from "@/lib/hunting/hunting.types";
 
-import type { GameHeaderProps } from "./game-header/GameHeader.types";
-import { GameHeaderActions } from "./game-header/GameHeaderActions";
-import { GameHeaderGuides } from "./game-header/GameHeaderGuides";
-import { GameHuntingMetaBar } from "./hunting/GameHuntingMetaBar";
+export interface GameHeaderProps {
+  readonly game: GameDetails;
+  readonly isFavorite: boolean;
+  readonly onToggleFavorite: () => void;
+  readonly isOwned?: boolean;
+  readonly onToggleOwned?: () => void;
+  readonly gameStatus?: GameStatus;
+  readonly onChangeGameStatus?: (status: GameStatus) => void;
+  readonly huntingMeta?: GameHuntingMeta;
+  readonly onSaveHuntingOverride?: (override: GameHuntingOverride | undefined) => void;
+  readonly onBackToLibrary?: () => void;
+}
 
 export default function GameHeader({
   game,
