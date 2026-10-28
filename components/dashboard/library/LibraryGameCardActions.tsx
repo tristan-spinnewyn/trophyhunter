@@ -1,6 +1,6 @@
 // components/dashboard/library/LibraryGameCardActions.tsx
 
-import { ChevronRight } from "lucide-react";
+import type { ReactNode } from "react";
 import type { OwnedGame, PlatformType, CollectionWithGames } from "@/lib/types";
 import { LibraryCardActionButtons } from "./LibraryCardActionButtons";
 
@@ -11,7 +11,7 @@ interface LibraryGameCardActionsProps {
   wishlistIds: number[];
   collections: CollectionWithGames[];
   canSync: boolean;
-  onSelectGame: (appId: number) => void;
+  statusSelector: ReactNode;
   onToggleWishlist: (appId: number, platform: PlatformType) => void;
   onOpenAddToCollection: (game: OwnedGame) => void;
   onRemoveFromCollection: (
@@ -30,7 +30,7 @@ export function LibraryGameCardActions({
   wishlistIds,
   collections,
   canSync,
-  onSelectGame,
+  statusSelector,
   onToggleWishlist,
   onOpenAddToCollection,
   onRemoveFromCollection,
@@ -38,14 +38,8 @@ export function LibraryGameCardActions({
   onRemoveGame,
 }: LibraryGameCardActionsProps) {
   return (
-    <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-800/70">
-      <button
-        onClick={() => onSelectGame(g.appId)}
-        className="flex items-center gap-1 text-[11px] font-semibold text-sky-400 hover:text-sky-300"
-      >
-        Ouvrir les succès
-        <ChevronRight className="h-3.5 w-3.5" />
-      </button>
+    <div className="flex items-center justify-between gap-2">
+      {statusSelector}
 
       <LibraryCardActionButtons
         game={g}

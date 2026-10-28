@@ -27,30 +27,28 @@ export function PlatformCard({
 
   return (
     <div
-      className={`flex flex-col justify-between rounded-2xl border p-3.5 transition ${
-        acc
-          ? "border-slate-700 bg-slate-950/80 shadow-md"
-          : "border-slate-800/80 bg-slate-950/30 opacity-85 hover:opacity-100"
+      className={`flex flex-col justify-between rounded-xl border p-3.5 ${
+        acc ? "border-slate-800 bg-slate-900/60" : "border-dashed border-slate-800"
       }`}
     >
       <div>
         <div className="flex items-center justify-between gap-2">
           <span
-            className={`inline-flex items-center gap-1.5 rounded-lg border px-2 py-0.5 text-xs font-bold ${meta.badgeClass}`}
+            className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-xs font-medium ${meta.badgeClass}`}
           >
             {meta.shortName}
           </span>
 
           <div className="flex items-center gap-2">
-            <span className="rounded bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-300">
-              {count} jeu(x)
+            <span className="text-xs tabular-nums text-slate-500">
+              {count} {count > 1 ? "jeux" : "jeu"}
             </span>
             {acc ? (
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400">
-                <Check className="h-3 w-3" /> Lié
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400">
+                <Check className="h-3.5 w-3.5" /> Lié
               </span>
             ) : (
-              <span className="text-[11px] text-slate-500">Non lié</span>
+              <span className="text-xs text-slate-500">Non lié</span>
             )}
           </div>
         </div>
@@ -58,11 +56,11 @@ export function PlatformCard({
         {acc ? (
           <div className="mt-2.5 space-y-2">
             <div className="flex items-center justify-between">
-              <div className="truncate text-sm font-bold text-white">
+              <div className="truncate text-sm font-semibold text-white">
                 {acc.displayName}
               </div>
               {acc.level ? (
-                <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold text-amber-400">
+                <span className="text-xs font-medium tabular-nums text-amber-400">
                   Niv. {acc.level}
                 </span>
               ) : null}
@@ -71,8 +69,8 @@ export function PlatformCard({
             <PlatformCardStats account={acc} meta={meta} />
           </div>
         ) : (
-          <p className="mt-2 text-xs text-slate-400">
-            Accédez à l&apos;espace {meta.name} pour configurer vos identifiants et voir vos succès.
+          <p className="mt-2 text-sm text-slate-400">
+            Lie ton compte {meta.name} pour importer tes jeux et tes succès.
           </p>
         )}
       </div>

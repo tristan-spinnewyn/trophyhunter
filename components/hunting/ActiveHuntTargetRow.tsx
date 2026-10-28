@@ -55,11 +55,11 @@ export function ActiveHuntTargetRow({
           >
             {achievement.name}
           </span>
-          <span className="text-[10px] font-semibold text-amber-300/90">
+          <span className="text-[11px] font-semibold text-amber-300/90">
             {achievement.percent}%
           </span>
           {achievement.missable && (
-            <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-400">
+            <span className="flex items-center gap-0.5 text-[11px] font-semibold text-amber-400">
               <AlertTriangle className="h-2.5 w-2.5" /> Manquable
             </span>
           )}

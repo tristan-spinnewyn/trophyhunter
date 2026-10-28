@@ -56,7 +56,7 @@ export function AuthFormFields({
             className="w-full rounded-xl border border-slate-700 bg-slate-950 py-2 pl-9 pr-3 text-xs text-white placeholder-slate-500 outline-none focus:border-sky-500"
           />
         </div>
-        <p className="mt-1 text-[10px] text-slate-500">Minimum 6 caractères (haché par scrypt avec sel aléatoire).</p>
+        <p className="mt-1 text-[11px] text-slate-500">Minimum 6 caractères (haché par scrypt avec sel aléatoire).</p>
       </div>
     </>
   );

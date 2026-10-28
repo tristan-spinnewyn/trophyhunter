@@ -4,7 +4,6 @@
 import {
   ArrowRight,
   ShieldCheck,
-  UserCheck,
   Loader2,
   AlertCircle,
   CheckCircle2,
@@ -42,19 +41,9 @@ export function AuthModalForm({
 }: FormProps) {
   return (
     <div>
-      <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-400 border border-sky-500/30">
-          <UserCheck className="h-5 w-5" />
-        </div>
-        <div>
-          <h3 className="text-base font-bold text-white">
-            {mode === "login" ? "Connexion au compte" : "Créer un compte"}
-          </h3>
-          <p className="text-xs text-slate-400">
-            Authentification sécurisée & stockage chiffré
-          </p>
-        </div>
-      </div>
+      <p className="mb-4 text-sm text-slate-400">
+        Authentification sécurisée, stockage chiffré.
+      </p>
 
       <div className="mb-4 grid grid-cols-2 rounded-xl border border-slate-800 bg-slate-950 p-1">
         <button
@@ -116,7 +105,7 @@ export function AuthModalForm({
         <button
           type="submit"
           disabled={isLoading}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-sky-500 disabled:opacity-50 shadow-md shadow-sky-600/20"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-sky-500 disabled:opacity-50"
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />

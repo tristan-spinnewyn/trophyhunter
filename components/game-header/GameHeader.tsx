@@ -51,7 +51,7 @@ export default function GameHeader({
             <img
               src={game.headerImg}
               alt={game.name}
-              className="h-16 w-28 sm:h-24 sm:w-44 rounded-xl object-cover shadow-xl ring-1 ring-slate-700 bg-slate-800 shrink-0"
+              className="h-16 w-28 sm:h-24 sm:w-44 rounded-xl object-cover ring-1 ring-slate-700 bg-slate-800 shrink-0"
             />
             <div className="min-w-0 space-y-1">
               <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-white line-clamp-2">

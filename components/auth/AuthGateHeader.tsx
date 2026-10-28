@@ -5,10 +5,10 @@ import { Trophy, Gamepad2, Sparkles } from "lucide-react";
 export function AuthGateHeader({ legacyGamesCount }: { legacyGamesCount: number }) {
   return (
     <div className="text-center space-y-3">
-      <div className="inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-400 to-amber-600 shadow-xl shadow-amber-500/25">
+      <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600">
         <Trophy className="h-9 w-9 text-slate-950 stroke-[2.5]" />
       </div>
-      <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center justify-center gap-2">
+      <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
         TrophyHunter
         <span className="rounded-lg bg-sky-500/20 px-2 py-0.5 text-xs font-bold text-sky-400 border border-sky-500/30">
           SQLite

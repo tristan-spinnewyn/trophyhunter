@@ -46,7 +46,7 @@ export function LibraryFilterDropdowns({
           aria-label="Plateforme"
           className={selectClass(libPlatformFilter !== "all")}
         >
-          <option value="all">Toutes les plateformes</option>
+          <option value="all">Plateformes</option>
           {ALL_PLATFORMS.map((p) => (
             <option key={p} value={p}>{PLATFORM_META[p].name}</option>
           ))}

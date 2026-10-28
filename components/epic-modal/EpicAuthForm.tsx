@@ -28,7 +28,7 @@ export function EpicAuthForm({
         <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
           <span>Code d&apos;échange ou JSON Epic :</span>
           {extractedCode && extractedCode !== tokenInput && (
-            <span className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+            <span className="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
               <CheckCircle2 className="h-3 w-3" />
               Code extrait automatiquement
             </span>
@@ -64,7 +64,7 @@ export function EpicAuthForm({
         <button
           type="submit"
           disabled={isLoading || !tokenInput.trim()}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 px-5 py-2 text-xs font-bold text-white shadow-lg shadow-purple-500/20 hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 px-5 py-2 text-xs font-bold text-white hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <>

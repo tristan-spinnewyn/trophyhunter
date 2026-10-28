@@ -51,7 +51,7 @@ export default function PlatformSteamPanel({
         </span>
       </div>
 
-      <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900/95 to-sky-950/40 p-5 sm:p-6 shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900/95 to-sky-950/40 p-5 sm:p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <SteamProfileCard steamAccount={steamAccount} displayName={displayName} />
           <SteamSyncForm

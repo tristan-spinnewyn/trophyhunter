@@ -17,12 +17,12 @@ export function DuplicateGroupCard({
   onSelectGame,
 }: DuplicateGroupCardProps) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-950/90 p-4 space-y-3 shadow-lg">
+    <div className="rounded-2xl border border-slate-800 bg-slate-950/90 p-4 space-y-3">
       <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
-        <h4 className="text-sm font-black text-white truncate">
+        <h4 className="text-sm font-semibold text-white truncate">
           {group.title}
         </h4>
-        <span className="rounded-full bg-purple-500/20 border border-purple-500/40 px-2 py-0.5 text-[10px] font-bold text-purple-300 shrink-0">
+        <span className="rounded-full bg-purple-500/20 border border-purple-500/40 px-2 py-0.5 text-[11px] font-bold text-purple-300 shrink-0">
           {group.games.length} plateformes
         </span>
       </div>
@@ -49,22 +49,22 @@ export function DuplicateGroupCard({
                 <div className="flex items-center justify-between gap-1">
                   <div className="flex items-center gap-1">
                     <span
-                      className={`rounded px-1.5 py-0.5 text-[10px] font-bold border ${pMeta.badgeClass}`}
+                      className={`rounded px-1.5 py-0.5 text-[11px] font-bold border ${pMeta.badgeClass}`}
                     >
                       {pMeta.shortName}
                     </span>
                     <span
-                      className={`rounded px-1.5 py-0.5 text-[10px] font-bold border ${statusMeta.badgeClass}`}
+                      className={`rounded px-1.5 py-0.5 text-[11px] font-bold border ${statusMeta.badgeClass}`}
                     >
                       {statusMeta.shortLabel}
                     </span>
                   </div>
                   {g.totalAchievements > 0 ? (
-                    <span className="text-[10px] font-black text-emerald-400">
+                    <span className="text-[11px] font-semibold text-emerald-400">
                       {pct}% ({g.unlockedCount}/{g.totalAchievements})
                     </span>
                   ) : (
-                    <span className="text-[10px] text-slate-500">
+                    <span className="text-[11px] text-slate-500">
                       Sans succès
                     </span>
                   )}

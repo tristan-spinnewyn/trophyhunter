@@ -70,7 +70,7 @@ export function AchievementDetailsAccordion({
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
             Mes notes personnelles :
           </span>
-          <span className="text-[10px] text-slate-500">Sauvegardé auto</span>
+          <span className="text-[11px] text-slate-500">Sauvegardé auto</span>
         </div>
         <textarea
           value={currentNotes}

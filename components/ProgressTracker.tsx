@@ -35,39 +35,35 @@ export default function ProgressTracker({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-3xl border p-4 sm:p-5 transition-all duration-500 ${
-        isComplete
-          ? "border-amber-500/60 bg-gradient-to-br from-amber-950/40 via-slate-900 to-sky-950/40 shadow-2xl shadow-amber-500/10"
-          : "border-slate-800 bg-slate-900/90 shadow-lg"
+      className={`relative overflow-hidden rounded-2xl border p-4 transition-colors ${
+        isComplete ? "border-amber-500/50 bg-amber-950/20" : "border-slate-800 bg-slate-900/60"
       }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div
-            className={`flex h-12 w-12 items-center justify-center rounded-2xl border bg-gradient-to-br shadow-inner ${
-              isComplete
-                ? "border-amber-400/50 from-amber-400/20 to-amber-600/30 text-amber-400 animate-pulse"
-                : "border-slate-700 from-slate-800 to-slate-950 text-slate-300"
+            className={`flex h-11 w-11 items-center justify-center rounded-xl ${
+              isComplete ? "bg-amber-400/15 text-amber-400" : "bg-slate-800 text-slate-300"
             }`}
           >
             {isComplete ? (
-              <Trophy className="h-6 w-6 fill-amber-400 stroke-amber-400" />
+              <Trophy className="h-5 w-5 fill-amber-400" />
             ) : (
-              <Award className="h-6 w-6" />
+              <Award className="h-5 w-5" />
             )}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Progression</span>
-              <span className={`text-xs font-semibold ${tier.color}`}>{tier.name}</span>
+              <span className="text-xs text-slate-400">Progression</span>
+              <span className={`text-xs font-medium ${tier.color}`}>{tier.name}</span>
             </div>
             {hasAchievements ? (
-              <div className="text-2xl font-black text-white">
-                {percent}%{" "}
-                <span className="text-xs font-normal text-slate-400">({unlockedCount} / {total})</span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-semibold tabular-nums text-white">{percent}%</span>
+                <span className="text-xs tabular-nums text-slate-500">{unlockedCount} / {total}</span>
               </div>
             ) : (
-              <div className="text-lg font-bold text-slate-300">
+              <div className="text-lg font-medium text-slate-300">
                 Aucun succès
               </div>
             )}

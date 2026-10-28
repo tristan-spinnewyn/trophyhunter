@@ -30,7 +30,7 @@ export function XboxSyncForm({
           <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
           Synchronisation Xbox API
         </span>
-        <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+        <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
           OpenXBL
         </span>
       </div>
@@ -47,7 +47,7 @@ export function XboxSyncForm({
         <button
           onClick={() => onConnectAndSyncXbox()}
           disabled={isSyncingXbox || !xboxInput.trim()}
-          className="shrink-0 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-3.5 py-2 text-xs font-bold text-slate-950 hover:brightness-110 disabled:opacity-50 transition flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
+          className="shrink-0 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-3.5 py-2 text-xs font-bold text-slate-950 hover:brightness-110 disabled:opacity-50 transition flex items-center gap-1.5"
         >
           <RefreshCw
             className={`h-3.5 w-3.5 ${isSyncingXbox ? "animate-spin" : ""}`}
@@ -65,14 +65,14 @@ export function XboxSyncForm({
           >
             <span>{showXboxApiKey ? "▼" : "▶"} Clé OpenXBL (Optionnelle)</span>
             {xboxApiKey ? (
-              <span className="text-[10px] text-emerald-400 font-bold">• Active</span>
+              <span className="text-[11px] text-emerald-400 font-bold">• Active</span>
             ) : null}
           </button>
           <a
             href="https://xbl.io"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] text-emerald-400 hover:underline"
+            className="text-[11px] text-emerald-400 hover:underline"
           >
             Obtenir sur xbl.io ↗
           </a>
@@ -90,7 +90,7 @@ export function XboxSyncForm({
         )}
       </div>
 
-      <p className="text-[10px] text-slate-400">
+      <p className="text-[11px] text-slate-400">
         Importe vos jeux Xbox & PC Game Pass ainsi que vos succès et Gamerscore sans mot de passe.
       </p>
     </div>

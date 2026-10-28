@@ -2,6 +2,7 @@
 
 import type { GameStatus, OwnedGame, PlatformType } from "@/lib/types";
 import {
+  GAME_STATUS_META,
   GAME_STATUS_OPTIONS,
   resolveGameStatus,
 } from "@/lib/game-status/game-status.services";
@@ -22,31 +23,20 @@ export function LibraryGameStatusSelector({
   const currentStatus = resolveGameStatus(game.status);
 
   return (
-    <div
-      className="grid grid-cols-3 gap-1 rounded-xl border border-slate-800/80 bg-slate-950/70 p-1"
-      onClick={(e) => e.stopPropagation()}
+    <select
+      value={currentStatus}
+      disabled={!onUpdateGameStatus}
+      onChange={(e) =>
+        onUpdateGameStatus?.(game.appId, game.platform, resolveGameStatus(e.target.value))
+      }
+      aria-label={`Statut de ${game.name}`}
+      className={`h-8 min-w-0 cursor-pointer rounded-md border px-2 text-xs font-medium outline-none transition focus:border-sky-500 disabled:cursor-default ${GAME_STATUS_META[currentStatus].badgeClass}`}
     >
-      {GAME_STATUS_OPTIONS.map((opt) => {
-        const isActive = currentStatus === opt.value;
-        return (
-          <button
-            key={opt.value}
-            type="button"
-            disabled={!onUpdateGameStatus}
-            onClick={() =>
-              onUpdateGameStatus?.(game.appId, game.platform, opt.value)
-            }
-            className={`rounded-lg border px-1.5 py-1 text-[10px] font-bold transition ${
-              isActive
-                ? opt.activeButtonClass
-                : "border-transparent text-slate-400 hover:bg-slate-800/70 hover:text-slate-200"
-            }`}
-            title={`Marquer comme "${opt.label}"`}
-          >
-            {opt.shortLabel}
-          </button>
-        );
-      })}
-    </div>
+      {GAME_STATUS_OPTIONS.map((opt) => (
+        <option key={opt.value} value={opt.value} className="bg-slate-900 text-slate-200">
+          {opt.label}
+        </option>
+      ))}
+    </select>
   );
 }

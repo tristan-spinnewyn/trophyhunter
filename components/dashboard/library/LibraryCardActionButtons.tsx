@@ -17,6 +17,9 @@ interface LibraryCardActionButtonsProps {
   onRemoveGame: (appId: number, platform: PlatformType) => Promise<void>;
 }
 
+const ICON_BUTTON_CLASS =
+  "flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-800";
+
 export function LibraryCardActionButtons({
   game: g,
   activePlatformTab,
@@ -31,55 +34,70 @@ export function LibraryCardActionButtons({
   onRemoveGame,
 }: LibraryCardActionButtonsProps) {
   const isWishlisted = wishlistIds.includes(g.appId);
+  const wishlistLabel = isWishlisted ? "Retirer de ma liste d'envies" : "Ajouter à ma liste d'envies";
+  const syncLabel = g.platform === "epic" ? "Synchroniser les succès Epic Games" : "Actualiser les succès Steam";
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center">
       <button
+        type="button"
         onClick={() => onToggleWishlist(g.appId, g.platform)}
-        title={isWishlisted ? "Retirer de ma liste d'envies" : "Ajouter à ma liste d'envies"}
-        className={`rounded-lg p-1 transition ${
-          isWishlisted ? "text-rose-400 bg-rose-500/10" : "text-slate-500 hover:bg-slate-800 hover:text-rose-400"
-        }`}
+        title={wishlistLabel}
+        aria-label={wishlistLabel}
+        aria-pressed={isWishlisted}
+        className={`${ICON_BUTTON_CLASS} ${isWishlisted ? "text-rose-400" : "hover:text-rose-400"}`}
       >
-        <Heart className={`h-3.5 w-3.5 ${isWishlisted ? "fill-current" : ""}`} />
+        <Heart className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`} />
       </button>
 
       {collections.length > 0 && (
         <button
+          type="button"
           onClick={() => onOpenAddToCollection(g)}
           title="Ajouter à une collection"
-          className="rounded-lg p-1 text-slate-500 hover:bg-slate-800 hover:text-indigo-400 transition"
+          aria-label="Ajouter à une collection"
+          className={`${ICON_BUTTON_CLASS} hover:text-indigo-400`}
         >
-          <FolderPlus className="h-3.5 w-3.5" />
+          <FolderPlus className="h-4 w-4" />
         </button>
       )}
 
       {activePlatformTab === "collections" && selectedCollId && (
         <button
+          type="button"
           onClick={() => onRemoveFromCollection(selectedCollId, g.appId, g.platform)}
           title="Retirer de cette collection"
-          className="rounded-lg p-1 text-slate-500 hover:bg-slate-800 hover:text-amber-400 transition"
+          aria-label="Retirer de cette collection"
+          className={`${ICON_BUTTON_CLASS} hover:text-amber-400`}
         >
-          <Unlink className="h-3.5 w-3.5" />
+          <Unlink className="h-4 w-4" />
         </button>
       )}
 
       {canSync && (
         <button
+          type="button"
           onClick={() => onSyncGame(g)}
-          title={g.platform === "epic" ? "Synchroniser les succès Epic Games" : "Actualiser les succès Steam"}
-          className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"
+          title={syncLabel}
+          aria-label={syncLabel}
+          className={`${ICON_BUTTON_CLASS} hover:text-emerald-400`}
         >
-          <RefreshCw className="h-3.5 w-3.5" />
+          <RefreshCw className="h-4 w-4" />
         </button>
       )}
 
       <button
-        onClick={() => onRemoveGame(g.appId, g.platform)}
+        type="button"
+        onClick={() => {
+          if (window.confirm(`Retirer « ${g.name} » de ta bibliothèque ?`)) {
+            void onRemoveGame(g.appId, g.platform);
+          }
+        }}
         title="Retirer de ma bibliothèque"
-        className="rounded-lg p-1 text-slate-500 hover:bg-slate-800 hover:text-rose-400 transition"
+        aria-label="Retirer de ma bibliothèque"
+        className={`${ICON_BUTTON_CLASS} hover:text-rose-400`}
       >
-        <Trash2 className="h-3.5 w-3.5" />
+        <Trash2 className="h-4 w-4" />
       </button>
     </div>
   );

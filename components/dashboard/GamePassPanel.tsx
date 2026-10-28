@@ -28,7 +28,7 @@ export default function GamePassPanel({
         </span>
       </div>
 
-      <div className="rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-slate-900 via-slate-900/95 to-emerald-950/40 p-5 sm:p-6 shadow-2xl space-y-4">
+      <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-slate-900 via-slate-900/95 to-emerald-950/40 p-5 sm:p-6 space-y-4">
         <div className="space-y-1.5">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <MonitorPlay className="h-5 w-5 text-emerald-400" />

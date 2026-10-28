@@ -18,7 +18,7 @@ export function SearchResultsDropdown({
   onPickGame,
 }: DropdownProps) {
   return (
-    <div className="absolute left-0 right-0 top-full mt-2 max-h-[75vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900/95 p-2 shadow-2xl backdrop-blur-xl z-50">
+    <div className="absolute left-0 right-0 top-full mt-2 max-h-[75vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900/95 p-2 backdrop-blur-xl z-50">
       {isLoading ? (
         <div className="flex items-center justify-center gap-2 py-6 text-sm text-slate-400">
           <Loader2 className="h-4 w-4 animate-spin text-sky-400" />

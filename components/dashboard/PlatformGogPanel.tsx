@@ -54,7 +54,7 @@ export default function PlatformGogPanel({
         </span>
       </div>
 
-      <div className="relative overflow-hidden rounded-3xl border border-violet-500/30 bg-gradient-to-br from-slate-900 via-slate-900/95 to-violet-950/40 p-5 sm:p-6 shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl border border-violet-500/30 bg-gradient-to-br from-slate-900 via-slate-900/95 to-violet-950/40 p-5 sm:p-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
           <GogProfileCard
             gogAccount={gogAccount}
