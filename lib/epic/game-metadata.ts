@@ -1,4 +1,5 @@
 // lib/epic/game-metadata.ts
+import type { EpicCustomAttributes, EpicKeyImage } from "./types";
 
 export const KNOWN_EPIC_CODENAMES: Record<string, string> = {
   "aa": "Aven Colony", "angelonia": "Watch Dogs 2", "barbet": "Dishonored: Death of the Outsider",
@@ -59,13 +60,15 @@ export function hashCode(str: string): number {
   return hash;
 }
 
+/** Picks the best cover URL from Epic key images (an array, or a JSON string of one). */
 export function extractBestCover(
-  rawKeyImages: any,
-  customAttributes?: any
+  rawKeyImages: unknown,
+  customAttributes?: EpicCustomAttributes
 ): string {
-  if (typeof rawKeyImages === "string") {
+  let keyImages: unknown = rawKeyImages;
+  if (typeof keyImages === "string") {
     try {
-      rawKeyImages = JSON.parse(rawKeyImages);
+      keyImages = JSON.parse(keyImages);
     } catch {}
   }
 
@@ -79,22 +82,23 @@ export function extractBestCover(
     "VaultClosed",
   ];
 
-  if (Array.isArray(rawKeyImages)) {
+  if (Array.isArray(keyImages)) {
+    const images = keyImages as EpicKeyImage[];
     for (const pType of preferred) {
-      const found = rawKeyImages.find(
-        (img: any) =>
+      const found = images.find(
+        (img) =>
           (img.type === pType || img.imageType === pType) &&
           (img.url || img.link)
       );
       if (found) {
-        return found.url || found.link;
+        return found.url || found.link || "";
       }
     }
     if (
-      rawKeyImages.length > 0 &&
-      (rawKeyImages[0].url || rawKeyImages[0].link)
+      images.length > 0 &&
+      (images[0].url || images[0].link)
     ) {
-      return rawKeyImages[0].url || rawKeyImages[0].link;
+      return images[0].url || images[0].link || "";
     }
   }
 

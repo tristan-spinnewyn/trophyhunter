@@ -5,6 +5,7 @@ import {
   saveUserPlatformAccount,
   removeUserPlatformAccount,
 } from "@/lib/db";
+import { errorMessage } from "@/lib/error-message";
 import type { PlatformType, PlatformAccount } from "@/lib/types";
 
 export async function GET() {
@@ -43,10 +44,10 @@ export async function POST(req: Request) {
       account,
       accounts: updatedAccounts,
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Save platform account error:", err);
     return NextResponse.json(
-      { error: err.message || "Erreur de sauvegarde du compte de plateforme." },
+      { error: errorMessage(err, "Erreur de sauvegarde du compte de plateforme.") },
       { status: 500 }
     );
   }
@@ -77,10 +78,10 @@ export async function DELETE(req: Request) {
       platform,
       accounts: updatedAccounts,
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Delete platform account error:", err);
     return NextResponse.json(
-      { error: err.message || "Erreur lors de la suppression du compte de plateforme." },
+      { error: errorMessage(err, "Erreur lors de la suppression du compte de plateforme.") },
       { status: 500 }
     );
   }

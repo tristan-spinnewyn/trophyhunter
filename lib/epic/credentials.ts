@@ -1,5 +1,6 @@
 // lib/epic/credentials.ts
 import { getUserPlatformAccounts, getUserPlatformApiKey, saveUserPlatformAccount } from "@/lib/db";
+import type { User } from "@/lib/types";
 import { EPIC_AUTH_CODE_URL, EPIC_CLIENT_ID, parseEpicAuthInput } from "./auth-input";
 
 const AUTH_CODE_EXPIRED_MESSAGE =
@@ -192,8 +193,8 @@ export async function withEpicCredentials<T>(
 export async function resolveEpicTokens(
   code: string,
   rawUser?: string,
-  authUser?: any
-): Promise<{ resolved?: ResolvedEpicAuth; errorStatus?: number; errorMsg?: string; errorDetails?: any }> {
+  authUser?: User | null
+): Promise<{ resolved?: ResolvedEpicAuth; errorStatus?: number; errorMsg?: string; errorDetails?: string }> {
   const cleanCode = parseEpicAuthInput(code);
   let accessToken = "";
   let accountId = "";
