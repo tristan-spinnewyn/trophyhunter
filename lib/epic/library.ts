@@ -9,11 +9,12 @@ import {
   normalizeTitle,
   resolveEpicCodename,
 } from "./game-metadata";
+import type { EpicCatalogItem, EpicEntitlement, EpicLibraryItem } from "./types";
 
 const USER_AGENT = "UELauncher/11.0.1-14907503+++Portal+Release-Live Windows/10.0.19041.1.256.64bit";
 
-export async function fetchLibraryServiceItems(accessToken: string): Promise<any[]> {
-  const records: any[] = [];
+export async function fetchLibraryServiceItems(accessToken: string): Promise<EpicLibraryItem[]> {
+  const records: EpicLibraryItem[] = [];
   try {
     const libraryRes = await fetch(
       "https://library-service.live.use1a.on.epicgames.com/library/api/public/items?includeMetadata=true",
@@ -63,7 +64,7 @@ export async function fetchLibraryServiceItems(accessToken: string): Promise<any
   return records;
 }
 
-export async function fetchLauncherAssets(accessToken: string): Promise<any[]> {
+export async function fetchLauncherAssets(accessToken: string): Promise<EpicLibraryItem[]> {
   try {
     const res = await fetch(
       "https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/public/assets/Windows?label=Live",
@@ -77,7 +78,7 @@ export async function fetchLauncherAssets(accessToken: string): Promise<any[]> {
   return [];
 }
 
-export async function fetchEntitlements(accessToken: string, accountId: string): Promise<any[]> {
+export async function fetchEntitlements(accessToken: string, accountId: string): Promise<EpicLibraryItem[]> {
   try {
     const res = await fetch(
       `https://entitlement-public-service-prod08.ol.epicgames.com/entitlement/api/account/${accountId}/entitlements?start=0&count=5000`,
@@ -85,10 +86,10 @@ export async function fetchEntitlements(accessToken: string, accountId: string):
     );
     if (res.ok) {
       const data = await res.json();
-      const list = Array.isArray(data) ? data : [];
+      const list: EpicEntitlement[] = Array.isArray(data) ? data : [];
       return list
-        .filter((ent: any) => ent.entitlementName && ent.namespace)
-        .map((ent: any) => ({
+        .filter((ent) => ent.entitlementName && ent.namespace)
+        .map((ent) => ({
           appName: ent.entitlementName,
           catalogItemId: ent.catalogItemId,
           catalogNamespace: ent.namespace,
@@ -103,7 +104,7 @@ export async function fetchEntitlements(accessToken: string, accountId: string):
 export async function fetchEpicLibraryItems(
   accessToken: string,
   accountId?: string
-): Promise<any[]> {
+): Promise<EpicLibraryItem[]> {
   const items = await fetchLibraryServiceItems(accessToken);
   if (items.length > 0) return items;
 
@@ -145,7 +146,7 @@ export async function batchResolveCatalogTitlesAndImages(
           if (cRes.ok) {
             const cData = await cRes.json();
             const items = Array.isArray(cData) ? cData : Object.values(cData);
-            for (const it of items as any[]) {
+            for (const it of items as EpicCatalogItem[]) {
               const itId = it?.id;
               const itTitle = it?.title || it?.name;
               if (itId && itTitle) {

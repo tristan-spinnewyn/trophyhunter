@@ -1,6 +1,6 @@
 // __tests__/lib/steam/psthc-guide-url.test.ts
 import { describe, it, expect } from "vitest";
-import { buildPsthcGuideUrl } from "@/lib/steam/game-details-utils";
+import { buildPsthcGuideUrl } from "@/lib/steam/game-metadata";
 
 describe("buildPsthcGuideUrl", () => {
   it("builds a search query targeting psthc site with guide keyword", () => {
