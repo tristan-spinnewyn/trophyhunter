@@ -10,6 +10,7 @@ import {
   buildAccountFromForm,
 } from "@/lib/platform-account-form";
 import type { PlatformFormData } from "@/lib/platform-account-form";
+import { useConfirm } from "@/components/ui/confirm/useConfirm";
 
 export function usePlatformModal({
   accountProfile,
@@ -22,6 +23,7 @@ export function usePlatformModal({
   removeAccount,
   handleConnectAndSyncSteam,
 }: UsePlatformModalProps) {
+  const confirm = useConfirm();
   const [editingPlatform, setEditingPlatform] = useState<PlatformType | null>(null);
   const [platForm, setPlatForm] = useState<PlatformFormData>(INITIAL_PLATFORM_FORM);
 
@@ -53,9 +55,11 @@ export function usePlatformModal({
   };
 
   const handleDisconnectPlatform = async (platform: PlatformType) => {
-    const confirmed = window.confirm(
-      `Délier ton compte ${PLATFORM_META[platform].name} ? Les identifiants enregistrés seront supprimés.`
-    );
+    const confirmed = await confirm({
+      title: `Délier ton compte ${PLATFORM_META[platform].name} ?`,
+      message: "Les identifiants enregistrés seront supprimés. Tes jeux restent dans ta collection.",
+      confirmLabel: "Délier",
+    });
     if (!confirmed) return;
 
     const nextAccounts = { ...accountProfile.accounts };

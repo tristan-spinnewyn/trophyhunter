@@ -4,6 +4,7 @@ import { LibrarySectionHeader } from "./LibrarySectionHeader";
 import { LibrarySectionFilters } from "./LibrarySectionFilters";
 import { LibrarySectionEmptyState } from "./LibrarySectionEmptyState";
 import { LibraryStatusSections } from "./LibraryStatusSections";
+import { LibrarySkeleton } from "./LibrarySkeleton";
 import type {
   GameStatus,
   OwnedGame,
@@ -15,6 +16,7 @@ import type { LibraryTab, AchievementFilterType } from "@/lib/library/library-fi
 import type { SortOrderType } from "@/lib/library/library-sort";
 
 export interface LibrarySectionProps {
+  readonly isLoading?: boolean;
   readonly activePlatformTab: LibraryTab;
   readonly filteredGames: OwnedGame[];
   readonly totalOwnedGamesCount: number;
@@ -52,6 +54,7 @@ export interface LibrarySectionProps {
 
 
 export default function LibrarySection({
+  isLoading = false,
   activePlatformTab,
   filteredGames,
   totalOwnedGamesCount,
@@ -102,7 +105,9 @@ export default function LibrarySection({
         setLibSortOrder={setLibSortOrder}
       />
 
-      {filteredGames.length > 0 ? (
+      {isLoading ? (
+        <LibrarySkeleton />
+      ) : filteredGames.length > 0 ? (
         <LibraryStatusSections
           games={filteredGames}
           renderGame={(g) => (

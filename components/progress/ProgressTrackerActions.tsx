@@ -2,6 +2,7 @@
 "use client";
 
 import { RefreshCw, KeyRound, RotateCcw } from "lucide-react";
+import { useConfirm } from "@/components/ui/confirm/useConfirm";
 
 interface ActionsProps {
   unlockedCount: number;
@@ -24,6 +25,7 @@ export function ProgressTrackerActions({
   platformConnected,
   onOpenEpicModal,
 }: ActionsProps) {
+  const confirm = useConfirm();
   const isConnected = platformConnected ?? (platform === "epic" ? true : hasSteamUser);
   const platName = platform === "epic" ? "Epic Games" : platform === "xbox" ? "Xbox" : platform === "gog" ? "GOG" : "Steam";
 
@@ -62,10 +64,13 @@ export function ProgressTrackerActions({
       {unlockedCount > 0 && (
         <button
           type="button"
-          onClick={() => {
-            if (window.confirm("Réinitialiser tous les succès cochés pour ce jeu ?")) {
-              onReset();
-            }
+          onClick={async () => {
+            const confirmed = await confirm({
+              title: "Réinitialiser la checklist ?",
+              message: "Tous les succès cochés pour ce jeu seront décochés.",
+              confirmLabel: "Réinitialiser",
+            });
+            if (confirmed) onReset();
           }}
           className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-800 hover:text-rose-400"
           title="Réinitialiser la checklist"

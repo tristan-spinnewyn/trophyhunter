@@ -5,6 +5,9 @@ import { act, renderHook } from "@testing-library/react";
 import { usePlatformModal } from "@/components/platform-sync/hooks/usePlatformModal";
 import type { UserAccountProfile } from "@/lib/types";
 
+const { confirmMock } = vi.hoisted(() => ({ confirmMock: vi.fn() }));
+vi.mock("@/components/ui/confirm/useConfirm", () => ({ useConfirm: () => confirmMock }));
+
 const steamAccount = {
   platform: "steam",
   username: "gabe",
@@ -33,16 +36,16 @@ describe("usePlatformModal.handleDisconnectPlatform", () => {
   afterEach(() => vi.restoreAllMocks());
 
   it("asks for confirmation naming the platform before unlinking", async () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+    confirmMock.mockReset().mockResolvedValue(true);
     const { result } = setup();
 
     await act(() => result.current.handleDisconnectPlatform("steam"));
 
-    expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining("Steam"));
+    expect(confirmMock).toHaveBeenCalledWith(expect.objectContaining({ title: expect.stringContaining("Steam") }));
   });
 
   it("unlinks the account once confirmed", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(true);
+    confirmMock.mockReset().mockResolvedValue(true);
     const { result, deps } = setup();
 
     await act(() => result.current.handleDisconnectPlatform("steam"));
@@ -53,7 +56,7 @@ describe("usePlatformModal.handleDisconnectPlatform", () => {
   });
 
   it("keeps the account when the user cancels", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(false);
+    confirmMock.mockReset().mockResolvedValue(false);
     const { result, deps } = setup();
 
     await act(() => result.current.handleDisconnectPlatform("steam"));

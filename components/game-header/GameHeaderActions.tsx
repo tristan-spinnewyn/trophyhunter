@@ -5,6 +5,7 @@ import { Star, Trash2, ArrowLeft } from "lucide-react";
 import type { GameStatus } from "@/lib/types";
 import { resolveGameStatus } from "@/lib/game-status/game-status.services";
 import { GameStatusSelect } from "@/components/game-status/GameStatusSelect";
+import { useConfirm } from "@/components/ui/confirm/useConfirm";
 
 interface ActionsProps {
   readonly isFavorite: boolean;
@@ -36,6 +37,8 @@ export function GameHeaderActions({
   gameStatus,
   onChangeGameStatus,
 }: ActionsProps) {
+  const confirm = useConfirm();
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       {onChangeGameStatus && (
@@ -50,8 +53,13 @@ export function GameHeaderActions({
       {isOwned && onToggleOwned && (
         <button
           type="button"
-          onClick={() => {
-            if (window.confirm("Retirer ce jeu de ta collection ?")) onToggleOwned();
+          onClick={async () => {
+            const confirmed = await confirm({
+              title: "Retirer ce jeu de ta collection ?",
+              message: "Ses succès cochés et tes notes seront aussi supprimés.",
+              confirmLabel: "Retirer",
+            });
+            if (confirmed) onToggleOwned();
           }}
           title="Retirer de ma collection"
           aria-label="Retirer de ma collection"

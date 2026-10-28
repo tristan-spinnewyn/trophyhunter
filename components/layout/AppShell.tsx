@@ -5,6 +5,7 @@ import React, { Suspense } from "react";
 import { UserDataProvider, useUserData } from "@/context/UserDataContext";
 import Navbar from "@/components/navbar/Navbar";
 import { MobileTabBar } from "@/components/navbar/MobileTabBar";
+import { ConfirmProvider } from "@/components/ui/confirm/ConfirmProvider";
 import AuthModal from "@/components/auth/AuthModal";
 import SettingsModal from "@/components/settings/SettingsModal";
 
@@ -77,7 +78,9 @@ function AppShellContent({ children }: { readonly children: React.ReactNode }) {
 export default function AppShell({ children }: { readonly children: React.ReactNode }) {
   return (
     <UserDataProvider>
-      <AppShellContent>{children}</AppShellContent>
+      <ConfirmProvider>
+        <AppShellContent>{children}</AppShellContent>
+      </ConfirmProvider>
     </UserDataProvider>
   );
 }

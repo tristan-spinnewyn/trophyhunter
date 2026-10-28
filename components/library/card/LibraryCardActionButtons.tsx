@@ -2,6 +2,7 @@
 
 import { Heart, FolderPlus, Unlink, RefreshCw, Trash2 } from "lucide-react";
 import type { OwnedGame, PlatformType, CollectionWithGames } from "@/lib/types";
+import { useConfirm } from "@/components/ui/confirm/useConfirm";
 
 interface LibraryCardActionButtonsProps {
   game: OwnedGame;
@@ -33,6 +34,7 @@ export function LibraryCardActionButtons({
   onSyncGame,
   onRemoveGame,
 }: LibraryCardActionButtonsProps) {
+  const confirm = useConfirm();
   const isWishlisted = wishlistIds.includes(g.appId);
   const wishlistLabel = isWishlisted ? "Retirer de ma liste d'envies" : "Ajouter à ma liste d'envies";
   const syncLabel = g.platform === "epic" ? "Synchroniser les succès Epic Games" : "Actualiser les succès Steam";
@@ -88,10 +90,13 @@ export function LibraryCardActionButtons({
 
       <button
         type="button"
-        onClick={() => {
-          if (window.confirm(`Retirer « ${g.name} » de ta bibliothèque ?`)) {
-            void onRemoveGame(g.appId, g.platform);
-          }
+        onClick={async () => {
+          const confirmed = await confirm({
+            title: `Retirer « ${g.name} » ?`,
+            message: "Le jeu quittera ta collection, avec ses succès cochés et tes notes.",
+            confirmLabel: "Retirer",
+          });
+          if (confirmed) await onRemoveGame(g.appId, g.platform);
         }}
         title="Retirer de ma bibliothèque"
         aria-label="Retirer de ma bibliothèque"

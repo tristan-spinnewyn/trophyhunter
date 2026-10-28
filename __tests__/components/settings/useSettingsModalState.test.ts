@@ -6,6 +6,9 @@ import { useSettingsModalState } from "@/components/settings/useSettingsModalSta
 import { parseSyncPayload } from "@/components/settings/settingsBackupUtils";
 import { jsonResponse } from "../../helpers/responses";
 
+const { confirmMock } = vi.hoisted(() => ({ confirmMock: vi.fn() }));
+vi.mock("@/components/ui/confirm/useConfirm", () => ({ useConfirm: () => confirmMock }));
+
 const baseProps = {
   isOpen: true,
   onClose: vi.fn(),
@@ -107,7 +110,7 @@ describe("useSettingsModalState", () => {
 
   it("clears all data only after confirmation", async () => {
     const fetchSpy = mockApi();
-    const confirm = vi.spyOn(window, "confirm").mockReturnValueOnce(false).mockReturnValueOnce(true);
+    confirmMock.mockReset().mockResolvedValueOnce(false).mockResolvedValueOnce(true);
     const { result } = renderHook(() => useSettingsModalState(baseProps));
 
     await act(() => result.current.handleClearAll());
@@ -116,7 +119,8 @@ describe("useSettingsModalState", () => {
     await act(() => result.current.handleClearAll());
     expect(fetchSpy).toHaveBeenCalledWith("/api/user/games?all=true", { method: "DELETE" });
     expect(baseProps.onDataReset).toHaveBeenCalled();
-    expect(confirm).toHaveBeenCalledTimes(2);
+    expect(confirmMock).toHaveBeenCalledTimes(2);
+    expect(confirmMock).toHaveBeenCalledWith(expect.objectContaining({ confirmLabel: "Tout supprimer" }));
   });
 });
 
