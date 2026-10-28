@@ -18,38 +18,53 @@ export function getMasterEncryptionKey(): Buffer {
     return crypto.createHash("sha256").update(raw).digest();
   }
 
-  for (const keyPath of [PRIMARY_KEY_PATH, LEGACY_KEY_PATH]) {
-    try {
-      if (fs.existsSync(/* turbopackIgnore: true */ keyPath)) {
-        const stored = fs.readFileSync(/* turbopackIgnore: true */ keyPath, "utf8").trim();
-        if (stored.length === 64 && /^[0-9a-fA-F]+$/.test(stored)) {
-          return Buffer.from(stored, "hex");
-        }
-      }
-    } catch {
-      // Ignore read errors and regenerate
-    }
+  const primaryKey = readStoredKey(PRIMARY_KEY_PATH);
+  if (primaryKey) {
+    return Buffer.from(primaryKey, "hex");
+  }
+
+  const legacyKey = readStoredKey(LEGACY_KEY_PATH);
+  if (legacyKey) {
+    // Best effort: once copied next to the database, the legacy directory is no longer needed.
+    writeKeyFile(PRIMARY_KEY_PATH, legacyKey);
+    return Buffer.from(legacyKey, "hex");
   }
 
   const generatedKey = crypto.randomBytes(32);
   const hexKey = generatedKey.toString("hex");
 
-  for (const keyPath of [PRIMARY_KEY_PATH, LEGACY_KEY_PATH]) {
-    try {
-      const dir = path.dirname(keyPath);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      fs.writeFileSync(keyPath, hexKey, {
-        encoding: "utf8",
-        mode: 0o600,
-      });
-      return generatedKey;
-    } catch {
-      // Try next location
-    }
+  if (!writeKeyFile(PRIMARY_KEY_PATH, hexKey) && !writeKeyFile(LEGACY_KEY_PATH, hexKey)) {
+    console.warn("Could not persist encryption key to disk, using in-memory key");
   }
-
-  console.warn("Could not persist encryption key to disk, using in-memory key");
   return generatedKey;
+}
+
+function readStoredKey(keyPath: string): string | null {
+  try {
+    if (fs.existsSync(/* turbopackIgnore: true */ keyPath)) {
+      const stored = fs.readFileSync(/* turbopackIgnore: true */ keyPath, "utf8").trim();
+      if (stored.length === 64 && /^[0-9a-fA-F]+$/.test(stored)) {
+        return stored;
+      }
+    }
+  } catch {
+    // Ignore read errors and fall back to the next source
+  }
+  return null;
+}
+
+function writeKeyFile(keyPath: string, hexKey: string): boolean {
+  try {
+    const dir = path.dirname(keyPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(keyPath, hexKey, {
+      encoding: "utf8",
+      mode: 0o600,
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }

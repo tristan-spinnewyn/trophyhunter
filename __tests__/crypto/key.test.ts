@@ -71,6 +71,53 @@ describe("Master Encryption Key Management", () => {
       }
       throw new Error("File not found");
     });
+    vi.spyOn(fs, "mkdirSync").mockReturnValue(undefined);
+    vi.spyOn(fs, "writeFileSync").mockReturnValue(undefined);
+
+    const key = getMasterEncryptionKey();
+    expect(key.toString("hex")).toBe(legacyKey);
+  });
+
+  it("copies a legacy key to the primary location so the legacy path can be retired", () => {
+    delete process.env.APP_ENCRYPTION_KEY;
+    const primary = path.join(process.cwd(), "data", ".encryption_key");
+    const legacy = path.join(process.cwd(), ".data", ".encryption_key");
+    const legacyKey = crypto.randomBytes(32).toString("hex");
+    const writes: Array<{ target: PathOrFileDescriptor; data: string }> = [];
+
+    vi.spyOn(fs, "existsSync").mockImplementation((checkPath: PathLike) => checkPath === legacy);
+    vi.spyOn(fs, "readFileSync").mockImplementation((targetPath: PathOrFileDescriptor) => {
+      if (targetPath === legacy) {
+        return legacyKey;
+      }
+      throw new Error("File not found");
+    });
+    vi.spyOn(fs, "mkdirSync").mockReturnValue(undefined);
+    vi.spyOn(fs, "writeFileSync").mockImplementation((target: PathOrFileDescriptor, data: string | NodeJS.ArrayBufferView) => {
+      writes.push({ target, data: String(data) });
+    });
+
+    getMasterEncryptionKey();
+
+    expect(writes).toEqual([{ target: primary, data: legacyKey }]);
+  });
+
+  it("still returns the legacy key when copying it to the primary location fails", () => {
+    delete process.env.APP_ENCRYPTION_KEY;
+    const legacy = path.join(process.cwd(), ".data", ".encryption_key");
+    const legacyKey = crypto.randomBytes(32).toString("hex");
+
+    vi.spyOn(fs, "existsSync").mockImplementation((checkPath: PathLike) => checkPath === legacy);
+    vi.spyOn(fs, "readFileSync").mockImplementation((targetPath: PathOrFileDescriptor) => {
+      if (targetPath === legacy) {
+        return legacyKey;
+      }
+      throw new Error("File not found");
+    });
+    vi.spyOn(fs, "mkdirSync").mockReturnValue(undefined);
+    vi.spyOn(fs, "writeFileSync").mockImplementation(() => {
+      throw new Error("EACCES");
+    });
 
     const key = getMasterEncryptionKey();
     expect(key.toString("hex")).toBe(legacyKey);
