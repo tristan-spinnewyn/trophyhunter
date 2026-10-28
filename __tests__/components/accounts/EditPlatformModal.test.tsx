@@ -4,8 +4,10 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentProps } from "react";
 import EditPlatformModal from "@/components/accounts/EditPlatformModal";
+import { INITIAL_PLATFORM_FORM } from "@/lib/platform-account-form";
 
 const platForm = {
+  ...INITIAL_PLATFORM_FORM,
   username: "chief",
   level: "10",
   gamesOwned: "45",

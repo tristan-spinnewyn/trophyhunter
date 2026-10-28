@@ -34,11 +34,12 @@ function renderCard(overrides: Partial<LibraryGameCardProps> = {}) {
 describe("LibraryGameCard", () => {
   afterEach(cleanup);
 
-  it("shows the achievement progress and opens the game from the cover and the title", () => {
+  it("shows the playtime and achievement progress, and opens the game from the cover and the title", () => {
     const props = renderCard({ game: makeOwnedGame({ playtimeHours: 12 }) });
 
-    expect(screen.getByText(/4 \/ 10 succès/).textContent).toContain("12 h");
-    expect(screen.getByText("40%")).toBeTruthy();
+    expect(screen.getByText("12 h")).toBeTruthy();
+    expect(screen.getByText("4/10 succès")).toBeTruthy();
+    expect(screen.getByTitle("40 % des succès")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Ouvrir Portal 2" }));
     fireEvent.click(screen.getByText("Portal 2"));
@@ -46,19 +47,36 @@ describe("LibraryGameCard", () => {
     expect(props.onSelectGame).toHaveBeenNthCalledWith(2, 620);
   });
 
+  it("adds the last session to the activity line", () => {
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString();
+    renderCard({ game: makeOwnedGame({ playtimeHours: 3, lastPlayed: yesterday }) });
+
+    expect(screen.getByText("3 h · joué hier")).toBeTruthy();
+  });
+
+  it("explains a missing playtime", () => {
+    renderCard();
+    expect(screen.getByText("Temps de jeu inconnu")).toBeTruthy();
+    cleanup();
+
+    renderCard({ game: makeOwnedGame({ unlockedCount: 0 }) });
+    expect(screen.getByText("Pas encore lancé")).toBeTruthy();
+  });
+
   it("marks a completed game with a 100% badge", () => {
     renderCard({ game: makeOwnedGame({ unlockedCount: 10 }) });
 
-    expect(screen.getAllByText("100%")).toHaveLength(2);
+    expect(screen.getByText("100%")).toBeTruthy();
+    expect(screen.getByTitle("100 % des succès")).toBeTruthy();
   });
 
-  it("says when a game has no achievements and counts Epic progress in XP", () => {
+  it("hides the achievement bar without achievements and counts Epic progress in XP", () => {
     renderCard({ game: makeOwnedGame({ totalAchievements: 0, unlockedCount: 0 }) });
-    expect(screen.getByText("Aucun succès")).toBeTruthy();
+    expect(screen.queryByTitle(/% des/)).toBeNull();
     cleanup();
 
     renderCard({ game: makeOwnedGame({ platform: "epic" }) });
-    expect(screen.getByText("4 / 10 XP")).toBeTruthy();
+    expect(screen.getByText("4/10 XP")).toBeTruthy();
   });
 
   it("hides a cover image that fails to load", () => {
