@@ -11,38 +11,47 @@ export const DEFAULT_GAME_STATUS: GameStatus = "backlog";
 export const VALID_GAME_STATUSES: readonly GameStatus[] = [
   "backlog",
   "in-progress",
+  "paused",
   "completed",
-] as const;
-
-export const GAME_STATUS_OPTIONS: readonly GameStatusOption[] = [
-  {
-    value: "backlog",
-    label: "Backlog",
-    shortLabel: "Backlog",
-    badgeClass: "border-slate-700 bg-slate-800/90 text-slate-300",
-    activeButtonClass: "border-slate-500/60 bg-slate-700/80 text-white shadow-sm",
-  },
-  {
-    value: "in-progress",
-    label: "En cours",
-    shortLabel: "En cours",
-    badgeClass: "border-sky-500/40 bg-sky-500/15 text-sky-300",
-    activeButtonClass: "border-sky-500/60 bg-sky-500/25 text-sky-200 shadow-sm",
-  },
-  {
-    value: "completed",
-    label: "Terminé",
-    shortLabel: "Terminé",
-    badgeClass: "border-emerald-500/40 bg-emerald-500/15 text-emerald-300",
-    activeButtonClass: "border-emerald-500/60 bg-emerald-500/25 text-emerald-200 shadow-sm",
-  },
+  "abandoned",
 ] as const;
 
 export const GAME_STATUS_META: Readonly<Record<GameStatus, GameStatusOption>> = {
-  backlog: GAME_STATUS_OPTIONS[0],
-  "in-progress": GAME_STATUS_OPTIONS[1],
-  completed: GAME_STATUS_OPTIONS[2],
+  backlog: {
+    value: "backlog",
+    label: "À jouer",
+    sectionTitle: "À jouer",
+    badgeClass: "border-slate-700 bg-slate-800/90 text-slate-300",
+  },
+  "in-progress": {
+    value: "in-progress",
+    label: "En cours",
+    sectionTitle: "En cours",
+    badgeClass: "border-sky-500/40 bg-sky-500/15 text-sky-300",
+  },
+  paused: {
+    value: "paused",
+    label: "En pause",
+    sectionTitle: "En pause",
+    badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-300",
+  },
+  completed: {
+    value: "completed",
+    label: "Terminé",
+    sectionTitle: "Terminés",
+    badgeClass: "border-emerald-500/40 bg-emerald-500/15 text-emerald-300",
+  },
+  abandoned: {
+    value: "abandoned",
+    label: "Abandonné",
+    sectionTitle: "Abandonnés",
+    badgeClass: "border-rose-500/30 bg-rose-500/10 text-rose-300",
+  },
 };
+
+export const GAME_STATUS_OPTIONS: readonly GameStatusOption[] = VALID_GAME_STATUSES.map(
+  (status) => GAME_STATUS_META[status]
+);
 
 export function isValidGameStatus(value: unknown): value is GameStatus {
   return (

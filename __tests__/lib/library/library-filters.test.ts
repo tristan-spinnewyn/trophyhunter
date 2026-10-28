@@ -1,6 +1,6 @@
 // __tests__/lib/library/library-filters.test.ts
 import { describe, it, expect } from "vitest";
-import { filterGames } from "@/lib/library/library-filters";
+import { filterGames, isFeatureTab, parseLibraryTab } from "@/lib/library/library-filters";
 import type { OwnedGame } from "@/lib/types";
 
 const SAMPLE_GAMES: OwnedGame[] = [
@@ -10,12 +10,11 @@ const SAMPLE_GAMES: OwnedGame[] = [
   { appId: 4, name: "Platinum GOG", headerImg: "", platform: "gog", totalAchievements: 30, unlockedCount: 30, addedAt: "2026-01-04", status: "completed" },
 ];
 
-describe("filterGames with GameStatus", () => {
+describe("filterGames platform and feature tabs", () => {
   const baseParams = {
     games: SAMPLE_GAMES,
     activePlatformTab: "all" as const,
     libPlatformFilter: "all" as const,
-    libStatusFilter: "all" as const,
     libAchievementFilter: "all" as const,
     libSearch: "",
     wishlistIds: [2],
@@ -23,40 +22,9 @@ describe("filterGames with GameStatus", () => {
     selectedCollId: "c1",
   };
 
-  it("filters by backlog, in-progress, completed and platinum across platforms", () => {
-    const backlog = filterGames({ ...baseParams, libStatusFilter: "backlog" });
-    expect(backlog.map((g) => g.appId)).toEqual([1]);
-
-    const inProgress = filterGames({ ...baseParams, libStatusFilter: "in-progress" });
-    expect(inProgress.map((g) => g.appId)).toEqual([2]);
-
-    const completed = filterGames({ ...baseParams, libStatusFilter: "completed" });
-    expect(completed.map((g) => g.appId)).toEqual([3, 4]);
-
-    const platinum = filterGames({ ...baseParams, libStatusFilter: "platinum" });
-    expect(platinum.map((g) => g.appId)).toEqual([4]);
-  });
-
-  it("combines platform tab and status filters accurately", () => {
-    const epicCompleted = filterGames({
-      ...baseParams,
-      activePlatformTab: "epic",
-      libStatusFilter: "completed",
-    });
-    expect(epicCompleted.map((g) => g.appId)).toEqual([3]);
-
-    const xboxCompleted = filterGames({
-      ...baseParams,
-      activePlatformTab: "xbox",
-      libStatusFilter: "completed",
-    });
-    expect(xboxCompleted).toHaveLength(0);
-
-    const gamepassTabAll = filterGames({
-      ...baseParams,
-      activePlatformTab: "gamepass",
-    });
-    expect(gamepassTabAll).toHaveLength(4);
+  it("keeps every game, whatever its status, on the all and Game Pass tabs", () => {
+    expect(filterGames(baseParams)).toHaveLength(4);
+    expect(filterGames({ ...baseParams, activePlatformTab: "gamepass" })).toHaveLength(4);
   });
 });
 
@@ -65,7 +33,6 @@ describe("filterGames tabs, achievements and search", () => {
     games: SAMPLE_GAMES,
     activePlatformTab: "all" as const,
     libPlatformFilter: "all" as const,
-    libStatusFilter: "all" as const,
     libAchievementFilter: "all" as const,
     libSearch: "",
     wishlistIds: [2],
@@ -90,10 +57,9 @@ describe("filterGames tabs, achievements and search", () => {
     expect(ids(filterGames({ ...base, activePlatformTab: "duplicates", libPlatformFilter: "gog" }))).toEqual([1, 2, 3, 4]);
   });
 
-  it("filters unstarted games and by achievement support", () => {
+  it("filters by achievement support", () => {
     const noAch: OwnedGame = { ...SAMPLE_GAMES[0], appId: 5, name: "No Achievements", totalAchievements: 0 };
     const games = [...SAMPLE_GAMES, noAch];
-    expect(ids(filterGames({ ...base, games, libStatusFilter: "unstarted" }))).toEqual([1, 5]);
     expect(ids(filterGames({ ...base, games, libAchievementFilter: "no-achievements" }))).toEqual([5]);
     expect(ids(filterGames({ ...base, games, libAchievementFilter: "with-achievements" }))).toEqual([1, 2, 3, 4]);
   });
@@ -101,5 +67,32 @@ describe("filterGames tabs, achievements and search", () => {
   it("searches by name or app id, case-insensitively", () => {
     expect(ids(filterGames({ ...base, libSearch: "platinum" }))).toEqual([4]);
     expect(ids(filterGames({ ...base, libSearch: "3" }))).toEqual([3]);
+  });
+});
+
+describe("parseLibraryTab", () => {
+  it("accepts every platform and feature tab", () => {
+    for (const tab of ["all", "steam", "xbox", "epic", "gog", "gamepass", "duplicates", "wishlist", "collections"]) {
+      expect(parseLibraryTab(tab)).toBe(tab);
+    }
+  });
+
+  it("falls back to all for a missing or unknown value", () => {
+    expect(parseLibraryTab(null)).toBe("all");
+    expect(parseLibraryTab("")).toBe("all");
+    expect(parseLibraryTab("playstation")).toBe("all");
+  });
+});
+
+describe("isFeatureTab", () => {
+  it("is true for views that are not a single platform", () => {
+    for (const tab of ["all", "gamepass", "duplicates", "wishlist", "collections"] as const) {
+      expect(isFeatureTab(tab)).toBe(true);
+    }
+  });
+
+  it("is false for a platform tab", () => {
+    expect(isFeatureTab("steam")).toBe(false);
+    expect(isFeatureTab("gog")).toBe(false);
   });
 });

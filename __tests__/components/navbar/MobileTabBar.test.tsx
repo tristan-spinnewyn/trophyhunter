@@ -23,7 +23,7 @@ describe("MobileTabBar", () => {
 
   it("highlights the library on a game page", () => {
     pathname = "/game/1245620";
-    expect(currentLinks(renderToStaticMarkup(<MobileTabBar />))).toEqual(["Bibliothèque"]);
+    expect(currentLinks(renderToStaticMarkup(<MobileTabBar />))).toEqual(["Collection"]);
   });
 
   it("highlights the accounts tab on the account page", () => {

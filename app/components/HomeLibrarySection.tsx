@@ -1,7 +1,7 @@
 // app/components/HomeLibrarySection.tsx
 
 import { useRouter } from "next/navigation";
-import LibrarySection from "@/components/dashboard/library-section/LibrarySection";
+import LibrarySection from "@/components/library/section/LibrarySection";
 import type { useHomePageController } from "../hooks/useHomePageController";
 
 interface HomeLibrarySectionProps {
@@ -25,8 +25,6 @@ export function HomeLibrarySection({ controller: c }: HomeLibrarySectionProps) {
       setLibSearch={lf.setLibSearch}
       libPlatformFilter={lf.libPlatformFilter}
       setLibPlatformFilter={lf.setLibPlatformFilter}
-      libStatusFilter={lf.libStatusFilter}
-      setLibStatusFilter={lf.setLibStatusFilter}
       libAchievementFilter={lf.libAchievementFilter}
       setLibAchievementFilter={lf.setLibAchievementFilter}
       libSortOrder={lf.libSortOrder}
@@ -41,8 +39,6 @@ export function HomeLibrarySection({ controller: c }: HomeLibrarySectionProps) {
       onSyncGame={ps.handleSyncGame}
       onRemoveGame={ps.handleRemoveGame}
       onUpdateGameStatus={ps.handleUpdateGameStatus}
-      onConnectAndSyncSteam={ps.handleConnectAndSyncSteam}
-      isSyncingSteam={ps.isSyncingSteam}
     />
   );
 }

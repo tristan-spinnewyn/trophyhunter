@@ -3,8 +3,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import AccountDashboard from "@/components/AccountDashboard";
+import AccountDashboard from "@/components/accounts/AccountDashboard";
 import { useUserData } from "@/context/UserDataContext";
+import { ALL_PLATFORMS, countConnectedPlatforms } from "@/lib/platforms";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -15,13 +16,9 @@ export default function AccountPage() {
     setOwnedGames,
     setSteamUser,
     currentUser,
-    setIsAuthOpen,
     steamApiKey,
-    wishlistIds,
-    setWishlistIds,
-    collections,
-    setCollections,
   } = useUserData();
+  const connectedCount = countConnectedPlatforms(accountProfile);
 
   return (
     <div className="space-y-6">
@@ -30,7 +27,8 @@ export default function AccountPage() {
           Comptes & plateformes
         </h1>
         <p className="mt-1 text-sm text-slate-400">
-          Lie tes comptes Steam, Xbox, Epic Games et GOG pour importer tes jeux et tes succès.
+          {connectedCount} {connectedCount > 1 ? "comptes liés" : "compte lié"} sur {ALL_PLATFORMS.length} ·{" "}
+          {ownedGames.length} {ownedGames.length > 1 ? "jeux" : "jeu"} dans ta collection
         </p>
       </header>
 
@@ -42,12 +40,7 @@ export default function AccountPage() {
         onSelectGame={(appId) => router.push(`/game/${appId}`)}
         onSteamUserChange={setSteamUser}
         currentUser={currentUser}
-        onOpenAuthModal={() => setIsAuthOpen(true)}
         initialSteamApiKey={steamApiKey}
-        initialWishlist={wishlistIds}
-        initialCollections={collections}
-        onWishlistChange={setWishlistIds}
-        onCollectionsChange={setCollections}
       />
     </div>
   );

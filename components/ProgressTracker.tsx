@@ -54,7 +54,7 @@ export default function ProgressTracker({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">Progression</span>
+              <span className="text-xs text-slate-400">Succès</span>
               <span className={`text-xs font-medium ${tier.color}`}>{tier.name}</span>
             </div>
             {hasAchievements ? (

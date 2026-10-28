@@ -1,12 +1,10 @@
 // components/game-header/GameHeaderActions.tsx
 "use client";
 
-import { Star, Check, Plus, ArrowLeft } from "lucide-react";
+import { Star, Trash2, ArrowLeft } from "lucide-react";
 import type { GameStatus } from "@/lib/types";
-import {
-  GAME_STATUS_OPTIONS,
-  resolveGameStatus,
-} from "@/lib/game-status/game-status.services";
+import { resolveGameStatus } from "@/lib/game-status/game-status.services";
+import { GameStatusSelect } from "@/components/game-status/GameStatusSelect";
 
 interface ActionsProps {
   readonly isFavorite: boolean;
@@ -25,7 +23,7 @@ export function GameHeaderBackButton({ onBackToLibrary }: { readonly onBackToLib
       className="absolute left-3 top-3 sm:left-4 sm:top-4 flex items-center gap-1.5 rounded-lg bg-slate-950/70 px-2.5 py-1.5 text-sm font-medium text-slate-200 backdrop-blur-md transition hover:bg-slate-950 hover:text-white"
     >
       <ArrowLeft className="h-4 w-4" />
-      <span>Bibliothèque</span>
+      <span>Ma collection</span>
     </button>
   );
 }
@@ -38,58 +36,33 @@ export function GameHeaderActions({
   gameStatus,
   onChangeGameStatus,
 }: ActionsProps) {
-  const currentStatus = resolveGameStatus(gameStatus);
-
   return (
     <div className="flex flex-wrap items-center gap-2">
       {onChangeGameStatus && (
-        <div role="group" aria-label="Statut du jeu" className="flex items-center gap-0.5 rounded-lg border border-slate-800 bg-slate-950/60 p-0.5">
-          {GAME_STATUS_OPTIONS.map((opt) => {
-            const isActive = isOwned && currentStatus === opt.value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => onChangeGameStatus(opt.value)}
-                aria-pressed={isActive}
-                className={`rounded-md border px-2.5 py-1 text-sm font-medium transition ${
-                  isActive
-                    ? opt.activeButtonClass
-                    : "border-transparent text-slate-300 hover:bg-slate-800/80 hover:text-white"
-                }`}
-              >
-                {opt.shortLabel}
-              </button>
-            );
-          })}
-        </div>
+        <GameStatusSelect
+          status={isOwned ? resolveGameStatus(gameStatus) : null}
+          onChange={onChangeGameStatus}
+          ariaLabel="Statut du jeu"
+          className="h-9 px-3 text-sm"
+        />
       )}
 
-      {onToggleOwned && (
+      {isOwned && onToggleOwned && (
         <button
-          onClick={onToggleOwned}
-          className={`flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition ${
-            isOwned
-              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
-              : "border-sky-500 bg-sky-500 text-slate-950 hover:bg-sky-400"
-          }`}
-          title={isOwned ? "Retirer de mes jeux possédés" : "Ajouter à mes jeux possédés"}
+          type="button"
+          onClick={() => {
+            if (window.confirm("Retirer ce jeu de ta collection ?")) onToggleOwned();
+          }}
+          title="Retirer de ma collection"
+          aria-label="Retirer de ma collection"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-800 text-slate-400 transition hover:bg-slate-800 hover:text-rose-400"
         >
-          {isOwned ? (
-            <>
-              <Check className="h-4 w-4 text-emerald-400" />
-              <span>Possédé</span>
-            </>
-          ) : (
-            <>
-              <Plus className="h-4 w-4" />
-              <span>Ajouter à mes jeux</span>
-            </>
-          )}
+          <Trash2 className="h-4 w-4" />
         </button>
       )}
 
       <button
+        type="button"
         onClick={onToggleFavorite}
         className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
           isFavorite

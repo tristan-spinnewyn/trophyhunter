@@ -17,6 +17,8 @@ export interface GameHeaderProps {
   readonly huntingMeta?: GameHuntingMeta;
   readonly onSaveHuntingOverride?: (override: GameHuntingOverride | undefined) => void;
   readonly onBackToLibrary?: () => void;
+  /** Hours played, when the game is in the collection. */
+  readonly playtimeHours?: number;
 }
 
 export default function GameHeader({
@@ -30,6 +32,7 @@ export default function GameHeader({
   huntingMeta,
   onSaveHuntingOverride,
   onBackToLibrary,
+  playtimeHours,
 }: GameHeaderProps) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
@@ -58,9 +61,13 @@ export default function GameHeader({
                 {game.name}
               </h1>
               <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-                <span className="font-medium text-slate-300">
-                  {game.totalAchievements} succès
-                </span>
+                {playtimeHours !== undefined && playtimeHours > 0 && (
+                  <>
+                    <span className="font-medium text-slate-200">{playtimeHours} h jouées</span>
+                    <span>•</span>
+                  </>
+                )}
+                <span>{game.totalAchievements} succès</span>
                 {game.developers && game.developers.length > 0 && (
                   <>
                     <span>•</span>

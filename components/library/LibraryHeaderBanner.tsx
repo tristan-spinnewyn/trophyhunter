@@ -3,29 +3,29 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import type { GlobalDashboardStats } from "@/lib/library/library-stats";
-import { LibraryGlobalStatsGrid } from "./LibraryGlobalStatsGrid";
+import type { TrackingSummary } from "@/lib/library/library-tracking";
+import { TrackingSummaryTiles } from "./TrackingSummaryTiles";
 
 interface LibraryHeaderBannerProps {
   readonly ownedGamesCount: number;
   readonly onOpenAddGame: () => void;
-  readonly globalStats?: GlobalDashboardStats;
+  readonly trackingSummary: TrackingSummary;
 }
 
 export function LibraryHeaderBanner({
   ownedGamesCount,
   onOpenAddGame,
-  globalStats,
+  trackingSummary,
 }: LibraryHeaderBannerProps) {
   return (
     <section className="space-y-4">
       <div className="flex items-end justify-between gap-4">
         <div className="min-w-0">
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
-            Ma bibliothèque
+            Ma collection
           </h1>
           <p className="mt-1 text-sm text-slate-400">
-            {ownedGamesCount} {ownedGamesCount > 1 ? "jeux suivis" : "jeu suivi"} sur Steam, Xbox, Epic Games et GOG
+            {ownedGamesCount} {ownedGamesCount > 1 ? "jeux" : "jeu"} sur Steam, Xbox, Epic Games et GOG
           </p>
         </div>
 
@@ -39,12 +39,7 @@ export function LibraryHeaderBanner({
         </button>
       </div>
 
-      {globalStats && (
-        <LibraryGlobalStatsGrid
-          ownedGamesCount={ownedGamesCount}
-          globalStats={globalStats}
-        />
-      )}
+      {ownedGamesCount > 0 && <TrackingSummaryTiles summary={trackingSummary} />}
     </section>
   );
 }

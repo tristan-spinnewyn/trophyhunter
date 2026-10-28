@@ -1,21 +1,8 @@
 // lib/library/library-stats.ts
 
-import type { OwnedGame, UserAccountProfile } from "@/lib/types";
+import type { OwnedGame } from "@/lib/types";
 import { ALL_PLATFORMS } from "@/lib/platforms";
 import { normalizeGameTitle } from "@/lib/game-title";
-import { resolveGameStatus } from "@/lib/game-status/game-status.services";
-
-export interface GlobalDashboardStats {
-  readonly connectedCount: number;
-  readonly totalGamesOwned: number;
-  readonly totalAchievementsUnlocked: number;
-  readonly totalCompletedGames: number;
-  readonly totalHours: number;
-  readonly avgCompletion: number;
-  readonly trackedGamesCount: number;
-  readonly finishedGamesCount: number;
-  readonly finishedGamesPercent: number;
-}
 
 export interface EpicGameCounts {
   readonly total: number;
@@ -57,68 +44,4 @@ export function calculateEpicCounts(ownedGames: OwnedGame[]): EpicGameCounts {
   const epicGames = ownedGames.filter((g) => g.platform === "epic");
   const withAch = epicGames.filter((g) => g.totalAchievements > 0).length;
   return { total: epicGames.length, withAch, noAch: epicGames.length - withAch };
-}
-
-export function calculateGlobalStats(
-  accountProfile: UserAccountProfile,
-  ownedGames: OwnedGame[]
-): GlobalDashboardStats {
-  const connectedAccounts = ALL_PLATFORMS.filter((p) => !!accountProfile.accounts[p]);
-  const localByPlatform: Record<string, { games: number; ach: number; comp: number; hrs: number }> = {};
-  for (const p of ALL_PLATFORMS) localByPlatform[p] = { games: 0, ach: 0, comp: 0, hrs: 0 };
-
-  let finishedGamesCount = 0;
-  for (const g of ownedGames) {
-    const row = localByPlatform[g.platform] || { games: 0, ach: 0, comp: 0, hrs: 0 };
-    localByPlatform[g.platform] = row;
-    row.games += 1;
-    row.ach += g.unlockedCount || 0;
-    const isPlat = g.totalAchievements > 0 && g.unlockedCount >= g.totalAchievements;
-    if (isPlat) row.comp += 1;
-    if (resolveGameStatus(g.status) === "completed" || isPlat) finishedGamesCount += 1;
-    row.hrs += g.playtimeHours || 0;
-  }
-
-  let totalGames = 0, totalAch = 0, totalComp = 0, totalHrs = 0;
-  const seenPlatforms = new Set<string>();
-
-  for (const plat of ALL_PLATFORMS) {
-    const acc = accountProfile.accounts[plat];
-    if (!acc) continue;
-    seenPlatforms.add(plat);
-    const loc = localByPlatform[plat];
-    totalGames += Math.max(acc.stats.gamesOwned || 0, loc.games);
-    totalAch += Math.max(acc.stats.totalAchievements || 0, loc.ach);
-    totalComp += Math.max(acc.stats.completedGames || 0, loc.comp);
-    totalHrs += Math.max(acc.stats.hoursPlayed || 0, loc.hrs);
-  }
-
-  for (const [plat, loc] of Object.entries(localByPlatform)) {
-    if (!seenPlatforms.has(plat)) {
-      totalGames += loc.games;
-      totalAch += loc.ach;
-      totalComp += loc.comp;
-      totalHrs += loc.hrs;
-    }
-  }
-
-  const withAch = ownedGames.filter((g) => g.totalAchievements > 0);
-  const avgCompletion = withAch.length > 0
-    ? Math.round((withAch.reduce((acc, g) => acc + Math.min(1, (g.unlockedCount || 0) / g.totalAchievements), 0) / withAch.length) * 100)
-    : 0;
-  const finishedGamesPercent = ownedGames.length > 0
-    ? Math.round((finishedGamesCount / ownedGames.length) * 100)
-    : 0;
-
-  return {
-    connectedCount: connectedAccounts.length,
-    totalGamesOwned: totalGames,
-    totalAchievementsUnlocked: totalAch,
-    totalCompletedGames: totalComp,
-    totalHours: Math.round(totalHrs * 10) / 10,
-    avgCompletion,
-    trackedGamesCount: ownedGames.length,
-    finishedGamesCount,
-    finishedGamesPercent,
-  };
 }

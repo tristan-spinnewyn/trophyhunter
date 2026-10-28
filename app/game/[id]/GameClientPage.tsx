@@ -34,6 +34,7 @@ export default function GameClientPage({ id }: { id: string }) {
         huntingMeta={hasAchievements ? c.huntingMeta : undefined}
         onSaveHuntingOverride={c.handleSaveHuntingOverride}
         onBackToLibrary={() => router.push("/")}
+        playtimeHours={c.owned?.playtimeHours}
       />
 
       <div className="lg:grid lg:grid-cols-12 lg:gap-6 items-start space-y-5 lg:space-y-0">

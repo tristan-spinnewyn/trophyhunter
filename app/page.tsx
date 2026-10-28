@@ -2,14 +2,20 @@
 
 "use client";
 
-import DashboardBanners from "@/components/dashboard/DashboardBanners";
-import DashboardNavTabs from "@/components/dashboard/DashboardNavTabs";
+import FeedbackBanners from "@/components/ui/FeedbackBanners";
+import LibraryNavTabs from "@/components/library/LibraryNavTabs";
 import { LibraryHeaderBanner } from "@/components/library/LibraryHeaderBanner";
 import { FeaturedGamesSection } from "@/components/library/FeaturedGamesSection";
 import { useHomePageController } from "./hooks/useHomePageController";
 import { HomeContextPanels } from "./components/HomeContextPanels";
 import { HomeLibrarySection } from "./components/HomeLibrarySection";
 import { HomeModalsContainer } from "./components/HomeModalsContainer";
+import type { LibraryTab } from "@/lib/library/library-filters";
+
+/** Game Pass and duplicates have their own panel; listing the whole collection under them is noise. */
+function showsGameList(tab: LibraryTab): boolean {
+  return tab !== "gamepass" && tab !== "duplicates";
+}
 
 export default function HomePage() {
   const c = useHomePageController();
@@ -19,16 +25,16 @@ export default function HomePage() {
       <LibraryHeaderBanner
         ownedGamesCount={c.ownedGames.length}
         onOpenAddGame={() => c.addGameFlow.setIsAddGameOpen(true)}
-        globalStats={c.stats.globalStats}
+        trackingSummary={c.trackingSummary}
       />
 
-      <DashboardBanners
+      <FeedbackBanners
         bannerMsg={c.bannerMsg}
         onDismissBanner={() => c.setBannerMsg(null)}
         syncProgressText={c.platformSync.syncProgressText}
       />
 
-      <DashboardNavTabs
+      <LibraryNavTabs
         activePlatformTab={c.activePlatformTab}
         onSelectTab={c.handleSelectTab}
         ownedGamesCount={c.ownedGames.length}
@@ -57,12 +63,11 @@ export default function HomePage() {
         duplicateGroups={c.stats.duplicateGroups}
         onAddGamePassToXbox={c.handleAddGamePassToXbox}
         onToggleWishlist={c.collectionsState.handleToggleWishlist}
-        onBackToAll={() => c.handleSelectTab("all")}
       />
 
-      <HomeLibrarySection controller={c} />
+      {showsGameList(c.activePlatformTab) && <HomeLibrarySection controller={c} />}
 
-      <FeaturedGamesSection ownedGames={c.ownedGames} />
+      {c.ownedGames.length === 0 && <FeaturedGamesSection ownedGames={c.ownedGames} />}
 
       <HomeModalsContainer controller={c} />
     </div>

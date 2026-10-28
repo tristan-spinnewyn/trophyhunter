@@ -1,13 +1,13 @@
 // lib/game-status/game-status.types.ts
 
-export type GameStatus = "backlog" | "in-progress" | "completed";
+export type GameStatus = "backlog" | "in-progress" | "paused" | "completed" | "abandoned";
 
 export interface GameStatusOption {
   readonly value: GameStatus;
   readonly label: string;
-  readonly shortLabel: string;
+  /** Plural heading used for the library section of this status. */
+  readonly sectionTitle: string;
   readonly badgeClass: string;
-  readonly activeButtonClass: string;
 }
 
 export class InvalidGameStatusError extends Error {
