@@ -3,7 +3,7 @@
 
 import React, { Suspense } from "react";
 import { UserDataProvider, useUserData } from "@/context/UserDataContext";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/navbar/Navbar";
 import AuthModal from "@/components/AuthModal";
 import SettingsModal from "@/components/SettingsModal";
 

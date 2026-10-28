@@ -1,12 +1,26 @@
 // components/dashboard/hooks/useAddGameFlow.ts
 "use client";
-
 import { useState } from "react";
 import type { OwnedGame, PlatformType, GameSearchResult } from "@/lib/types";
 import { PLATFORM_META } from "@/lib/platforms";
 import { mergeGamesList } from "@/components/dashboard/utils";
-import type { UseAddGameFlowProps } from "./useAddGameFlow.types";
 import { useAddGameSearch } from "./useAddGameSearch";
+
+export interface UseAddGameFlowProps {
+  ownedGames: OwnedGame[];
+  onOwnedGamesChange: (games: OwnedGame[]) => void;
+  steamUsername?: string;
+  syncSingleSteamGame: (
+    steamUsername: string,
+    game: OwnedGame
+  ) => Promise<OwnedGame>;
+  persistGamesToSQLite: (games: OwnedGame[]) => Promise<void>;
+  setBannerMsg: (
+    msg: { type: "success" | "error"; text: string } | null
+  ) => void;
+}
+
+export type { PlatformType, GameSearchResult };
 
 export function useAddGameFlow({
   ownedGames,

@@ -1,7 +1,7 @@
 // app/components/HomeLibrarySection.tsx
 
 import { useRouter } from "next/navigation";
-import LibrarySection from "@/components/dashboard/LibrarySection";
+import LibrarySection from "@/components/dashboard/library-section/LibrarySection";
 import type { useHomePageController } from "../hooks/useHomePageController";
 
 interface HomeLibrarySectionProps {

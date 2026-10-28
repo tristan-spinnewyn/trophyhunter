@@ -1,5 +1,4 @@
 // components/dashboard/hooks/useAccountDashboardController.ts
-
 import { useState } from "react";
 import type { DashboardTabType } from "@/components/dashboard/DashboardNavTabs";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
@@ -11,9 +10,29 @@ import { useBulkImport } from "./useBulkImport";
 import { useDashboardStats } from "./useDashboardStats";
 import { useLibraryFilters } from "./useLibraryFilters";
 import { useAddGameFlow } from "./useAddGameFlow";
-import type { AccountDashboardControllerParams } from "./useAccountDashboardController.types";
+import type {
+  UserAccountProfile,
+  OwnedGame,
+  User as UserType,
+} from "@/lib/types";
+import type { CollectionWithGames } from "@/lib/types";
 
-export type { AccountDashboardControllerParams };
+export interface AccountDashboardControllerParams {
+  accountProfile: UserAccountProfile;
+  ownedGames: OwnedGame[];
+  onAccountChange: (profile: UserAccountProfile) => void;
+  onOwnedGamesChange: (games: OwnedGame[]) => void;
+  onSelectGame: (appId: number) => void;
+  onSteamUserChange: (steamUser: string) => void;
+  currentUser?: UserType | null;
+  onOpenAuthModal?: () => void;
+  initialSteamApiKey?: string;
+  initialWishlist?: number[];
+  initialCollections?: CollectionWithGames[];
+  onWishlistChange?: (wishlist: number[]) => void;
+  onCollectionsChange?: (collections: CollectionWithGames[]) => void;
+}
+
 
 export function useAccountDashboardController(params: AccountDashboardControllerParams) {
   const {

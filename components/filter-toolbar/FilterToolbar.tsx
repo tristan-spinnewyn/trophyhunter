@@ -1,10 +1,10 @@
-// components/FilterToolbar.tsx
+// components/filter-toolbar/FilterToolbar.tsx
 
 "use client";
 
 import type { FilterStatus, SortOrder } from "@/lib/types";
-import { FilterToolbarControls } from "./filter-toolbar/FilterToolbarControls";
-import { FilterToolbarTabs } from "./filter-toolbar/FilterToolbarTabs";
+import { FilterToolbarControls } from "./FilterToolbarControls";
+import { FilterToolbarTabs } from "./FilterToolbarTabs";
 
 interface FilterToolbarProps {
   filter: FilterStatus;

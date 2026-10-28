@@ -1,14 +1,29 @@
 // components/dashboard/AddGameModal.tsx
 
 "use client";
-
 import { Plus } from "lucide-react";
 import { ALL_PLATFORMS, PLATFORM_META } from "@/lib/platforms";
-import type { AddGameModalProps } from "./AddGameModal.types";
 import { AddGameSearchSection } from "./add-game/AddGameSearchSection";
 import { AddGameBulkImportSection } from "./add-game/AddGameBulkImportSection";
+import type { GameSearchResult, OwnedGame, PlatformType } from "@/lib/types";
 
-export type { AddGameModalProps };
+export interface AddGameModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedPlatformForAdd: PlatformType;
+  setSelectedPlatformForAdd: (plat: PlatformType) => void;
+  addGameQuery: string;
+  handleSearchAddGame: (val: string) => void;
+  isSearchingAdd: boolean;
+  addGameResults: GameSearchResult[];
+  ownedGames: OwnedGame[];
+  handleAddGameToLibrary: (item: GameSearchResult) => void;
+  bulkImportText: string;
+  setBulkImportText: (val: string) => void;
+  handleBulkImport: () => void;
+  isBulkImporting: boolean;
+}
+
 
 export default function AddGameModal({
   isOpen,

@@ -1,9 +1,28 @@
 // components/dashboard/hooks/useEpicSync.ts
 import { useState } from "react";
-import type { UseEpicSyncProps } from "./useEpicSync.types";
 import { useEpicEnrichment } from "./useEpicEnrichment";
 import { useEpicCleanGames } from "./useEpicCleanGames";
 import { useEpicProfileConnect } from "./useEpicProfileConnect";
+import type { OwnedGame, PlatformAccount } from "@/lib/types";
+
+export interface UseEpicSyncProps {
+  ownedGames: OwnedGame[];
+  onOwnedGamesChange: (games: OwnedGame[]) => void;
+  setBannerMsg: (
+    msg: { type: "success" | "error"; text: string } | null
+  ) => void;
+  setSyncProgressText: (text: string | null) => void;
+  epicInput: string;
+  epicCode: string;
+  setEpicCode: (val: string) => void;
+  updateAccountProfileInMemory: (account: PlatformAccount) => void;
+  persistAccountToSQLite: (account: PlatformAccount) => Promise<void>;
+  persistGamesToSQLite: (
+    games: OwnedGame[],
+    replacePlatform?: "epic"
+  ) => Promise<void>;
+  onRequireToken?: () => void;
+}
 
 export function useEpicSync({
   ownedGames,

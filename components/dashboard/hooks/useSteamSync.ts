@@ -1,11 +1,28 @@
 // components/dashboard/hooks/useSteamSync.ts
-
 import { useState } from "react";
-import type { OwnedGame, PlatformAccount } from "@/lib/types";
+import type { OwnedGame, PlatformAccount, User as UserType } from "@/lib/types";
 import { mergeGamesList } from "@/components/dashboard/utils";
-import type { UseSteamSyncProps } from "./useSteamSync.types";
 import { useSteamSingleGameSync } from "./useSteamSingleGameSync";
 import { syncSteamAchievementsBatch } from "./steamAchievementsBatch";
+
+export interface UseSteamSyncProps {
+  ownedGames: OwnedGame[];
+  onOwnedGamesChange: (games: OwnedGame[]) => void;
+  onSteamUserChange: (steamUser: string) => void;
+  currentUser?: UserType | null;
+  setBannerMsg: (
+    msg: { type: "success" | "error"; text: string } | null
+  ) => void;
+  setSyncProgressText: (text: string | null) => void;
+  steamInput: string;
+  steamApiKey: string;
+  updateAccountProfileInMemory: (account: PlatformAccount) => void;
+  persistAccountToSQLite: (
+    account: PlatformAccount,
+    plainApiKey?: string
+  ) => Promise<void>;
+  persistGamesToSQLite: (games: OwnedGame[]) => Promise<void>;
+}
 
 export function useSteamSync({
   ownedGames,
