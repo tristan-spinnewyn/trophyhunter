@@ -7,6 +7,7 @@ import type { AchievementItemProps } from "./achievement/AchievementItem.types";
 import { getRarityBadge } from "./achievement/achievementRarity";
 import { AchievementItemHeader } from "./achievement/AchievementItemHeader";
 import { AchievementDetailsAccordion } from "./achievement/AchievementDetailsAccordion";
+import { getAchievementDescription } from "./achievement/achievementDescription";
 
 export default function AchievementItem({
   achievement,
@@ -22,20 +23,16 @@ export default function AchievementItem({
 }: AchievementItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const rarity = getRarityBadge(achievement.percent);
-  const isSecret = achievement.hidden;
-  const descriptionText =
-    isSecret && !revealSecret && !isUnlocked
-      ? "Succès masqué. Clique sur 'Révéler les secrets' pour afficher les détails."
-      : achievement.desc;
+  const description = getAchievementDescription(achievement, { revealSecret, isUnlocked });
 
   return (
     <div
-      className={`group rounded-2xl border transition-all duration-200 ${
+      className={`group rounded-xl border transition-colors ${
         isUnlocked
-          ? "border-emerald-500/40 bg-emerald-950/20 shadow-sm"
+          ? "border-emerald-500/25 bg-emerald-950/15"
           : isPinned
-          ? "border-amber-500/50 bg-amber-950/15 shadow-sm"
-          : "border-slate-800/90 bg-slate-900/70 hover:border-slate-700"
+          ? "border-amber-500/40 bg-amber-950/10"
+          : "border-slate-800 bg-slate-900/60 hover:border-slate-700"
       }`}
     >
       <div className="flex items-center justify-between">
@@ -46,32 +43,36 @@ export default function AchievementItem({
             isPinned={isPinned}
             notes={notes}
             rarity={rarity}
-            descriptionText={descriptionText}
+            description={description}
             onToggleUnlocked={onToggleUnlocked}
             onToggleExpand={() => setIsExpanded(!isExpanded)}
           />
         </div>
 
-        <div className="mr-3 flex items-center gap-1">
+        <div className="mr-1.5 sm:mr-3 flex items-center">
           {onTogglePinned && (
             <button
               type="button"
               onClick={onTogglePinned}
-              className={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${
                 isPinned
-                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                  ? "text-amber-300"
                   : "text-slate-500 hover:bg-slate-800 hover:text-amber-300"
               }`}
               title={isPinned ? "Retirer de la chasse active" : "Épingler en chasse active"}
+              aria-label={isPinned ? "Retirer de la chasse active" : "Épingler en chasse active"}
+              aria-pressed={isPinned}
             >
-              <Pin className="h-4 w-4" />
+              <Pin className={`h-4 w-4 ${isPinned ? "fill-amber-300" : ""}`} />
             </button>
           )}
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-800 hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-800 hover:text-white"
             title={isExpanded ? "Réduire" : "Voir le guide & notes"}
+            aria-label={isExpanded ? "Réduire" : "Voir le guide & notes"}
+            aria-expanded={isExpanded}
           >
             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </button>

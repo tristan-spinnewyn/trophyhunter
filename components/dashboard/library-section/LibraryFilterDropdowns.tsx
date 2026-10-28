@@ -5,6 +5,15 @@ import { ALL_PLATFORMS, PLATFORM_META } from "@/lib/platforms";
 import type { LibraryTab, StatusFilterType, AchievementFilterType } from "@/lib/library/library-filters";
 import type { SortOrderType } from "@/lib/library/library-sort";
 
+/** Filters that narrow the list are highlighted so the user sees why games are missing. */
+function selectClass(isFiltering: boolean): string {
+  return `min-w-0 rounded-lg border px-3 py-2 text-sm outline-none transition focus:border-sky-500 ${
+    isFiltering
+      ? "border-sky-500/50 bg-sky-500/10 text-sky-200"
+      : "border-slate-800 bg-slate-900 text-slate-200"
+  }`;
+}
+
 interface LibraryFilterDropdownsProps {
   activePlatformTab: LibraryTab;
   libPlatformFilter: PlatformType | "all";
@@ -34,7 +43,8 @@ export function LibraryFilterDropdowns({
         <select
           value={libPlatformFilter}
           onChange={(e) => setLibPlatformFilter(e.target.value as PlatformType | "all")}
-          className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none focus:border-sky-500"
+          aria-label="Plateforme"
+          className={selectClass(libPlatformFilter !== "all")}
         >
           <option value="all">Toutes les plateformes</option>
           {ALL_PLATFORMS.map((p) => (
@@ -46,7 +56,8 @@ export function LibraryFilterDropdowns({
       <select
         value={libStatusFilter}
         onChange={(e) => setLibStatusFilter(e.target.value as StatusFilterType)}
-        className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none focus:border-sky-500"
+        aria-label="Statut"
+        className={selectClass(libStatusFilter !== "all")}
       >
         <option value="all">Tous les statuts</option>
         <option value="backlog">📚 Backlog</option>
@@ -58,11 +69,8 @@ export function LibraryFilterDropdowns({
       <select
         value={libAchievementFilter}
         onChange={(e) => setLibAchievementFilter(e.target.value as AchievementFilterType)}
-        className={`rounded-xl border px-3 py-2 text-xs outline-none transition ${
-          libAchievementFilter !== "all"
-            ? "border-purple-500/50 bg-purple-950/40 text-purple-200 font-bold"
-            : "border-slate-800 bg-slate-950 text-slate-200 focus:border-sky-500"
-        }`}
+        aria-label="Succès"
+        className={selectClass(libAchievementFilter !== "all")}
       >
         <option value="all">Tous les succès</option>
         <option value="with-achievements">🏆 Avec succès uniquement</option>
@@ -72,7 +80,8 @@ export function LibraryFilterDropdowns({
       <select
         value={libSortOrder}
         onChange={(e) => setLibSortOrder(e.target.value as SortOrderType)}
-        className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none focus:border-sky-500"
+        aria-label="Tri"
+        className={selectClass(false)}
       >
         <option value="default">Tri : Progression</option>
         <option value="achievements-desc">🏆 Nombre de succès (Décroissant)</option>

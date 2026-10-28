@@ -38,31 +38,25 @@ export function FilterToolbarTabs({
   ];
 
   return (
-    <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+    <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-none">
       {tabs.map((tab) => {
         const isActive = filter === tab.id;
         const Icon = tab.icon;
         return (
           <button
             key={tab.id}
+            type="button"
             onClick={() => onFilterChange(tab.id)}
-            className={`flex items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+            aria-pressed={isActive}
+            className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
               isActive
-                ? "bg-sky-500 text-white shadow-md shadow-sky-500/20"
-                : "bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-800/80"
+                ? "border-slate-700 bg-slate-800 text-white"
+                : "border-transparent text-slate-400 hover:bg-slate-900 hover:text-white"
             }`}
           >
-            {Icon && <Icon className={`h-3 w-3 ${tab.color || ""}`} />}
+            {Icon && <Icon className={`h-3.5 w-3.5 ${tab.color || ""}`} />}
             <span>{tab.label}</span>
-            <span
-              className={`rounded-md px-1.5 py-0.2 text-[10px] ${
-                isActive
-                  ? "bg-white/20 text-white"
-                  : "bg-slate-800 text-slate-400"
-              }`}
-            >
-              {tab.count}
-            </span>
+            <span className="text-xs tabular-nums text-slate-500">{tab.count}</span>
           </button>
         );
       })}

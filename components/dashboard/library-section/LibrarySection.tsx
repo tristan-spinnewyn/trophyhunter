@@ -86,7 +86,7 @@ export default function LibrarySection({
   isSyncingSteam,
 }: LibrarySectionProps) {
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5 space-y-4">
+    <section className="space-y-4">
       <LibrarySectionHeader
         activePlatformTab={activePlatformTab}
         filteredCount={filteredGames.length}
@@ -139,6 +139,6 @@ export default function LibrarySection({
           onConnectAndSyncSteam={onConnectAndSyncSteam}
         />
       )}
-    </div>
+    </section>
   );
 }
