@@ -1,13 +1,13 @@
-// components/AchievementItem.tsx
+// components/achievement/AchievementItem.tsx
 "use client";
 
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Pin } from "lucide-react";
-import type { AchievementItemProps } from "./achievement/AchievementItem.types";
-import { getRarityBadge } from "./achievement/achievementRarity";
-import { AchievementItemHeader } from "./achievement/AchievementItemHeader";
-import { AchievementDetailsAccordion } from "./achievement/AchievementDetailsAccordion";
-import { getAchievementDescription } from "./achievement/achievementDescription";
+import type { AchievementItemProps } from "./AchievementItem.types";
+import { getRarityBadge } from "./achievementRarity";
+import { AchievementItemHeader } from "./AchievementItemHeader";
+import { AchievementDetailsAccordion } from "./AchievementDetailsAccordion";
+import { getAchievementDescription } from "./achievementDescription";
 
 export default function AchievementItem({
   achievement,

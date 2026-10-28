@@ -1,12 +1,12 @@
-// components/ProgressTracker.tsx
+// components/progress/ProgressTracker.tsx
 "use client";
 
 import { useEffect, useRef } from "react";
 import { Trophy, Award } from "lucide-react";
-import type { ProgressTrackerProps } from "./progress/ProgressTracker.types";
-import { fireCompletionConfetti, getProgressTier, getUntrackedUnlockedCount } from "./progress/progressTier";
-import { ProgressTrackerActions } from "./progress/ProgressTrackerActions";
-import { ProgressBar } from "./progress/ProgressBar";
+import type { ProgressTrackerProps } from "./ProgressTracker.types";
+import { fireCompletionConfetti, getProgressTier, getUntrackedUnlockedCount } from "./progressTier";
+import { ProgressTrackerActions } from "./ProgressTrackerActions";
+import { ProgressBar } from "./ProgressBar";
 
 export default function ProgressTracker({
   total,

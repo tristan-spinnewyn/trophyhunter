@@ -1,12 +1,12 @@
-// components/AppShell.tsx
+// components/layout/AppShell.tsx
 "use client";
 
 import React, { Suspense } from "react";
 import { UserDataProvider, useUserData } from "@/context/UserDataContext";
 import Navbar from "@/components/navbar/Navbar";
 import { MobileTabBar } from "@/components/navbar/MobileTabBar";
-import AuthModal from "@/components/AuthModal";
-import SettingsModal from "@/components/SettingsModal";
+import AuthModal from "@/components/auth/AuthModal";
+import SettingsModal from "@/components/settings/SettingsModal";
 
 function AppShellContent({ children }: { readonly children: React.ReactNode }) {
   const {

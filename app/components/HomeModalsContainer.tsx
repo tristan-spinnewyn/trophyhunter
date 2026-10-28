@@ -2,7 +2,7 @@
 
 import AddGameModal from "@/components/library/AddGameModal";
 import AddToCollectionModal from "@/components/library/AddToCollectionModal";
-import EpicAuthModal from "@/components/EpicAuthModal";
+import EpicAuthModal from "@/components/epic-auth/EpicAuthModal";
 import type { useHomePageController } from "../hooks/useHomePageController";
 
 interface HomeModalsContainerProps {

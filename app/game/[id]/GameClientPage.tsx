@@ -4,7 +4,7 @@
 import { useRouter } from "next/navigation";
 import GameHeader from "@/components/game-header/GameHeader";
 import FilterToolbar from "@/components/filter-toolbar/FilterToolbar";
-import EpicAuthModal from "@/components/EpicAuthModal";
+import EpicAuthModal from "@/components/epic-auth/EpicAuthModal";
 import { ActiveHuntPanel } from "@/components/hunting/ActiveHuntPanel";
 import { useGameClientController } from "./hooks/useGameClientController";
 import { GameClientLoading } from "./components/GameClientLoading";

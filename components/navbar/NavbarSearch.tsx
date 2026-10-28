@@ -1,10 +1,10 @@
-// components/NavbarSearch.tsx
+// components/navbar/NavbarSearch.tsx
 "use client";
 
 import { Search, X } from "lucide-react";
-import { useNavbarSearch } from "./navbar/useNavbarSearch";
-import { SearchResultsDropdown } from "./navbar/SearchResultsDropdown";
-import { POPULAR_GAMES } from "./navbar/popularGames";
+import { useNavbarSearch } from "./useNavbarSearch";
+import { SearchResultsDropdown } from "./SearchResultsDropdown";
+import { POPULAR_GAMES } from "./popularGames";
 
 export { POPULAR_GAMES };
 

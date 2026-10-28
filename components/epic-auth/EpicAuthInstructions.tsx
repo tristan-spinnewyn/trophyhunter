@@ -1,4 +1,4 @@
-// components/epic-modal/EpicAuthInstructions.tsx
+// components/epic-auth/EpicAuthInstructions.tsx
 
 import { ExternalLink } from "lucide-react";
 import { EPIC_AUTH_CODE_URL } from "@/lib/epic/auth-input";

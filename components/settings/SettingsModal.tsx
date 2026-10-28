@@ -1,13 +1,13 @@
-// components/SettingsModal.tsx
+// components/settings/SettingsModal.tsx
 "use client";
 
 import { Check, AlertCircle } from "lucide-react";
-import { Modal } from "./ui/Modal";
-import type { SettingsModalProps } from "./settings/SettingsModal.types";
-import { useSettingsModalState } from "./settings/useSettingsModalState";
-import { SteamSettingsSection } from "./settings/SteamSettingsSection";
-import { MobileInstallGuide } from "./settings/MobileInstallGuide";
-import { BackupSection } from "./settings/BackupSection";
+import { Modal } from "../ui/Modal";
+import type { SettingsModalProps } from "./SettingsModal.types";
+import { useSettingsModalState } from "./useSettingsModalState";
+import { SteamSettingsSection } from "./SteamSettingsSection";
+import { MobileInstallGuide } from "./MobileInstallGuide";
+import { BackupSection } from "./BackupSection";
 
 export default function SettingsModal(props: SettingsModalProps) {
   const { isOpen, onClose } = props;
