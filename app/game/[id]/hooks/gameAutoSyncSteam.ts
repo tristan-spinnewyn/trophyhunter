@@ -49,7 +49,6 @@ export function triggerSteamAutoSync({
       const updated: UserGameProgress = {
         ...currentProgress,
         unlockedIds: matched,
-        lastPlayed: new Date().toISOString(),
       };
 
       await upsertOwnedGameInMemoryAndDb({

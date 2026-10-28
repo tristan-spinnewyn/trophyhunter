@@ -43,7 +43,6 @@ export function useGameSteamSync({
       const updatedProgress: UserGameProgress = {
         ...progress,
         unlockedIds: matched,
-        lastPlayed: new Date().toISOString(),
       };
       setProgress(updatedProgress);
 

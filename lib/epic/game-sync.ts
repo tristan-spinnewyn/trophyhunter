@@ -53,7 +53,6 @@ export function persistEpicGameSync(
   if (unlockedIds.length > 0) {
     saveUserGameProgress(authUser.id, numAppId, "epic", {
       unlockedIds,
-      lastPlayed: new Date().toISOString(),
       notes: {},
     });
   }

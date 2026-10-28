@@ -32,7 +32,11 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
        total_achievements = CASE WHEN excluded.total_achievements > 0 THEN excluded.total_achievements ELSE user_games.total_achievements END,
        unlocked_count = MAX(excluded.unlocked_count, user_games.unlocked_count),
        playtime_hours = COALESCE(excluded.playtime_hours, user_games.playtime_hours),
-       last_played = COALESCE(excluded.last_played, user_games.last_played),
+       last_played = CASE
+         WHEN excluded.last_played IS NULL THEN user_games.last_played
+         WHEN user_games.last_played IS NULL THEN excluded.last_played
+         ELSE MAX(excluded.last_played, user_games.last_played)
+       END,
        source = COALESCE(excluded.source, user_games.source),
        status = COALESCE(?, user_games.status)`
   );

@@ -247,7 +247,6 @@ export async function syncSteamGame(rawUser: string, appId: string): Promise<Ste
       saveUserGameProgress(authUser.id, appIdNum, "steam", {
         ...existingProg,
         unlockedIds: mergedIds,
-        lastPlayed: new Date().toISOString(),
       });
     }
   } catch (saveErr) {

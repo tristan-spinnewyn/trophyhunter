@@ -71,6 +71,7 @@ export async function collectSteamGames(
       totalAchievements: Math.max(data.totalAchievements ?? 0, existing?.totalAchievements ?? 0),
       unlockedCount: Math.max(data.unlockedCount ?? 0, existing?.unlockedCount ?? 0),
       playtimeHours: data.playtimeHours ?? existing?.playtimeHours,
+      lastPlayed: data.lastPlayed ?? existing?.lastPlayed,
     });
   };
 
@@ -105,6 +106,7 @@ export async function collectSteamGames(
     totalAchievements: g.totalAchievements,
     unlockedCount: g.unlockedCount,
     playtimeHours: g.playtimeHours,
+    lastPlayed: g.lastPlayed,
     addedAt: nowIso,
     source: "steam-auto",
   }));

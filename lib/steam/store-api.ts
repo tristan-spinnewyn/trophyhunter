@@ -110,6 +110,8 @@ export async function fetchOwnedGamesFromSteamApi(
             playtimeHours: g.playtime_forever
               ? Math.round((g.playtime_forever / 60) * 10) / 10
               : 0,
+            // Steam reports the last session as Unix seconds, 0 when never played.
+            lastPlayed: g.rtime_last_played ? new Date(g.rtime_last_played * 1000).toISOString() : undefined,
           });
         }
       }

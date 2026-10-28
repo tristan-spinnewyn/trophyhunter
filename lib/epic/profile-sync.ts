@@ -146,7 +146,6 @@ export function persistEpicSyncData(
 
           saveUserGameProgress(authUser.id, g.appId, "epic", {
             unlockedIds,
-            lastPlayed: nowIso,
             notes: {},
           });
         }
