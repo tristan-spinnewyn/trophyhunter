@@ -195,7 +195,8 @@ export function extractGamesFromXml(xml: string, upsert: (appId: number, data: P
     if (appMatch) {
       upsert(parseInt(appMatch[1], 10), {
         name: nameMatch ? decodeHtmlEntities(nameMatch[1]) : undefined,
-        playtimeHours: hrsMatch ? parseFloat(hrsMatch[1].replace(",", ".")) : undefined,
+        // The XML profile uses en-US numbers: "," separates thousands ("1,234.5").
+        playtimeHours: hrsMatch ? parseFloat(hrsMatch[1].replace(/,/g, "")) : undefined,
       });
     }
   }
