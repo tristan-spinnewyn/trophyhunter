@@ -5,6 +5,7 @@ import {
   addGameToCollection,
   removeGameFromCollection,
 } from "@/lib/db";
+import { errorMessage } from "@/lib/error-message";
 import type { PlatformType } from "@/lib/types";
 
 export async function GET(
@@ -44,10 +45,10 @@ export async function POST(
 
     addGameToCollection(user.id, id, Number(appId), platform as PlatformType);
     return NextResponse.json({ success: true });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Add game to collection error:", err);
     return NextResponse.json(
-      { error: err.message || "Impossible d'ajouter le jeu à la collection." },
+      { error: errorMessage(err, "Impossible d'ajouter le jeu à la collection.") },
       { status: 400 }
     );
   }
@@ -77,10 +78,10 @@ export async function DELETE(
 
     removeGameFromCollection(user.id, id, Number(appId), platform);
     return NextResponse.json({ success: true });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Remove game from collection error:", err);
     return NextResponse.json(
-      { error: err.message || "Erreur lors du retrait du jeu." },
+      { error: errorMessage(err, "Erreur lors du retrait du jeu.") },
       { status: 400 }
     );
   }

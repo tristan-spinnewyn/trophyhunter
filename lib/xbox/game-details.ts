@@ -2,8 +2,8 @@
 
 import type { Achievement, OwnedGame } from "@/lib/types";
 import { getDb, getUserPlatformAccounts, getUserPlatformApiKey, saveUserGameProgress } from "@/lib/db";
-import { isLikelyMissable, normalizeForComparison } from "@/lib/steam/game-details-utils";
-import { searchSteamStoreFallback } from "@/lib/steam/game-details-fetcher";
+import { isLikelyMissable, normalizeForComparison } from "@/lib/steam/game-metadata";
+import { searchSteamStoreFallback } from "@/lib/steam/store-api";
 import type { OpenXblAchievementItem, OpenXblProfilePayload, OpenXblTitle, OpenXblTitleAchievementsPayload } from "./types";
 import { isXboxAchievementUnlocked, parseOpenXblProfile, unwrapOpenXblPayload } from "./openxbl";
 

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createUser } from "@/lib/db";
 import { setAuthSessionCookie } from "@/lib/auth";
 import { checkRateLimit, extractClientKey } from "@/lib/security";
+import { errorMessage } from "@/lib/error-message";
 
 const REGISTER_RATE_LIMIT = { windowMs: 60_000, maxRequests: 10 };
 
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ user }, { status: 201 });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "";
+    const message = errorMessage(err, "");
     if (message.includes("already taken")) {
       return NextResponse.json(
         { error: "Ce nom d'utilisateur est déjà utilisé." },
