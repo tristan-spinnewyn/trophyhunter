@@ -1,4 +1,4 @@
-// __tests__/lib/context/useUserDataSync.test.ts
+// __tests__/context/useUserDataSync.test.ts
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { fetchRemoteUserData, persistGameToServer } from "@/context/useUserDataSync";

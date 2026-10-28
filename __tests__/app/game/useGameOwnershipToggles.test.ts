@@ -1,4 +1,4 @@
-// __tests__/lib/game/useGameOwnershipToggles.test.ts
+// __tests__/app/game/useGameOwnershipToggles.test.ts
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useGameOwnershipToggles } from "@/app/game/[id]/hooks/useGameOwnershipToggles";
 import type { GameDetails, OwnedGame } from "@/lib/types";

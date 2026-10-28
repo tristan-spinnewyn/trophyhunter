@@ -1,10 +1,10 @@
-// __tests__/lib/gamepass/gamepassLibraryAction.services.test.ts
+// __tests__/lib/gamepass/library-action.services.test.ts
 
 import { describe, it, expect, vi } from "vitest";
 import {
   buildOwnedGameFromGamePass,
   addGamePassItemToXboxLibrary,
-} from "@/components/dashboard/gamepass/gamepassLibraryAction.services";
+} from "@/lib/gamepass/library-action.services";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
 
 const SAMPLE_ITEM: GamePassCatalogItem = {

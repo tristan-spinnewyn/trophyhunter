@@ -4,11 +4,11 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { OwnedGame } from "@/lib/types";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
-import type { GamePassFeatureFilter } from "@/components/dashboard/gamepass/GamePassPanel.types";
+import type { GamePassFeatureFilter } from "@/lib/gamepass/gamepass.types";
 import {
   extractGamePassCategories,
   filterGamePassCatalog,
-} from "@/components/dashboard/gamepass/gamepassFilter.services";
+} from "@/lib/gamepass/catalog-filter.services";
 
 interface GamePassApiResponse {
   readonly games?: readonly GamePassCatalogItem[];

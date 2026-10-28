@@ -1,4 +1,4 @@
-// __tests__/lib/gamepass/gamepassFilter.services.test.ts
+// __tests__/lib/gamepass/catalog-filter.services.test.ts
 
 import { describe, it, expect } from "vitest";
 import {
@@ -6,7 +6,7 @@ import {
   isGameInLibrary,
   extractGamePassCategories,
   filterGamePassCatalog,
-} from "@/components/dashboard/gamepass/gamepassFilter.services";
+} from "@/lib/gamepass/catalog-filter.services";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
 import type { OwnedGame } from "@/lib/types";
 

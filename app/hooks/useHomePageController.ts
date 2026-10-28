@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useUserData } from "@/context/UserDataContext";
 import type { LibraryTab } from "@/lib/library/library-filters";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
-import { addGamePassItemToXboxLibrary } from "@/components/dashboard/gamepass/gamepassLibraryAction.services";
+import { addGamePassItemToXboxLibrary } from "@/lib/gamepass/library-action.services";
 import { useDashboardCollections } from "@/components/dashboard/hooks/useDashboardCollections";
 import { useDashboardStats } from "@/components/dashboard/hooks/useDashboardStats";
 import { useLibraryFilters } from "@/components/dashboard/hooks/useLibraryFilters";

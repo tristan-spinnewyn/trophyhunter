@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { Video, Trophy, BookOpen, ExternalLink } from "lucide-react";
-import { buildGuideUrls } from "./achievementRarity";
+import { buildGuideUrls } from "@/lib/game/guide-urls";
 
 interface AccordionProps {
   gameName: string;

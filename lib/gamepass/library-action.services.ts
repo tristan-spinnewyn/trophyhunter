@@ -1,4 +1,4 @@
-// components/dashboard/gamepass/gamepassLibraryAction.services.ts
+// lib/gamepass/library-action.services.ts
 
 import type { OwnedGame } from "@/lib/types";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";

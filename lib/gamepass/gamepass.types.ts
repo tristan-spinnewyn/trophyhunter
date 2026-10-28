@@ -1,5 +1,7 @@
 // lib/gamepass/gamepass.types.ts
 
+import type { OwnedGame } from "@/lib/types";
+
 export interface GamePassCatalogItem {
   readonly storeId: string;
   readonly appId: number;
@@ -73,4 +75,19 @@ export class GamePassCatalogError extends Error {
     this.name = "GamePassCatalogError";
     this.statusCode = statusCode;
   }
+}
+
+export type GamePassFeatureFilter =
+  | "all"
+  | "achievements"
+  | "play-anywhere"
+  | "owned"
+  | "unowned";
+
+export interface GamePassFilterParams {
+  readonly catalog: readonly GamePassCatalogItem[];
+  readonly ownedGames: readonly OwnedGame[];
+  readonly searchQuery: string;
+  readonly categoryFilter: string;
+  readonly featureFilter: GamePassFeatureFilter;
 }
