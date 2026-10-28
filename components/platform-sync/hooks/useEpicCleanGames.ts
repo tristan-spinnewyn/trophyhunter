@@ -1,6 +1,7 @@
 // components/platform-sync/hooks/useEpicCleanGames.ts
 
 import type { OwnedGame } from "@/lib/types";
+import { useConfirm } from "@/components/ui/confirm/useConfirm";
 
 interface UseEpicCleanGamesProps {
   ownedGames: OwnedGame[];
@@ -15,17 +16,17 @@ export function useEpicCleanGames({
   persistGames,
   setBannerMsg,
 }: UseEpicCleanGamesProps) {
+  const confirm = useConfirm();
   const handleCleanEpicGames = async (
     epicNoAchCount: number,
     epicWithAchCount: number
   ) => {
-    if (
-      !confirm(
-        `Voulez-vous masquer les ${epicNoAchCount} jeux Epic qui ne possèdent AUCUN succès pour ne garder que vos ${epicWithAchCount} jeux chassables ?`
-      )
-    ) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: `Retirer ${epicNoAchCount} jeux Epic sans succès ?`,
+      message: `Seuls tes ${epicWithAchCount} jeux Epic avec succès resteront dans ta collection.`,
+      confirmLabel: "Retirer",
+    });
+    if (!confirmed) return;
     const filtered = ownedGames.filter(
       (g) => !(g.platform === "epic" && (g.totalAchievements === 0 || !g.totalAchievements))
     );

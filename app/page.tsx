@@ -2,7 +2,7 @@
 
 "use client";
 
-import FeedbackBanners from "@/components/ui/FeedbackBanners";
+import FeedbackToasts from "@/components/ui/FeedbackToasts";
 import LibraryNavTabs from "@/components/library/LibraryNavTabs";
 import { LibraryHeaderBanner } from "@/components/library/LibraryHeaderBanner";
 import { FeaturedGamesSection } from "@/components/library/FeaturedGamesSection";
@@ -24,11 +24,12 @@ export default function HomePage() {
     <div className="space-y-6">
       <LibraryHeaderBanner
         ownedGamesCount={c.ownedGames.length}
+        isLoading={c.isLoadingCollection}
         onOpenAddGame={() => c.addGameFlow.setIsAddGameOpen(true)}
         trackingSummary={c.trackingSummary}
       />
 
-      <FeedbackBanners
+      <FeedbackToasts
         bannerMsg={c.bannerMsg}
         onDismissBanner={() => c.setBannerMsg(null)}
         syncProgressText={c.platformSync.syncProgressText}
@@ -67,7 +68,7 @@ export default function HomePage() {
 
       {showsGameList(c.activePlatformTab) && <HomeLibrarySection controller={c} />}
 
-      {c.ownedGames.length === 0 && <FeaturedGamesSection ownedGames={c.ownedGames} />}
+      {!c.isLoadingCollection && c.ownedGames.length === 0 && <FeaturedGamesSection ownedGames={c.ownedGames} />}
 
       <HomeModalsContainer controller={c} />
     </div>

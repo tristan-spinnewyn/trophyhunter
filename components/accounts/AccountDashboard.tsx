@@ -2,7 +2,7 @@
 
 "use client";
 
-import FeedbackBanners from "@/components/ui/FeedbackBanners";
+import FeedbackToasts from "@/components/ui/FeedbackToasts";
 import AccountTabPanel from "@/components/accounts/AccountTabPanel";
 import { AccountPlatformTabs } from "@/components/accounts/AccountPlatformTabs";
 import { AccountModals } from "@/components/accounts/AccountModals";
@@ -16,7 +16,7 @@ export default function AccountDashboard(props: AccountDashboardControllerParams
 
   return (
     <div className="space-y-6">
-      <FeedbackBanners
+      <FeedbackToasts
         bannerMsg={c.bannerMsg}
         onDismissBanner={() => c.setBannerMsg(null)}
         syncProgressText={c.platformSync.syncProgressText}

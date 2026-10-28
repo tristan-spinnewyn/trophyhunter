@@ -18,7 +18,7 @@ import { usePlatformInputs } from "@/components/platform-sync/hooks/usePlatformI
 export function useHomePageController() {
   const {
     accountProfile, setAccountProfile, ownedGames, setOwnedGames, currentUser,
-    setIsAuthOpen, steamApiKey, wishlistIds, setWishlistIds, collections, setCollections, setSteamUser,
+    setIsAuthOpen, steamApiKey, isCheckingAuth, wishlistIds, setWishlistIds, collections, setCollections, setSteamUser,
   } = useUserData();
 
   const steamAccount = accountProfile.accounts.steam;
@@ -84,5 +84,6 @@ export function useHomePageController() {
     accountProfile, ownedGames, currentUser, setIsAuthOpen, steamAccount, bannerMsg, setBannerMsg,
     activePlatformTab, handleSelectTab, handleAddGamePassToXbox, platformInputs, collectionsState,
     platformSync, addGameFlow, bulkImport, stats, libraryFilters, trackingSummary,
+    isLoadingCollection: isCheckingAuth,
   };
 }
