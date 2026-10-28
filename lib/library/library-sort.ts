@@ -3,12 +3,19 @@
 import type { OwnedGame } from "@/lib/types";
 
 export type SortOrderType =
-  | "default"
+  | "recent-activity"
   | "achievements-desc"
   | "achievements-asc"
   | "completion-desc"
   | "name-asc"
   | "playtime-desc";
+
+/** A tracker opens on what you touched last, not on achievement progress. */
+export const DEFAULT_SORT_ORDER: SortOrderType = "recent-activity";
+
+function lastActivity(game: OwnedGame): string {
+  return game.lastPlayed || game.addedAt || "";
+}
 
 export function sortGames(list: OwnedGame[], order: SortOrderType): OwnedGame[] {
   return [...list].sort((a, b) => {
@@ -29,6 +36,10 @@ export function sortGames(list: OwnedGame[], order: SortOrderType): OwnedGame[] 
     }
     if (order === "playtime-desc") {
       return (b.playtimeHours || 0) - (a.playtimeHours || 0);
+    }
+    if (order === "recent-activity") {
+      const byDate = lastActivity(b).localeCompare(lastActivity(a));
+      return byDate !== 0 ? byDate : a.name.localeCompare(b.name, "fr");
     }
     const pctA = a.totalAchievements > 0 ? a.unlockedCount / a.totalAchievements : 0;
     const pctB = b.totalAchievements > 0 ? b.unlockedCount / b.totalAchievements : 0;

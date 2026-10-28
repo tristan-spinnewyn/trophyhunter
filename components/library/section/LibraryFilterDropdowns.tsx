@@ -67,12 +67,12 @@ export function LibraryFilterDropdowns({
         aria-label="Tri"
         className={selectClass(false)}
       >
-        <option value="default">Tri : Progression</option>
-        <option value="achievements-desc">🏆 Nombre de succès (Décroissant)</option>
-        <option value="achievements-asc">Nombre de succès (Croissant)</option>
-        <option value="completion-desc">📈 Platines / 100% en premier</option>
-        <option value="name-asc">🔤 Nom (A-Z)</option>
-        <option value="playtime-desc">⏱️ Temps de jeu</option>
+        <option value="recent-activity">Tri : activité récente</option>
+        <option value="playtime-desc">Temps de jeu</option>
+        <option value="name-asc">Nom (A-Z)</option>
+        <option value="completion-desc">Progression des succès</option>
+        <option value="achievements-desc">Nombre de succès (décroissant)</option>
+        <option value="achievements-asc">Nombre de succès (croissant)</option>
       </select>
     </>
   );
