@@ -53,4 +53,24 @@ describe("Database Owned Games", () => {
     removeUserPlatformGames(user.id, "steam");
     expect(getUserOwnedGames(user.id).length).toBe(0);
   });
+
+  it("never moves the last activity back when an older import arrives", () => {
+    const user = createUser("LastPlayedUser", "password123");
+    const game = (lastPlayed?: string): OwnedGame => ({
+      appId: 77, name: "Hades", headerImg: "", platform: "steam",
+      totalAchievements: 10, unlockedCount: 0, addedAt: "2026-01-01", lastPlayed,
+    });
+    const lastPlayed = () => getUserOwnedGames(user.id)[0].lastPlayed;
+
+    saveUserOwnedGames(user.id, [game("2026-09-01T00:00:00.000Z")]);
+    saveUserOwnedGames(user.id, [game("2026-02-01T00:00:00.000Z")]);
+    expect(lastPlayed()).toBe("2026-09-01T00:00:00.000Z");
+
+    saveUserOwnedGames(user.id, [game(undefined)]);
+    expect(lastPlayed()).toBe("2026-09-01T00:00:00.000Z");
+
+    saveUserOwnedGames(user.id, [game("2026-10-15T00:00:00.000Z")]);
+    expect(lastPlayed()).toBe("2026-10-15T00:00:00.000Z");
+  });
 });
+

@@ -7,6 +7,8 @@ export interface DiscoveredGameData {
   totalAchievements: number;
   unlockedCount: number;
   playtimeHours?: number;
+  /** Real last session, when the platform reports it (ISO date). */
+  lastPlayed?: string;
 }
 
 export interface SteamParsedProfile {
