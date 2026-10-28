@@ -54,7 +54,8 @@ export async function POST(req: Request) {
       notes: typeof progress.notes === "object" && progress.notes !== null ? progress.notes : {},
       pinnedIds: normalizePinnedIds(progress.pinnedIds),
       ...(huntingMeta ? { huntingMeta } : {}),
-      lastPlayed: progress.lastPlayed || new Date().toISOString(),
+      // Only explicit activity carries a date; syncs and note edits must not date the game.
+      ...(typeof progress.lastPlayed === "string" ? { lastPlayed: progress.lastPlayed } : {}),
     };
 
     saveUserGameProgress(user.id, Number(appId), platform as PlatformType, gameProgress);

@@ -112,4 +112,41 @@ describe("Database Game Progress", () => {
       expect(countOf(user.id)).toBe(0);
     });
   });
+
+  describe("keeps the game's last activity meaningful", () => {
+    const lastPlayedOf = (userId: string) => getUserOwnedGames(userId).find((g) => g.appId === 500)?.lastPlayed;
+
+    it("does not move the last activity when a sync saves progress without a date", () => {
+      const user = createUser("SyncDateUser", "password123");
+      saveUserOwnedGames(user.id, [{
+        appId: 500, name: "Imported", headerImg: "", platform: "steam",
+        totalAchievements: 60, unlockedCount: 0, addedAt: "2026-01-01", lastPlayed: "2026-03-01T10:00:00.000Z",
+      }]);
+
+      saveUserGameProgress(user.id, 500, "steam", { unlockedIds: ["A", "B"], notes: {} });
+
+      expect(lastPlayedOf(user.id)).toBe("2026-03-01T10:00:00.000Z");
+    });
+
+    it("does not move the last activity back when an older progress is saved again", () => {
+      const user = createUser("OldProgressUser", "password123");
+      saveUserOwnedGames(user.id, [{
+        appId: 500, name: "Imported", headerImg: "", platform: "steam",
+        totalAchievements: 60, unlockedCount: 0, addedAt: "2026-01-01", lastPlayed: "2026-10-01T00:00:00.000Z",
+      }]);
+
+      saveUserGameProgress(user.id, 500, "steam", { unlockedIds: [], notes: { A: "note" }, lastPlayed: "2026-05-01T00:00:00.000Z" });
+
+      expect(lastPlayedOf(user.id)).toBe("2026-10-01T00:00:00.000Z");
+    });
+
+    it("records the date of an explicit activity such as ticking an achievement", () => {
+      const user = createUser("TickDateUser", "password123");
+      importGame(user.id, 0);
+
+      saveUserGameProgress(user.id, 500, "steam", { unlockedIds: ["A"], notes: {}, lastPlayed: "2026-10-20T18:00:00.000Z" });
+
+      expect(lastPlayedOf(user.id)).toBe("2026-10-20T18:00:00.000Z");
+    });
+  });
 });

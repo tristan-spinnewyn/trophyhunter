@@ -40,7 +40,6 @@ export function useSteamSingleGameSync({ currentUser }: UseSteamSingleGameSyncPr
             progress: {
               unlockedIds,
               notes: {},
-              lastPlayed: new Date().toISOString(),
             },
           }),
         }).catch(() => {});

@@ -35,7 +35,7 @@ export async function applyGameEpicSyncData({
     .map((a) => a.id);
 
   const newUnlockedIds = Array.from(new Set([...progress.unlockedIds, ...matched, ...(returnedUnlockedIds.length > 0 && matched.length === 0 ? returnedUnlockedIds : [])]));
-  const updatedProgress: UserGameProgress = { ...progress, unlockedIds: newUnlockedIds, lastPlayed: new Date().toISOString() };
+  const updatedProgress: UserGameProgress = { ...progress, unlockedIds: newUnlockedIds };
   setProgress(updatedProgress);
 
   const resolvedTotal = data.totalAchievements || currentAchievements.length || game.totalAchievements;
