@@ -1,6 +1,7 @@
 // lib/db/migrations.ts
 
 import type { DatabaseSync } from "node:sqlite";
+import { SESSIONS_TABLE_SQL } from "./schema";
 
 interface SqliteColumnInfo {
   readonly name: string;
@@ -14,6 +15,13 @@ function getTableColumnNames(db: DatabaseSync, tableName: string): Set<string> {
 }
 
 export function runDatabaseMigrations(db: DatabaseSync): void {
+  // Earlier versions stored the plain session token. Those rows cannot be hashed back into
+  // usable sessions, so the table is rebuilt and everyone signs in again once.
+  if (getTableColumnNames(db, "sessions").has("id")) {
+    db.exec("DROP TABLE sessions;");
+    db.exec(SESSIONS_TABLE_SQL);
+  }
+
   const gameCols = getTableColumnNames(db, "user_games");
   if (!gameCols.has("status")) {
     db.exec("ALTER TABLE user_games ADD COLUMN status TEXT NOT NULL DEFAULT 'backlog';");

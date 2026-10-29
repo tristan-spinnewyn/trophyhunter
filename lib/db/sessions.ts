@@ -3,6 +3,11 @@ import crypto from "node:crypto";
 import { getDb } from "./connection";
 import type { User } from "../types";
 
+/** The value stored for a session: a database leak must not hand out usable cookies. */
+function hashSessionToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
 export function createSession(userId: string, expiresInDays = 30): string {
   const db = getDb();
   const sessionId = crypto.randomBytes(32).toString("hex");
@@ -14,8 +19,8 @@ export function createSession(userId: string, expiresInDays = 30): string {
 
   db.prepare("DELETE FROM sessions WHERE expires_at < ?").run(nowIso);
   db.prepare(
-    "INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)"
-  ).run(sessionId, userId, expiresAt, nowIso);
+    "INSERT INTO sessions (token_hash, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)"
+  ).run(hashSessionToken(sessionId), userId, expiresAt, nowIso);
 
   return sessionId;
 }
@@ -30,9 +35,9 @@ export function validateSession(sessionId: string): User | null {
       `SELECT u.id, u.username, u.display_name, u.avatar_url, u.created_at, s.expires_at
        FROM sessions s
        JOIN users u ON s.user_id = u.id
-       WHERE s.id = ?`
+       WHERE s.token_hash = ?`
     )
-    .get(sessionId) as
+    .get(hashSessionToken(sessionId)) as
     | {
         id: string;
         username: string;
@@ -46,7 +51,7 @@ export function validateSession(sessionId: string): User | null {
   if (!row) return null;
 
   if (row.expires_at < now) {
-    db.prepare("DELETE FROM sessions WHERE id = ?").run(sessionId);
+    deleteSession(sessionId);
     return null;
   }
 
@@ -61,5 +66,5 @@ export function validateSession(sessionId: string): User | null {
 
 export function deleteSession(sessionId: string): void {
   const db = getDb();
-  db.prepare("DELETE FROM sessions WHERE id = ?").run(sessionId);
+  db.prepare("DELETE FROM sessions WHERE token_hash = ?").run(hashSessionToken(sessionId));
 }
