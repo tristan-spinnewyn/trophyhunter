@@ -1,24 +1,20 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { getUserPlatformApiKey } from "@/lib/db";
 import { syncSteamProfile } from "@/lib/steam/profile-sync";
 import { errorMessage, errorStatus } from "@/lib/error-message";
 import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
+import { resolvePlatformApiKey } from "@/lib/accounts/platform-api-key";
 
 export async function POST(request: Request) {
   const { user: rawUser, secret } = await readProfileSyncRequest(request);
-  let apiKey = secret || process.env.STEAM_API_KEY?.trim() || "";
 
   let authUser = null;
   try {
     authUser = await getAuthenticatedUser();
-    if (!apiKey && authUser) {
-      const storedKey = getUserPlatformApiKey(authUser.id, "steam");
-      if (storedKey) apiKey = storedKey;
-    }
   } catch {
     // Non-blocking auth lookup
   }
+  const apiKey = resolvePlatformApiKey("steam", { userId: authUser?.id, providedKey: secret });
 
   if (!rawUser) {
     return NextResponse.json(
