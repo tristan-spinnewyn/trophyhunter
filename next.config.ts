@@ -1,5 +1,6 @@
 // next.config.ts
 import type { NextConfig } from "next";
+import { buildContentSecurityPolicy } from "./lib/security/content-security-policy";
 
 const SECURITY_HEADERS = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -8,6 +9,10 @@ const SECURITY_HEADERS = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
   // No includeSubDomains/preload: a self-hosted instance must not pin HTTPS on the whole domain.
   { key: "Strict-Transport-Security", value: "max-age=31536000" },
+  {
+    key: "Content-Security-Policy",
+    value: buildContentSecurityPolicy({ isDevelopment: process.env.NODE_ENV === "development" }),
+  },
 ];
 
 const nextConfig: NextConfig = {
