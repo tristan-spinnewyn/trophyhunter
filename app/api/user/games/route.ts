@@ -8,7 +8,7 @@ import {
   handlePatchOwnedGameStatus,
   handleDeleteOwnedGames,
 } from "./handlers";
-import { errorMessage } from "@/lib/error-message";
+import { publicErrorMessage } from "@/lib/error-message";
 
 export async function GET() {
   const user = await getAuthenticatedUser();
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     return await handlePostOwnedGames(user.id, body);
   } catch (err: unknown) {
-    const message = errorMessage(err, "Erreur de sauvegarde des jeux.");
+    const message = publicErrorMessage(err, "Erreur de sauvegarde des jeux.");
     console.error("Save owned games error:", err);
     return NextResponse.json({ error: message }, { status: 500 });
   }
@@ -49,7 +49,7 @@ export async function PATCH(req: Request) {
     if (err instanceof InvalidGameStatusError) {
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
-    const message = errorMessage(err, "Erreur de mise à jour du statut.");
+    const message = publicErrorMessage(err, "Erreur de mise à jour du statut.");
     console.error("Patch game status error:", err);
     return NextResponse.json({ error: message }, { status: 500 });
   }
@@ -65,7 +65,7 @@ export async function DELETE(req: Request) {
     const { searchParams } = new URL(req.url);
     return await handleDeleteOwnedGames(user.id, searchParams);
   } catch (err: unknown) {
-    const message = errorMessage(err, "Erreur lors de la suppression du jeu.");
+    const message = publicErrorMessage(err, "Erreur lors de la suppression du jeu.");
     console.error("Delete owned game error:", err);
     return NextResponse.json({ error: message }, { status: 500 });
   }

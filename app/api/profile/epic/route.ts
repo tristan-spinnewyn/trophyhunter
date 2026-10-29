@@ -6,7 +6,6 @@ import {
 } from "@/lib/epic/profile-sync";
 import { loadStoredEpicCredentials } from "@/lib/epic/credentials";
 import { parseEpicAuthInput, readAuthInput } from "@/lib/epic/auth-input";
-import { errorMessage } from "@/lib/error-message";
 import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
 
 export async function POST(request: Request) {
@@ -42,7 +41,6 @@ export async function POST(request: Request) {
         return NextResponse.json(
           {
             error: result.error,
-            details: result.details,
             requiresToken: result.status === 401,
           },
           { status: result.status }
@@ -54,7 +52,6 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error: "Impossible de joindre l'API Epic Games.",
-          details: errorMessage(err, ""),
           requiresToken: true,
         },
         { status: 500 }

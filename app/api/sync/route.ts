@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { syncEpicGame } from "@/lib/epic/game-sync";
 import { syncSteamGame } from "@/lib/steam/game-sync";
-import { errorMessage, errorStatus } from "@/lib/error-message";
+import { errorStatus, publicErrorMessage } from "@/lib/error-message";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -36,11 +36,10 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Sync API error:", error);
     const status = errorStatus(error, 500);
-    const body: { error: string; isPrivate?: boolean; details?: string } = {
-      error: errorMessage(error, "Impossible de synchroniser avec le profil Steam."),
+    const body: { error: string; isPrivate?: boolean } = {
+      error: publicErrorMessage(error, "Impossible de synchroniser avec le profil Steam."),
     };
     if ((error as { isPrivate?: boolean } | null)?.isPrivate) body.isPrivate = true;
-    if (status === 500) body.details = errorMessage(error, "");
 
     return NextResponse.json(body, { status });
   }

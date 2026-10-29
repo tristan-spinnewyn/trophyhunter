@@ -62,6 +62,7 @@ describe("GET /api/gamepass/pc", () => {
     const body = await res.json();
 
     expect(res.status).toBe(500);
-    expect(body.details).toBe("Network failure");
+    expect(body).not.toHaveProperty("details");
+    expect(JSON.stringify(body)).not.toContain("Network failure");
   });
 });

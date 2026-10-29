@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { setGameFavorite, getUserFavoriteAppIds } from "@/lib/db";
 import type { PlatformType } from "@/lib/types";
-import { errorMessage } from "@/lib/error-message";
+import { publicErrorMessage } from "@/lib/error-message";
 
 export async function GET() {
   const user = await getAuthenticatedUser();
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("Favorite toggle error:", err);
     return NextResponse.json(
-      { error: errorMessage(err, "Erreur de mise à jour du favori.") },
+      { error: publicErrorMessage(err, "Erreur de mise à jour du favori.") },
       { status: 500 }
     );
   }
