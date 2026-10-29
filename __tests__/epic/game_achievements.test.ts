@@ -70,7 +70,7 @@ describe("Epic Game Achievements Combination", () => {
   });
 
   it("returns null if user has no stored credentials in getEpicAchievementsForUser", async () => {
-    const user = createUser("no_epic_user", "pass123");
+    const user = createUser("no_epic_user", "pass1234");
     expect(await getEpicAchievementsForUser(user.id, 999, "Game")).toBeNull();
   });
 });

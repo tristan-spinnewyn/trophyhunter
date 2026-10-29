@@ -4,6 +4,7 @@ import { getDb } from "./connection";
 import { hashPassword, verifyPassword } from "../crypto";
 import { sanitizeExternalHref } from "../security/url-validator";
 import type { User } from "../types";
+import { MIN_PASSWORD_LENGTH } from "../accounts/password-policy";
 
 export { createSession, validateSession, deleteSession } from "./sessions";
 
@@ -36,8 +37,8 @@ export function createUser(
   if (!trimmedUser || trimmedUser.length < 3 || trimmedUser.length > 64) {
     throw new Error("Username must be at least 3 characters");
   }
-  if (!plainPassword || plainPassword.length < 6) {
-    throw new Error("Password must be at least 6 characters");
+  if (!plainPassword || plainPassword.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
   }
 
   const existing = db.prepare("SELECT id FROM users WHERE username = ?").get(trimmedUser);

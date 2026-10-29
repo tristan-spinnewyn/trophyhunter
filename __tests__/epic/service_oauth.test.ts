@@ -12,7 +12,7 @@ describe("Epic Service OAuth Synchronization", () => {
   });
 
   it("syncs with stored credentials when token is valid", async () => {
-    const user = createUser("epic_stored_user", "pass123");
+    const user = createUser("epic_stored_user", "pass1234");
     storeEpicCredentials(user.id, {
       accessToken: "stored_access_valid",
       refreshToken: "stored_refresh_val",
@@ -45,7 +45,7 @@ describe("Epic Service OAuth Synchronization", () => {
   });
 
   it("refreshes token when access token is expired", async () => {
-    const user = createUser("epic_refresh_user", "pass123");
+    const user = createUser("epic_refresh_user", "pass1234");
     storeEpicCredentials(user.id, {
       accessToken: "expired_access",
       refreshToken: "valid_refresh_code",

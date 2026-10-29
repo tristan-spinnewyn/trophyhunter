@@ -30,7 +30,8 @@ describe("Database Users", () => {
 
   it("prevents short usernames and short passwords", () => {
     expect(() => createUser("ab", "password123")).toThrow("Username must be at least 3 characters");
-    expect(() => createUser("validUser", "12345")).toThrow("Password must be at least 6 characters");
+    expect(() => createUser("validUser", "1234567")).toThrow("Password must be at least 8 characters");
+    expect(createUser("validUser", "12345678").username).toBe("validuser");
   });
 
   it("prevents duplicate usernames", () => {

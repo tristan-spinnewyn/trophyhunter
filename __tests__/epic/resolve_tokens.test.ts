@@ -99,7 +99,7 @@ describe("resolveEpicTokens", () => {
   });
 
   it("reuses stored credentials that still verify", async () => {
-    const user = createUser("stored_ok", "pass123");
+    const user = createUser("stored_ok", "pass1234");
     storeEpicCredentials(user.id, { accessToken: "stored_access", refreshToken: "stored_ref", accountId: "acc_s" });
     vi.spyOn(global, "fetch").mockResolvedValueOnce(
       jsonResponse({ account_id: "acc_s", display_name: "StoredName" })
@@ -116,7 +116,7 @@ describe("resolveEpicTokens", () => {
   });
 
   it("refreshes and persists stored credentials that no longer verify", async () => {
-    const user = createUser("stored_expired", "pass123");
+    const user = createUser("stored_expired", "pass1234");
     storeEpicCredentials(user.id, { accessToken: "old_access", refreshToken: "old_ref", accountId: "acc_r" });
     vi.spyOn(global, "fetch")
       .mockResolvedValueOnce(jsonResponse({ error: "expired" }, 401))
