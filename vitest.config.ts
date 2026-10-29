@@ -1,10 +1,12 @@
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import path from 'path';
 
 export default defineConfig({
   test: {
     environment: 'node',
     setupFiles: ['./__tests__/helpers/localStorage.ts', './__tests__/helpers/blockNetwork.ts'],
+    // Claude Code worktrees hold other checkouts of this repo: their tests are not this branch's.
+    exclude: [...configDefaults.exclude, '.claude/**'],
     globals: true,
     server: {
       deps: {
