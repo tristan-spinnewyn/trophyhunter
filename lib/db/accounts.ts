@@ -11,12 +11,13 @@ export { getUserPlatformApiKey, removeUserPlatformAccount } from "./accounts-cre
 export function getUserPlatformAccounts(userId: string): Partial<Record<PlatformType, PlatformAccount>> {
   const db = getDb();
   const rows = db.prepare(
-    `SELECT platform, platform_username, display_name, avatar_url, profile_url, stats_json, connected_at, last_synced_at
+    `SELECT platform, platform_username, display_name, avatar_url, profile_url, stats_json, connected_at, last_synced_at,
+            encrypted_api_key IS NOT NULL AS has_api_key
      FROM platform_accounts WHERE user_id = ?`
   ).all(userId) as Array<{
     platform: PlatformType; platform_username: string; display_name: string | null;
     avatar_url: string | null; profile_url: string | null; stats_json: string | null;
-    connected_at: string; last_synced_at: string | null;
+    connected_at: string; last_synced_at: string | null; has_api_key: number;
   }>;
 
   const result: Partial<Record<PlatformType, PlatformAccount>> = {};
@@ -30,6 +31,7 @@ export function getUserPlatformAccounts(userId: string): Partial<Record<Platform
       level: meta.level, onlineState: meta.onlineState, memberSince: meta.memberSince,
       location: meta.location, rareShowcase: meta.rareShowcase,
       connectedAt: r.connected_at, lastSyncedAt: r.last_synced_at || undefined, stats,
+      hasApiKey: Boolean(r.has_api_key),
     };
   }
   return result;

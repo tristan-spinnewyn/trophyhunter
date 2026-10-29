@@ -33,15 +33,20 @@ describe("usePlatformInputs", () => {
     expect(result.current.gogInput).toBe("g2");
   });
 
-  it("remembers the Xbox API key locally and forgets it when cleared", () => {
+  it("keeps the Xbox API key in memory only, out of browser storage", () => {
     const profile: UserAccountProfile = { displayName: "P", accounts: {} };
     const { result } = renderHook(() => usePlatformInputs({ accountProfile: profile }));
 
-    act(() => result.current.setXboxApiKey("  xkey "));
-    expect(localStorage.getItem("trophyhunter_xbox_api_key")).toBe("xkey");
-    expect(renderHook(() => usePlatformInputs({ accountProfile: profile })).result.current.xboxApiKey).toBe("xkey");
+    act(() => result.current.setXboxApiKey("xkey"));
+    expect(result.current.xboxApiKey).toBe("xkey");
+    expect(localStorage.length).toBe(0);
+  });
 
-    act(() => result.current.setXboxApiKey(""));
+  it("removes an Xbox API key left in browser storage by an earlier version", () => {
+    localStorage.setItem("trophyhunter_xbox_api_key", "leaked");
+    const { result } = renderHook(() => usePlatformInputs({ accountProfile: { displayName: "P", accounts: {} } }));
+
+    expect(result.current.xboxApiKey).toBe("");
     expect(localStorage.getItem("trophyhunter_xbox_api_key")).toBeNull();
   });
 

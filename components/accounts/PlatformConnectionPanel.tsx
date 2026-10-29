@@ -167,7 +167,11 @@ export function PlatformConnectionPanel({
             <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-sm text-slate-300 [&::-webkit-details-marker]:hidden">
               <KeyRound className="h-4 w-4 text-slate-500" />
               {config.secret.label}
-              {secret && <span className="text-xs text-emerald-400">renseigné</span>}
+              {secret ? (
+                <span className="text-xs text-emerald-400">renseigné</span>
+              ) : account?.hasApiKey ? (
+                <span className="text-xs text-emerald-400">enregistrée</span>
+              ) : null}
               <ChevronDown className="ml-auto h-4 w-4 text-slate-500 transition group-open:rotate-180" />
             </summary>
             <div className="space-y-2 border-t border-slate-800 px-3 py-3">

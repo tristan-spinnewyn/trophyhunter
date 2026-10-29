@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import type { UserAccountProfile } from "@/lib/types";
 
-const XBOX_API_KEY_STORAGE = "trophyhunter_xbox_api_key";
+/** Where earlier versions kept the Xbox API key in clear; now only removed, never written. */
+const LEGACY_XBOX_API_KEY_STORAGE = "trophyhunter_xbox_api_key";
 
 interface UsePlatformInputsProps {
   readonly accountProfile: UserAccountProfile;
@@ -23,7 +24,7 @@ export function usePlatformInputs({
   const [steamApiKey, setSteamApiKey] = useState(initialSteamApiKey);
 
   const [xboxInput, setXboxInput] = useState(xboxAccount?.username || "");
-  const [xboxApiKey, setXboxApiKeyState] = useState("");
+  const [xboxApiKey, setXboxApiKey] = useState("");
 
   const [epicInput, setEpicInput] = useState(epicAccount?.username || "");
   const [epicCode, setEpicCode] = useState("");
@@ -31,26 +32,12 @@ export function usePlatformInputs({
   const [gogInput, setGogInput] = useState(gogAccount?.username || "");
   const [gogToken, setGogToken] = useState("");
 
-  const setXboxApiKey = (val: string) => {
-    setXboxApiKeyState(val);
-    if (typeof window !== "undefined") {
-      try {
-        if (val.trim()) localStorage.setItem(XBOX_API_KEY_STORAGE, val.trim());
-        else localStorage.removeItem(XBOX_API_KEY_STORAGE);
-      } catch (e: unknown) {
-        console.warn("Could not persist Xbox API key locally:", e);
-      }
-    }
-  };
-
+  // The key is saved encrypted on the server at sync time; a copy in browser storage would be readable by any script.
   useEffect(() => {
-    if (typeof window !== "undefined" && !xboxApiKey) {
-      try {
-        const saved = localStorage.getItem(XBOX_API_KEY_STORAGE);
-        if (saved) setXboxApiKeyState(saved);
-      } catch (e: unknown) {
-        console.warn("Could not read Xbox API key locally:", e);
-      }
+    try {
+      localStorage.removeItem(LEGACY_XBOX_API_KEY_STORAGE);
+    } catch (e: unknown) {
+      console.warn("Could not clear the legacy Xbox API key:", e);
     }
   }, []);
 

@@ -13,7 +13,6 @@ export interface SyncCollectionItem {
 export interface SyncResponsePayload {
   readonly games?: OwnedGame[];
   readonly profile?: UserAccountProfile;
-  readonly steamApiKey?: string;
   readonly favorites?: number[];
   readonly wishlist?: number[];
   readonly collections?: SyncCollectionItem[];

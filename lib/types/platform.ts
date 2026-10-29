@@ -40,6 +40,8 @@ export interface PlatformAccount {
   lastSyncedAt?: string;
   stats: PlatformStats;
   rareShowcase?: RareAchievementShowcaseItem[];
+  /** Whether an API key or token is saved for this account. The key itself never reaches the page. */
+  hasApiKey?: boolean;
 }
 
 export interface UserAccountProfile {

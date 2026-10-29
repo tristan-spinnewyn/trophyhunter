@@ -41,6 +41,8 @@ describe("Database Platform Accounts", () => {
     expect(accounts.steam).toBeDefined();
     expect(accounts.steam?.displayName).toBe("MySteamProfile");
     expect(accounts.steam?.stats.gamesOwned).toBe(10);
+    expect(accounts.steam?.hasApiKey).toBe(true);
+    expect(JSON.stringify(accounts)).not.toContain("SECRET_STEAM_API_KEY_123");
 
     const decryptedKey = getUserPlatformApiKey(user.id, "steam");
     expect(decryptedKey).toBe("SECRET_STEAM_API_KEY_123");
