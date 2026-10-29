@@ -4,6 +4,7 @@ import { syncSteamProfile } from "@/lib/steam/profile-sync";
 import { errorStatus, publicErrorMessage } from "@/lib/error-message";
 import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
 import { resolvePlatformApiKey } from "@/lib/accounts/platform-api-key";
+import { anonymousRateLimitResponse } from "@/lib/security/anonymous-rate-limit";
 
 export async function POST(request: Request) {
   const { user: rawUser, secret } = await readProfileSyncRequest(request);
@@ -14,6 +15,8 @@ export async function POST(request: Request) {
   } catch {
     // Non-blocking auth lookup
   }
+  const rateLimited = anonymousRateLimitResponse(request, Boolean(authUser));
+  if (rateLimited) return rateLimited;
   const apiKey = resolvePlatformApiKey("steam", { userId: authUser?.id, providedKey: secret });
 
   if (!rawUser) {

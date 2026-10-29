@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { anonymousRateLimitResponse } from "@/lib/security/anonymous-rate-limit";
 import { syncEpicGame } from "@/lib/epic/game-sync";
 import { syncSteamGame } from "@/lib/steam/game-sync";
 import { errorStatus, publicErrorMessage } from "@/lib/error-message";
@@ -11,6 +13,10 @@ export async function GET(request: Request) {
   const gameName = (
     searchParams.get("name") || searchParams.get("gameName")
   )?.trim();
+
+  const authUser = await getAuthenticatedUser();
+  const rateLimited = anonymousRateLimitResponse(request, Boolean(authUser));
+  if (rateLimited) return rateLimited;
 
   if (platform === "epic") {
     if (!appId) {

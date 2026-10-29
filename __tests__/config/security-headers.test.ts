@@ -18,6 +18,10 @@ describe("security headers", () => {
     expect(await findHeader("X-Frame-Options")).toBe("DENY");
   });
 
+  it("does not advertise the framework in an X-Powered-By header", () => {
+    expect(nextConfig.poweredByHeader).toBe(false);
+  });
+
   it("sends the Content-Security-Policy on every route", async () => {
     const csp = await findHeader("Content-Security-Policy");
 

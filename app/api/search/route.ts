@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { anonymousRateLimitResponse } from "@/lib/security/anonymous-rate-limit";
 import type { GameSearchResult } from "@/lib/types";
 
 /** An entry of the Steam store search API (store.steampowered.com/api/storesearch). */
@@ -16,6 +18,10 @@ export async function GET(request: Request) {
   if (!query) {
     return NextResponse.json({ games: [] });
   }
+
+  const authUser = await getAuthenticatedUser();
+  const rateLimited = anonymousRateLimitResponse(request, Boolean(authUser));
+  if (rateLimited) return rateLimited;
 
   try {
     const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(

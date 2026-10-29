@@ -2,6 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { anonymousRateLimitResponse } from "@/lib/security/anonymous-rate-limit";
 import { getSteamGameDetails } from "@/lib/steam/game-details";
 import { getEpicAchievementsForUser } from "@/lib/epic/game-sync";
 import { getGogAchievementsForUser } from "@/lib/gog/service";
@@ -30,6 +31,8 @@ export async function GET(
     } catch (authErr: unknown) {
       if (authErr instanceof Error) authUser = null;
     }
+    const rateLimited = anonymousRateLimitResponse(request, Boolean(authUser));
+    if (rateLimited) return rateLimited;
 
     const numericAppId = parseInt(appId, 10);
     const isEpic = platform === "epic" && !!authUser;
