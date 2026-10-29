@@ -26,9 +26,14 @@ describe("Secret Encryption & Decryption (AES-256-GCM)", () => {
   });
 
   it("throws error if ciphertext format is corrupted or tampered", () => {
-    const valid = encryptSecret("test-secret");
-    const tampered = valid.slice(0, -2) + "ff";
+    // A ciphertext already ending in "ff" is the 1-in-256 case where the old tampering changed nothing.
+    let valid = encryptSecret("test-secret");
+    while (!valid.endsWith("ff")) valid = encryptSecret("test-secret");
+    // Flipping every bit of the last hex digit always yields a different digit.
+    const lastDigit = parseInt(valid.slice(-1), 16);
+    const tampered = valid.slice(0, -1) + (lastDigit ^ 0xf).toString(16);
 
+    expect(tampered).not.toBe(valid);
     expect(() => decryptSecret("enc_gcm:invalid:format")).toThrow();
     expect(() => decryptSecret(tampered)).toThrow();
   });
