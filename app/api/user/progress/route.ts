@@ -6,7 +6,7 @@ import {
   getUserGameProgress,
   resetUserGameProgress,
 } from "@/lib/db";
-import { errorMessage } from "@/lib/error-message";
+import { publicErrorMessage } from "@/lib/error-message";
 import { normalizePinnedIds } from "@/lib/hunting/pinned-targets.services";
 import { sanitizeHuntingOverrideSafe } from "@/lib/hunting/hunting-override.services";
 import type { PlatformType, UserGameProgress } from "@/lib/types";
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("Save progress error:", err);
     return NextResponse.json(
-      { error: errorMessage(err, "Erreur de sauvegarde de la progression.") },
+      { error: publicErrorMessage(err, "Erreur de sauvegarde de la progression.") },
       { status: 500 }
     );
   }
@@ -90,7 +90,7 @@ export async function DELETE(req: Request) {
   } catch (err) {
     console.error("Reset progress error:", err);
     return NextResponse.json(
-      { error: errorMessage(err, "Erreur lors de la réinitialisation.") },
+      { error: publicErrorMessage(err, "Erreur lors de la réinitialisation.") },
       { status: 500 }
     );
   }

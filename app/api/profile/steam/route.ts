@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { syncSteamProfile } from "@/lib/steam/profile-sync";
-import { errorMessage, errorStatus } from "@/lib/error-message";
+import { errorStatus, publicErrorMessage } from "@/lib/error-message";
 import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
 import { resolvePlatformApiKey } from "@/lib/accounts/platform-api-key";
 
@@ -31,8 +31,7 @@ export async function POST(request: Request) {
     const status = errorStatus(error, 500);
     return NextResponse.json(
       {
-        error: errorMessage(error, "Impossible de récupérer les informations du profil Steam."),
-        details: errorMessage(error, ""),
+        error: publicErrorMessage(error, "Impossible de récupérer les informations du profil Steam."),
       },
       { status }
     );

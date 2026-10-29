@@ -77,6 +77,7 @@ describe("POST /api/profile/epic Features & Errors", () => {
 
     const data = await res.json();
     expect(data.error).toBe("Impossible de joindre l'API Epic Games.");
-    expect(data.details).toBe("Connection timed out");
+    expect(data).not.toHaveProperty("details");
+    expect(JSON.stringify(data)).not.toContain("Connection timed out");
   });
 });

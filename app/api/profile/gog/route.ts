@@ -6,7 +6,7 @@ import {
   saveUserOwnedGames,
   saveUserPlatformAccount,
 } from "@/lib/db";
-import { errorMessage } from "@/lib/error-message";
+import { publicErrorMessage } from "@/lib/error-message";
 import { fetchGogProfile, GogSyncError } from "@/lib/gog/service";
 import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
 
@@ -63,10 +63,8 @@ export async function POST(request: Request) {
   } catch (err: unknown) {
     console.error("GOG profile API error:", err);
     const status = err instanceof GogSyncError ? err.status : 500;
-    const message =
-      errorMessage(err, "Impossible de joindre le profil GOG.");
     return NextResponse.json(
-      { error: message, details: message },
+      { error: publicErrorMessage(err, "Impossible de joindre le profil GOG.") },
       { status }
     );
   }

@@ -162,16 +162,17 @@ export async function syncEpicProfileWithOAuth(
   authUser?: User | null
 ): Promise<
   | { success: true; account: PlatformAccount; discoveredGames: OwnedGame[] }
-  | { success: false; status: number; error: string; details?: string }
+  | { success: false; status: number; error: string }
 > {
   const nowIso = new Date().toISOString();
   const tokenResult = await resolveEpicTokens(code, rawUser, authUser);
   if (!tokenResult.resolved) {
+    // Epic's raw answer stays in the server logs: it is not meant for the client.
+    if (tokenResult.errorDetails) console.warn("Epic token request failed:", tokenResult.errorDetails);
     return {
       success: false,
       status: tokenResult.errorStatus || 401,
       error: tokenResult.errorMsg || "Erreur d'authentification Epic Games",
-      details: tokenResult.errorDetails,
     };
   }
 

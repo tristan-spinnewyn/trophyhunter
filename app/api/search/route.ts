@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import type { GameSearchResult } from "@/lib/types";
-import { errorMessage } from "@/lib/error-message";
 
 /** An entry of the Steam store search API (store.steampowered.com/api/storesearch). */
 interface SteamStoreSearchItem {
@@ -52,7 +51,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Search API error:", error);
     return NextResponse.json(
-      { error: "Impossible de rechercher les jeux Steam.", details: errorMessage(error, "Erreur interne") },
+      { error: "Impossible de rechercher les jeux Steam." },
       { status: 500 }
     );
   }

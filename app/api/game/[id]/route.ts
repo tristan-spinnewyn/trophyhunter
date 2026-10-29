@@ -6,7 +6,6 @@ import { getSteamGameDetails } from "@/lib/steam/game-details";
 import { getEpicAchievementsForUser } from "@/lib/epic/game-sync";
 import { getGogAchievementsForUser } from "@/lib/gog/service";
 import { getXboxAchievementsForUser } from "@/lib/xbox/game-details";
-import { errorMessage } from "@/lib/error-message";
 
 export async function GET(
   request: Request,
@@ -89,10 +88,9 @@ export async function GET(
 
     return NextResponse.json(gameDetails);
   } catch (error: unknown) {
-    const message = errorMessage(error, "Erreur interne");
     console.error("Game API error:", error);
     return NextResponse.json(
-      { error: "Impossible de charger les données du jeu.", details: message },
+      { error: "Impossible de charger les données du jeu." },
       { status: 500 }
     );
   }
