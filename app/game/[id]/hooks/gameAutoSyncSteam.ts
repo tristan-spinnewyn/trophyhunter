@@ -14,7 +14,7 @@ interface AutoSyncParams {
   owned?: OwnedGame;
   currentProgress: UserGameProgress;
   currentUser: UserType | null;
-  upsertOwnedGameInMemoryAndDb: (game: OwnedGame) => Promise<any>;
+  upsertOwnedGameInMemoryAndDb: (game: OwnedGame) => Promise<void>;
   onSynced: (updated: UserGameProgress, count: number) => void;
 }
 

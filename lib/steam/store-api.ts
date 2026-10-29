@@ -1,10 +1,10 @@
 // lib/steam/store-api.ts
 // HTTP calls to the Steam Web API and store search.
 import { cleanTitleForSearch, findBestSteamMatch } from "./game-metadata";
-import type { DiscoveredGameData } from "./types";
+import type { DiscoveredGameData, SteamSchemaAchievement, SteamStoreGameInfo } from "./types";
 
 export type AchFetchResult =
-  | { type: "schema"; list: any[] }
+  | { type: "schema"; list: SteamSchemaAchievement[] }
   | { type: "html"; html: string }
   | null;
 
@@ -38,7 +38,7 @@ export async function fetchSteamAchievementsByAppId(steamAppId: string): Promise
 export async function searchSteamStoreFallback(nameParam: string, fastMode = false): Promise<{
   matchedAppId?: string;
   matchedImage?: string;
-  gameInfo?: any;
+  gameInfo?: SteamStoreGameInfo;
   achResult?: AchFetchResult;
 }> {
   try {

@@ -1,15 +1,16 @@
 // app/game/[id]/hooks/gameEpicSyncData.ts
 
 import type { GameDetails, OwnedGame, UserGameProgress } from "@/lib/types";
+import type { EpicSyncResponseData } from "@/lib/epic/sync-response.types";
 
 interface ApplySyncDataParams {
-  data: any;
+  data: EpicSyncResponseData;
   game: GameDetails;
   setGame?: (g: GameDetails) => void;
   owned?: OwnedGame;
   progress: UserGameProgress;
   setProgress: (p: UserGameProgress) => void;
-  upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<any>;
+  upsertOwnedGameInMemoryAndDb: (g: OwnedGame) => Promise<void>;
 }
 
 export async function applyGameEpicSyncData({

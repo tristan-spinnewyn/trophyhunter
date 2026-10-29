@@ -60,7 +60,6 @@ describe("Master Encryption Key Management", () => {
 
   it("reads from legacy .data location if primary does not exist", () => {
     delete process.env.APP_ENCRYPTION_KEY;
-    const primary = path.join(process.cwd(), "data", ".encryption_key");
     const legacy = path.join(process.cwd(), ".data", ".encryption_key");
     const legacyKey = crypto.randomBytes(32).toString("hex");
 

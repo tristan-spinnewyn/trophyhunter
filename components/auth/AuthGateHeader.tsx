@@ -1,6 +1,6 @@
 // components/auth/AuthGateHeader.tsx
 
-import { Trophy, Gamepad2, Sparkles } from "lucide-react";
+import { Trophy, Sparkles } from "lucide-react";
 
 export function AuthGateHeader({ legacyGamesCount }: { legacyGamesCount: number }) {
   return (
