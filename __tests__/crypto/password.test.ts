@@ -18,4 +18,13 @@ describe("Password Hashing & Verification", () => {
     expect(verifyPassword("pass", "invalidhashwithnosalt")).toBe(false);
     expect(verifyPassword("pass", "salt:invalid_hex_string")).toBe(false);
   });
+
+  it("rejects passwords longer than 256 bytes", () => {
+    expect(() => hashPassword("a".repeat(300))).toThrow("Password exceeds maximum allowed length");
+    expect(verifyPassword("a".repeat(300), "salt:hash")).toBe(false);
+  });
+
+  it("runs a dummy verification when no hash is stored, so unknown usernames take as long", () => {
+    expect(verifyPassword("AnyPassword123", null)).toBe(false);
+  });
 });
