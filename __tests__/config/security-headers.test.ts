@@ -17,4 +17,11 @@ describe("security headers", () => {
   it("forbids framing the app", async () => {
     expect(await findHeader("X-Frame-Options")).toBe("DENY");
   });
+
+  it("sends the Content-Security-Policy on every route", async () => {
+    const csp = await findHeader("Content-Security-Policy");
+
+    expect(csp).toContain("default-src 'self'");
+    expect(csp).toContain("object-src 'none'");
+  });
 });
