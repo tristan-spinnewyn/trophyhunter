@@ -69,6 +69,11 @@ export function authenticateUser(username: string, plainPassword: string): User 
   return mapUserRow(row);
 }
 
+export function hasAnyUser(): boolean {
+  const db = getDb();
+  return Boolean(db.prepare("SELECT 1 FROM users LIMIT 1").get());
+}
+
 export function getUserById(userId: string): User | null {
   const db = getDb();
   const row = db

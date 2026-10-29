@@ -4,6 +4,7 @@ import { createUser } from "@/lib/db";
 import { setAuthSessionCookie } from "@/lib/auth";
 import { checkRateLimit, extractClientKey } from "@/lib/security";
 import { errorMessage } from "@/lib/error-message";
+import { isRegistrationOpen } from "@/lib/accounts/registration-policy";
 
 const REGISTER_RATE_LIMIT = { windowMs: 60_000, maxRequests: 10 };
 
@@ -13,6 +14,13 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { error: "Trop de tentatives d'inscription. Veuillez réessayer plus tard." },
       { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } }
+    );
+  }
+
+  if (!isRegistrationOpen()) {
+    return NextResponse.json(
+      { error: "Les inscriptions sont fermées sur cette instance." },
+      { status: 403 }
     );
   }
 

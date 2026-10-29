@@ -38,6 +38,7 @@ pnpm test:coverage  # unit tests with the 80% coverage gate
 
 * **Run it behind a reverse proxy.** The login and registration rate limiter keys clients on the right-most `X-Forwarded-For` entry, i.e. the one appended by the proxy. If port 3000 is exposed directly, clients can forge that header to bypass the limit, and clients without it share a single bucket.
 * **Encryption key.** Stored platform tokens are encrypted with a key read from `APP_ENCRYPTION_KEY` (64 hex chars, or any passphrase hashed with SHA-256). Without it, a key is generated in `data/.encryption_key`, in the same volume as the database, so a copy of the volume is enough to decrypt the tokens. Set `APP_ENCRYPTION_KEY` from a secret store in production, and keep it: changing it makes stored tokens unreadable.
+* **Registration.** Sign-up is open only until the first account exists, so whoever reaches a fresh instance first becomes its owner: create your account right after deploying. Set `ALLOW_REGISTRATION=true` to keep sign-up open.
 * **Data volume.** The Docker image keeps the database and the generated key in `/app/data`; mount a volume there.
 
 ---
