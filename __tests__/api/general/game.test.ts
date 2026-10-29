@@ -3,6 +3,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/game/[id]/route";
 import { jsonResponse, textResponse } from "../../helpers/responses";
+import { requestUrl } from "../../helpers/networkGuard";
 
 describe("GET /api/game/[id] - Store HTML & Xbox", () => {
   beforeEach(() => {
@@ -65,7 +66,7 @@ describe("GET /api/game/[id] - Store HTML & Xbox", () => {
 
   it("does not use the server Xbox key to show unlocks to an anonymous caller", async () => {
     process.env.OPENXBL_API_KEY = "test-xbl-key";
-    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse(null, 404));
+    const fetchSpy = vi.spyOn(global, "fetch").mockImplementation(async () => jsonResponse(null, 404));
 
     const req = new Request("http://localhost:3000/api/game/1715559203?platform=xbox");
     const res = await GET(req, { params: Promise.resolve({ id: "1715559203" }) });
@@ -73,7 +74,7 @@ describe("GET /api/game/[id] - Store HTML & Xbox", () => {
     const data = await res.json();
     expect(data.achievementsSource).not.toBe("xbox");
     expect(data.unlockedIds).toBeUndefined();
-    const urls = fetchSpy.mock.calls.map(([input]) => String(input));
-    expect(urls.some((url) => url.includes("xbl.io"))).toBe(false);
+    const hosts = fetchSpy.mock.calls.map(([input]) => new URL(requestUrl(input)).hostname);
+    expect(hosts).not.toContain("api.xbl.io");
   });
 });
