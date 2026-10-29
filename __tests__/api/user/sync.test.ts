@@ -88,5 +88,9 @@ describe("User Sync API", () => {
     const getData = await getRes.json();
     expect(getData.games.length).toBe(1);
     expect(getData.games[0].name).toBe("Counter-Strike 2");
+    expect(getData.hasSteamApiKey).toBe(true);
+    expect(getData).not.toHaveProperty("steamApiKey");
+    expect(JSON.stringify(getData)).not.toContain("ENC_KEY_TEST_XYZ");
+    expect(getData.profile.accounts.steam.hasApiKey).toBe(true);
   });
 });

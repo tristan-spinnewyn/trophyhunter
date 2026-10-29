@@ -6,7 +6,6 @@ import {
   getUserOwnedGames,
   getAllUserGameProgress,
   syncFromLocalStorage,
-  getUserPlatformApiKey,
   getUserFavoriteAppIds,
   getUserWishlist,
   getUserCollections,
@@ -22,7 +21,6 @@ export async function GET() {
   const accounts = getUserPlatformAccounts(user.id);
   const games = getUserOwnedGames(user.id);
   const progress = getAllUserGameProgress(user.id);
-  const steamApiKey = getUserPlatformApiKey(user.id, "steam");
   const favorites = getUserFavoriteAppIds(user.id);
   const wishlist = getUserWishlist(user.id).map((g) => g.appId);
   const collections = getUserCollections(user.id);
@@ -39,8 +37,8 @@ export async function GET() {
     favorites,
     wishlist,
     collections,
-    hasSteamApiKey: Boolean(steamApiKey),
-    steamApiKey: steamApiKey || undefined,
+    // Keys never leave the server: the page only learns whether one is saved.
+    hasSteamApiKey: Boolean(accounts.steam?.hasApiKey),
   });
 }
 

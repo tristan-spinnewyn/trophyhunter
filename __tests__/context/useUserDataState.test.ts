@@ -36,7 +36,8 @@ describe("useUserDataState", () => {
     await waitFor(() => expect(result.current.ownedGames).toHaveLength(1));
     expect(result.current.currentUser).toEqual(user);
     expect(result.current.steamUser).toBe("gabe_steam");
-    expect(result.current.steamApiKey).toBe("key");
+    // Keys stay on the server: an older server that still sends one must not leak it into the page state.
+    expect(result.current.steamApiKey).toBe("");
     expect(result.current.favorites).toEqual([1]);
     expect(result.current.wishlistIds).toEqual([2]);
     expect(result.current.collections).toEqual([{ id: "c1", name: "RPG", description: "", color: "#6366f1", gameIds: [] }]);

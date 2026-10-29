@@ -64,7 +64,9 @@ describe("useSettingsModalState", () => {
 
     await act(() => result.current.handleExport());
 
-    expect(JSON.parse(writeText.mock.calls[0][0])).toMatchObject({ profile: syncData.profile, games: syncData.games, favorites: [] });
+    const exported = JSON.parse(writeText.mock.calls[0][0]);
+    expect(exported).toMatchObject({ profile: syncData.profile, games: syncData.games, favorites: [] });
+    expect(exported).not.toHaveProperty("steamApiKey");
     expect(result.current.copied).toBe(true);
   });
 

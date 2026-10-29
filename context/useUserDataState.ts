@@ -32,7 +32,6 @@ export function useUserDataState() {
         setSteamUser(syncData.profile.accounts.steam.username);
       }
     }
-    if (typeof syncData?.steamApiKey === "string") setSteamApiKey(syncData.steamApiKey);
     if (Array.isArray(syncData?.favorites)) setFavorites(syncData.favorites);
     if (Array.isArray(syncData?.wishlist)) setWishlistIds(syncData.wishlist);
     if (Array.isArray(syncData?.collections)) {

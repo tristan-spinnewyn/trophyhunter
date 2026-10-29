@@ -8,7 +8,6 @@ export async function fetchExportJson(): Promise<string> {
     profile: syncData.profile, games: syncData.games || [],
     progress: syncData.progress || {}, favorites: syncData.favorites || [],
     wishlist: syncData.wishlist || [], collections: syncData.collections || [],
-    steamApiKey: syncData.steamApiKey,
   }, null, 2);
 }
 

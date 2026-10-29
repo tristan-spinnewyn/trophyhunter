@@ -122,6 +122,20 @@ describe("PlatformConnectionPanel", () => {
     expect(props.onSecretChange).toHaveBeenCalledWith("new-key");
   });
 
+  it("shows that a key is saved on the server without revealing it", () => {
+    renderPanel({
+      platform: "xbox",
+      secret: "",
+      account: {
+        platform: "xbox", username: "x", displayName: "X", connectedAt: "x", hasApiKey: true,
+        stats: { gamesOwned: 0, totalAchievements: 0, completedGames: 0 },
+      },
+    });
+
+    expect(screen.getByText("enregistrée")).toBeTruthy();
+    expect((screen.getByLabelText("Clé OpenXBL") as HTMLInputElement).value).toBe("");
+  });
+
   it("extracts the Epic code from a pasted JSON response and offers the guided flow", () => {
     const onOpenGuidedAuth = vi.fn();
     const props = renderPanel({ platform: "epic", onOpenGuidedAuth });
