@@ -4,6 +4,7 @@ import type { OwnedGame, PlatformAccount, User as UserType } from "@/lib/types";
 import { mergeGamesList } from "@/lib/library/game-list";
 import { useSteamSingleGameSync } from "./useSteamSingleGameSync";
 import { syncSteamAchievementsBatch } from "./steamAchievementsBatch";
+import { postProfileSync } from "@/lib/accounts/profile-sync-client";
 
 export interface UseSteamSyncProps {
   ownedGames: OwnedGame[];
@@ -50,8 +51,7 @@ export function useSteamSync({
     setSyncProgressText("Connexion au profil Steam...");
 
     try {
-      const keyParam = steamApiKey.trim() ? `&key=${encodeURIComponent(steamApiKey.trim())}` : "";
-      const res = await fetch(`/api/profile/steam?user=${encodeURIComponent(userToSync)}${keyParam}`);
+      const res = await postProfileSync("steam", { user: userToSync, secret: steamApiKey.trim() || undefined });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || "Impossible de récupérer le profil Steam.");
 

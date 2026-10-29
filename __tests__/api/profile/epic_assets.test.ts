@@ -1,11 +1,12 @@
 // __tests__/api/profile/epic_assets.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET } from "@/app/api/profile/epic/route";
+import { POST } from "@/app/api/profile/epic/route";
+import { profileSyncRequest } from "../../helpers/profileRequests";
 import { initDatabase, setDbForTesting } from "@/lib/db";
 import { emptyThirdPartyResponse, jsonResponse } from "../../helpers/responses";
 import type { OwnedGame } from "@/lib/types";
 
-describe("GET /api/profile/epic Assets & Fallbacks", () => {
+describe("POST /api/profile/epic Assets & Fallbacks", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     setDbForTesting(initDatabase(":memory:"));
@@ -23,7 +24,7 @@ describe("GET /api/profile/epic Assets & Fallbacks", () => {
       .mockResolvedValueOnce(jsonResponse(mockToken))
       .mockResolvedValueOnce(jsonResponse(mockAssets));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "valid-code-123" } }));
+    const res = await POST(profileSyncRequest("epic", {}, { "x-authorization-token": "valid-code-123" }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
@@ -48,7 +49,7 @@ describe("GET /api/profile/epic Assets & Fallbacks", () => {
       .mockResolvedValueOnce(jsonResponse(mockCatalogBulk))
       .mockResolvedValueOnce(jsonResponse({}, 404));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "fallback-code" } }));
+    const res = await POST(profileSyncRequest("epic", {}, { "x-authorization-token": "fallback-code" }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
@@ -86,7 +87,7 @@ describe("GET /api/profile/epic Assets & Fallbacks", () => {
       .mockResolvedValueOnce(jsonResponse({}, 404))
       .mockResolvedValueOnce(jsonResponse(mockGraphQL));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "codenames-code" } }));
+    const res = await POST(profileSyncRequest("epic", {}, { "x-authorization-token": "codenames-code" }));
     expect(res.status).toBe(200);
 
     const data = await res.json();

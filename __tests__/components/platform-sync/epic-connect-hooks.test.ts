@@ -53,8 +53,10 @@ describe("useEpicProfileConnect", () => {
     await handleConnectAndSyncEpic("  acc ");
 
     const [url, init] = fetchSpy.mock.calls[0];
-    expect(url).toBe("/api/profile/epic?user=acc&resolveAchievements=1");
-    expect(init?.headers).toEqual({ "x-authorization-token": "abc" });
+    expect(url).toBe("/api/profile/epic");
+    expect(init?.method).toBe("POST");
+    expect(init?.body).toBe(JSON.stringify({ user: "acc" }));
+    expect(init?.headers).toEqual({ "Content-Type": "application/json", "x-authorization-token": "abc" });
     const merged = vi.mocked(deps.onOwnedGamesChange).mock.calls[0][0] as OwnedGame[];
     expect(merged.map((g) => g.appId)).toEqual([1, 100, 101]);
     const persisted = vi.mocked(deps.persistGames).mock.calls[0];

@@ -3,12 +3,11 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { getUserPlatformApiKey } from "@/lib/db";
 import { syncSteamProfile } from "@/lib/steam/profile-sync";
 import { errorMessage, errorStatus } from "@/lib/error-message";
+import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const rawUser = searchParams.get("user")?.trim();
-  let apiKey =
-    searchParams.get("key")?.trim() || process.env.STEAM_API_KEY?.trim() || "";
+export async function POST(request: Request) {
+  const { user: rawUser, secret } = await readProfileSyncRequest(request);
+  let apiKey = secret || process.env.STEAM_API_KEY?.trim() || "";
 
   let authUser = null;
   try {

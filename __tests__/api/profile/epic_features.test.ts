@@ -1,11 +1,12 @@
 // __tests__/api/profile/epic_features.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET } from "@/app/api/profile/epic/route";
+import { POST } from "@/app/api/profile/epic/route";
+import { profileSyncRequest } from "../../helpers/profileRequests";
 import { initDatabase, setDbForTesting } from "@/lib/db";
 import { emptyThirdPartyResponse, jsonResponse } from "../../helpers/responses";
 import type { OwnedGame } from "@/lib/types";
 
-describe("GET /api/profile/epic Features & Errors", () => {
+describe("POST /api/profile/epic Features & Errors", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     setDbForTesting(initDatabase(":memory:"));
@@ -27,7 +28,7 @@ describe("GET /api/profile/epic Features & Errors", () => {
       .mockResolvedValueOnce(jsonResponse(mockPage2))
       .mockResolvedValueOnce(jsonResponse({ data: { PlayerAchievement: { playerAchievementGameRecords: { records: [] } } } }));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "pagination-code" } }));
+    const res = await POST(profileSyncRequest("epic", {}, { "x-authorization-token": "pagination-code" }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
@@ -60,7 +61,7 @@ describe("GET /api/profile/epic Features & Errors", () => {
       .mockResolvedValueOnce(jsonResponse(mockSteamSearch))
       .mockResolvedValueOnce(jsonResponse(mockSteamAch));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic?resolveAchievements=1", { headers: { "x-authorization-token": "resolve-code" } }));
+    const res = await POST(profileSyncRequest("epic", {}, { "x-authorization-token": "resolve-code" }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
@@ -71,7 +72,7 @@ describe("GET /api/profile/epic Features & Errors", () => {
   it("handles external fetch failure gracefully with status 500", async () => {
     vi.spyOn(global, "fetch").mockImplementation(emptyThirdPartyResponse).mockRejectedValueOnce(new Error("Connection timed out"));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "crash-code" } }));
+    const res = await POST(profileSyncRequest("epic", {}, { "x-authorization-token": "crash-code" }));
     expect(res.status).toBe(500);
 
     const data = await res.json();

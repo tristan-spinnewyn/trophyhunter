@@ -1,6 +1,7 @@
 // __tests__/api/profile/gog.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET } from "@/app/api/profile/gog/route";
+import { POST } from "@/app/api/profile/gog/route";
+import { profileSyncRequest } from "../../helpers/profileRequests";
 import {
   initDatabase,
   setDbForTesting,
@@ -28,7 +29,7 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
-describe("GET /api/profile/gog", () => {
+describe("POST /api/profile/gog", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     setDbForTesting(initDatabase(":memory:"));
@@ -36,7 +37,7 @@ describe("GET /api/profile/gog", () => {
   });
 
   it("returns 400 when user parameter is missing", async () => {
-    const res = await GET(new Request("http://localhost:3000/api/profile/gog"));
+    const res = await POST(profileSyncRequest("gog"));
     expect(res.status).toBe(400);
     const data = await res.json();
     expect(data.error).toContain("Paramètre 'user' (pseudo GOG) requis");
@@ -51,7 +52,7 @@ describe("GET /api/profile/gog", () => {
       .mockResolvedValueOnce(textResponse(mockHtml))
       .mockResolvedValueOnce(jsonResponse({ page: 1, pages: 1, total: 0, _embedded: { items: [] } })); // public games/stats
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/gog?user=GwentMaster"));
+    const res = await POST(profileSyncRequest("gog", { user: "GwentMaster" }));
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.success).toBe(true);
@@ -88,12 +89,7 @@ describe("GET /api/profile/gog", () => {
       .mockResolvedValueOnce(textResponse(mockProfileHtml))
       .mockResolvedValueOnce(jsonResponse(mockStatsJson));
 
-    const res = await GET(
-      new Request(
-        "http://localhost:3000/api/profile/gog?user=" +
-          encodeURIComponent("https://www.gog.com/u/shinkuma13")
-      )
-    );
+    const res = await POST(profileSyncRequest("gog", { user: "https://www.gog.com/u/shinkuma13" }));
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.account.username).toBe("shinkuma13");
@@ -115,7 +111,7 @@ describe("GET /api/profile/gog", () => {
       .mockResolvedValueOnce(textResponse(mockHtml))
       .mockResolvedValueOnce(jsonResponse(mockLibrary));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/gog?user=GogMaster&token=valid-token"));
+    const res = await POST(profileSyncRequest("gog", { user: "GogMaster", secret: "valid-token" }));
     expect(res.status).toBe(200);
 
     const accounts = getUserPlatformAccounts(user.id);

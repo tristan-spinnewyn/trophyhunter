@@ -51,7 +51,11 @@ describe("useSteamSync", () => {
 
     await act(() => result.current.handleConnectAndSyncSteam());
 
-    expect(fetchSpy).toHaveBeenCalledWith("/api/profile/steam?user=gabe&key=my%20key");
+    expect(fetchSpy).toHaveBeenCalledWith("/api/profile/steam", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user: "gabe", secret: "my key" }),
+    });
     expect(deps.onSteamUserChange).toHaveBeenCalledWith("gabe");
     expect(syncSingleSteamGame).toHaveBeenCalledTimes(2);
     expect(deps.persistAccount).toHaveBeenCalledWith(

@@ -1,6 +1,7 @@
 // __tests__/api/profile/xbox_persistence.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET } from "@/app/api/profile/xbox/route";
+import { POST } from "@/app/api/profile/xbox/route";
+import { profileSyncRequest } from "../../helpers/profileRequests";
 import {
   initDatabase,
   setDbForTesting,
@@ -28,7 +29,7 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
-describe("GET /api/profile/xbox Persistence", () => {
+describe("POST /api/profile/xbox Persistence", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     setDbForTesting(initDatabase(":memory:"));
@@ -79,7 +80,7 @@ describe("GET /api/profile/xbox Persistence", () => {
       .mockResolvedValueOnce(jsonResponse(mockProfileResponse))
       .mockResolvedValueOnce(jsonResponse(mockTitlesResponse));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/xbox?user=Chief117"));
+    const res = await POST(profileSyncRequest("xbox", { user: "Chief117" }));
     expect(res.status).toBe(200);
 
     const savedGames = getUserOwnedGames(user.id);

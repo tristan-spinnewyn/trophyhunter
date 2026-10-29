@@ -8,18 +8,17 @@ import {
 } from "@/lib/db";
 import { errorMessage } from "@/lib/error-message";
 import { fetchGogProfile, GogSyncError } from "@/lib/gog/service";
+import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
+  const { user: rawUser, secret: token } = await readProfileSyncRequest(request);
+
   let authUser = null;
   try {
     authUser = await getAuthenticatedUser();
   } catch (authErr: unknown) {
     if (authErr instanceof Error) authUser = null;
   }
-
-  const { searchParams } = new URL(request.url);
-  const rawUser = searchParams.get("user")?.trim();
-  const token = searchParams.get("token")?.trim();
 
   if (!rawUser) {
     return NextResponse.json(

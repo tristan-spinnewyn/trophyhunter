@@ -2,6 +2,7 @@
 import type { OwnedGame, PlatformAccount } from "@/lib/types";
 import { replacePlatformInList } from "@/lib/library/game-list";
 import { buildEpicAuthHeaders, parseEpicAuthInput } from "@/lib/epic/auth-input";
+import { postProfileSync } from "@/lib/accounts/profile-sync-client";
 
 interface UseEpicProfileConnectProps {
   ownedGames: OwnedGame[];
@@ -47,9 +48,7 @@ export function useEpicProfileConnect({
     setBannerMsg(null);
     setSyncProgressText("Importation de la bibliothèque Epic Games...");
     try {
-      const userParam = targetUser ? `user=${encodeURIComponent(targetUser)}` : "";
-      const query = [userParam, "resolveAchievements=1"].filter(Boolean).join("&");
-      const res = await fetch(`/api/profile/epic?${query}`, { headers: buildEpicAuthHeaders(cleanCode) });
+      const res = await postProfileSync("epic", { user: targetUser }, buildEpicAuthHeaders(cleanCode));
       const data = await res.json();
       if (!res.ok || !data.success) {
         if (data?.requiresToken && onRequireToken) {

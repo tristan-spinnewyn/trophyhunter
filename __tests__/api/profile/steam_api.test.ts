@@ -1,6 +1,7 @@
 // __tests__/api/profile/steam_api.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET } from "@/app/api/profile/steam/route";
+import { POST } from "@/app/api/profile/steam/route";
+import { profileSyncRequest } from "../../helpers/profileRequests";
 import { initDatabase, setDbForTesting } from "@/lib/db";
 import type { CookieRecord } from "../../helpers/cookies";
 import { jsonResponse, textResponse } from "../../helpers/responses";
@@ -19,7 +20,7 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
-describe("GET /api/profile/steam WebAPI Key Flow", () => {
+describe("POST /api/profile/steam WebAPI Key Flow", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     setDbForTesting(initDatabase(":memory:"));
@@ -46,9 +47,7 @@ describe("GET /api/profile/steam WebAPI Key Flow", () => {
       .mockResolvedValueOnce(textResponse("", 404))
       .mockResolvedValueOnce(jsonResponse(mockOwned));
 
-    const res = await GET(
-      new Request("http://localhost:3000/api/profile/steam?user=76561198000000000&key=MY_KEY")
-    );
+    const res = await POST(profileSyncRequest("steam", { user: "76561198000000000", secret: "MY_KEY" }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
