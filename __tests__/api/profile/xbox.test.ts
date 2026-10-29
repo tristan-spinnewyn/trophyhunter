@@ -1,25 +1,26 @@
 // __tests__/api/profile/xbox.test.ts
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET } from "@/app/api/profile/xbox/route";
+import { POST } from "@/app/api/profile/xbox/route";
+import { profileSyncRequest } from "../../helpers/profileRequests";
 import { initDatabase, setDbForTesting } from "@/lib/db";
 import { jsonResponse } from "../../helpers/responses";
 
-describe("GET /api/profile/xbox Direct Flow", () => {
+describe("POST /api/profile/xbox Direct Flow", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     setDbForTesting(initDatabase(":memory:"));
   });
 
   it("returns 400 when user parameter is missing", async () => {
-    const res = await GET(new Request("http://localhost:3000/api/profile/xbox"));
+    const res = await POST(profileSyncRequest("xbox"));
     expect(res.status).toBe(400);
     const data = await res.json();
     expect(data.error).toContain("Paramètre 'user' requis");
   });
 
   it("registers Xbox account without API key in fallback mode", async () => {
-    const res = await GET(new Request("http://localhost:3000/api/profile/xbox?user=MajorNelson"));
+    const res = await POST(profileSyncRequest("xbox", { user: "MajorNelson" }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
@@ -63,7 +64,7 @@ describe("GET /api/profile/xbox Direct Flow", () => {
       .mockResolvedValueOnce(jsonResponse(mockProfileResponse))
       .mockResolvedValueOnce(jsonResponse(mockTitlesResponse));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/xbox?user=MajorNelson&key=mock-key-123"));
+    const res = await POST(profileSyncRequest("xbox", { user: "MajorNelson", secret: "mock-key-123" }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
@@ -79,9 +80,7 @@ describe("GET /api/profile/xbox Direct Flow", () => {
       jsonResponse({ error: "Invalid API Key" }, 401)
     );
 
-    const res = await GET(
-      new Request("http://localhost:3000/api/profile/xbox?user=MajorNelson&key=bad-key")
-    );
+    const res = await POST(profileSyncRequest("xbox", { user: "MajorNelson", secret: "bad-key" }));
     expect(res.status).toBe(401);
     const data = await res.json();
     expect(data.error).toContain("OpenXBL");

@@ -1,6 +1,7 @@
 // __tests__/api/profile/epic_oauth_persistence.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET } from "@/app/api/profile/epic/route";
+import { POST } from "@/app/api/profile/epic/route";
+import { profileSyncRequest } from "../../helpers/profileRequests";
 import { syncEpicProfileWithOAuth } from "@/lib/epic/profile-sync";
 import {
   initDatabase,
@@ -30,7 +31,7 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
-describe("GET /api/profile/epic OAuth Persistence", () => {
+describe("POST /api/profile/epic OAuth Persistence", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     setDbForTesting(initDatabase(":memory:"));
@@ -71,7 +72,7 @@ describe("GET /api/profile/epic OAuth Persistence", () => {
       .mockResolvedValueOnce(jsonResponse({}, 404))
       .mockResolvedValueOnce(jsonResponse(mockGql));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "oauth-hero-code" } }));
+    const res = await POST(profileSyncRequest("epic", {}, { "x-authorization-token": "oauth-hero-code" }));
     expect(res.status).toBe(200);
 
     expect(getUserPlatformAccounts(user.id).epic?.displayName).toBe("EpicHero");

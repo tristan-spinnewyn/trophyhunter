@@ -1,6 +1,7 @@
 // __tests__/api/profile/steam_stored_key.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET } from "@/app/api/profile/steam/route";
+import { POST } from "@/app/api/profile/steam/route";
+import { profileSyncRequest } from "../../helpers/profileRequests";
 import {
   initDatabase,
   setDbForTesting,
@@ -26,7 +27,7 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
-describe("GET /api/profile/steam Stored Key Flow", () => {
+describe("POST /api/profile/steam Stored Key Flow", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     setDbForTesting(initDatabase(":memory:"));
@@ -63,7 +64,7 @@ describe("GET /api/profile/steam Stored Key Flow", () => {
       .mockResolvedValueOnce(textResponse("", 404))
       .mockResolvedValueOnce(jsonResponse(mockOwned));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/steam?user=76561198000000000"));
+    const res = await POST(profileSyncRequest("steam", { user: "76561198000000000" }));
     expect(res.status).toBe(200);
 
     const savedGames = getUserOwnedGames(user.id);

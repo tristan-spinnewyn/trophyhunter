@@ -9,12 +9,12 @@ import {
 } from "@/lib/db";
 import { fetchXboxProfileLive, buildFallbackXboxAccount } from "@/lib/xbox/service";
 import { XboxApiError } from "@/lib/xbox/types";
+import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const rawUser = searchParams.get("user")?.trim();
+export async function POST(request: Request) {
+  const { user: rawUser, secret } = await readProfileSyncRequest(request);
   let apiKey =
-    searchParams.get("key")?.trim() ||
+    secret ||
     process.env.OPENXBL_API_KEY?.trim() ||
     process.env.XBL_API_KEY?.trim() ||
     process.env.XBOX_API_KEY?.trim() ||

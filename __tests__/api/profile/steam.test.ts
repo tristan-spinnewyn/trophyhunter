@@ -1,18 +1,19 @@
 // __tests__/api/profile/steam.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET } from "@/app/api/profile/steam/route";
+import { POST } from "@/app/api/profile/steam/route";
+import { profileSyncRequest } from "../../helpers/profileRequests";
 import { initDatabase, setDbForTesting } from "@/lib/db";
 import { textResponse } from "../../helpers/responses";
 import type { OwnedGame } from "@/lib/types";
 
-describe("GET /api/profile/steam Public Scraper", () => {
+describe("POST /api/profile/steam Public Scraper", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     setDbForTesting(initDatabase(":memory:"));
   });
 
   it("returns 400 when user param is missing", async () => {
-    const res = await GET(new Request("http://localhost:3000/api/profile/steam"));
+    const res = await POST(profileSyncRequest("steam"));
     expect(res.status).toBe(400);
     const data = await res.json();
     expect(data.error).toContain("requis");
@@ -58,7 +59,7 @@ describe("GET /api/profile/steam Public Scraper", () => {
       .mockResolvedValueOnce(textResponse(mockBadgesHtml))
       .mockResolvedValueOnce(textResponse(""));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/steam?user=76561198000000000"));
+    const res = await POST(profileSyncRequest("steam", { user: "76561198000000000" }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
@@ -79,7 +80,7 @@ describe("GET /api/profile/steam Public Scraper", () => {
       .mockResolvedValueOnce(textResponse("", 404))
       .mockResolvedValueOnce(textResponse("", 404));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/steam?user=unknown_user_123"));
+    const res = await POST(profileSyncRequest("steam", { user: "unknown_user_123" }));
     expect(res.status).toBe(404);
     const data = await res.json();
     expect(data.error).toContain("introuvable");

@@ -7,15 +7,15 @@ import {
 import { loadStoredEpicCredentials } from "@/lib/epic/credentials";
 import { parseEpicAuthInput, readAuthInput } from "@/lib/epic/auth-input";
 import { errorMessage } from "@/lib/error-message";
+import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   let authUser = null;
   try {
     authUser = await getAuthenticatedUser();
   } catch {}
 
-  const { searchParams } = new URL(request.url);
-  const rawUser = searchParams.get("user")?.trim();
+  const { user: rawUser } = await readProfileSyncRequest(request);
   const rawCode = readAuthInput(request);
 
   const code = parseEpicAuthInput(rawCode);

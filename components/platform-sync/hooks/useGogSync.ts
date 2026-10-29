@@ -2,6 +2,7 @@
 import { useState } from "react";
 import type { OwnedGame, PlatformAccount } from "@/lib/types";
 import { mergeGamesList } from "@/lib/library/game-list";
+import { postProfileSync } from "@/lib/accounts/profile-sync-client";
 
 interface UseGogSyncProps {
   readonly ownedGames: OwnedGame[];
@@ -38,12 +39,7 @@ export function useGogSync({
     setIsSyncingGOG(true);
     setBannerMsg(null);
     try {
-      const tokenParam = gogToken
-        ? `&token=${encodeURIComponent(gogToken)}`
-        : "";
-      const res = await fetch(
-        `/api/profile/gog?user=${encodeURIComponent(targetUser)}${tokenParam}`
-      );
+      const res = await postProfileSync("gog", { user: targetUser, secret: gogToken.trim() || undefined });
       const data = (await res.json()) as {
         readonly success?: boolean;
         readonly error?: string;

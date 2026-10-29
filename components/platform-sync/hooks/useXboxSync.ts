@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { OwnedGame, PlatformAccount } from "@/lib/types";
 import { mergeGamesList } from "@/lib/library/game-list";
+import { postProfileSync } from "@/lib/accounts/profile-sync-client";
 
 interface UseXboxSyncProps {
   readonly ownedGames: OwnedGame[];
@@ -48,12 +49,7 @@ export function useXboxSync({
     setBannerMsg(null);
     try {
       const trimmedKey = xboxApiKey.trim();
-      const keyParam = trimmedKey
-        ? `&key=${encodeURIComponent(trimmedKey)}`
-        : "";
-      const res = await fetch(
-        `/api/profile/xbox?user=${encodeURIComponent(targetUser)}${keyParam}`
-      );
+      const res = await postProfileSync("xbox", { user: targetUser, secret: trimmedKey || undefined });
       const data = (await res.json()) as XboxSyncApiResponse;
       if (!res.ok || !data.success || !data.account) {
         throw new Error(data.error || "Impossible de synchroniser avec Xbox.");

@@ -1,17 +1,18 @@
 // __tests__/api/profile/epic_basic.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET } from "@/app/api/profile/epic/route";
+import { POST } from "@/app/api/profile/epic/route";
+import { profileSyncRequest } from "../../helpers/profileRequests";
 import { initDatabase, setDbForTesting } from "@/lib/db";
 import { textResponse } from "../../helpers/responses";
 
-describe("GET /api/profile/epic Basic & Validation", () => {
+describe("POST /api/profile/epic Basic & Validation", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     setDbForTesting(initDatabase(":memory:"));
   });
 
   it("returns 400 when both user and code parameters are missing", async () => {
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic"));
+    const res = await POST(profileSyncRequest("epic"));
     expect(res.status).toBe(400);
     const data = await res.json();
     expect(data.error).toContain("authorizationToken");
@@ -19,14 +20,14 @@ describe("GET /api/profile/epic Basic & Validation", () => {
 
   it("ignores an authorization code passed in the query string", async () => {
     const fetchSpy = vi.spyOn(global, "fetch");
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic?code=leaked-code"));
+    const res = await POST(new Request("http://localhost:3000/api/profile/epic?code=leaked-code", { method: "POST", body: "{}" }));
 
     expect(res.status).toBe(400);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it("configures Epic account in username-only mode without credentials", async () => {
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic?user=EpicGamer99"));
+    const res = await POST(profileSyncRequest("epic", { user: "EpicGamer99" }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
@@ -41,7 +42,7 @@ describe("GET /api/profile/epic Basic & Validation", () => {
       textResponse('{"errorCode":"errors.com.epicgames.account.oauth.authorization_code_not_found"}', 400)
     );
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "invalid-code" } }));
+    const res = await POST(profileSyncRequest("epic", {}, { "x-authorization-token": "invalid-code" }));
     expect(res.status).toBe(401);
 
     const data = await res.json();
@@ -54,15 +55,11 @@ describe("GET /api/profile/epic Basic & Validation", () => {
     );
 
     const jsonToken = JSON.stringify({ authorizationCode: "code_from_json_123" });
-    const res1 = await GET(
-      new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": jsonToken } })
-    );
+    const res1 = await POST(profileSyncRequest("epic", {}, { "x-authorization-token": jsonToken }));
     expect(res1.status).toBe(401);
 
     const redirectUrl = "https://localhost/?code=a1b2c3d4e5f6";
-    const res2 = await GET(
-      new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": redirectUrl } })
-    );
+    const res2 = await POST(profileSyncRequest("epic", {}, { "x-authorization-token": redirectUrl }));
     expect(res2.status).toBe(401);
   });
 });

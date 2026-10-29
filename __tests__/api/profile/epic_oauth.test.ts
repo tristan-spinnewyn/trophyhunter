@@ -1,10 +1,11 @@
 // __tests__/api/profile/epic_oauth.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET } from "@/app/api/profile/epic/route";
+import { POST } from "@/app/api/profile/epic/route";
+import { profileSyncRequest } from "../../helpers/profileRequests";
 import { initDatabase, setDbForTesting } from "@/lib/db";
 import { emptyThirdPartyResponse, jsonResponse } from "../../helpers/responses";
 
-describe("GET /api/profile/epic OAuth Library Fetch", () => {
+describe("POST /api/profile/epic OAuth Library Fetch", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     setDbForTesting(initDatabase(":memory:"));
@@ -41,7 +42,7 @@ describe("GET /api/profile/epic OAuth Library Fetch", () => {
       .mockResolvedValueOnce(jsonResponse(mockLibrary))
       .mockResolvedValueOnce(jsonResponse(mockGraphQL));
 
-    const res = await GET(new Request("http://localhost:3000/api/profile/epic", { headers: { "x-authorization-token": "lib-code-123" } }));
+    const res = await POST(profileSyncRequest("epic", {}, { "x-authorization-token": "lib-code-123" }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
