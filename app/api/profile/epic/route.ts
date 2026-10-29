@@ -7,12 +7,15 @@ import {
 import { loadStoredEpicCredentials } from "@/lib/epic/credentials";
 import { parseEpicAuthInput, readAuthInput } from "@/lib/epic/auth-input";
 import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
+import { anonymousRateLimitResponse } from "@/lib/security/anonymous-rate-limit";
 
 export async function POST(request: Request) {
   let authUser = null;
   try {
     authUser = await getAuthenticatedUser();
   } catch {}
+  const rateLimited = anonymousRateLimitResponse(request, Boolean(authUser));
+  if (rateLimited) return rateLimited;
 
   const { user: rawUser } = await readProfileSyncRequest(request);
   const rawCode = readAuthInput(request);

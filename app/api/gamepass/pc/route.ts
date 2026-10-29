@@ -1,6 +1,8 @@
 // app/api/gamepass/pc/route.ts
 
 import { NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { anonymousRateLimitResponse } from "@/lib/security/anonymous-rate-limit";
 import { unstable_rethrow } from "next/navigation";
 import { fetchPcGamePassCatalog } from "@/lib/gamepass/catalog.services";
 import { GamePassCatalogError } from "@/lib/gamepass/gamepass.types";
@@ -9,6 +11,8 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const forceRefresh = searchParams.get("refresh") === "1";
+    const rateLimited = anonymousRateLimitResponse(request, Boolean(await getAuthenticatedUser()));
+    if (rateLimited) return rateLimited;
     const { games, fetchedAt } = await fetchPcGamePassCatalog({ forceRefresh });
 
     return NextResponse.json({

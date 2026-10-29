@@ -7,6 +7,7 @@ import { fetchXboxProfileLive, buildFallbackXboxAccount } from "@/lib/xbox/servi
 import { XboxApiError } from "@/lib/xbox/types";
 import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
 import { resolvePlatformApiKey } from "@/lib/accounts/platform-api-key";
+import { anonymousRateLimitResponse } from "@/lib/security/anonymous-rate-limit";
 
 export async function POST(request: Request) {
   const { user: rawUser, secret } = await readProfileSyncRequest(request);
@@ -17,6 +18,8 @@ export async function POST(request: Request) {
   } catch (err: unknown) {
     console.warn("Unable to resolve authenticated user for Xbox sync:", err);
   }
+  const rateLimited = anonymousRateLimitResponse(request, Boolean(authUser));
+  if (rateLimited) return rateLimited;
   const apiKey = resolvePlatformApiKey("xbox", { userId: authUser?.id, providedKey: secret });
 
   if (!rawUser) {

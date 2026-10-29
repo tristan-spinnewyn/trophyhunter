@@ -9,6 +9,7 @@ import {
 import { publicErrorMessage } from "@/lib/error-message";
 import { fetchGogProfile, GogSyncError } from "@/lib/gog/service";
 import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
+import { anonymousRateLimitResponse } from "@/lib/security/anonymous-rate-limit";
 
 export async function POST(request: Request) {
   const { user: rawUser, secret: token } = await readProfileSyncRequest(request);
@@ -19,6 +20,8 @@ export async function POST(request: Request) {
   } catch (authErr: unknown) {
     if (authErr instanceof Error) authUser = null;
   }
+  const rateLimited = anonymousRateLimitResponse(request, Boolean(authUser));
+  if (rateLimited) return rateLimited;
 
   if (!rawUser) {
     return NextResponse.json(
