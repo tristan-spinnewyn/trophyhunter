@@ -68,6 +68,15 @@ describe("POST /api/auth/register", () => {
     });
     const res2 = await registerHandler(shortPassReq);
     expect(res2.status).toBe(400);
+
+    const sevenCharReq = new Request("http://localhost/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: "validUser", password: "1234567" }),
+    });
+    const res3 = await registerHandler(sevenCharReq);
+    expect(res3.status).toBe(400);
+    expect((await res3.json()).error).toContain("8 caractères");
   });
 
   it("refuses a second account once the instance has its owner", async () => {

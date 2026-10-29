@@ -16,7 +16,7 @@ describe("Epic Credentials Persistence & Wrapper", () => {
   });
 
   it("stores and loads credentials from SQLite", () => {
-    const user = createUser("creds_user", "pass123");
+    const user = createUser("creds_user", "pass1234");
     storeEpicCredentials(user.id, {
       accessToken: "stored_token",
       refreshToken: "stored_refresh",
@@ -33,7 +33,7 @@ describe("Epic Credentials Persistence & Wrapper", () => {
   });
 
   it("refreshes token on EpicAuthError within withEpicCredentials", async () => {
-    const user = createUser("refresh_tester", "pass123");
+    const user = createUser("refresh_tester", "pass1234");
     const creds = {
       accessToken: "expired_token",
       refreshToken: "valid_refresh",

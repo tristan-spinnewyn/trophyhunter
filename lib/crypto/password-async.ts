@@ -1,5 +1,6 @@
 // lib/crypto/password-async.ts
 import crypto from "node:crypto";
+import { MIN_PASSWORD_LENGTH } from "../accounts/password-policy";
 
 const MAX_PASSWORD_BYTES = 256;
 const KEY_LENGTH = 64;
@@ -22,8 +23,8 @@ function deriveScryptKey(password: string, salt: string): Promise<Buffer> {
 }
 
 export async function hashPasswordAsync(password: string): Promise<string> {
-  if (!password || password.length < 8) {
-    throw new PasswordValidationError("Password must be at least 8 characters");
+  if (!password || password.length < MIN_PASSWORD_LENGTH) {
+    throw new PasswordValidationError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
   }
   if (Buffer.byteLength(password, "utf8") > MAX_PASSWORD_BYTES) {
     throw new PasswordValidationError("Password exceeds maximum allowed length");

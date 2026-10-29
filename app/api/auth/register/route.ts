@@ -5,6 +5,7 @@ import { setAuthSessionCookie } from "@/lib/auth";
 import { checkRateLimit, extractClientKey } from "@/lib/security";
 import { errorMessage } from "@/lib/error-message";
 import { isRegistrationOpen } from "@/lib/accounts/registration-policy";
+import { MIN_PASSWORD_LENGTH } from "@/lib/accounts/password-policy";
 
 const REGISTER_RATE_LIMIT = { windowMs: 60_000, maxRequests: 10 };
 
@@ -35,9 +36,9 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!password || typeof password !== "string" || password.length < 6) {
+    if (!password || typeof password !== "string" || password.length < MIN_PASSWORD_LENGTH) {
       return NextResponse.json(
-        { error: "Le mot de passe doit contenir au moins 6 caractères." },
+        { error: `Le mot de passe doit contenir au moins ${MIN_PASSWORD_LENGTH} caractères.` },
         { status: 400 }
       );
     }

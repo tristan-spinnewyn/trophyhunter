@@ -12,7 +12,7 @@ describe("Epic Sandbox Resolution", () => {
   });
 
   it("persists and retrieves sandbox IDs in database", () => {
-    const user = createUser("sandbox_user", "pass123");
+    const user = createUser("sandbox_user", "pass1234");
     saveEpicGameSandboxes(user.id, [
       { appId: 12345, sandboxId: "ns_alanwake2" },
       { appId: 67890, sandboxId: "ns_control" },
@@ -37,7 +37,7 @@ describe("Epic Sandbox Resolution", () => {
   });
 
   it("resolves game data via library sandbox and fallback player unlocked names", async () => {
-    const user = createUser("resolver_user", "pass123");
+    const user = createUser("resolver_user", "pass1234");
     const summaries = [{ sandboxId: "other_sb", product: { name: "Other Game" }, productAchievements: { totalAchievements: 10 } }];
     vi.spyOn(global, "fetch")
       .mockResolvedValueOnce(
