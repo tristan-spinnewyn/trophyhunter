@@ -1,6 +1,7 @@
 // app/api/gamepass/pc/route.ts
 
 import { NextResponse } from "next/server";
+import { unstable_rethrow } from "next/navigation";
 import { fetchPcGamePassCatalog } from "@/lib/gamepass/catalog.services";
 import { GamePassCatalogError } from "@/lib/gamepass/gamepass.types";
 
@@ -16,6 +17,8 @@ export async function GET(request: Request) {
       fetchedAt,
     });
   } catch (error: unknown) {
+    // Next.js throws internal signals (e.g. "this route is dynamic" during the build): they must propagate.
+    unstable_rethrow(error);
     if (error instanceof GamePassCatalogError) {
       return NextResponse.json(
         { error: error.message },

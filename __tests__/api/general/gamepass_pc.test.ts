@@ -65,4 +65,14 @@ describe("GET /api/gamepass/pc", () => {
     expect(body).not.toHaveProperty("details");
     expect(JSON.stringify(body)).not.toContain("Network failure");
   });
+
+  it("lets Next.js internal errors through instead of logging them as a 500", async () => {
+    // Thrown by Next.js while it checks at build time whether the route can be prerendered.
+    const nextSignal = Object.assign(new Error("Dynamic server usage: request.url"), { digest: "DYNAMIC_SERVER_USAGE" });
+    vi.spyOn(catalogService, "fetchPcGamePassCatalog").mockRejectedValue(nextSignal);
+    const logSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(GET(new Request("http://localhost:3000/api/gamepass/pc"))).rejects.toBe(nextSignal);
+    expect(logSpy).not.toHaveBeenCalled();
+  });
 });
