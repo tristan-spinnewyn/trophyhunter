@@ -1,5 +1,5 @@
 // __tests__/api/auth/register.test.ts
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { initDatabase, setDbForTesting } from "@/lib/db";
 import { POST as registerHandler } from "@/app/api/auth/register/route";
 import type { CookieRecord } from "../../helpers/cookies";
@@ -24,6 +24,11 @@ describe("POST /api/auth/register", () => {
   beforeEach(() => {
     setDbForTesting(initDatabase(":memory:"));
     mockCookieStore.clear();
+    vi.stubEnv("ALLOW_REGISTRATION", "");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it("registers a new user successfully and sets session cookie", async () => {
@@ -65,7 +70,27 @@ describe("POST /api/auth/register", () => {
     expect(res2.status).toBe(400);
   });
 
+  it("refuses a second account once the instance has its owner", async () => {
+    const register = (username: string) =>
+      registerHandler(
+        new Request("http://localhost/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password: "password123" }),
+        })
+      );
+
+    expect((await register("owner")).status).toBe(201);
+    mockCookieStore.clear();
+
+    const res = await register("intruder");
+    expect(res.status).toBe(403);
+    expect((await res.json()).error).toContain("fermées");
+    expect(mockCookieStore.has("trophyhunter_session")).toBe(false);
+  });
+
   it("returns 409 when username is already taken", async () => {
+    vi.stubEnv("ALLOW_REGISTRATION", "true");
     const makeReq = () =>
       new Request("http://localhost/api/auth/register", {
         method: "POST",
