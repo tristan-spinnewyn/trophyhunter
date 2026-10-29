@@ -3,6 +3,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/game/[id]/route";
 import { jsonResponse, textResponse } from "../../helpers/responses";
+import { requestUrl } from "../../helpers/networkGuard";
 
 describe("GET /api/game/[id] - Store HTML & Xbox", () => {
   beforeEach(() => {
@@ -63,34 +64,17 @@ describe("GET /api/game/[id] - Store HTML & Xbox", () => {
     expect(data.achievements[1].hidden).toBe(true);
   });
 
-  it("merges Xbox unlocked achievements when platform=xbox", async () => {
+  it("does not use the server Xbox key to show unlocks to an anonymous caller", async () => {
     process.env.OPENXBL_API_KEY = "test-xbl-key";
-    vi.spyOn(global, "fetch")
-      .mockResolvedValueOnce(jsonResponse(null, 404))
-      .mockResolvedValueOnce(jsonResponse(null, 404))
-      .mockResolvedValueOnce(
-        jsonResponse({
-          content: { profileUsers: [{ id: "2533274798129181", settings: [] }] },
-        })
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          content: {
-            achievements: [
-              { id: "1", name: "Into the Starfield", progressState: "Achieved" },
-              { id: "2", name: "One Small Step", progressState: "NotStarted" },
-            ],
-            pagingInfo: { totalRecords: 2 },
-          },
-        })
-      );
+    const fetchSpy = vi.spyOn(global, "fetch").mockImplementation(async () => jsonResponse(null, 404));
 
     const req = new Request("http://localhost:3000/api/game/1715559203?platform=xbox");
     const res = await GET(req, { params: Promise.resolve({ id: "1715559203" }) });
-    expect(res.status).toBe(200);
+
     const data = await res.json();
-    expect(data.achievementsSource).toBe("xbox");
-    expect(data.totalAchievements).toBe(2);
-    expect(data.unlockedIds).toEqual(["1"]);
+    expect(data.achievementsSource).not.toBe("xbox");
+    expect(data.unlockedIds).toBeUndefined();
+    const hosts = fetchSpy.mock.calls.map(([input]) => new URL(requestUrl(input)).hostname);
+    expect(hosts).not.toContain("api.xbl.io");
   });
 });

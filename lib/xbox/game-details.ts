@@ -1,7 +1,8 @@
 // lib/xbox/game-details.ts
 
 import type { Achievement, OwnedGame } from "@/lib/types";
-import { getDb, getUserPlatformAccounts, getUserPlatformApiKey, saveUserGameProgress } from "@/lib/db";
+import { getDb, getUserPlatformAccounts, saveUserGameProgress } from "@/lib/db";
+import { resolvePlatformApiKey } from "@/lib/accounts/platform-api-key";
 import { isLikelyMissable, normalizeForComparison } from "@/lib/steam/game-metadata";
 import { searchSteamStoreFallback } from "@/lib/steam/store-api";
 import type { OpenXblAchievementItem, OpenXblProfilePayload, OpenXblTitle, OpenXblTitleAchievementsPayload } from "./types";
@@ -79,12 +80,7 @@ export async function getXboxAchievementsForUser(
   appId: number,
   fallbackAchievements: Achievement[] = []
 ): Promise<{ achievements: Achievement[]; unlockedIds: string[] } | null> {
-  const apiKey =
-    (userId ? getUserPlatformApiKey(userId, "xbox") : null) ||
-    process.env.OPENXBL_API_KEY?.trim() ||
-    process.env.XBL_API_KEY?.trim() ||
-    process.env.XBOX_API_KEY?.trim() ||
-    "";
+  const apiKey = resolvePlatformApiKey("xbox", { userId });
   if (!apiKey) return null;
 
   const headers = { "X-Authorization": apiKey, Accept: "application/json", "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8" };

@@ -2,34 +2,22 @@
 
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
-import {
-  getUserPlatformApiKey,
-  saveUserPlatformAccount,
-  saveUserOwnedGames,
-} from "@/lib/db";
+import { saveUserPlatformAccount, saveUserOwnedGames } from "@/lib/db";
 import { fetchXboxProfileLive, buildFallbackXboxAccount } from "@/lib/xbox/service";
 import { XboxApiError } from "@/lib/xbox/types";
 import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
+import { resolvePlatformApiKey } from "@/lib/accounts/platform-api-key";
 
 export async function POST(request: Request) {
   const { user: rawUser, secret } = await readProfileSyncRequest(request);
-  let apiKey =
-    secret ||
-    process.env.OPENXBL_API_KEY?.trim() ||
-    process.env.XBL_API_KEY?.trim() ||
-    process.env.XBOX_API_KEY?.trim() ||
-    "";
 
   let authUser = null;
   try {
     authUser = await getAuthenticatedUser();
-    if (!apiKey && authUser) {
-      const stored = getUserPlatformApiKey(authUser.id, "xbox");
-      if (stored) apiKey = stored;
-    }
   } catch (err: unknown) {
     console.warn("Unable to resolve authenticated user for Xbox sync:", err);
   }
+  const apiKey = resolvePlatformApiKey("xbox", { userId: authUser?.id, providedKey: secret });
 
   if (!rawUser) {
     return NextResponse.json(
@@ -50,7 +38,8 @@ export async function POST(request: Request) {
 
       if (authUser) {
         try {
-          saveUserPlatformAccount(authUser.id, account, apiKey || undefined);
+          // Only the caller's own key is stored: the server key must not be copied into a user record.
+          saveUserPlatformAccount(authUser.id, account, secret || undefined);
           if (discoveredGames.length > 0) {
             saveUserOwnedGames(authUser.id, discoveredGames);
           }

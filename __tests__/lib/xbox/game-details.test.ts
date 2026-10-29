@@ -75,6 +75,37 @@ describe("lib/xbox/game-details", () => {
     expect(games[0].totalAchievements).toBe(82);
   });
 
+  it("returns nothing for an anonymous caller even when a server key is configured", async () => {
+    vi.stubEnv("OPENXBL_API_KEY", "server-xbox-key");
+    const fetchSpy = vi.spyOn(global, "fetch");
+
+    expect(await getXboxAchievementsForUser(undefined, 1715559203)).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    vi.unstubAllEnvs();
+  });
+
+  it("falls back to the server key for a signed-in user without a stored key", async () => {
+    vi.stubEnv("OPENXBL_API_KEY", "server-xbox-key");
+    const user = createUser("XboxServerKeyUser", "pass1234");
+    const fetchSpy = vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce(jsonResponse({ content: { profileUsers: [{ id: "2533274798129181", settings: [] }] } }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          content: {
+            achievements: [{ id: "1", name: "Into the Starfield", progressState: "Achieved" }],
+            pagingInfo: { totalRecords: 1 },
+          },
+        })
+      );
+
+    const res = await getXboxAchievementsForUser(user.id, 1715559203);
+
+    expect(res?.unlockedIds).toEqual(["1"]);
+    const [, init] = fetchSpy.mock.calls[0];
+    expect((init?.headers as Record<string, string>)["X-Authorization"]).toBe("server-xbox-key");
+    vi.unstubAllEnvs();
+  });
+
   it("resolves user Xbox achievements, matches fallback list, and persists unlockedIds", async () => {
     const user = createUser("XboxDetailUser", "pass1234");
     saveUserPlatformAccount(
