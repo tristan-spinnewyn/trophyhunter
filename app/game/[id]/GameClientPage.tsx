@@ -22,9 +22,10 @@ export default function GameClientPage({ id }: { id: string }) {
   const hasAchievements = c.game.totalAchievements > 0 || c.game.achievements.length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <GameHeader
         game={c.game}
+        platform={c.activePlatform}
         isFavorite={c.favorites.includes(c.game.id)}
         onToggleFavorite={c.handleToggleFavorite}
         isOwned={c.ownedGames.some((g) => g.appId === c.game?.id)}
@@ -37,7 +38,7 @@ export default function GameClientPage({ id }: { id: string }) {
         playtimeHours={c.owned?.playtimeHours}
       />
 
-      <div className="lg:grid lg:grid-cols-12 lg:gap-6 items-start space-y-5 lg:space-y-0">
+      <div className="lg:grid lg:grid-cols-12 lg:gap-12 items-start space-y-8 lg:space-y-0">
         <GameClientSidebar
           game={c.game}
           progress={c.progress}
@@ -52,7 +53,7 @@ export default function GameClientPage({ id }: { id: string }) {
           syncNotice={c.syncNotice}
         />
 
-        <div className="lg:col-span-8 space-y-4">
+        <div className="lg:col-span-8 space-y-8">
           {hasAchievements && (
             <>
               <ActiveHuntPanel

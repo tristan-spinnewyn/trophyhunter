@@ -12,7 +12,7 @@ export function GameSyncNotice({ notice }: GameSyncNoticeProps) {
 
   return (
     <div
-      className={`flex items-center gap-2 rounded-2xl p-3 text-xs border ${
+      className={`flex items-center gap-2 rounded-sheet p-3 text-xs border ${
         notice.type === "success"
           ? "border-done/30 bg-done/10 text-done"
           : "border-danger/30 bg-danger/10 text-danger"

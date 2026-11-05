@@ -6,7 +6,7 @@ export function getRarityBadge(percent: number): RarityBadge {
   if (percent <= 5.0) {
     return {
       label: "Ultra Rare",
-      classes: "border-lamp-bright/40 bg-lamp/10 text-lamp-bright",
+      classes: "border-platinum bg-platinum text-ink",
     };
   }
   if (percent <= 20.0) {
@@ -18,11 +18,11 @@ export function getRarityBadge(percent: number): RarityBadge {
   if (percent <= 50.0) {
     return {
       label: "Rare",
-      classes: "border-lamp-bright/40 bg-lamp/10 text-lamp-bright",
+      classes: "border-edge text-paper-dim",
     };
   }
   return {
     label: "Commun",
-    classes: "border-seam bg-edge text-dust",
+    classes: "border-transparent text-dust",
   };
 }

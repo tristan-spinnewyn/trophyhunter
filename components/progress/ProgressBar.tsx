@@ -30,7 +30,7 @@ export function ProgressBar({ total, unlockedCount, percent, isComplete }: Progr
       >
         <div
           className={`h-full rounded-full transition-all duration-500 ease-out ${
-            isComplete ? "bg-lamp-bright" : "bg-lamp"
+            isComplete ? "bg-platinum" : "bg-platinum/80"
           }`}
           style={{ width: `${percent}%` }}
         />
@@ -38,7 +38,7 @@ export function ProgressBar({ total, unlockedCount, percent, isComplete }: Progr
       <div className="mt-2 flex justify-between text-xs text-faint">
         <span>{total - unlockedCount} succès restants</span>
         {isComplete ? (
-          <span className="font-medium text-lamp-bright flex items-center gap-1">
+          <span className="font-medium text-platinum flex items-center gap-1">
             <CheckCircle2 className="h-3.5 w-3.5" /> Platine débloqué
           </span>
         ) : (

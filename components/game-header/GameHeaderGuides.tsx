@@ -10,7 +10,7 @@ export function GameHeaderGuides({ game }: { game: GameDetails }) {
         href={game.guideLinks.psthcUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-1.5 rounded-lg border border-edge bg-ink/40 px-3 py-1.5 text-sm text-paper transition hover:border-seam hover:bg-edge"
+        className="flex items-center gap-1.5 rounded-control border border-edge bg-ink/40 px-3 py-1.5 text-sm text-paper transition hover:border-seam hover:bg-edge"
       >
         <Trophy className="h-3.5 w-3.5 text-done" />
         Guide PSTHC
@@ -21,7 +21,7 @@ export function GameHeaderGuides({ game }: { game: GameDetails }) {
         href={game.guideLinks.steamGuidesUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-1.5 rounded-lg border border-edge bg-ink/40 px-3 py-1.5 text-sm text-paper transition hover:border-seam hover:bg-edge"
+        className="flex items-center gap-1.5 rounded-control border border-edge bg-ink/40 px-3 py-1.5 text-sm text-paper transition hover:border-seam hover:bg-edge"
       >
         <BookOpen className="h-3.5 w-3.5 text-lamp-bright" />
         Guides Steam
@@ -32,7 +32,7 @@ export function GameHeaderGuides({ game }: { game: GameDetails }) {
         href={game.guideLinks.youtubeUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-1.5 rounded-lg border border-edge bg-ink/40 px-3 py-1.5 text-sm text-paper transition hover:border-seam hover:bg-edge"
+        className="flex items-center gap-1.5 rounded-control border border-edge bg-ink/40 px-3 py-1.5 text-sm text-paper transition hover:border-seam hover:bg-edge"
       >
         <Video className="h-3.5 w-3.5 text-danger" />
         YouTube FR
@@ -43,7 +43,7 @@ export function GameHeaderGuides({ game }: { game: GameDetails }) {
         href={`https://store.steampowered.com/app/${game.id}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-1.5 rounded-lg border border-edge bg-ink/40 px-3 py-1.5 text-sm text-paper transition hover:border-seam hover:bg-edge"
+        className="flex items-center gap-1.5 rounded-control border border-edge bg-ink/40 px-3 py-1.5 text-sm text-paper transition hover:border-seam hover:bg-edge"
       >
         <Gamepad2 className="h-3.5 w-3.5 text-dust" />
         Magasin Steam

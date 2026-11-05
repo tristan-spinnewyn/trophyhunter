@@ -29,7 +29,7 @@ export function FilterToolbarControls({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Filtrer les succès (nom, description)..."
-          className="w-full rounded-xl border border-edge bg-plank py-2 pl-9 pr-3 text-xs text-paper placeholder-faint outline-none transition focus:border-lamp"
+          className="w-full rounded-control border border-edge bg-plank py-2 pl-9 pr-3 text-xs text-paper placeholder-faint outline-none transition focus:border-lamp"
         />
       </div>
 
@@ -38,7 +38,7 @@ export function FilterToolbarControls({
           <select
             value={sort}
             onChange={(e) => onSortChange(e.target.value as SortOrder)}
-            className="w-full sm:w-auto appearance-none rounded-xl border border-edge bg-plank py-2 pl-3 pr-8 text-xs text-paper outline-none transition focus:border-lamp"
+            className="w-full sm:w-auto appearance-none rounded-control border border-edge bg-plank py-2 pl-3 pr-8 text-xs text-paper outline-none transition focus:border-lamp"
           >
             <option value="default">Ordre Steam</option>
             <option value="rarity-asc">Rareté : Plus rare d&apos;abord</option>
@@ -50,7 +50,7 @@ export function FilterToolbarControls({
 
         <button
           onClick={onToggleRevealSecrets}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition ${
+          className={`flex items-center gap-1.5 rounded-control border px-3 py-2 text-xs font-medium transition ${
             revealSecrets
               ? "border-platinum/50 bg-platinum/20 text-platinum"
               : "border-edge bg-plank text-dust hover:text-paper"

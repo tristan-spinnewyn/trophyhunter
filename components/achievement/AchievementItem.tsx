@@ -27,12 +27,8 @@ export default function AchievementItem({
 
   return (
     <div
-      className={`group rounded-xl border transition-colors ${
-        isUnlocked
-          ? "border-done/25 bg-done/15"
-          : isPinned
-          ? "border-lamp/40 bg-lamp/10"
-          : "border-edge bg-plank/60 hover:border-seam"
+      className={`group border-b border-edge/70 transition-colors ${
+        isPinned ? "rounded-r-control border-l-[3px] border-l-lamp bg-plank" : "hover:bg-plank/50"
       }`}
     >
       <div className="flex items-center justify-between">
@@ -54,7 +50,7 @@ export default function AchievementItem({
             <button
               type="button"
               onClick={onTogglePinned}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${
+              className={`flex h-9 w-9 items-center justify-center rounded-control transition ${
                 isPinned
                   ? "text-lamp-bright"
                   : "text-faint hover:bg-edge hover:text-lamp-bright"
@@ -69,7 +65,7 @@ export default function AchievementItem({
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-faint hover:bg-edge hover:text-paper"
+            className="flex h-9 w-9 items-center justify-center rounded-control text-faint hover:bg-edge hover:text-paper"
             title={isExpanded ? "Réduire" : "Voir le guide & notes"}
             aria-label={isExpanded ? "Réduire" : "Voir le guide & notes"}
             aria-expanded={isExpanded}

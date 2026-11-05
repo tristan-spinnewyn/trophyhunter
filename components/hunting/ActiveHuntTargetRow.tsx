@@ -21,19 +21,19 @@ export function ActiveHuntTargetRow({
 }: ActiveHuntTargetRowProps) {
   return (
     <div
-      className={`flex items-center gap-3 rounded-xl border p-2.5 transition ${
+      className={`flex items-center gap-3 rounded-r-control border border-l-[3px] p-2.5 transition ${
         isUnlocked
-          ? "border-done/40 bg-done/20"
-          : "border-edge bg-ink/70"
+          ? "border-edge border-l-platinum bg-plank/60"
+          : "border-edge border-l-lamp bg-plank"
       }`}
     >
       <button
         type="button"
         onClick={onToggleUnlocked}
-        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition ${
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-[1.5px] transition ${
           isUnlocked
-            ? "border-done bg-done text-ink"
-            : "border-seam bg-edge text-transparent hover:border-lamp-bright"
+            ? "border-platinum bg-platinum text-ink"
+            : "border-seam text-transparent hover:border-lamp-bright"
         }`}
         title={isUnlocked ? "Marquer non obtenu" : "Valider la cible"}
       >
@@ -43,7 +43,7 @@ export function ActiveHuntTargetRow({
       <img
         src={achievement.icon}
         alt={achievement.name}
-        className="h-10 w-10 rounded-lg object-cover border border-edge shrink-0"
+        className="h-10 w-10 rounded-control object-cover border border-edge shrink-0"
       />
 
       <div className="flex-1 min-w-0">
@@ -71,7 +71,7 @@ export function ActiveHuntTargetRow({
       <button
         type="button"
         onClick={onUnpin}
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-dust hover:bg-edge hover:text-lamp-bright"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-control text-dust hover:bg-edge hover:text-lamp-bright"
         title="Retirer de la chasse active"
       >
         <PinOff className="h-3.5 w-3.5" />

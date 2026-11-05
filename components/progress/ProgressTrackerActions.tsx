@@ -30,7 +30,7 @@ export function ProgressTrackerActions({
   const platName = platform === "epic" ? "Epic Games" : platform === "xbox" ? "Xbox" : platform === "gog" ? "GOG" : "Steam";
 
   const buttonClass =
-    "flex h-8 items-center gap-1.5 rounded-lg border border-edge px-2.5 text-xs font-medium text-paper-dim transition hover:bg-edge hover:text-paper disabled:opacity-60";
+    "flex h-8 items-center gap-1.5 rounded-control border border-edge px-2.5 text-xs font-medium text-paper-dim transition hover:bg-edge hover:text-paper disabled:opacity-60";
 
   return (
     <div className="flex items-center gap-1">
@@ -72,7 +72,7 @@ export function ProgressTrackerActions({
             });
             if (confirmed) onReset();
           }}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-faint transition hover:bg-edge hover:text-danger"
+          className="flex h-8 w-8 items-center justify-center rounded-control text-faint transition hover:bg-edge hover:text-danger"
           title="Réinitialiser la checklist"
           aria-label="Réinitialiser la checklist"
         >

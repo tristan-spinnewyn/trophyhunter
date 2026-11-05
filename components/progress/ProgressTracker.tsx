@@ -37,19 +37,19 @@ export default function ProgressTracker({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border p-4 transition-colors ${
-        isComplete ? "border-lamp/50 bg-lamp/20" : "border-edge bg-plank/60"
+      className={`relative overflow-hidden rounded-sheet border p-4 transition-colors ${
+        isComplete ? "border-platinum/50 bg-plank" : "border-edge bg-plank/60"
       }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div
-            className={`flex h-11 w-11 items-center justify-center rounded-xl ${
-              isComplete ? "bg-lamp-bright/15 text-lamp-bright" : "bg-edge text-paper-dim"
+            className={`flex h-11 w-11 items-center justify-center rounded-control ${
+              isComplete ? "bg-platinum/15 text-platinum" : "bg-edge text-paper-dim"
             }`}
           >
             {isComplete ? (
-              <Trophy className="h-5 w-5 fill-lamp-bright" />
+              <Trophy className="h-5 w-5 fill-platinum" />
             ) : (
               <Award className="h-5 w-5" />
             )}
@@ -61,7 +61,7 @@ export default function ProgressTracker({
             </div>
             {hasAchievements ? (
               <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-semibold tabular-nums text-paper">{percent}%</span>
+                <span className="font-semiwide text-2xl font-bold tabular-nums text-paper">{percent}%</span>
                 <span className="text-xs tabular-nums text-faint">{unlockedCount} / {total}</span>
               </div>
             ) : (

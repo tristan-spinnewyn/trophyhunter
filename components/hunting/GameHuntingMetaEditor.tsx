@@ -30,23 +30,23 @@ export function GameHuntingMetaEditor({ meta, onSave, onClose }: GameHuntingMeta
   };
 
   return (
-    <div className="mt-3 rounded-2xl border border-seam/80 bg-ink/90 p-3.5 space-y-3">
+    <div className="mt-3 rounded-sheet border border-seam/80 bg-ink/90 p-3.5 space-y-3">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         <label className="space-y-1 text-[11px] text-paper-dim">
           <span className="font-semibold">Difficulté (1-10)</span>
-          <input type="number" min={1} max={10} value={difficulty} onChange={(e) => setDifficulty(Number(e.target.value))} className="w-full rounded-xl border border-seam bg-plank px-2.5 py-1.5 text-xs text-paper" />
+          <input type="number" min={1} max={10} value={difficulty} onChange={(e) => setDifficulty(Number(e.target.value))} className="w-full rounded-control border border-seam bg-plank px-2.5 py-1.5 text-xs text-paper" />
         </label>
         <label className="space-y-1 text-[11px] text-paper-dim">
           <span className="font-semibold">Durée 100% (h)</span>
-          <input type="number" min={1} max={2000} value={hours} onChange={(e) => setHours(Number(e.target.value))} className="w-full rounded-xl border border-seam bg-plank px-2.5 py-1.5 text-xs text-paper" />
+          <input type="number" min={1} max={2000} value={hours} onChange={(e) => setHours(Number(e.target.value))} className="w-full rounded-control border border-seam bg-plank px-2.5 py-1.5 text-xs text-paper" />
         </label>
         <label className="space-y-1 text-[11px] text-paper-dim">
           <span className="font-semibold">Runs requis</span>
-          <input type="number" min={1} max={20} value={runs} onChange={(e) => setRuns(Number(e.target.value))} className="w-full rounded-xl border border-seam bg-plank px-2.5 py-1.5 text-xs text-paper" />
+          <input type="number" min={1} max={20} value={runs} onChange={(e) => setRuns(Number(e.target.value))} className="w-full rounded-control border border-seam bg-plank px-2.5 py-1.5 text-xs text-paper" />
         </label>
         <label className="space-y-1 text-[11px] text-paper-dim">
           <span className="font-semibold">Alerte / Statut</span>
-          <select value={warningType} onChange={(e) => setWarningType(e.target.value as HuntingWarningType)} className="w-full rounded-xl border border-seam bg-plank px-2.5 py-1.5 text-xs text-paper">
+          <select value={warningType} onChange={(e) => setWarningType(e.target.value as HuntingWarningType)} className="w-full rounded-control border border-seam bg-plank px-2.5 py-1.5 text-xs text-paper">
             <option value="none">Aucune alerte</option>
             <option value="online-required">En ligne requis</option>
             <option value="bugged">Succès buggé</option>
@@ -61,18 +61,18 @@ export function GameHuntingMetaEditor({ meta, onSave, onClose }: GameHuntingMeta
           placeholder="Précision sur l'alerte (ex: Serveurs fermés depuis 2024)..."
           value={warningMessage}
           onChange={(e) => setWarningMessage(e.target.value)}
-          className="w-full rounded-xl border border-seam bg-plank px-3 py-1.5 text-xs text-paper placeholder-faint"
+          className="w-full rounded-control border border-seam bg-plank px-3 py-1.5 text-xs text-paper placeholder-faint"
         />
       )}
 
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <button type="button" onClick={() => { onSave(undefined); onClose(); }} className="flex items-center gap-1 rounded-xl border border-seam bg-edge px-2.5 py-1 text-xs font-medium text-paper-dim hover:bg-seam">
+        <button type="button" onClick={() => { onSave(undefined); onClose(); }} className="flex items-center gap-1 rounded-control border border-seam bg-edge px-2.5 py-1 text-xs font-medium text-paper-dim hover:bg-seam">
           <RotateCcw className="h-3 w-3" /> Auto
         </button>
-        <button type="button" onClick={onClose} className="flex items-center gap-1 rounded-xl border border-seam bg-plank px-2.5 py-1 text-xs font-medium text-dust hover:text-paper">
+        <button type="button" onClick={onClose} className="flex items-center gap-1 rounded-control border border-seam bg-plank px-2.5 py-1 text-xs font-medium text-dust hover:text-paper">
           <X className="h-3 w-3" /> Annuler
         </button>
-        <button type="button" onClick={handleApply} className="flex items-center gap-1 rounded-xl bg-lamp px-3 py-1 text-xs font-semibold text-paper hover:bg-lamp-bright">
+        <button type="button" onClick={handleApply} className="flex items-center gap-1 rounded-control bg-lamp px-3 py-1 text-xs font-semibold text-paper hover:bg-lamp-bright">
           <Check className="h-3.5 w-3.5" /> Enregistrer
         </button>
       </div>

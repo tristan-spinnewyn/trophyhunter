@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 export function GameClientLoading() {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center space-y-4">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-lamp/10 border border-lamp/30">
+      <div className="flex h-14 w-14 items-center justify-center rounded-sheet bg-lamp/10 border border-lamp/30">
         <Loader2 className="h-7 w-7 animate-spin text-lamp-bright" />
       </div>
       <h3 className="text-base font-bold text-paper">

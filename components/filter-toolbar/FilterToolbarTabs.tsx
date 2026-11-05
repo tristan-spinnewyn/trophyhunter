@@ -1,5 +1,6 @@
 // components/filter-toolbar/FilterToolbarTabs.tsx
 
+import { textTabClassName } from "@/components/ui/textTab";
 import type { ComponentType } from "react";
 import { AlertTriangle, Eye, Target } from "lucide-react";
 import type { FilterStatus } from "@/lib/types";
@@ -38,7 +39,7 @@ export function FilterToolbarTabs({
   ];
 
   return (
-    <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-none">
+    <div className="flex gap-5 overflow-x-auto border-b border-edge scrollbar-none">
       {tabs.map((tab) => {
         const isActive = filter === tab.id;
         const Icon = tab.icon;
@@ -48,15 +49,11 @@ export function FilterToolbarTabs({
             type="button"
             onClick={() => onFilterChange(tab.id)}
             aria-pressed={isActive}
-            className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
-              isActive
-                ? "border-seam bg-edge text-paper"
-                : "border-transparent text-dust hover:bg-plank hover:text-paper"
-            }`}
+            className={textTabClassName(isActive)}
           >
             {Icon && <Icon className={`h-3.5 w-3.5 ${tab.color || ""}`} />}
             <span>{tab.label}</span>
-            <span className="text-xs tabular-nums text-faint">{tab.count}</span>
+            <span className="text-[13px] tabular-nums text-dust">{tab.count}</span>
           </button>
         );
       })}

@@ -1,13 +1,22 @@
 // components/game-header/GameHeader.tsx
 "use client";
+
+import type { CSSProperties } from "react";
 import { GameHeaderActions, GameHeaderBackButton } from "./GameHeaderActions";
 import { GameHeaderGuides } from "./GameHeaderGuides";
 import { GameHuntingMetaBar } from "../hunting/GameHuntingMetaBar";
-import type { GameDetails, GameStatus } from "@/lib/types";
+import { GameStatusPicker } from "../game-status/GameStatusPicker";
+import { getSpineStyle } from "@/lib/library/spine-style";
+import { getPortraitCoverUrl } from "@/lib/library/cover-image";
+import { resolveGameStatus } from "@/lib/game-status/game-status.services";
+import { fallBackThenHide } from "@/components/ui/coverFallback";
+import type { GameDetails, GameStatus, PlatformType } from "@/lib/types";
 import type { GameHuntingMeta, GameHuntingOverride } from "@/lib/hunting/hunting.types";
 
 export interface GameHeaderProps {
   readonly game: GameDetails;
+  /** Store the page shows the game for; picks the same spine colour as on the shelf. */
+  readonly platform?: PlatformType;
   readonly isFavorite: boolean;
   readonly onToggleFavorite: () => void;
   readonly isOwned?: boolean;
@@ -23,6 +32,7 @@ export interface GameHeaderProps {
 
 export default function GameHeader({
   game,
+  platform = "steam",
   isFavorite,
   onToggleFavorite,
   isOwned = false,
@@ -34,69 +44,59 @@ export default function GameHeader({
   onBackToLibrary,
   playtimeHours,
 }: GameHeaderProps) {
+  // The game's spine colour carries over from the shelf to the top of its page.
+  const spine = getSpineStyle({ appId: game.id, name: game.name, platform });
+  const bandStyle = {
+    background: `linear-gradient(to bottom, color-mix(in srgb, ${spine.background} 60%, var(--ink)) 0, color-mix(in srgb, ${spine.background} 60%, var(--ink)) 40%, var(--ink) 100%)`,
+  } as CSSProperties;
+
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-edge bg-plank">
-      <div className="relative h-32 sm:h-48 w-full overflow-hidden bg-ink">
-        <img
-          src={game.headerImg}
-          alt={game.name}
-          className="h-full w-full object-cover object-center opacity-50"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-plank via-plank/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-plank/90 via-plank/40 to-transparent" />
+    <header className="relative">
+      <div aria-hidden className="pointer-events-none absolute left-1/2 -top-8 h-[440px] w-screen -translate-x-1/2" style={bandStyle} />
 
-        {onBackToLibrary && <GameHeaderBackButton onBackToLibrary={onBackToLibrary} />}
-      </div>
+      <div className="relative">
+      {onBackToLibrary && <GameHeaderBackButton onBackToLibrary={onBackToLibrary} />}
 
-      <div className="relative -mt-12 sm:-mt-16 px-4 pb-4 sm:px-6 sm:pb-6">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-          <div className="flex items-end gap-3 sm:gap-4 min-w-0">
-            <img
-              src={game.headerImg}
-              alt={game.name}
-              className="h-16 w-28 sm:h-24 sm:w-44 rounded-xl object-cover ring-1 ring-seam bg-edge shrink-0"
-            />
-            <div className="min-w-0 space-y-1">
-              <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-paper line-clamp-2">
-                {game.name}
-              </h1>
-              <div className="flex flex-wrap items-center gap-2 text-xs text-dust">
-                {playtimeHours !== undefined && playtimeHours > 0 && (
-                  <>
-                    <span className="font-medium text-paper">{playtimeHours} h jouées</span>
-                    <span>•</span>
-                  </>
-                )}
-                <span>{game.totalAchievements} succès</span>
-                {game.developers && game.developers.length > 0 && (
-                  <>
-                    <span>•</span>
-                    <span className="truncate">{game.developers.join(", ")}</span>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+      <div className="mt-5 grid grid-cols-[110px_1fr] items-end gap-x-5 gap-y-4 sm:grid-cols-[220px_1fr] sm:gap-x-9">
+        <div className="aspect-[2/3] overflow-hidden rounded-object bg-plank shadow-[0_18px_30px_-12px_rgb(0_0_0/.7)] sm:row-span-3">
+          <img
+            src={getPortraitCoverUrl({ appId: game.id, platform, headerImg: game.headerImg })}
+            alt={`Jaquette de ${game.name}`}
+            className="h-full w-full object-cover"
+            onError={fallBackThenHide(game.headerImg)}
+          />
+        </div>
 
+        <h1 className="font-wide text-[30px] font-extrabold leading-[0.98] tracking-[-0.025em] text-paper line-clamp-3 sm:text-5xl lg:text-6xl">
+          {game.name}
+        </h1>
+
+        <p className="col-span-2 flex flex-wrap gap-x-4 text-paper/80 sm:col-span-1">
+          {game.developers && game.developers.length > 0 && <span className="truncate">{game.developers.join(", ")}</span>}
+          {playtimeHours !== undefined && playtimeHours > 0 && (
+            <span className="font-semibold text-paper">{playtimeHours} h jouées</span>
+          )}
+          <span>{game.totalAchievements} succès</span>
+        </p>
+
+        <div className="col-span-2 space-y-3 sm:col-span-1">
+          {onChangeGameStatus && (
+            <GameStatusPicker status={isOwned ? resolveGameStatus(gameStatus) : null} onChange={onChangeGameStatus} />
+          )}
           <GameHeaderActions
             isFavorite={isFavorite}
             onToggleFavorite={onToggleFavorite}
             isOwned={isOwned}
             onToggleOwned={onToggleOwned}
-            gameStatus={gameStatus}
-            onChangeGameStatus={onChangeGameStatus}
           />
         </div>
-
-        {huntingMeta && (
-          <GameHuntingMetaBar
-            meta={huntingMeta}
-            onSaveOverride={onSaveHuntingOverride}
-          />
-        )}
-
-        <GameHeaderGuides game={game} />
       </div>
-    </div>
+
+      {huntingMeta && <GameHuntingMetaBar meta={huntingMeta} onSaveOverride={onSaveHuntingOverride} />}
+
+      <GameHeaderGuides game={game} />
+      </div>
+    </header>
   );
 }
+

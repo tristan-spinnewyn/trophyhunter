@@ -36,7 +36,7 @@ export function GameClientSidebar({
     activePlatform === "epic" ? !!accountProfile.accounts.epic : !!steamUser;
 
   return (
-    <div className="lg:col-span-4 lg:sticky lg:top-20 space-y-4">
+    <div className="lg:order-last lg:col-span-4 lg:sticky lg:top-20 space-y-4">
       <ProgressTracker
         total={game.totalAchievements}
         unlockedCount={progress.unlockedIds.length}

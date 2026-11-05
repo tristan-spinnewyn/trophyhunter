@@ -36,7 +36,7 @@ export function GameStatusSelect({
       disabled={!onChange}
       onChange={(e) => onChange?.(resolveGameStatus(e.target.value))}
       aria-label={ariaLabel}
-      className={`min-w-0 cursor-pointer rounded-md border font-medium outline-none transition focus:border-lamp-bright disabled:cursor-default ${tone} ${className}`}
+      className={`min-w-0 cursor-pointer rounded-control border font-medium outline-none transition focus:border-lamp-bright disabled:cursor-default ${tone} ${className}`}
     >
       {status === null && (
         <option value={NO_STATUS} disabled>
