@@ -31,7 +31,7 @@ export function AuthFormFields({
           <input
             type="text" required value={username} onChange={(e) => setUsername(e.target.value)}
             placeholder="tristan"
-            className="w-full rounded-xl border border-seam bg-ink py-2 pl-9 pr-3 text-xs text-paper placeholder-faint outline-none focus:border-lamp"
+            className="w-full rounded-control border border-seam bg-ink py-2 pl-9 pr-3 text-xs text-paper placeholder-faint outline-none focus:border-lamp"
           />
         </div>
       </div>
@@ -42,7 +42,7 @@ export function AuthFormFields({
           <input
             type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
             placeholder="Tristan S."
-            className="w-full rounded-xl border border-seam bg-ink px-3 py-2 text-xs text-paper placeholder-faint outline-none focus:border-lamp"
+            className="w-full rounded-control border border-seam bg-ink px-3 py-2 text-xs text-paper placeholder-faint outline-none focus:border-lamp"
           />
         </div>
       )}
@@ -55,7 +55,7 @@ export function AuthFormFields({
             type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
             minLength={mode === "register" ? MIN_PASSWORD_LENGTH : undefined}
             placeholder="••••••••"
-            className="w-full rounded-xl border border-seam bg-ink py-2 pl-9 pr-3 text-xs text-paper placeholder-faint outline-none focus:border-lamp"
+            className="w-full rounded-control border border-seam bg-ink py-2 pl-9 pr-3 text-xs text-paper placeholder-faint outline-none focus:border-lamp"
           />
         </div>
         {mode === "register" && (

@@ -20,7 +20,7 @@ export function SteamSettingsSection({
   onSaveSteamUser,
 }: SteamSectionProps) {
   return (
-    <div className="rounded-2xl border border-done/30 bg-done/20 p-4">
+    <div className="rounded-sheet border border-done/30 bg-done/20 p-4">
       <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-done">
         <User className="h-4 w-4" />
         Synchronisation automatique sans clé API
@@ -34,11 +34,11 @@ export function SteamSettingsSection({
           value={steamUser}
           onChange={(e) => setSteamUser(e.target.value)}
           placeholder="Ex: gabelogannewell ou 76561198..."
-          className="flex-1 rounded-xl border border-seam bg-plank px-3 py-2 text-xs text-paper placeholder-faint outline-none focus:border-done"
+          className="flex-1 rounded-control border border-seam bg-plank px-3 py-2 text-xs text-paper placeholder-faint outline-none focus:border-done"
         />
         <button
           onClick={onSaveSteamUser}
-          className="flex items-center gap-1.5 rounded-xl bg-done px-3 py-2 text-xs font-semibold text-paper transition hover:bg-done"
+          className="flex items-center gap-1.5 rounded-control bg-done px-3 py-2 text-xs font-semibold text-paper transition hover:bg-done"
         >
           {steamSaved ? <Check className="h-3.5 w-3.5" /> : null}
           Enregistrer
@@ -65,7 +65,7 @@ export function SteamSettingsSection({
           value={steamApiKey}
           onChange={(e) => setSteamApiKey(e.target.value)}
           placeholder="Collez votre clé API Steam (32 caractères)..."
-          className="w-full rounded-xl border border-seam bg-plank px-3 py-2 text-xs text-paper placeholder-faint outline-none focus:border-lamp font-mono"
+          className="w-full rounded-control border border-seam bg-plank px-3 py-2 text-xs text-paper placeholder-faint outline-none focus:border-lamp font-mono"
         />
         <p className="text-[11px] text-dust">
           Recommandé pour importer l&apos;intégralité de vos jeux (&gt;200 jeux). Valve bloque la liste complète des jeux pour les visiteurs non authentifiés.

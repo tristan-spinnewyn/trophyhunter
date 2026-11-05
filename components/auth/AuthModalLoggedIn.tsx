@@ -21,7 +21,7 @@ export function AuthModalLoggedIn({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-lamp/10 text-lamp-bright border border-lamp/30">
+        <div className="flex h-12 w-12 items-center justify-center rounded-sheet bg-lamp/10 text-lamp-bright border border-lamp/30">
           <User className="h-6 w-6" />
         </div>
         <div>
@@ -36,13 +36,13 @@ export function AuthModalLoggedIn({
       </div>
 
       {successMsg && (
-        <div className="flex items-center gap-2 rounded-xl border border-done/30 bg-done/10 p-3 text-xs text-done">
+        <div className="flex items-center gap-2 rounded-control border border-done/30 bg-done/10 p-3 text-xs text-done">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
           <span>{successMsg}</span>
         </div>
       )}
 
-      <div className="rounded-2xl border border-edge bg-ink/60 p-4 space-y-2">
+      <div className="rounded-sheet border border-edge bg-ink/60 p-4 space-y-2">
         <div className="flex items-center gap-2 text-xs font-semibold text-paper-dim">
           <ShieldCheck className="h-4 w-4 text-done" /> Sécurité & Chiffrement
         </div>
@@ -57,14 +57,14 @@ export function AuthModalLoggedIn({
           type="button"
           onClick={onLogout}
           disabled={isLoading}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-xs font-semibold text-danger transition hover:bg-danger/20"
+          className="flex flex-1 items-center justify-center gap-2 rounded-control border border-danger/30 bg-danger/10 px-4 py-2.5 text-xs font-semibold text-danger transition hover:bg-danger/20"
         >
           <LogOut className="h-3.5 w-3.5" /> Se déconnecter
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="rounded-xl border border-seam bg-edge px-4 py-2.5 text-xs font-semibold text-paper transition hover:bg-seam"
+          className="rounded-control border border-seam bg-edge px-4 py-2.5 text-xs font-semibold text-paper transition hover:bg-seam"
         >
           Fermer
         </button>

@@ -40,13 +40,13 @@ export function EpicAuthForm({
           placeholder='Collez ici : {"redirectUrl":"...","authorizationCode":"..."}'
           rows={3}
           disabled={isLoading}
-          className="w-full rounded-2xl border border-seam bg-ink p-3 text-xs text-paper placeholder-faint outline-none focus:border-platinum font-mono transition resize-none disabled:opacity-50"
+          className="w-full rounded-sheet border border-seam bg-ink p-3 text-xs text-paper placeholder-faint outline-none focus:border-platinum font-mono transition resize-none disabled:opacity-50"
           autoFocus
         />
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 rounded-xl border border-danger/30 bg-danger/30 p-3 text-xs text-danger">
+        <div className="flex items-start gap-2 rounded-control border border-danger/30 bg-danger/30 p-3 text-xs text-danger">
           <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
@@ -57,14 +57,14 @@ export function EpicAuthForm({
           type="button"
           onClick={onClose}
           disabled={isLoading}
-          className="rounded-xl border border-seam px-4 py-2 text-xs font-medium text-paper-dim hover:bg-edge hover:text-paper transition disabled:opacity-50"
+          className="rounded-control border border-seam px-4 py-2 text-xs font-medium text-paper-dim hover:bg-edge hover:text-paper transition disabled:opacity-50"
         >
           Annuler
         </button>
         <button
           type="submit"
           disabled={isLoading || !tokenInput.trim()}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-platinum to-paused px-5 py-2 text-xs font-bold text-paper hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 rounded-control bg-lamp px-5 py-2 text-sm font-bold text-ink hover:bg-lamp-bright transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <>

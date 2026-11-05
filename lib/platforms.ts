@@ -16,7 +16,6 @@ export const PLATFORM_META: Record<
     shortName: string;
     placeholder: string;
     badgeClass: string;
-    accentColor: string;
     trophyLabel: string;
     completeLabel: string;
     supportsAutoSync: boolean;
@@ -27,7 +26,6 @@ export const PLATFORM_META: Record<
     shortName: "Steam",
     placeholder: "SteamID64 (7656119...), pseudo ou URL du profil",
     badgeClass: "border-lamp/40 bg-lamp/10 text-lamp-bright",
-    accentColor: "from-lamp to-paused",
     trophyLabel: "Succès",
     completeLabel: "Jeux 100%",
     supportsAutoSync: true,
@@ -37,7 +35,6 @@ export const PLATFORM_META: Record<
     shortName: "Xbox",
     placeholder: "Gamertag Xbox (ex: MasterChief#1234)",
     badgeClass: "border-done/40 bg-done/10 text-done",
-    accentColor: "from-done to-done",
     trophyLabel: "Succès",
     completeLabel: "Jeux 1000G",
     supportsAutoSync: true,
@@ -47,7 +44,6 @@ export const PLATFORM_META: Record<
     shortName: "Epic",
     placeholder: "Pseudo Exophase ou compte Epic",
     badgeClass: "border-platinum/40 bg-platinum/10 text-platinum",
-    accentColor: "from-platinum to-platinum",
     trophyLabel: "Succès Epic",
     completeLabel: "Platines Epic",
     supportsAutoSync: true,
@@ -57,7 +53,6 @@ export const PLATFORM_META: Record<
     shortName: "GOG",
     placeholder: "Pseudo GOG.com",
     badgeClass: "border-platinum/40 bg-platinum/10 text-platinum",
-    accentColor: "from-platinum to-platinum",
     trophyLabel: "Succès",
     completeLabel: "Jeux 100%",
     supportsAutoSync: true,

@@ -20,7 +20,7 @@ export function ConfirmProvider({ children }: { readonly children: ReactNode }) 
             <button
               type="button"
               onClick={() => settle(false)}
-              className="rounded-lg border border-seam px-3.5 py-2 text-sm text-paper-dim hover:bg-edge"
+              className="rounded-control border border-seam px-3.5 py-2 text-sm text-paper-dim hover:bg-edge"
             >
               Annuler
             </button>
@@ -28,7 +28,7 @@ export function ConfirmProvider({ children }: { readonly children: ReactNode }) 
               type="button"
               autoFocus
               onClick={() => settle(true)}
-              className={`rounded-lg px-3.5 py-2 text-sm font-semibold ${
+              className={`rounded-control px-3.5 py-2 text-sm font-semibold ${
                 destructive
                   ? "bg-danger text-paper hover:bg-danger"
                   : "bg-lamp text-ink hover:bg-lamp-bright"

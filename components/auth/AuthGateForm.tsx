@@ -23,29 +23,29 @@ export function AuthGateForm({
   displayName, setDisplayName, isLoading, errorMsg, successMsg, onSubmit,
 }: FormProps) {
   return (
-    <div className="rounded-2xl border border-edge bg-plank/90 p-6 sm:p-8 backdrop-blur-xl space-y-6">
-      <div className="grid grid-cols-2 rounded-2xl border border-edge bg-ink p-1">
+    <div className="rounded-sheet border border-edge bg-plank/90 p-6 sm:p-8 backdrop-blur-xl space-y-6">
+      <div className="grid grid-cols-2 rounded-sheet border border-edge bg-ink p-1">
         <button
           type="button" onClick={() => setMode("login")}
-          className={`rounded-xl py-2 text-xs font-bold transition ${mode === "login" ? "bg-lamp text-paper" : "text-dust hover:text-paper"}`}
+          className={`rounded-control py-2 text-xs font-bold transition ${mode === "login" ? "bg-lamp text-paper" : "text-dust hover:text-paper"}`}
         >
           Se connecter
         </button>
         <button
           type="button" onClick={() => setMode("register")}
-          className={`rounded-xl py-2 text-xs font-bold transition ${mode === "register" ? "bg-lamp text-paper" : "text-dust hover:text-paper"}`}
+          className={`rounded-control py-2 text-xs font-bold transition ${mode === "register" ? "bg-lamp text-paper" : "text-dust hover:text-paper"}`}
         >
           Créer un profil
         </button>
       </div>
 
       {errorMsg && (
-        <div className="flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/10 p-3.5 text-xs text-danger">
+        <div className="flex items-center gap-2 rounded-control border border-danger/30 bg-danger/10 p-3.5 text-xs text-danger">
           <AlertCircle className="h-4 w-4 shrink-0" /> <span>{errorMsg}</span>
         </div>
       )}
       {successMsg && (
-        <div className="flex items-center gap-2 rounded-xl border border-done/30 bg-done/10 p-3.5 text-xs text-done">
+        <div className="flex items-center gap-2 rounded-control border border-done/30 bg-done/10 p-3.5 text-xs text-done">
           <CheckCircle2 className="h-4 w-4 shrink-0" /> <span>{successMsg}</span>
         </div>
       )}
@@ -56,7 +56,7 @@ export function AuthGateForm({
           <input
             type="text" required value={username} onChange={(e) => setUsername(e.target.value)}
             placeholder="Nom d'utilisateur"
-            className="w-full rounded-2xl border border-seam bg-ink py-2.5 pl-10 pr-4 text-xs sm:text-sm text-paper placeholder-faint outline-none focus:border-lamp"
+            className="w-full rounded-sheet border border-seam bg-ink py-2.5 pl-10 pr-4 text-xs sm:text-sm text-paper placeholder-faint outline-none focus:border-lamp"
           />
         </div>
 
@@ -64,7 +64,7 @@ export function AuthGateForm({
           <input
             type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
             placeholder="Nom d'affichage (Optionnel)"
-            className="w-full rounded-2xl border border-seam bg-ink px-4 py-2.5 text-xs sm:text-sm text-paper placeholder-faint outline-none focus:border-lamp"
+            className="w-full rounded-sheet border border-seam bg-ink px-4 py-2.5 text-xs sm:text-sm text-paper placeholder-faint outline-none focus:border-lamp"
           />
         )}
 
@@ -73,13 +73,13 @@ export function AuthGateForm({
           <input
             type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
             placeholder="Mot de passe"
-            className="w-full rounded-2xl border border-seam bg-ink py-2.5 pl-10 pr-4 text-xs sm:text-sm text-paper placeholder-faint outline-none focus:border-lamp"
+            className="w-full rounded-sheet border border-seam bg-ink py-2.5 pl-10 pr-4 text-xs sm:text-sm text-paper placeholder-faint outline-none focus:border-lamp"
           />
         </div>
 
         <button
           type="submit" disabled={isLoading}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-lamp to-paused px-5 py-3 text-sm font-bold text-paper transition hover:brightness-110 disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-control bg-lamp px-5 py-3 text-sm font-bold text-ink transition hover:bg-lamp-bright disabled:opacity-50"
         >
           {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
           {mode === "login" ? "Accéder à ma bibliothèque" : "Démarrer avec SQLite"}

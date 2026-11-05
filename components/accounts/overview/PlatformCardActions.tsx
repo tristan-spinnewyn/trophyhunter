@@ -1,6 +1,6 @@
 // components/accounts/overview/PlatformCardActions.tsx
 
-import { ChevronRight, Edit3, Trash2 } from "lucide-react";
+import { Edit3, Trash2 } from "lucide-react";
 import type { PlatformType, PlatformAccount } from "@/lib/types";
 
 interface PlatformCardActionsProps {
@@ -19,18 +19,13 @@ export function PlatformCardActions({
   onDisconnectPlatform,
 }: PlatformCardActionsProps) {
   return (
-    <div className="mt-3 flex items-center gap-1">
+    <div className="flex items-center gap-1 self-start md:self-center">
       <button
         type="button"
         onClick={() => onSelectPlatform(plat)}
-        className={`flex h-8 flex-1 items-center justify-center gap-1 rounded-lg text-sm font-medium transition ${
-          acc
-            ? "border border-edge text-paper hover:bg-edge"
-            : "border border-lamp/40 text-lamp-bright hover:bg-lamp/10"
-        }`}
+        className="flex h-9 items-center justify-center gap-1 rounded-control border border-edge bg-plank px-3.5 text-sm font-bold text-paper transition hover:border-seam"
       >
         <span>{acc ? "Ouvrir" : "Lier le compte"}</span>
-        <ChevronRight className="h-4 w-4" />
       </button>
 
       <button
@@ -38,7 +33,7 @@ export function PlatformCardActions({
         onClick={() => onEditPlatform(plat)}
         title="Modifier les statistiques ou l'identifiant"
         aria-label="Modifier les statistiques ou l'identifiant"
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-faint transition hover:bg-edge hover:text-paper"
+        className="flex h-8 w-8 items-center justify-center rounded-control text-faint transition hover:bg-edge hover:text-paper"
       >
         <Edit3 className="h-4 w-4" />
       </button>
@@ -49,7 +44,7 @@ export function PlatformCardActions({
           onClick={() => onDisconnectPlatform(plat)}
           title="Délier ce compte"
           aria-label="Délier ce compte"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-faint transition hover:bg-edge hover:text-danger"
+          className="flex h-8 w-8 items-center justify-center rounded-control text-faint transition hover:bg-edge hover:text-danger"
         >
           <Trash2 className="h-4 w-4" />
         </button>

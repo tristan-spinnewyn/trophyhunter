@@ -30,7 +30,7 @@ export default function FeedbackToasts({
       {syncProgressText && (
         <div
           role="status"
-          className="pointer-events-auto flex w-full max-w-sm items-center gap-2.5 rounded-xl border border-seam bg-plank/95 p-3 text-sm text-paper shadow-lg backdrop-blur"
+          className="pointer-events-auto flex w-full max-w-sm items-center gap-2.5 rounded-control border border-seam bg-plank/95 p-3 text-sm text-paper shadow-lg backdrop-blur"
         >
           <Loader2 className="h-4 w-4 shrink-0 animate-spin text-lamp-bright" />
           <span className="truncate">{syncProgressText}</span>
@@ -40,7 +40,7 @@ export default function FeedbackToasts({
       {bannerMsg && (
         <div
           role={bannerMsg.type === "error" ? "alert" : "status"}
-          className={`pointer-events-auto flex w-full max-w-sm items-start gap-2.5 rounded-xl border bg-plank/95 p-3 text-sm shadow-lg backdrop-blur ${
+          className={`pointer-events-auto flex w-full max-w-sm items-start gap-2.5 rounded-control border bg-plank/95 p-3 text-sm shadow-lg backdrop-blur ${
             bannerMsg.type === "success" ? "border-done/40 text-paper" : "border-danger/50 text-danger"
           }`}
         >
@@ -54,7 +54,7 @@ export default function FeedbackToasts({
             type="button"
             onClick={onDismissBanner}
             aria-label="Fermer"
-            className="-m-1 rounded-md p-1 text-dust hover:bg-edge hover:text-paper"
+            className="-m-1 rounded-control p-1 text-dust hover:bg-edge hover:text-paper"
           >
             <X className="h-4 w-4" />
           </button>

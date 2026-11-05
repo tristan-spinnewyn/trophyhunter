@@ -19,7 +19,7 @@ export default function SettingsModal(props: SettingsModalProps) {
     <Modal title="Paramètres & sauvegarde" onClose={onClose}>
       {state.statusMsg && (
         <div
-          className={`mb-4 flex items-center gap-2 rounded-lg p-3 text-sm ${
+          className={`mb-4 flex items-center gap-2 rounded-control p-3 text-sm ${
             state.statusMsg.type === "success"
               ? "bg-done/10 text-done border border-done/20"
               : "bg-danger/10 text-danger border border-danger/20"

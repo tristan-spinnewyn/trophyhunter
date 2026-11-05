@@ -15,7 +15,7 @@ export function OverviewRareShowcase({
   if (!rareShowcase || rareShowcase.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-edge bg-plank/80 p-4 sm:p-5 space-y-3">
+    <div className="rounded-sheet border border-edge bg-plank/80 p-4 sm:p-5 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-bold uppercase tracking-wider text-lamp-bright flex items-center gap-1.5">
           <Star className="h-4 w-4 fill-lamp-bright" />
@@ -31,12 +31,12 @@ export function OverviewRareShowcase({
           <button
             key={`${item.appId}_${idx}`}
             onClick={() => onSelectGame(item.appId)}
-            className="flex items-center gap-3 rounded-2xl border border-lamp/20 bg-ink/70 p-2.5 text-left transition hover:border-lamp/50 hover:bg-plank"
+            className="flex items-center gap-3 rounded-sheet border border-lamp/20 bg-ink/70 p-2.5 text-left transition hover:border-lamp/50 hover:bg-plank"
           >
             <img
               src={item.icon}
               alt={item.achievementName}
-              className="h-11 w-11 rounded-xl object-cover border border-lamp-bright/40 shrink-0"
+              className="h-11 w-11 rounded-control object-cover border border-lamp-bright/40 shrink-0"
             />
             <div className="min-w-0 flex-1">
               <div className="truncate text-xs font-bold text-paper">

@@ -33,7 +33,7 @@ export function PlatformTrophyInputs({
               })
             }
             placeholder="Ex: 1250"
-            className="mt-1 w-full rounded-xl border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
+            className="mt-1 w-full rounded-control border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
           />
         </div>
         <div>
@@ -51,7 +51,7 @@ export function PlatformTrophyInputs({
               })
             }
             placeholder="Ex: 12"
-            className="mt-1 w-full rounded-xl border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
+            className="mt-1 w-full rounded-control border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
           />
         </div>
       </div>
@@ -72,7 +72,7 @@ export function PlatformTrophyInputs({
               })
             }
             placeholder="Ex: 42500"
-            className="mt-1 w-full rounded-xl border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
+            className="mt-1 w-full rounded-control border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
           />
         </div>
       )}

@@ -11,22 +11,22 @@ interface PlatformCardStatsProps {
 export function PlatformCardStats({ account: acc, meta }: PlatformCardStatsProps) {
   return (
     <>
-      <dl className="grid grid-cols-3 gap-2 text-center">
+      <dl className="mt-1 flex flex-wrap gap-x-4 text-sm">
         {[
           { label: "Jeux", value: acc.stats.gamesOwned },
           { label: meta.trophyLabel, value: acc.stats.totalAchievements },
           { label: meta.completeLabel, value: acc.stats.completedGames },
         ].map(({ label, value }) => (
-          <div key={label} className="rounded-lg bg-ink/50 py-1.5">
+          <div key={label} className="flex items-baseline gap-1.5">
             <dt className="sr-only">{label}</dt>
-            <dd className="text-sm font-semibold tabular-nums text-paper">{value}</dd>
-            <dd aria-hidden className="truncate text-[11px] text-faint">{label}</dd>
+            <dd className="font-semibold tabular-nums text-paper">{value}</dd>
+            <dd aria-hidden className="text-dust">{label.toLowerCase()}</dd>
           </div>
         ))}
       </dl>
 
       {acc.stats.gamerScore ? (
-        <div className="text-center text-xs font-medium tabular-nums text-done">
+        <div className="text-sm tabular-nums text-dust">
           {acc.stats.gamerScore.toLocaleString("fr-FR")} G
         </div>
       ) : null}

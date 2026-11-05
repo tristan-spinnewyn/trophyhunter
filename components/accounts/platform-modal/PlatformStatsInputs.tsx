@@ -35,7 +35,7 @@ export function PlatformStatsInputs({
               })
             }
             placeholder="Ex: 45"
-            className="mt-1 w-full rounded-xl border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
+            className="mt-1 w-full rounded-control border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
           />
         </div>
         <div>
@@ -50,7 +50,7 @@ export function PlatformStatsInputs({
               setPlatForm({ ...platForm, level: e.target.value })
             }
             placeholder="Ex: 240"
-            className="mt-1 w-full rounded-xl border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
+            className="mt-1 w-full rounded-control border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
           />
         </div>
       </div>

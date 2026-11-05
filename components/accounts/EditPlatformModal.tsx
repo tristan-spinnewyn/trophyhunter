@@ -41,7 +41,7 @@ export default function EditPlatformModal({
                 setPlatForm({ ...platForm, username: e.target.value })
               }
               placeholder={PLATFORM_META[editingPlatform].placeholder}
-              className="mt-1 w-full rounded-lg border border-seam bg-ink px-3 py-2 text-sm text-paper outline-none focus:border-lamp"
+              className="mt-1 w-full rounded-control border border-seam bg-ink px-3 py-2 text-sm text-paper outline-none focus:border-lamp"
             />
           </div>
 
@@ -56,14 +56,14 @@ export default function EditPlatformModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-seam px-3 py-2 text-sm text-paper-dim hover:bg-edge"
+            className="rounded-control border border-seam px-3 py-2 text-sm text-paper-dim hover:bg-edge"
           >
             Annuler
           </button>
           <button
             type="button"
             onClick={onSave}
-            className="rounded-lg bg-lamp px-4 py-2 text-sm font-semibold text-ink hover:bg-lamp-bright"
+            className="rounded-control bg-lamp px-4 py-2 text-sm font-semibold text-ink hover:bg-lamp-bright"
           >
             {editingPlatform === "steam"
               ? "Synchroniser Steam"

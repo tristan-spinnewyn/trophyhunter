@@ -22,7 +22,7 @@ export function StatTileGrid({ tiles }: { readonly tiles: readonly StatTile[] })
   return (
     <dl className={`grid grid-cols-2 gap-2 sm:gap-3 ${GRID_COLUMNS[tiles.length] ?? "lg:grid-cols-4"}`}>
       {tiles.map(({ label, value, detail, hint, icon: Icon, iconClass }) => (
-        <div key={label} className="rounded-xl border border-edge bg-plank/60 px-3.5 py-3">
+        <div key={label} className="rounded-control border border-edge bg-plank/60 px-3.5 py-3">
           <dt className="flex items-center gap-1.5 text-xs text-dust">
             <Icon className={`h-3.5 w-3.5 shrink-0 ${iconClass}`} aria-hidden />
             {label}

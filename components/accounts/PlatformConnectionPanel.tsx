@@ -38,7 +38,7 @@ export interface PlatformConnectionPanelProps {
 }
 
 const INPUT_CLASS =
-  "w-full rounded-lg border border-seam bg-ink px-3 py-2 text-sm text-paper placeholder-faint outline-none focus:border-lamp";
+  "w-full rounded-control border border-seam bg-ink px-3 py-2 text-sm text-paper placeholder-faint outline-none focus:border-lamp";
 
 /** One connection flow for every platform: identify, optionally authorize, sync, see the result. */
 export function PlatformConnectionPanel({
@@ -67,12 +67,12 @@ export function PlatformConnectionPanel({
       <PlatformCollectionLink platform={platform} gameCount={gameCount} />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-edge bg-plank/60 p-4">
+        <div className="rounded-control border border-edge bg-plank/60 p-4">
           <div className="flex items-start gap-3">
             {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+              <img src={avatarUrl} alt="" className="h-12 w-12 shrink-0 rounded-control object-cover" />
             ) : (
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-edge text-dust">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-edge text-dust">
                 <Gamepad2 className="h-6 w-6" />
               </div>
             )}
@@ -109,7 +109,7 @@ export function PlatformConnectionPanel({
             <button
               type="button"
               onClick={() => onEdit(platform)}
-              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-dust hover:bg-edge hover:text-paper"
+              className="inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-xs text-dust hover:bg-edge hover:text-paper"
             >
               <Edit3 className="h-3.5 w-3.5" /> Modifier à la main
             </button>
@@ -117,7 +117,7 @@ export function PlatformConnectionPanel({
               <button
                 type="button"
                 onClick={() => onDisconnect(platform)}
-                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-dust hover:bg-edge hover:text-danger"
+                className="inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-xs text-dust hover:bg-edge hover:text-danger"
               >
                 <Unlink className="h-3.5 w-3.5" /> Délier
               </button>
@@ -126,7 +126,7 @@ export function PlatformConnectionPanel({
         </div>
 
         <form
-          className="space-y-3 rounded-xl border border-edge bg-plank/60 p-4"
+          className="space-y-3 rounded-control border border-edge bg-plank/60 p-4"
           onSubmit={(e) => {
             e.preventDefault();
             if (canSync) onSync();
@@ -148,7 +148,7 @@ export function PlatformConnectionPanel({
               <button
                 type="submit"
                 disabled={!canSync}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-lamp px-3.5 py-2 text-sm font-semibold text-ink hover:bg-lamp-bright disabled:opacity-50"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-control bg-lamp px-3.5 py-2 text-sm font-semibold text-ink hover:bg-lamp-bright disabled:opacity-50"
               >
                 <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
                 {connection.isLinked ? "Synchroniser" : "Importer"}
@@ -163,7 +163,7 @@ export function PlatformConnectionPanel({
             </p>
           )}
 
-          <details className="group rounded-lg border border-edge" open={secret.length > 0}>
+          <details className="group rounded-control border border-edge" open={secret.length > 0}>
             <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-sm text-paper-dim [&::-webkit-details-marker]:hidden">
               <KeyRound className="h-4 w-4 text-faint" />
               {config.secret.label}

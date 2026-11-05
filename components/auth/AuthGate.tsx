@@ -64,7 +64,7 @@ export default function AuthGate({ onAuthSuccess }: AuthGateProps) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-6 sm:py-12 px-4 max-w-xl mx-auto w-full space-y-8">
+    <div className="mx-auto flex w-full max-w-xl flex-col justify-center space-y-10 py-6 sm:py-12">
       <AuthGateHeader legacyGamesCount={legacyGamesCount} />
 
       <AuthGateForm

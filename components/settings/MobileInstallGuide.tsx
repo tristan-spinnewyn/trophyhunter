@@ -4,7 +4,7 @@ import { Smartphone } from "lucide-react";
 
 export function MobileInstallGuide() {
   return (
-    <div className="rounded-2xl border border-lamp/30 bg-lamp/20 p-4">
+    <div className="rounded-sheet border border-lamp/30 bg-lamp/20 p-4">
       <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-lamp-bright">
         <Smartphone className="h-4 w-4" />
         Installer sur votre smartphone

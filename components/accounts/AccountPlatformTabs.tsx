@@ -1,6 +1,6 @@
 // components/accounts/AccountPlatformTabs.tsx
 
-import { LayoutGrid } from "lucide-react";
+import { textTabClassName } from "@/components/ui/textTab";
 import type { UserAccountProfile } from "@/lib/types";
 import type { AccountTab } from "./hooks/useAccountDashboardController";
 import { NavPlatformTabs } from "../library/nav/NavPlatformTabs";
@@ -23,19 +23,14 @@ export function AccountPlatformTabs({
   return (
     <nav
       aria-label="Plateformes"
-      className="-mx-4 flex items-center gap-1 overflow-x-auto scrollbar-none px-4 sm:mx-0 sm:px-0"
+      className="-mx-4 flex items-center gap-5 overflow-x-auto scrollbar-none border-b border-edge px-4 sm:mx-0 sm:px-0"
     >
       <button
         type="button"
         onClick={() => onSelectTab("all")}
         aria-pressed={isOverview}
-        className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition ${
-          isOverview
-            ? "border-seam bg-edge text-paper"
-            : "border-transparent text-dust hover:bg-plank hover:text-paper"
-        }`}
+        className={textTabClassName(isOverview)}
       >
-        <LayoutGrid className="h-3.5 w-3.5" />
         Vue d&apos;ensemble
       </button>
 
