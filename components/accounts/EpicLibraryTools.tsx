@@ -19,8 +19,8 @@ export function EpicLibraryTools({
   if (epicCounts.total === 0) return null;
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/60 p-4 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm text-slate-400">
+    <div className="flex flex-col gap-3 rounded-xl border border-edge bg-plank/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm text-dust">
         {epicCounts.total} {epicCounts.total > 1 ? "jeux Epic importés" : "jeu Epic importé"}, dont{" "}
         {epicCounts.withAch} avec succès.
       </p>
@@ -30,7 +30,7 @@ export function EpicLibraryTools({
             type="button"
             disabled={isSyncingEpic}
             onClick={onScanEpicAchievements}
-            className="flex items-center gap-1.5 rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-200 transition hover:bg-slate-800 disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg border border-seam px-3 py-1.5 text-sm text-paper transition hover:bg-edge disabled:opacity-50"
           >
             <RefreshCw className={`h-4 w-4 ${isSyncingEpic ? "animate-spin" : ""}`} />
             Chercher les succès ({epicCounts.noAch})
@@ -39,7 +39,7 @@ export function EpicLibraryTools({
         <button
           type="button"
           onClick={onCleanEpicGames}
-          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-slate-400 transition hover:bg-slate-800 hover:text-rose-300"
+          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-dust transition hover:bg-edge hover:text-danger"
         >
           <Trash2 className="h-4 w-4" />
           Nettoyer les jeux Epic

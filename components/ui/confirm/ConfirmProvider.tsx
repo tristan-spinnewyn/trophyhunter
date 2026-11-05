@@ -15,12 +15,12 @@ export function ConfirmProvider({ children }: { readonly children: ReactNode }) 
       {children}
       {request && (
         <Modal title={request.title} onClose={() => settle(false)} size="sm">
-          <p className="text-sm text-slate-300">{request.message}</p>
+          <p className="text-sm text-paper-dim">{request.message}</p>
           <div className="mt-5 flex justify-end gap-2">
             <button
               type="button"
               onClick={() => settle(false)}
-              className="rounded-lg border border-slate-700 px-3.5 py-2 text-sm text-slate-300 hover:bg-slate-800"
+              className="rounded-lg border border-seam px-3.5 py-2 text-sm text-paper-dim hover:bg-edge"
             >
               Annuler
             </button>
@@ -30,8 +30,8 @@ export function ConfirmProvider({ children }: { readonly children: ReactNode }) 
               onClick={() => settle(true)}
               className={`rounded-lg px-3.5 py-2 text-sm font-semibold ${
                 destructive
-                  ? "bg-rose-500 text-white hover:bg-rose-400"
-                  : "bg-sky-500 text-slate-950 hover:bg-sky-400"
+                  ? "bg-danger text-paper hover:bg-danger"
+                  : "bg-lamp text-ink hover:bg-lamp-bright"
               }`}
             >
               {request.confirmLabel}

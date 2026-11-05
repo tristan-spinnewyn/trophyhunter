@@ -6,23 +6,23 @@ export function getRarityBadge(percent: number): RarityBadge {
   if (percent <= 5.0) {
     return {
       label: "Ultra Rare",
-      classes: "border-amber-400/40 bg-amber-500/10 text-amber-300",
+      classes: "border-lamp-bright/40 bg-lamp/10 text-lamp-bright",
     };
   }
   if (percent <= 20.0) {
     return {
       label: "Très Rare",
-      classes: "border-purple-400/40 bg-purple-500/10 text-purple-300",
+      classes: "border-platinum/40 bg-platinum/10 text-platinum",
     };
   }
   if (percent <= 50.0) {
     return {
       label: "Rare",
-      classes: "border-sky-400/40 bg-sky-500/10 text-sky-300",
+      classes: "border-lamp-bright/40 bg-lamp/10 text-lamp-bright",
     };
   }
   return {
     label: "Commun",
-    classes: "border-slate-700 bg-slate-800 text-slate-400",
+    classes: "border-seam bg-edge text-dust",
   };
 }

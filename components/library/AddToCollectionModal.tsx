@@ -20,12 +20,12 @@ export default function AddToCollectionModal({
   return (
     <Modal
       title="Ajouter à une collection"
-      icon={<FolderPlus className="h-4 w-4 text-indigo-400" />}
+      icon={<FolderPlus className="h-4 w-4 text-paused" />}
       onClose={onClose}
       size="sm"
     >
       <div className="space-y-4">
-        <p className="text-xs text-slate-300">
+        <p className="text-xs text-paper-dim">
           Choisir une collection pour <strong>{game.name}</strong> :
         </p>
         <div className="space-y-1.5 max-h-60 overflow-y-auto">
@@ -36,10 +36,10 @@ export default function AddToCollectionModal({
                 key={c.id}
                 disabled={alreadyIn}
                 onClick={() => onAddToCollection(c.id, game)}
-                className="flex w-full items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-2.5 text-xs text-left transition hover:border-indigo-500/50 disabled:opacity-50"
+                className="flex w-full items-center justify-between rounded-xl border border-edge bg-ink p-2.5 text-xs text-left transition hover:border-paused/50 disabled:opacity-50"
               >
-                <span className="font-semibold text-white">{c.name}</span>
-                <span className="text-[11px] text-slate-400">
+                <span className="font-semibold text-paper">{c.name}</span>
+                <span className="text-[11px] text-dust">
                   {alreadyIn ? "Déjà présent ✓" : "Ajouter +"}
                 </span>
               </button>

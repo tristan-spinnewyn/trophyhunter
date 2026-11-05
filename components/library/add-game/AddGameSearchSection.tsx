@@ -24,30 +24,30 @@ export function AddGameSearchSection({
 }: AddGameSearchSectionProps) {
   return (
     <div className="space-y-2">
-      <label htmlFor="add-game-search" className="text-sm font-medium text-slate-300">
+      <label htmlFor="add-game-search" className="text-sm font-medium text-paper-dim">
         Rechercher un jeu
       </label>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-faint" />
         <input
           id="add-game-search"
           type="text"
           value={addGameQuery}
           onChange={(e) => handleSearchAddGame(e.target.value)}
           placeholder="Elden Ring, Hades…"
-          className="w-full rounded-lg border border-slate-700 bg-slate-950 py-2 pl-9 pr-3 text-sm text-white outline-none focus:border-sky-500"
+          className="w-full rounded-lg border border-seam bg-ink py-2 pl-9 pr-3 text-sm text-paper outline-none focus:border-lamp"
         />
       </div>
 
       {isSearchingAdd && (
-        <div className="flex items-center gap-2 py-2 text-xs text-slate-400">
-          <Loader2 className="h-3.5 w-3.5 animate-spin text-sky-400" />
+        <div className="flex items-center gap-2 py-2 text-xs text-dust">
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-lamp-bright" />
           Recherche en cours...
         </div>
       )}
 
       {addGameResults.length > 0 && (
-        <div className="max-h-48 overflow-y-auto space-y-1 rounded-xl border border-slate-800 bg-slate-950 p-1.5">
+        <div className="max-h-48 overflow-y-auto space-y-1 rounded-xl border border-edge bg-ink p-1.5">
           {addGameResults.map((item) => {
             const alreadyOwned = ownedGames.some(
               (g) =>
@@ -57,15 +57,15 @@ export function AddGameSearchSection({
             return (
               <div
                 key={item.id}
-                className="flex items-center justify-between gap-2 rounded-lg p-1.5 hover:bg-slate-900"
+                className="flex items-center justify-between gap-2 rounded-lg p-1.5 hover:bg-plank"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <img
                     src={item.img}
                     alt={item.name}
-                    className="h-8 w-14 rounded object-cover bg-slate-800 shrink-0"
+                    className="h-8 w-14 rounded object-cover bg-edge shrink-0"
                   />
-                  <span className="truncate text-xs font-medium text-white">
+                  <span className="truncate text-xs font-medium text-paper">
                     {item.name}
                   </span>
                 </div>
@@ -74,8 +74,8 @@ export function AddGameSearchSection({
                   disabled={alreadyOwned}
                   className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${
                     alreadyOwned
-                      ? "bg-emerald-500/20 text-emerald-300"
-                      : "bg-sky-500 text-slate-950 hover:bg-sky-400"
+                      ? "bg-done/20 text-done"
+                      : "bg-lamp text-ink hover:bg-lamp-bright"
                   }`}
                 >
                   {alreadyOwned ? "✓ Possédé" : "+ Ajouter"}

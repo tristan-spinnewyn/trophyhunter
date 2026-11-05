@@ -16,10 +16,10 @@ export function LibraryStatusSections({ games, renderGame }: LibraryStatusSectio
     <div className="space-y-6">
       {groupGamesByStatus(games).map((section) => (
         <details key={section.status} open={section.isOpenByDefault} className="group">
-          <summary className="flex cursor-pointer list-none items-center gap-2 py-1 text-white [&::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer list-none items-center gap-2 py-1 text-paper [&::-webkit-details-marker]:hidden">
             <h3 className="text-base font-semibold">{section.title}</h3>
-            <span className="text-sm tabular-nums text-slate-500">{section.games.length}</span>
-            <ChevronDown className="h-4 w-4 text-slate-500 transition -rotate-90 group-open:rotate-0" />
+            <span className="text-sm tabular-nums text-faint">{section.games.length}</span>
+            <ChevronDown className="h-4 w-4 text-faint transition -rotate-90 group-open:rotate-0" />
           </summary>
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
             {section.games.map(renderGame)}

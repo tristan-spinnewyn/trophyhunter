@@ -21,7 +21,7 @@ export function OverviewPlatformsGrid({
 }: OverviewPlatformsGridProps) {
   return (
     <section className="space-y-3">
-      <h2 className="text-lg font-semibold text-white">Mes plateformes</h2>
+      <h2 className="text-lg font-semibold text-paper">Mes plateformes</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
         {ALL_PLATFORMS.map((plat) => (

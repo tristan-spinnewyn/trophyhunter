@@ -29,10 +29,10 @@ export default function AchievementItem({
     <div
       className={`group rounded-xl border transition-colors ${
         isUnlocked
-          ? "border-emerald-500/25 bg-emerald-950/15"
+          ? "border-done/25 bg-done/15"
           : isPinned
-          ? "border-amber-500/40 bg-amber-950/10"
-          : "border-slate-800 bg-slate-900/60 hover:border-slate-700"
+          ? "border-lamp/40 bg-lamp/10"
+          : "border-edge bg-plank/60 hover:border-seam"
       }`}
     >
       <div className="flex items-center justify-between">
@@ -56,20 +56,20 @@ export default function AchievementItem({
               onClick={onTogglePinned}
               className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${
                 isPinned
-                  ? "text-amber-300"
-                  : "text-slate-500 hover:bg-slate-800 hover:text-amber-300"
+                  ? "text-lamp-bright"
+                  : "text-faint hover:bg-edge hover:text-lamp-bright"
               }`}
               title={isPinned ? "Retirer de la chasse active" : "Épingler en chasse active"}
               aria-label={isPinned ? "Retirer de la chasse active" : "Épingler en chasse active"}
               aria-pressed={isPinned}
             >
-              <Pin className={`h-4 w-4 ${isPinned ? "fill-amber-300" : ""}`} />
+              <Pin className={`h-4 w-4 ${isPinned ? "fill-lamp-bright" : ""}`} />
             </button>
           )}
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-800 hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-faint hover:bg-edge hover:text-paper"
             title={isExpanded ? "Réduire" : "Voir le guide & notes"}
             aria-label={isExpanded ? "Réduire" : "Voir le guide & notes"}
             aria-expanded={isExpanded}

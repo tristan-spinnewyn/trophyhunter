@@ -45,13 +45,13 @@ export function NavFeatureTabs({
           className={`group flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition ${
             item.isActive
               ? item.activeClass
-              : "border-transparent text-slate-400 hover:bg-slate-900 hover:text-white"
+              : "border-transparent text-dust hover:bg-plank hover:text-paper"
           }`}
         >
           {FEATURE_ICONS[item.id](`h-3.5 w-3.5 shrink-0 ${item.iconColorClass}`)}
           <span>{item.label}</span>
           {typeof item.count === "number" && item.count > 0 && (
-            <span className="text-xs tabular-nums text-slate-500">{item.count}</span>
+            <span className="text-xs tabular-nums text-faint">{item.count}</span>
           )}
         </button>
       ))}

@@ -38,20 +38,20 @@ export function GamePassToolbar({
     <div className="space-y-3">
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-dust" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Rechercher un jeu PC Game Pass, studio ou genre..."
-            className="w-full rounded-xl border border-slate-800 bg-slate-950 py-2 pl-9 pr-3 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500"
+            className="w-full rounded-xl border border-edge bg-ink py-2 pl-9 pr-3 text-xs text-paper placeholder-faint outline-none focus:border-done"
           />
         </div>
 
         <select
           value={categoryFilter}
           onChange={(e) => onCategoryChange(e.target.value)}
-          className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none focus:border-emerald-500"
+          className="rounded-xl border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-done"
         >
           <option value="all">Toutes les catégories</option>
           {categories.map((cat) => (
@@ -64,7 +64,7 @@ export function GamePassToolbar({
         <button
           onClick={onRefresh}
           disabled={isLoading}
-          className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-300 transition hover:bg-emerald-500/20 disabled:opacity-50"
+          className="flex items-center justify-center gap-1.5 rounded-xl border border-done/40 bg-done/10 px-3 py-2 text-xs font-bold text-done transition hover:bg-done/20 disabled:opacity-50"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           <span>Actualiser</span>
@@ -78,8 +78,8 @@ export function GamePassToolbar({
             onClick={() => onFeatureFilterChange(f.id)}
             className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
               featureFilter === f.id
-                ? "border border-emerald-500/50 bg-emerald-500/20 text-emerald-200 shadow-sm"
-                : "border border-slate-800 bg-slate-950/70 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                ? "border border-done/50 bg-done/20 text-done shadow-sm"
+                : "border border-edge bg-ink/70 text-dust hover:border-seam hover:text-paper"
             }`}
           >
             {f.label}

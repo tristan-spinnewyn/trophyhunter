@@ -23,13 +23,13 @@ export function LibraryHeaderBanner({
     <section className="space-y-4">
       <div className="flex items-end justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-paper">
             Ma collection
           </h1>
           {isLoading ? (
-            <div className="mt-2 h-4 w-48 animate-pulse rounded bg-slate-800" />
+            <div className="mt-2 h-4 w-48 animate-pulse rounded bg-edge" />
           ) : (
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-dust">
               {ownedGamesCount} {ownedGamesCount > 1 ? "jeux" : "jeu"} sur Steam, Xbox, Epic Games et GOG
             </p>
           )}
@@ -38,7 +38,7 @@ export function LibraryHeaderBanner({
         <button
           type="button"
           onClick={onOpenAddGame}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-sky-500 px-3.5 py-2 text-sm font-semibold text-slate-950 hover:bg-sky-400 transition"
+          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-lamp px-3.5 py-2 text-sm font-semibold text-ink hover:bg-lamp-bright transition"
         >
           <Plus className="h-4 w-4 stroke-[2.5]" />
           <span>Ajouter<span className="hidden sm:inline"> un jeu</span></span>

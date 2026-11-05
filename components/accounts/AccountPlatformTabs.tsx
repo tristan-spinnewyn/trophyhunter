@@ -31,8 +31,8 @@ export function AccountPlatformTabs({
         aria-pressed={isOverview}
         className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition ${
           isOverview
-            ? "border-slate-700 bg-slate-800 text-white"
-            : "border-transparent text-slate-400 hover:bg-slate-900 hover:text-white"
+            ? "border-seam bg-edge text-paper"
+            : "border-transparent text-dust hover:bg-plank hover:text-paper"
         }`}
       >
         <LayoutGrid className="h-3.5 w-3.5" />

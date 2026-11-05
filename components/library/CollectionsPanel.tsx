@@ -39,7 +39,7 @@ export default function CollectionsPanel({
       <div className="flex items-center justify-between">
         <button
           onClick={() => setIsCreatingColl(!isCreatingColl)}
-          className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-500 shadow-md transition"
+          className="flex items-center gap-1.5 rounded-xl bg-paused px-3 py-1.5 text-xs font-bold text-paper hover:bg-paused shadow-md transition"
         >
           <FolderPlus className="h-4 w-4" />
           Nouvelle Collection

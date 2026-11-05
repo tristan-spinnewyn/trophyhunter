@@ -41,7 +41,7 @@ export function LibrarySectionHeader({
 
   return (
     <>
-      <h2 className="text-lg font-semibold text-white">{title}</h2>
+      <h2 className="text-lg font-semibold text-paper">{title}</h2>
 
       {steamAccount && (
         <SteamMissingGamesNotice

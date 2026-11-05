@@ -15,13 +15,13 @@ export function PlatformCollectionLink({ platform, gameCount }: PlatformCollecti
   const { name } = PLATFORM_META[platform];
 
   if (gameCount === 0) {
-    return <p className="text-sm text-slate-500">Aucun jeu {name} dans ta collection pour l&apos;instant.</p>;
+    return <p className="text-sm text-faint">Aucun jeu {name} dans ta collection pour l&apos;instant.</p>;
   }
 
   return (
     <Link
       href={`/?tab=${platform}`}
-      className="inline-flex items-center gap-1 text-sm font-medium text-sky-400 hover:text-sky-300"
+      className="inline-flex items-center gap-1 text-sm font-medium text-lamp-bright hover:text-lamp-bright"
     >
       Voir mes {gameCount} {gameCount > 1 ? "jeux" : "jeu"} {name} dans ma collection
       <ChevronRight className="h-4 w-4" />

@@ -1,0 +1,83 @@
+/* Shelf furniture: boards and spines. Layout-only rules Tailwind utilities cannot express. */
+
+.shelf-board {
+  height: 10px;
+  border-radius: 0 0 3px 3px;
+  background: var(--edge);
+  box-shadow: 0 10px 24px -8px rgb(0 0 0 / .6);
+}
+.shelf-board-lit {
+  background: var(--lamp);
+  box-shadow: 0 -40px 80px -30px rgb(244 193 82 / .35), 0 10px 24px -8px rgb(0 0 0 / .6);
+}
+
+/*
+ * Spines wrap onto as many shelves as needed. Every row is --row tall and a board is
+ * painted under each row, so a long backlog reads as a bookcase rather than one endless strip.
+ */
+.spine-rows {
+  --row: 280px;
+  --gap: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  column-gap: 3px;
+  row-gap: var(--gap);
+  background-image: linear-gradient(
+    to bottom,
+    transparent calc(var(--row) - 10px),
+    var(--edge) calc(var(--row) - 10px) var(--row),
+    transparent var(--row)
+  );
+  background-size: 100% calc(var(--row) + var(--gap));
+}
+.spine-slot {
+  height: var(--row);
+  padding-bottom: 10px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.spine {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  width: var(--spine-w);
+  height: var(--spine-h);
+  padding: 12px 0 10px;
+  background: var(--spine-bg);
+  color: var(--spine-fg);
+  border-radius: 3px 3px 0 0;
+  box-shadow: inset -6px 0 10px -6px rgb(0 0 0 / .45), inset 2px 0 0 rgb(255 255 255 / .08);
+  transition: transform .2s ease;
+  cursor: pointer;
+}
+.spine:hover,
+.spine:focus-visible {
+  transform: translateY(-14px);
+}
+.spine-title {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-variation-settings: "wdth" 62;
+  font-weight: 800;
+  font-size: 19px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: calc(var(--spine-h) - 56px);
+}
+.spine-platform {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: .7;
+  font-variation-settings: "wdth" 62;
+}
+
+@media (max-width: 640px) {
+  .spine-rows { --row: 220px; --gap: 22px; }
+  .spine { --spine-scale: .8; width: calc(var(--spine-w) * .85); height: calc(var(--spine-h) * .8); }
+  .spine-title { font-size: 16px; max-height: calc(var(--spine-h) * .8 - 48px); }
+}

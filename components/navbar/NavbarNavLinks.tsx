@@ -23,14 +23,14 @@ export function NavbarNavLinks({ pathname, ownedGamesCount }: NavLinksProps) {
             aria-current={isActive ? "page" : undefined}
             className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
               isActive
-                ? "bg-slate-800 text-white"
-                : "text-slate-400 hover:text-white hover:bg-slate-900"
+                ? "bg-edge text-paper"
+                : "text-dust hover:text-paper hover:bg-plank"
             }`}
           >
             <Icon className="h-4 w-4" />
             <span>{item.label}</span>
             {count > 0 && (
-              <span className="rounded-md bg-slate-700/70 px-1.5 text-[11px] tabular-nums text-slate-300">
+              <span className="rounded-md bg-seam/70 px-1.5 text-[11px] tabular-nums text-paper-dim">
                 {count}
               </span>
             )}

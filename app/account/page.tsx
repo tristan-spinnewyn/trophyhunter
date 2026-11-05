@@ -23,10 +23,10 @@ export default function AccountPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-paper">
           Comptes & plateformes
         </h1>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-dust">
           {connectedCount} {connectedCount > 1 ? "comptes liés" : "compte lié"} sur {ALL_PLATFORMS.length} ·{" "}
           {ownedGames.length} {ownedGames.length > 1 ? "jeux" : "jeu"} dans ta collection
         </p>

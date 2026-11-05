@@ -47,12 +47,12 @@ export default function AddGameModal({
   return (
     <Modal
       title="Ajouter des jeux"
-      icon={<Plus className="h-4 w-4 text-sky-400" />}
+      icon={<Plus className="h-4 w-4 text-lamp-bright" />}
       onClose={onClose}
     >
       <div className="space-y-4">
         <div>
-          <p className="text-sm font-medium text-slate-300">Plateforme</p>
+          <p className="text-sm font-medium text-paper-dim">Plateforme</p>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {ALL_PLATFORMS.map((p) => (
               <button
@@ -63,7 +63,7 @@ export default function AddGameModal({
                 className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
                   selectedPlatformForAdd === p
                     ? PLATFORM_META[p].badgeClass
-                    : "border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white"
+                    : "border-edge text-dust hover:bg-edge hover:text-paper"
                 }`}
               >
                 {PLATFORM_META[p].shortName}

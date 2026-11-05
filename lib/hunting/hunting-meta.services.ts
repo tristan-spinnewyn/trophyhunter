@@ -13,11 +13,11 @@ export function getDifficultyMeta(rating: number): {
   readonly label: string;
   readonly badgeClass: string;
 } {
-  if (rating <= 2) return { label: "Très facile", badgeClass: "border-emerald-500/40 bg-emerald-500/15 text-emerald-300" };
-  if (rating <= 4) return { label: "Facile", badgeClass: "border-sky-500/40 bg-sky-500/15 text-sky-300" };
-  if (rating <= 6) return { label: "Moyen", badgeClass: "border-amber-500/40 bg-amber-500/15 text-amber-300" };
-  if (rating <= 8) return { label: "Difficile", badgeClass: "border-orange-500/40 bg-orange-500/15 text-orange-300" };
-  return { label: "Extrême", badgeClass: "border-rose-500/40 bg-rose-500/15 text-rose-300" };
+  if (rating <= 2) return { label: "Très facile", badgeClass: "border-done/40 bg-done/15 text-done" };
+  if (rating <= 4) return { label: "Facile", badgeClass: "border-lamp/40 bg-lamp/15 text-lamp-bright" };
+  if (rating <= 6) return { label: "Moyen", badgeClass: "border-lamp/40 bg-lamp/15 text-lamp-bright" };
+  if (rating <= 8) return { label: "Difficile", badgeClass: "border-danger/40 bg-danger/15 text-danger" };
+  return { label: "Extrême", badgeClass: "border-danger/40 bg-danger/15 text-danger" };
 }
 
 export function estimateGameDifficulty(achievements: readonly Achievement[]): number {

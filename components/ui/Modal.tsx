@@ -28,7 +28,7 @@ export function Modal({ title, onClose, children, icon, size = "md" }: ModalProp
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/70 backdrop-blur-sm sm:items-center sm:p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -37,10 +37,10 @@ export function Modal({ title, onClose, children, icon, size = "md" }: ModalProp
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`flex max-h-[92vh] w-full flex-col rounded-t-2xl border border-slate-800 bg-slate-900 pb-[env(safe-area-inset-bottom)] sm:rounded-2xl sm:pb-0 ${SIZE_CLASS[size]}`}
+        className={`flex max-h-[92vh] w-full flex-col rounded-t-2xl border border-edge bg-plank pb-[env(safe-area-inset-bottom)] sm:rounded-2xl sm:pb-0 ${SIZE_CLASS[size]}`}
       >
-        <div className="flex items-center justify-between gap-3 border-b border-slate-800 px-5 py-3.5">
-          <h2 id={titleId} className="flex min-w-0 items-center gap-2 text-base font-semibold text-white">
+        <div className="flex items-center justify-between gap-3 border-b border-edge px-5 py-3.5">
+          <h2 id={titleId} className="flex min-w-0 items-center gap-2 text-base font-semibold text-paper">
             {icon}
             <span className="truncate">{title}</span>
           </h2>
@@ -48,7 +48,7 @@ export function Modal({ title, onClose, children, icon, size = "md" }: ModalProp
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="-mr-1.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-800 hover:text-white"
+            className="-mr-1.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-dust transition hover:bg-edge hover:text-paper"
           >
             <X className="h-4 w-4" />
           </button>

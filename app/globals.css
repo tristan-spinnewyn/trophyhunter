@@ -1,28 +1,71 @@
 @import "tailwindcss";
+@import "./styles/shelf.css";
 
+/*
+ * Étagère design tokens. Colours are named by role, never by hue:
+ * the wall (ink), raised surfaces (plank), text (paper), and one colour per meaning.
+ */
 :root {
-  --background: #020617;
-  --foreground: #f1f5f9;
+  --ink: #17141f;
+  --plank: #241f30;
+  --edge: #2f2940;
+  --seam: #3d3552;
+  --faint: #857e99;
+  --dust: #9a93ae;
+  --paper-dim: #cfc8bb;
+  --paper: #ece6da;
+  --lamp: #f4c152;
+  --lamp-bright: #f7cd6f;
+  --platinum: #c9d1d9;
+  --paused: #6fa8dc;
+  --done: #7cc49a;
+  --dropped: #a2868b;
+  --danger: #e8737a;
   color-scheme: dark;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-plank: var(--plank);
+  --color-edge: var(--edge);
+  --color-seam: var(--seam);
+  --color-faint: var(--faint);
+  --color-dust: var(--dust);
+  --color-paper-dim: var(--paper-dim);
+  --color-paper: var(--paper);
+  --color-lamp: var(--lamp);
+  --color-lamp-bright: var(--lamp-bright);
+  --color-platinum: var(--platinum);
+  --color-paused: var(--paused);
+  --color-done: var(--done);
+  --color-dropped: var(--dropped);
+  --color-danger: var(--danger);
+  --color-background: var(--ink);
+  --color-foreground: var(--paper);
+
+  --font-sans: var(--font-archivo);
+
+  /* Physical objects (covers, spines) get small radii, controls medium, sheets large. */
+  --radius-object: 3px;
+  --radius-control: 6px;
+  --radius-sheet: 12px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Width axis of Archivo: wide for page titles, narrow for spines. */
+.font-wide { font-variation-settings: "wdth" 125; }
+.font-semiwide { font-variation-settings: "wdth" 112; }
+.font-narrow { font-variation-settings: "wdth" 62; }
+
 /* Visible keyboard focus everywhere, without showing rings on mouse clicks. */
-:where(a, button, input, select, textarea, [role="button"]):focus-visible {
-  outline: 2px solid var(--color-sky-400);
+:where(a, button, input, select, textarea, summary, [role="button"]):focus-visible {
+  outline: 2px solid var(--lamp);
   outline-offset: 2px;
 }
 
@@ -32,4 +75,8 @@ body {
 }
 .scrollbar-none::-webkit-scrollbar {
   display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
 }

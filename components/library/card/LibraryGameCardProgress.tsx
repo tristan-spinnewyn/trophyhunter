@@ -30,12 +30,12 @@ export function LibraryGameCardProgress({
       onClick={() => onSelectGame(g.appId)}
       className="block w-full text-left"
     >
-      <h3 className="truncate text-sm font-semibold text-white group-hover:text-sky-300">
+      <h3 className="truncate text-sm font-semibold text-paper group-hover:text-lamp-bright">
         {g.name}
       </h3>
-      <p className="mt-1 truncate text-xs text-slate-300">
+      <p className="mt-1 truncate text-xs text-paper-dim">
         {activity || (
-          <span className="text-slate-500">
+          <span className="text-faint">
             {g.unlockedCount > 0 ? "Temps de jeu inconnu" : "Pas encore lancé"}
           </span>
         )}
@@ -43,13 +43,13 @@ export function LibraryGameCardProgress({
 
       {hasAchievements && (
         <div className="mt-2 flex items-center gap-2" title={`${pct} % des ${unit}`}>
-          <div className="h-1 flex-1 overflow-hidden rounded-full bg-slate-800">
+          <div className="h-1 flex-1 overflow-hidden rounded-full bg-edge">
             <div
-              className={`h-full rounded-full ${isPlatinum ? "bg-amber-400" : "bg-slate-500"}`}
+              className={`h-full rounded-full ${isPlatinum ? "bg-lamp-bright" : "bg-faint"}`}
               style={{ width: `${pct}%` }}
             />
           </div>
-          <span className={`shrink-0 text-[11px] tabular-nums ${isPlatinum ? "text-amber-400" : "text-slate-500"}`}>
+          <span className={`shrink-0 text-[11px] tabular-nums ${isPlatinum ? "text-lamp-bright" : "text-faint"}`}>
             {g.unlockedCount}/{g.totalAchievements} {unit}
           </span>
         </div>

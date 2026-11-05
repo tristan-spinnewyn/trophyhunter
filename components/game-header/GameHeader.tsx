@@ -35,15 +35,15 @@ export default function GameHeader({
   playtimeHours,
 }: GameHeaderProps) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
-      <div className="relative h-32 sm:h-48 w-full overflow-hidden bg-slate-950">
+    <div className="relative overflow-hidden rounded-2xl border border-edge bg-plank">
+      <div className="relative h-32 sm:h-48 w-full overflow-hidden bg-ink">
         <img
           src={game.headerImg}
           alt={game.name}
           className="h-full w-full object-cover object-center opacity-50"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-plank via-plank/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-plank/90 via-plank/40 to-transparent" />
 
         {onBackToLibrary && <GameHeaderBackButton onBackToLibrary={onBackToLibrary} />}
       </div>
@@ -54,16 +54,16 @@ export default function GameHeader({
             <img
               src={game.headerImg}
               alt={game.name}
-              className="h-16 w-28 sm:h-24 sm:w-44 rounded-xl object-cover ring-1 ring-slate-700 bg-slate-800 shrink-0"
+              className="h-16 w-28 sm:h-24 sm:w-44 rounded-xl object-cover ring-1 ring-seam bg-edge shrink-0"
             />
             <div className="min-w-0 space-y-1">
-              <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-white line-clamp-2">
+              <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-paper line-clamp-2">
                 {game.name}
               </h1>
-              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-dust">
                 {playtimeHours !== undefined && playtimeHours > 0 && (
                   <>
-                    <span className="font-medium text-slate-200">{playtimeHours} h jouées</span>
+                    <span className="font-medium text-paper">{playtimeHours} h jouées</span>
                     <span>•</span>
                   </>
                 )}

@@ -30,20 +30,20 @@ export function NavPlatformTabs({
           className={`group flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition ${
             item.isActive
               ? item.activeClass
-              : "border-transparent text-slate-400 hover:bg-slate-900 hover:text-white"
+              : "border-transparent text-dust hover:bg-plank hover:text-paper"
           }`}
         >
           <span
             className={`h-1.5 w-1.5 rounded-full shrink-0 transition-transform group-hover:scale-110 ${
               item.isConnected
-                ? "bg-emerald-400"
-                : "bg-slate-700"
+                ? "bg-done"
+                : "bg-seam"
             }`}
             title={item.isConnected ? "Compte lié" : "Compte non lié"}
           />
           <span>{item.label}</span>
           {item.count > 0 && (
-            <span className="text-xs tabular-nums text-slate-500">{item.count}</span>
+            <span className="text-xs tabular-nums text-faint">{item.count}</span>
           )}
         </button>
       ))}

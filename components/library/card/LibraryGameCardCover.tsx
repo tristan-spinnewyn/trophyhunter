@@ -22,7 +22,7 @@ export function LibraryGameCardCover({
       type="button"
       onClick={() => onSelectGame(g.appId)}
       aria-label={`Ouvrir ${g.name}`}
-      className="relative block aspect-[460/215] w-full overflow-hidden bg-slate-950"
+      className="relative block aspect-[460/215] w-full overflow-hidden bg-ink"
     >
       <img
         src={g.headerImg}
@@ -41,7 +41,7 @@ export function LibraryGameCardCover({
       </span>
 
       {isPlatinum && (
-        <span className="absolute right-2 top-2 flex items-center gap-1 rounded-md bg-amber-400 px-1.5 py-0.5 text-[11px] font-semibold text-slate-950">
+        <span className="absolute right-2 top-2 flex items-center gap-1 rounded-md bg-lamp-bright px-1.5 py-0.5 text-[11px] font-semibold text-ink">
           <Trophy className="h-3 w-3" />
           100%
         </span>

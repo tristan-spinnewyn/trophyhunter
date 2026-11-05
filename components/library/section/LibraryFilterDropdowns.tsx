@@ -7,10 +7,10 @@ import type { SortOrderType } from "@/lib/library/library-sort";
 
 /** Filters that narrow the list are highlighted so the user sees why games are missing. */
 function selectClass(isFiltering: boolean): string {
-  return `min-w-0 rounded-lg border px-3 py-2 text-sm outline-none transition focus:border-sky-500 ${
+  return `min-w-0 rounded-lg border px-3 py-2 text-sm outline-none transition focus:border-lamp ${
     isFiltering
-      ? "border-sky-500/50 bg-sky-500/10 text-sky-200"
-      : "border-slate-800 bg-slate-900 text-slate-200"
+      ? "border-lamp/50 bg-lamp/10 text-lamp-bright"
+      : "border-edge bg-plank text-paper"
   }`;
 }
 

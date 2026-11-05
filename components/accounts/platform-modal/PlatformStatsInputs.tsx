@@ -21,7 +21,7 @@ export function PlatformStatsInputs({
     <>
       <div className="grid grid-cols-2 gap-2.5">
         <div>
-          <label className="text-[11px] text-slate-400">
+          <label className="text-[11px] text-dust">
             Jeux possédés
           </label>
           <input
@@ -35,11 +35,11 @@ export function PlatformStatsInputs({
               })
             }
             placeholder="Ex: 45"
-            className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white outline-none focus:border-sky-500"
+            className="mt-1 w-full rounded-xl border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
           />
         </div>
         <div>
-          <label className="text-[11px] text-slate-400">
+          <label className="text-[11px] text-dust">
             Niveau du compte
           </label>
           <input
@@ -50,7 +50,7 @@ export function PlatformStatsInputs({
               setPlatForm({ ...platForm, level: e.target.value })
             }
             placeholder="Ex: 240"
-            className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white outline-none focus:border-sky-500"
+            className="mt-1 w-full rounded-xl border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
           />
         </div>
       </div>

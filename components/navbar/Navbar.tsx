@@ -23,7 +23,7 @@ export default function Navbar({ onSelectGame }: NavbarProps) {
   } = useUserData();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-slate-950/85 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
+    <header className="sticky top-0 z-40 w-full border-b border-edge/80 bg-ink/85 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 h-14">
         <NavbarBrand />
 

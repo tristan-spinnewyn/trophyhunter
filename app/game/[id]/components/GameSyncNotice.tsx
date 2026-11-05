@@ -14,14 +14,14 @@ export function GameSyncNotice({ notice }: GameSyncNoticeProps) {
     <div
       className={`flex items-center gap-2 rounded-2xl p-3 text-xs border ${
         notice.type === "success"
-          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-          : "border-rose-500/30 bg-rose-500/10 text-rose-300"
+          ? "border-done/30 bg-done/10 text-done"
+          : "border-danger/30 bg-danger/10 text-danger"
       }`}
     >
       {notice.type === "success" ? (
-        <Check className="h-4 w-4 shrink-0 text-emerald-400" />
+        <Check className="h-4 w-4 shrink-0 text-done" />
       ) : (
-        <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
+        <AlertCircle className="h-4 w-4 shrink-0 text-danger" />
       )}
       <span className="flex-1 font-medium">{notice.msg}</span>
     </div>

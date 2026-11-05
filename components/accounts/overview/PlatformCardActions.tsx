@@ -25,8 +25,8 @@ export function PlatformCardActions({
         onClick={() => onSelectPlatform(plat)}
         className={`flex h-8 flex-1 items-center justify-center gap-1 rounded-lg text-sm font-medium transition ${
           acc
-            ? "border border-slate-800 text-slate-200 hover:bg-slate-800"
-            : "border border-sky-500/40 text-sky-300 hover:bg-sky-500/10"
+            ? "border border-edge text-paper hover:bg-edge"
+            : "border border-lamp/40 text-lamp-bright hover:bg-lamp/10"
         }`}
       >
         <span>{acc ? "Ouvrir" : "Lier le compte"}</span>
@@ -38,7 +38,7 @@ export function PlatformCardActions({
         onClick={() => onEditPlatform(plat)}
         title="Modifier les statistiques ou l'identifiant"
         aria-label="Modifier les statistiques ou l'identifiant"
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-800 hover:text-white"
+        className="flex h-8 w-8 items-center justify-center rounded-lg text-faint transition hover:bg-edge hover:text-paper"
       >
         <Edit3 className="h-4 w-4" />
       </button>
@@ -49,7 +49,7 @@ export function PlatformCardActions({
           onClick={() => onDisconnectPlatform(plat)}
           title="Délier ce compte"
           aria-label="Délier ce compte"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-800 hover:text-rose-400"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-faint transition hover:bg-edge hover:text-danger"
         >
           <Trash2 className="h-4 w-4" />
         </button>

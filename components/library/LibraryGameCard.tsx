@@ -65,8 +65,8 @@ export default function LibraryGameCard({
 
   return (
     <article
-      className={`group relative flex flex-col overflow-hidden rounded-xl border bg-slate-900/60 transition-colors ${
-        isPlatinum ? "border-amber-500/40 hover:border-amber-400/70" : "border-slate-800 hover:border-slate-700"
+      className={`group relative flex flex-col overflow-hidden rounded-xl border bg-plank/60 transition-colors ${
+        isPlatinum ? "border-lamp/40 hover:border-lamp-bright/70" : "border-edge hover:border-seam"
       }`}
     >
       <LibraryGameCardCover

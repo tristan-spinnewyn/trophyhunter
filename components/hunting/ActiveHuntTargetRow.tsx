@@ -23,8 +23,8 @@ export function ActiveHuntTargetRow({
     <div
       className={`flex items-center gap-3 rounded-xl border p-2.5 transition ${
         isUnlocked
-          ? "border-emerald-500/40 bg-emerald-950/20"
-          : "border-slate-800 bg-slate-950/70"
+          ? "border-done/40 bg-done/20"
+          : "border-edge bg-ink/70"
       }`}
     >
       <button
@@ -32,8 +32,8 @@ export function ActiveHuntTargetRow({
         onClick={onToggleUnlocked}
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition ${
           isUnlocked
-            ? "border-emerald-500 bg-emerald-500 text-slate-950"
-            : "border-slate-700 bg-slate-800 text-transparent hover:border-amber-400"
+            ? "border-done bg-done text-ink"
+            : "border-seam bg-edge text-transparent hover:border-lamp-bright"
         }`}
         title={isUnlocked ? "Marquer non obtenu" : "Valider la cible"}
       >
@@ -43,35 +43,35 @@ export function ActiveHuntTargetRow({
       <img
         src={achievement.icon}
         alt={achievement.name}
-        className="h-10 w-10 rounded-lg object-cover border border-slate-800 shrink-0"
+        className="h-10 w-10 rounded-lg object-cover border border-edge shrink-0"
       />
 
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-1.5">
           <span
             className={`text-xs sm:text-sm font-bold truncate ${
-              isUnlocked ? "line-through text-emerald-300" : "text-white"
+              isUnlocked ? "line-through text-done" : "text-paper"
             }`}
           >
             {achievement.name}
           </span>
-          <span className="text-[11px] font-semibold text-amber-300/90">
+          <span className="text-[11px] font-semibold text-lamp-bright/90">
             {achievement.percent}%
           </span>
           {achievement.missable && (
-            <span className="flex items-center gap-0.5 text-[11px] font-semibold text-amber-400">
+            <span className="flex items-center gap-0.5 text-[11px] font-semibold text-lamp-bright">
               <AlertTriangle className="h-2.5 w-2.5" /> Manquable
             </span>
           )}
         </div>
-        <p className="text-[11px] text-slate-300 line-clamp-2">{achievement.desc}</p>
-        {note && <p className="mt-0.5 text-[11px] italic text-sky-300">📝 {note}</p>}
+        <p className="text-[11px] text-paper-dim line-clamp-2">{achievement.desc}</p>
+        {note && <p className="mt-0.5 text-[11px] italic text-lamp-bright">📝 {note}</p>}
       </div>
 
       <button
         type="button"
         onClick={onUnpin}
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-800 hover:text-amber-300"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-dust hover:bg-edge hover:text-lamp-bright"
         title="Retirer de la chasse active"
       >
         <PinOff className="h-3.5 w-3.5" />

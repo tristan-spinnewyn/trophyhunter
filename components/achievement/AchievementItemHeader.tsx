@@ -37,8 +37,8 @@ export function AchievementItemHeader({
         aria-label={achievement.name}
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition active:scale-90 ${
           isUnlocked
-            ? "border-emerald-500 bg-emerald-500 text-slate-950"
-            : "border-slate-600 bg-slate-900 text-transparent hover:border-slate-500 hover:text-slate-600"
+            ? "border-done bg-done text-ink"
+            : "border-seam bg-plank text-transparent hover:border-faint hover:text-seam"
         }`}
       >
         <Check className="h-4 w-4 stroke-[3]" />
@@ -57,34 +57,34 @@ export function AchievementItemHeader({
 
       <div className="flex-1 min-w-0 cursor-pointer" onClick={onToggleExpand}>
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <h3 className={`text-sm sm:text-[15px] font-semibold ${isUnlocked ? "text-emerald-300" : "text-white"}`}>
+          <h3 className={`text-sm sm:text-[15px] font-semibold ${isUnlocked ? "text-done" : "text-paper"}`}>
             {achievement.name}
           </h3>
           <span className={`rounded px-1.5 text-[11px] font-medium tabular-nums ${rarity.classes}`}>
             {achievement.percent}% • {rarity.label}
           </span>
           {isPinned && (
-            <span className="flex items-center gap-1 rounded bg-amber-500/10 px-1.5 text-[11px] font-medium text-amber-300">
+            <span className="flex items-center gap-1 rounded bg-lamp/10 px-1.5 text-[11px] font-medium text-lamp-bright">
               <Target className="h-2.5 w-2.5" /> Cible
             </span>
           )}
           {achievement.missable && (
-            <span className="flex items-center gap-1 rounded bg-amber-500/10 px-1.5 text-[11px] font-medium text-amber-300">
+            <span className="flex items-center gap-1 rounded bg-lamp/10 px-1.5 text-[11px] font-medium text-lamp-bright">
               <AlertTriangle className="h-2.5 w-2.5" /> Manquable
             </span>
           )}
           {achievement.hidden && (
-            <span className="flex items-center gap-1 rounded bg-purple-500/10 px-1.5 text-[11px] font-medium text-purple-300">
+            <span className="flex items-center gap-1 rounded bg-platinum/10 px-1.5 text-[11px] font-medium text-platinum">
               <Eye className="h-2.5 w-2.5" /> Secret
             </span>
           )}
           {notes && (
-            <span className="flex items-center gap-1 rounded bg-sky-500/10 px-1.5 text-[11px] font-medium text-sky-300">
+            <span className="flex items-center gap-1 rounded bg-lamp/10 px-1.5 text-[11px] font-medium text-lamp-bright">
               <Edit3 className="h-2.5 w-2.5" /> Note
             </span>
           )}
         </div>
-        <p className={`mt-0.5 text-[13px] leading-snug ${description.isMasked ? "italic text-slate-500" : "text-slate-400"}`}>
+        <p className={`mt-0.5 text-[13px] leading-snug ${description.isMasked ? "italic text-faint" : "text-dust"}`}>
           {description.text}
         </p>
       </div>

@@ -5,49 +5,49 @@ import type { GameDetails } from "@/lib/types";
 
 export function GameHeaderGuides({ game }: { game: GameDetails }) {
   return (
-    <div className="mt-4 grid grid-cols-2 gap-2 pt-4 border-t border-slate-800 sm:flex sm:flex-wrap">
+    <div className="mt-4 grid grid-cols-2 gap-2 pt-4 border-t border-edge sm:flex sm:flex-wrap">
       <a
         href={game.guideLinks.psthcUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-1.5 text-sm text-slate-200 transition hover:border-slate-700 hover:bg-slate-800"
+        className="flex items-center gap-1.5 rounded-lg border border-edge bg-ink/40 px-3 py-1.5 text-sm text-paper transition hover:border-seam hover:bg-edge"
       >
-        <Trophy className="h-3.5 w-3.5 text-emerald-400" />
+        <Trophy className="h-3.5 w-3.5 text-done" />
         Guide PSTHC
-        <ExternalLink className="h-3 w-3 text-slate-500" aria-hidden />
+        <ExternalLink className="h-3 w-3 text-faint" aria-hidden />
       </a>
 
       <a
         href={game.guideLinks.steamGuidesUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-1.5 text-sm text-slate-200 transition hover:border-slate-700 hover:bg-slate-800"
+        className="flex items-center gap-1.5 rounded-lg border border-edge bg-ink/40 px-3 py-1.5 text-sm text-paper transition hover:border-seam hover:bg-edge"
       >
-        <BookOpen className="h-3.5 w-3.5 text-sky-400" />
+        <BookOpen className="h-3.5 w-3.5 text-lamp-bright" />
         Guides Steam
-        <ExternalLink className="h-3 w-3 text-slate-500" aria-hidden />
+        <ExternalLink className="h-3 w-3 text-faint" aria-hidden />
       </a>
 
       <a
         href={game.guideLinks.youtubeUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-1.5 text-sm text-slate-200 transition hover:border-slate-700 hover:bg-slate-800"
+        className="flex items-center gap-1.5 rounded-lg border border-edge bg-ink/40 px-3 py-1.5 text-sm text-paper transition hover:border-seam hover:bg-edge"
       >
-        <Video className="h-3.5 w-3.5 text-rose-400" />
+        <Video className="h-3.5 w-3.5 text-danger" />
         YouTube FR
-        <ExternalLink className="h-3 w-3 text-slate-500" aria-hidden />
+        <ExternalLink className="h-3 w-3 text-faint" aria-hidden />
       </a>
 
       <a
         href={`https://store.steampowered.com/app/${game.id}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-1.5 text-sm text-slate-200 transition hover:border-slate-700 hover:bg-slate-800"
+        className="flex items-center gap-1.5 rounded-lg border border-edge bg-ink/40 px-3 py-1.5 text-sm text-paper transition hover:border-seam hover:bg-edge"
       >
-        <Gamepad2 className="h-3.5 w-3.5 text-slate-400" />
+        <Gamepad2 className="h-3.5 w-3.5 text-dust" />
         Magasin Steam
-        <ExternalLink className="h-3 w-3 text-slate-500" aria-hidden />
+        <ExternalLink className="h-3 w-3 text-faint" aria-hidden />
       </a>
     </div>
   );

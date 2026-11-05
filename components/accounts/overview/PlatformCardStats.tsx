@@ -17,16 +17,16 @@ export function PlatformCardStats({ account: acc, meta }: PlatformCardStatsProps
           { label: meta.trophyLabel, value: acc.stats.totalAchievements },
           { label: meta.completeLabel, value: acc.stats.completedGames },
         ].map(({ label, value }) => (
-          <div key={label} className="rounded-lg bg-slate-950/50 py-1.5">
+          <div key={label} className="rounded-lg bg-ink/50 py-1.5">
             <dt className="sr-only">{label}</dt>
-            <dd className="text-sm font-semibold tabular-nums text-white">{value}</dd>
-            <dd aria-hidden className="truncate text-[11px] text-slate-500">{label}</dd>
+            <dd className="text-sm font-semibold tabular-nums text-paper">{value}</dd>
+            <dd aria-hidden className="truncate text-[11px] text-faint">{label}</dd>
           </div>
         ))}
       </dl>
 
       {acc.stats.gamerScore ? (
-        <div className="text-center text-xs font-medium tabular-nums text-emerald-300">
+        <div className="text-center text-xs font-medium tabular-nums text-done">
           {acc.stats.gamerScore.toLocaleString("fr-FR")} G
         </div>
       ) : null}

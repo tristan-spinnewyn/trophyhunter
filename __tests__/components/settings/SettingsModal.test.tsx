@@ -85,6 +85,6 @@ describe("SettingsModal", () => {
 
     state.statusMsg = { type: "error", text: "JSON invalide" };
     renderModal();
-    expect(screen.getByText("JSON invalide").parentElement?.className).toContain("text-rose-400");
+    expect(screen.getByText("JSON invalide").parentElement?.className).toContain("text-danger");
   });
 });

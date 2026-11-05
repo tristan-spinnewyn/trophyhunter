@@ -115,8 +115,8 @@ describe("LibrarySection", () => {
 
   it("highlights active filters and hides the platform filter on a platform tab", () => {
     renderSection({ libPlatformFilter: "xbox", libAchievementFilter: "with-achievements" });
-    expect(screen.getByRole("combobox", { name: "Plateforme" }).className).toContain("border-sky-500/50");
-    expect(screen.getByRole("combobox", { name: "Succès" }).className).toContain("border-sky-500/50");
+    expect(screen.getByRole("combobox", { name: "Plateforme" }).className).toContain("border-lamp/50");
+    expect(screen.getByRole("combobox", { name: "Succès" }).className).toContain("border-lamp/50");
     cleanup();
 
     renderSection({ activePlatformTab: "steam" });

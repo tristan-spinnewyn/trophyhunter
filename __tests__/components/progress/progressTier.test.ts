@@ -13,7 +13,7 @@ describe("progressTier", () => {
     it("returns Sans succès tier when total is zero or negative", () => {
       const zeroTier = getProgressTier(false, 0, 0);
       expect(zeroTier.name).toBe("Sans succès");
-      expect(zeroTier.color).toContain("text-slate-400");
+      expect(zeroTier.color).toContain("text-dust");
 
       const negativeTier = getProgressTier(false, 0, -5);
       expect(negativeTier.name).toBe("Sans succès");
@@ -22,25 +22,25 @@ describe("progressTier", () => {
     it("returns Platinum tier when isComplete is true and total > 0", () => {
       const tier = getProgressTier(true, 100, 10);
       expect(tier.name).toContain("Platine Obtenu");
-      expect(tier.color).toContain("text-sky-400");
+      expect(tier.color).toContain("text-platinum");
     });
 
     it("returns Gold tier when percent is between 75 and 99", () => {
       const tier = getProgressTier(false, 75, 20);
       expect(tier.name).toContain("Rang Or");
-      expect(tier.color).toContain("text-amber-400");
+      expect(tier.color).toContain("text-paper");
     });
 
     it("returns Silver tier when percent is between 40 and 74", () => {
       const tier = getProgressTier(false, 40, 20);
       expect(tier.name).toContain("Rang Argent");
-      expect(tier.color).toContain("text-slate-300");
+      expect(tier.color).toContain("text-paper-dim");
     });
 
     it("returns Bronze tier when percent is below 40 and total > 0", () => {
       const tier = getProgressTier(false, 0, 15);
       expect(tier.name).toContain("Rang Bronze");
-      expect(tier.color).toContain("text-amber-600");
+      expect(tier.color).toContain("text-dropped");
     });
   });
 

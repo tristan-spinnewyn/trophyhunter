@@ -31,13 +31,13 @@ export default function LibraryNavTabs({
           aria-pressed={isAllActive}
           className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition ${
             isAllActive
-              ? "border-slate-700 bg-slate-800 text-white"
-              : "border-transparent text-slate-400 hover:bg-slate-900 hover:text-white"
+              ? "border-seam bg-edge text-paper"
+              : "border-transparent text-dust hover:bg-plank hover:text-paper"
           }`}
         >
           <Layers className="h-3.5 w-3.5 shrink-0" />
           <span>Tous</span>
-          <span className="text-xs tabular-nums text-slate-500">
+          <span className="text-xs tabular-nums text-faint">
             {ownedGamesCount}
           </span>
         </button>
@@ -52,7 +52,7 @@ export default function LibraryNavTabs({
         />
       </div>
 
-      <div aria-hidden className="mx-1 h-5 w-px shrink-0 bg-slate-800" />
+      <div aria-hidden className="mx-1 h-5 w-px shrink-0 bg-edge" />
 
       <NavFeatureTabs
         activePlatformTab={activePlatformTab}

@@ -28,7 +28,7 @@ export function PlatformCard({
   return (
     <div
       className={`flex flex-col justify-between rounded-xl border p-3.5 ${
-        acc ? "border-slate-800 bg-slate-900/60" : "border-dashed border-slate-800"
+        acc ? "border-edge bg-plank/60" : "border-dashed border-edge"
       }`}
     >
       <div>
@@ -40,15 +40,15 @@ export function PlatformCard({
           </span>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs tabular-nums text-slate-500">
+            <span className="text-xs tabular-nums text-faint">
               {count} {count > 1 ? "jeux" : "jeu"}
             </span>
             {acc ? (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400">
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-done">
                 <Check className="h-3.5 w-3.5" /> Lié
               </span>
             ) : (
-              <span className="text-xs text-slate-500">Non lié</span>
+              <span className="text-xs text-faint">Non lié</span>
             )}
           </div>
         </div>
@@ -56,11 +56,11 @@ export function PlatformCard({
         {acc ? (
           <div className="mt-2.5 space-y-2">
             <div className="flex items-center justify-between">
-              <div className="truncate text-sm font-semibold text-white">
+              <div className="truncate text-sm font-semibold text-paper">
                 {acc.displayName}
               </div>
               {acc.level ? (
-                <span className="text-xs font-medium tabular-nums text-amber-400">
+                <span className="text-xs font-medium tabular-nums text-lamp-bright">
                   Niv. {acc.level}
                 </span>
               ) : null}
@@ -69,7 +69,7 @@ export function PlatformCard({
             <PlatformCardStats account={acc} meta={meta} />
           </div>
         ) : (
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-dust">
             Lie ton compte {meta.name} pour importer tes jeux et tes succès.
           </p>
         )}
