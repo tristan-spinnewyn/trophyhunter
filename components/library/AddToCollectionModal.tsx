@@ -36,7 +36,7 @@ export default function AddToCollectionModal({
                 key={c.id}
                 disabled={alreadyIn}
                 onClick={() => onAddToCollection(c.id, game)}
-                className="flex w-full items-center justify-between rounded-xl border border-edge bg-ink p-2.5 text-xs text-left transition hover:border-paused/50 disabled:opacity-50"
+                className="flex w-full items-center justify-between rounded-control border border-edge bg-ink p-2.5 text-xs text-left transition hover:border-paused/50 disabled:opacity-50"
               >
                 <span className="font-semibold text-paper">{c.name}</span>
                 <span className="text-[11px] text-dust">

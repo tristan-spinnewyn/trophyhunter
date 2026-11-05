@@ -64,18 +64,14 @@ export default function LibraryGameCard({
     g.platform === "epic";
 
   return (
-    <article
-      className={`group relative flex flex-col overflow-hidden rounded-xl border bg-plank/60 transition-colors ${
-        isPlatinum ? "border-lamp/40 hover:border-lamp-bright/70" : "border-edge hover:border-seam"
-      }`}
-    >
+    <article className="group relative flex flex-col">
       <LibraryGameCardCover
         game={g}
         isPlatinum={isPlatinum}
         onSelectGame={onSelectGame}
       />
 
-      <div className="flex flex-1 flex-col justify-between gap-3 p-3">
+      <div className="flex flex-1 flex-col justify-between gap-3 pt-3.5">
         <LibraryGameCardProgress
           game={g}
           isPlatinum={isPlatinum}

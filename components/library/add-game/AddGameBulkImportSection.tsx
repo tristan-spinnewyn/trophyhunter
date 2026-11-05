@@ -35,13 +35,13 @@ export function AddGameBulkImportSection({
           rows={3}
           aria-label="AppIDs, URLs Steam ou code HTML de ta page de jeux"
           placeholder="AppIDs, URLs Steam ou code HTML de ta page de jeux…"
-          className="w-full rounded-lg border border-edge bg-ink p-2.5 text-xs text-paper font-mono outline-none focus:border-lamp"
+          className="w-full rounded-control border border-edge bg-ink p-2.5 text-xs text-paper font-mono outline-none focus:border-lamp"
         />
         <button
           type="button"
           onClick={handleBulkImport}
           disabled={!bulkImportText.trim() || isBulkImporting}
-          className="flex items-center gap-1.5 rounded-lg bg-lamp px-3.5 py-2 text-sm font-semibold text-ink hover:bg-lamp-bright disabled:opacity-40"
+          className="flex items-center gap-1.5 rounded-control bg-lamp px-3.5 py-2 text-sm font-semibold text-ink hover:bg-lamp-bright disabled:opacity-40"
         >
           {isBulkImporting ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />

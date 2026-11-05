@@ -21,7 +21,7 @@ export function SteamMissingGamesNotice({
   }
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-lamp/30 bg-lamp/30 p-3.5 text-xs">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-sheet border border-lamp/30 bg-lamp/30 p-3.5 text-xs">
       <div className="flex items-start gap-2.5">
         <Sparkles className="h-4 w-4 text-lamp-bright shrink-0 mt-0.5" />
         <div className="space-y-0.5">
@@ -36,13 +36,13 @@ export function SteamMissingGamesNotice({
       <div className="flex items-center gap-2 shrink-0">
         <button
           onClick={onAddApiKeyClick}
-          className="rounded-xl border border-lamp/40 bg-lamp/20 px-3 py-1.5 text-xs font-bold text-lamp-bright hover:bg-lamp/30 transition"
+          className="rounded-control border border-lamp/40 bg-lamp/20 px-3 py-1.5 text-xs font-bold text-lamp-bright hover:bg-lamp/30 transition"
         >
           Ajouter clé API
         </button>
         <button
           onClick={onOpenAddGame}
-          className="rounded-xl border border-seam bg-edge px-3 py-1.5 text-xs font-medium text-paper-dim hover:bg-seam transition"
+          className="rounded-control border border-seam bg-edge px-3 py-1.5 text-xs font-medium text-paper-dim hover:bg-seam transition"
         >
           Import en masse
         </button>

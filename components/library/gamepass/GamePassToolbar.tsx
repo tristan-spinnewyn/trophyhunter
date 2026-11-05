@@ -44,14 +44,14 @@ export function GamePassToolbar({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Rechercher un jeu PC Game Pass, studio ou genre..."
-            className="w-full rounded-xl border border-edge bg-ink py-2 pl-9 pr-3 text-xs text-paper placeholder-faint outline-none focus:border-done"
+            className="w-full rounded-control border border-edge bg-ink py-2 pl-9 pr-3 text-xs text-paper placeholder-faint outline-none focus:border-done"
           />
         </div>
 
         <select
           value={categoryFilter}
           onChange={(e) => onCategoryChange(e.target.value)}
-          className="rounded-xl border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-done"
+          className="rounded-control border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-done"
         >
           <option value="all">Toutes les catégories</option>
           {categories.map((cat) => (
@@ -64,7 +64,7 @@ export function GamePassToolbar({
         <button
           onClick={onRefresh}
           disabled={isLoading}
-          className="flex items-center justify-center gap-1.5 rounded-xl border border-done/40 bg-done/10 px-3 py-2 text-xs font-bold text-done transition hover:bg-done/20 disabled:opacity-50"
+          className="flex items-center justify-center gap-1.5 rounded-control border border-done/40 bg-done/10 px-3 py-2 text-xs font-bold text-done transition hover:bg-done/20 disabled:opacity-50"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           <span>Actualiser</span>
@@ -76,7 +76,7 @@ export function GamePassToolbar({
           <button
             key={f.id}
             onClick={() => onFeatureFilterChange(f.id)}
-            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+            className={`rounded-control px-3 py-1.5 text-xs font-bold transition ${
               featureFilter === f.id
                 ? "border border-done/50 bg-done/20 text-done shadow-sm"
                 : "border border-edge bg-ink/70 text-dust hover:border-seam hover:text-paper"

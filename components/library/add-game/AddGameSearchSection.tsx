@@ -35,7 +35,7 @@ export function AddGameSearchSection({
           value={addGameQuery}
           onChange={(e) => handleSearchAddGame(e.target.value)}
           placeholder="Elden Ring, Hades…"
-          className="w-full rounded-lg border border-seam bg-ink py-2 pl-9 pr-3 text-sm text-paper outline-none focus:border-lamp"
+          className="w-full rounded-control border border-seam bg-ink py-2 pl-9 pr-3 text-sm text-paper outline-none focus:border-lamp"
         />
       </div>
 
@@ -47,7 +47,7 @@ export function AddGameSearchSection({
       )}
 
       {addGameResults.length > 0 && (
-        <div className="max-h-48 overflow-y-auto space-y-1 rounded-xl border border-edge bg-ink p-1.5">
+        <div className="max-h-48 overflow-y-auto space-y-1 rounded-control border border-edge bg-ink p-1.5">
           {addGameResults.map((item) => {
             const alreadyOwned = ownedGames.some(
               (g) =>
@@ -57,7 +57,7 @@ export function AddGameSearchSection({
             return (
               <div
                 key={item.id}
-                className="flex items-center justify-between gap-2 rounded-lg p-1.5 hover:bg-plank"
+                className="flex items-center justify-between gap-2 rounded-control p-1.5 hover:bg-plank"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <img
@@ -72,7 +72,7 @@ export function AddGameSearchSection({
                 <button
                   onClick={() => handleAddGameToLibrary(item)}
                   disabled={alreadyOwned}
-                  className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${
+                  className={`shrink-0 rounded-control px-2.5 py-1 text-[11px] font-bold transition ${
                     alreadyOwned
                       ? "bg-done/20 text-done"
                       : "bg-lamp text-ink hover:bg-lamp-bright"

@@ -8,6 +8,8 @@ export interface GameStatusOption {
   /** Plural heading used for the library section of this status. */
   readonly sectionTitle: string;
   readonly badgeClass: string;
+  /** Status colour as a solid fill, for dots and shelf markers. */
+  readonly dotClass: string;
 }
 
 export class InvalidGameStatusError extends Error {

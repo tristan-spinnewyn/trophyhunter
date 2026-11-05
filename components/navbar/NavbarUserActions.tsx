@@ -27,7 +27,7 @@ export function NavbarUserActions({
             : "Connexion / Inscription"
         }
         aria-label={currentUser ? `Compte @${currentUser.username}` : "Connexion"}
-        className={`flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium transition ${
+        className={`flex h-9 items-center gap-1.5 rounded-control px-2.5 text-sm font-medium transition-[color] ${
           currentUser
             ? "text-paper hover:bg-plank"
             : "bg-lamp text-ink hover:bg-lamp-bright"
@@ -49,7 +49,7 @@ export function NavbarUserActions({
           onClick={onLogout}
           title="Se déconnecter"
           aria-label="Se déconnecter"
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-dust transition hover:bg-plank hover:text-danger"
+          className="flex h-9 w-9 items-center justify-center rounded-control text-dust transition hover:bg-plank hover:text-danger"
         >
           <LogOut className="h-4 w-4" />
         </button>
@@ -60,7 +60,7 @@ export function NavbarUserActions({
         onClick={onOpenSettings}
         title="Paramètres & Sauvegarde"
         aria-label="Paramètres & Sauvegarde"
-        className="flex h-9 w-9 items-center justify-center rounded-lg text-dust transition hover:bg-plank hover:text-paper"
+        className="flex h-9 w-9 items-center justify-center rounded-control text-dust transition hover:bg-plank hover:text-paper"
       >
         <Settings className="h-4 w-4" />
       </button>

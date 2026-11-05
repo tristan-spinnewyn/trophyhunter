@@ -17,7 +17,7 @@ export function FeaturedGamesSection({ ownedGames }: FeaturedGamesSectionProps) 
   const router = useRouter();
 
   return (
-    <div className="rounded-2xl border border-edge bg-plank/60 p-5 space-y-4">
+    <div className="rounded-sheet border border-edge bg-plank/60 p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Flame className="h-4 w-4 text-lamp-bright" />
@@ -37,9 +37,9 @@ export function FeaturedGamesSection({ ownedGames }: FeaturedGamesSectionProps) 
             <button
               key={game.id}
               onClick={() => router.push(`/game/${game.id}`)}
-              className="group relative flex flex-col items-center overflow-hidden rounded-2xl border border-edge bg-ink/60 p-1.5 transition-all hover:border-lamp/50 hover:bg-plank text-left"
+              className="group relative flex flex-col items-center overflow-hidden rounded-sheet border border-edge bg-ink/60 p-1.5 transition-all hover:border-lamp/50 hover:bg-plank text-left"
             >
-              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-plank">
+              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-control bg-plank">
                 <img
                   src={game.img}
                   alt={game.name}
@@ -49,7 +49,7 @@ export function FeaturedGamesSection({ ownedGames }: FeaturedGamesSectionProps) 
                   <div
                     role="img"
                     aria-label="Déjà dans ta collection"
-                    className="absolute top-1 right-1 flex items-center justify-center rounded-md bg-done/90 p-0.5 shadow"
+                    className="absolute top-1 right-1 flex items-center justify-center rounded-control bg-done/90 p-0.5 shadow"
                   >
                     <ShieldCheck className="h-3 w-3 text-ink" />
                   </div>

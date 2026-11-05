@@ -55,6 +55,17 @@ describe("game-status.services", () => {
     expect(resolveGameStatus("unknown-status")).toBe("backlog");
   });
 
+  it.each([
+    ["backlog", "dust"],
+    ["in-progress", "lamp"],
+    ["paused", "paused"],
+    ["completed", "done"],
+    ["abandoned", "dropped"],
+  ] as const)("colours the %s status with its own %s token everywhere", (status, token) => {
+    expect(GAME_STATUS_META[status].dotClass).toBe(`bg-${token}`);
+    if (status !== "backlog") expect(GAME_STATUS_META[status].badgeClass).toContain(`border-${token}`);
+  });
+
   it("throws InvalidGameStatusError when asserting an invalid status", () => {
     expect(assertValidGameStatus("completed")).toBe("completed");
     expect(() => assertValidGameStatus("invalid")).toThrow(InvalidGameStatusError);

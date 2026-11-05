@@ -17,7 +17,7 @@ export function DuplicateGroupCard({
   onSelectGame,
 }: DuplicateGroupCardProps) {
   return (
-    <div className="rounded-2xl border border-edge bg-ink/90 p-4 space-y-3">
+    <div className="rounded-sheet border border-edge bg-ink/90 p-4 space-y-3">
       <div className="flex items-center justify-between gap-2 border-b border-edge/80 pb-2.5">
         <h4 className="text-sm font-semibold text-paper truncate">
           {group.title}
@@ -43,7 +43,7 @@ export function DuplicateGroupCard({
             <div
               key={`${g.platform}_${g.appId}`}
               onClick={() => onSelectGame(g.appId)}
-              className="flex flex-col justify-between rounded-xl border border-edge bg-plank/90 p-3 hover:border-platinum/50 cursor-pointer transition"
+              className="flex flex-col justify-between rounded-control border border-edge bg-plank/90 p-3 hover:border-platinum/50 cursor-pointer transition"
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-1">
@@ -73,7 +73,7 @@ export function DuplicateGroupCard({
                 <img
                   src={g.headerImg}
                   alt={g.name}
-                  className="h-16 w-full object-cover rounded-lg bg-ink"
+                  className="h-16 w-full object-cover rounded-control bg-ink"
                   onError={(e) => {
                     (e.target as HTMLElement).style.display = "none";
                   }}

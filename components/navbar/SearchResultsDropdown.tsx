@@ -18,7 +18,7 @@ export function SearchResultsDropdown({
   onPickGame,
 }: DropdownProps) {
   return (
-    <div className="absolute left-0 right-0 top-full mt-2 max-h-[75vh] overflow-y-auto rounded-2xl border border-seam bg-plank/95 p-2 backdrop-blur-xl z-50">
+    <div className="absolute left-0 right-0 top-full mt-2 max-h-[75vh] overflow-y-auto rounded-sheet border border-seam bg-plank/95 p-2 backdrop-blur-xl z-50">
       {isLoading ? (
         <div className="flex items-center justify-center gap-2 py-6 text-sm text-dust">
           <Loader2 className="h-4 w-4 animate-spin text-lamp-bright" />
@@ -33,9 +33,9 @@ export function SearchResultsDropdown({
             <button
               key={g.id}
               onClick={() => onPickGame(g.id)}
-              className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-edge/80 group"
+              className="flex w-full items-center gap-3 rounded-control p-2 text-left transition hover:bg-edge/80 group"
             >
-              <img src={g.img} alt={g.name} className="h-10 w-20 rounded-lg object-cover bg-ink" />
+              <img src={g.img} alt={g.name} className="h-10 w-20 rounded-control object-cover bg-ink" />
               <div className="flex-1 truncate">
                 <div className="truncate text-sm font-semibold text-paper group-hover:text-lamp-bright">
                   {g.name}
@@ -60,9 +60,9 @@ export function SearchResultsDropdown({
               <button
                 key={g.id}
                 onClick={() => onPickGame(g.id)}
-                className="flex items-center gap-2.5 rounded-xl p-2 text-left transition hover:bg-edge/80 group"
+                className="flex items-center gap-2.5 rounded-control p-2 text-left transition hover:bg-edge/80 group"
               >
-                <img src={g.img} alt={g.name} className="h-9 w-16 rounded-md object-cover bg-ink" />
+                <img src={g.img} alt={g.name} className="h-9 w-16 rounded-control object-cover bg-ink" />
                 <div className="truncate text-xs font-semibold text-paper group-hover:text-lamp-bright">
                   {g.name}
                 </div>

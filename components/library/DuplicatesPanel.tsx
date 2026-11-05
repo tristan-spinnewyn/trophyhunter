@@ -18,13 +18,13 @@ export default function DuplicatesPanel({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg border border-platinum/40 bg-platinum/10 text-platinum flex items-center gap-1.5">
+        <span className="text-xs font-bold px-2.5 py-0.5 rounded-control border border-platinum/40 bg-platinum/10 text-platinum flex items-center gap-1.5">
           <Copy className="h-3.5 w-3.5" />
           {duplicateGroups.length} doublon(s) détecté(s)
         </span>
       </div>
 
-      <div className="rounded-2xl border border-platinum/30 bg-gradient-to-br from-plank via-plank/95 to-platinum/40 p-5 sm:p-6 space-y-2">
+      <div className="rounded-sheet border border-edge bg-plank/60 p-5 sm:p-6 space-y-2">
         <h3 className="text-lg font-bold text-paper flex items-center gap-2">
           <Copy className="h-5 w-5 text-platinum" />
           Détection des Doublons Multiplateformes
@@ -36,7 +36,7 @@ export default function DuplicatesPanel({
       </div>
 
       {duplicateGroups.length === 0 ? (
-        <div className="rounded-2xl border border-edge bg-ink/60 p-8 text-center space-y-2">
+        <div className="rounded-sheet border border-edge bg-ink/60 p-8 text-center space-y-2">
           <p className="text-sm font-bold text-paper">Aucun doublon trouvé</p>
           <p className="text-xs text-dust">
             Tous vos jeux actuels sont uniques à une seule plateforme.

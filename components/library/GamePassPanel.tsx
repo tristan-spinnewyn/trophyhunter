@@ -16,13 +16,13 @@ export default function GamePassPanel({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg border border-done/40 bg-done/10 text-done flex items-center gap-1.5">
+        <span className="text-xs font-bold px-2.5 py-0.5 rounded-control border border-done/40 bg-done/10 text-done flex items-center gap-1.5">
           <MonitorPlay className="h-3.5 w-3.5" />
           {gp.filteredGames.length} / {gp.catalog.length} jeux PC Game Pass
         </span>
       </div>
 
-      <div className="rounded-2xl border border-done/30 bg-gradient-to-br from-plank via-plank/95 to-done/40 p-5 sm:p-6 space-y-4">
+      <div className="rounded-sheet border border-edge bg-plank/60 p-5 sm:p-6 space-y-4">
         <div className="space-y-1.5">
           <h3 className="text-lg font-bold text-paper flex items-center gap-2">
             <MonitorPlay className="h-5 w-5 text-done" />
@@ -48,24 +48,24 @@ export default function GamePassPanel({
       </div>
 
       {gp.isLoading ? (
-        <div className="rounded-2xl border border-edge bg-ink/60 p-8 text-center space-y-2">
+        <div className="rounded-sheet border border-edge bg-ink/60 p-8 text-center space-y-2">
           <p className="text-sm font-bold text-done animate-pulse">
             Synchronisation du catalogue officiel PC Game Pass...
           </p>
           <p className="text-xs text-dust">Récupération des titres auprès de Microsoft Store.</p>
         </div>
       ) : gp.error ? (
-        <div className="rounded-2xl border border-danger/40 bg-danger/20 p-6 text-center space-y-2">
+        <div className="rounded-sheet border border-danger/40 bg-danger/20 p-6 text-center space-y-2">
           <p className="text-sm font-bold text-danger">{gp.error}</p>
           <button
             onClick={() => void gp.loadCatalog(true)}
-            className="rounded-xl bg-danger/20 border border-danger/40 px-3 py-1.5 text-xs font-bold text-danger hover:bg-danger/30"
+            className="rounded-control bg-danger/20 border border-danger/40 px-3 py-1.5 text-xs font-bold text-danger hover:bg-danger/30"
           >
             Réessayer
           </button>
         </div>
       ) : gp.visibleGames.length === 0 ? (
-        <div className="rounded-2xl border border-edge bg-ink/60 p-8 text-center space-y-1">
+        <div className="rounded-sheet border border-edge bg-ink/60 p-8 text-center space-y-1">
           <p className="text-sm font-bold text-paper">Aucun jeu PC Game Pass trouvé</p>
           <p className="text-xs text-dust">Modifiez votre recherche ou vos filtres.</p>
         </div>
@@ -88,7 +88,7 @@ export default function GamePassPanel({
             <div className="flex justify-center pt-2">
               <button
                 onClick={gp.handleLoadMore}
-                className="rounded-2xl border border-done/40 bg-done/15 px-5 py-2.5 text-xs font-bold text-done transition hover:bg-done/25"
+                className="rounded-sheet border border-done/40 bg-done/15 px-5 py-2.5 text-xs font-bold text-done transition hover:bg-done/25"
               >
                 Afficher plus de jeux ({gp.visibleGames.length} / {gp.filteredGames.length})
               </button>

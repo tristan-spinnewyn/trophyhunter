@@ -58,8 +58,8 @@
   transform: translateY(-14px);
 }
 .spine-title {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
+  /* Bottom-to-top, like a box spine; the rotate fallback would clip the start of long titles. */
+  writing-mode: sideways-lr;
   font-variation-settings: "wdth" 62;
   font-weight: 800;
   font-size: 19px;
@@ -68,6 +68,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-height: calc(var(--spine-h) - 56px);
+}
+@supports not (writing-mode: sideways-lr) {
+  .spine-title { writing-mode: vertical-rl; transform: rotate(180deg); }
 }
 .spine-platform {
   font-size: 11px;
@@ -78,6 +81,6 @@
 
 @media (max-width: 640px) {
   .spine-rows { --row: 220px; --gap: 22px; }
-  .spine { --spine-scale: .8; width: calc(var(--spine-w) * .85); height: calc(var(--spine-h) * .8); }
+  .spine { width: calc(var(--spine-w) * .85); height: calc(var(--spine-h) * .8); }
   .spine-title { font-size: 16px; max-height: calc(var(--spine-h) * .8 - 48px); }
 }

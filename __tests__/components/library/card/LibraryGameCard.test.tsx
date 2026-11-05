@@ -79,12 +79,16 @@ describe("LibraryGameCard", () => {
     expect(screen.getByText("4/10 XP")).toBeTruthy();
   });
 
-  it("hides a cover image that fails to load", () => {
-    renderCard();
+  it("shows the portrait box art, falls back to the stored image, then hides a cover that never loads", () => {
+    renderCard({ game: makeOwnedGame({ headerImg: "https://example.test/header.jpg" }) });
     const img = document.querySelector("img")!;
+    expect(img.getAttribute("src")).toContain("/steam/apps/620/library_600x900.jpg");
 
     fireEvent.error(img);
+    expect(img.getAttribute("src")).toBe("https://example.test/header.jpg");
+    expect(img.style.display).toBe("");
 
+    fireEvent.error(img);
     expect(img.style.display).toBe("none");
   });
 

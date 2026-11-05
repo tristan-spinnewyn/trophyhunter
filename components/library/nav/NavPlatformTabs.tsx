@@ -1,5 +1,6 @@
 // components/library/nav/NavPlatformTabs.tsx
 
+import { textTabClassName } from "@/components/ui/textTab";
 import type { UserAccountProfile } from "@/lib/types";
 import type { LibraryTab } from "@/lib/library/library-filters";
 import { buildPlatformTabItems } from "./navTabsConfig.services";
@@ -20,18 +21,14 @@ export function NavPlatformTabs({
   const items = buildPlatformTabItems(activePlatformTab, platformCounts, accountProfile);
 
   return (
-    <div className="flex shrink-0 items-center gap-1">
+    <div className="flex shrink-0 items-center gap-5">
       {items.map((item) => (
         <button
           key={item.id}
           type="button"
           onClick={() => onSelectTab(item.id)}
           aria-pressed={item.isActive}
-          className={`group flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition ${
-            item.isActive
-              ? item.activeClass
-              : "border-transparent text-dust hover:bg-plank hover:text-paper"
-          }`}
+          className={textTabClassName(item.isActive)}
         >
           <span
             className={`h-1.5 w-1.5 rounded-full shrink-0 transition-transform group-hover:scale-110 ${

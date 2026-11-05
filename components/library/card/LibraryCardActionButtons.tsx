@@ -19,7 +19,7 @@ interface LibraryCardActionButtonsProps {
 }
 
 const ICON_BUTTON_CLASS =
-  "flex h-8 w-8 items-center justify-center rounded-md text-faint transition hover:bg-edge";
+  "flex h-8 w-8 items-center justify-center rounded-control text-faint transition hover:bg-edge";
 
 export function LibraryCardActionButtons({
   game: g,

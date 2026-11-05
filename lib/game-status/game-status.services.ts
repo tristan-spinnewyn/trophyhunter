@@ -22,30 +22,35 @@ export const GAME_STATUS_META: Readonly<Record<GameStatus, GameStatusOption>> = 
     label: "À jouer",
     sectionTitle: "À jouer",
     badgeClass: "border-seam bg-edge/90 text-paper-dim",
+    dotClass: "bg-dust",
   },
   "in-progress": {
     value: "in-progress",
     label: "En cours",
     sectionTitle: "En cours",
     badgeClass: "border-lamp/40 bg-lamp/15 text-lamp-bright",
+    dotClass: "bg-lamp",
   },
   paused: {
     value: "paused",
     label: "En pause",
     sectionTitle: "En pause",
-    badgeClass: "border-lamp/40 bg-lamp/10 text-lamp-bright",
+    badgeClass: "border-paused/40 bg-paused/10 text-paused",
+    dotClass: "bg-paused",
   },
   completed: {
     value: "completed",
     label: "Terminé",
     sectionTitle: "Terminés",
     badgeClass: "border-done/40 bg-done/15 text-done",
+    dotClass: "bg-done",
   },
   abandoned: {
     value: "abandoned",
     label: "Abandonné",
     sectionTitle: "Abandonnés",
-    badgeClass: "border-danger/30 bg-danger/10 text-danger",
+    badgeClass: "border-dropped/40 bg-dropped/10 text-dropped",
+    dotClass: "bg-dropped",
   },
 };
 

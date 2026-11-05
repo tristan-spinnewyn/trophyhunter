@@ -56,6 +56,8 @@ body {
   color: var(--paper);
   font-family: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
+  /* Full-bleed bands (game page) must never cause sideways scrolling. */
+  overflow-x: clip;
 }
 
 /* Width axis of Archivo: wide for page titles, narrow for spines. */

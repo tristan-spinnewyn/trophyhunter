@@ -39,7 +39,7 @@ export function NavbarSearch({ onSelectGame }: NavbarSearchProps) {
           onFocus={() => setIsOpen(true)}
           placeholder="Rechercher un jeu…"
           aria-label="Rechercher un jeu"
-          className="w-full rounded-lg border border-edge bg-plank py-2 pl-9 pr-8 text-sm text-paper placeholder-faint outline-none transition focus:border-lamp focus:ring-2 focus:ring-lamp/20"
+          className="w-full rounded-control border border-edge bg-plank py-2 pl-9 pr-8 text-sm text-paper placeholder-faint outline-none transition focus:border-lamp focus:ring-2 focus:ring-lamp/20"
         />
         {query && (
           <button

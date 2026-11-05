@@ -7,7 +7,7 @@ import type { SortOrderType } from "@/lib/library/library-sort";
 
 /** Filters that narrow the list are highlighted so the user sees why games are missing. */
 function selectClass(isFiltering: boolean): string {
-  return `min-w-0 rounded-lg border px-3 py-2 text-sm outline-none transition focus:border-lamp ${
+  return `min-w-0 rounded-control border px-3 py-2 text-sm outline-none transition focus:border-lamp ${
     isFiltering
       ? "border-lamp/50 bg-lamp/10 text-lamp-bright"
       : "border-edge bg-plank text-paper"

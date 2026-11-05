@@ -39,7 +39,7 @@ export function LibrarySectionFilters({
           onChange={(e) => setLibSearch(e.target.value)}
           placeholder="Filtrer mes jeux…"
           aria-label="Filtrer mes jeux"
-          className="w-full rounded-lg border border-edge bg-plank py-2 pl-9 pr-3 text-sm text-paper placeholder-faint outline-none focus:border-lamp"
+          className="w-full rounded-control border border-edge bg-plank py-2 pl-9 pr-3 text-sm text-paper placeholder-faint outline-none focus:border-lamp"
         />
       </div>
 

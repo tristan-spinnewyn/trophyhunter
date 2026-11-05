@@ -20,7 +20,7 @@ export function CreateCollectionForm({
   onCancel,
 }: CreateCollectionFormProps) {
   return (
-    <div className="rounded-2xl border border-paused/40 bg-ink p-4 space-y-3">
+    <div className="rounded-sheet border border-paused/40 bg-ink p-4 space-y-3">
       <h4 className="text-sm font-bold text-paper flex items-center gap-2">
         <FolderPlus className="h-4 w-4 text-paused" />
         Créer une nouvelle collection de jeux
@@ -33,7 +33,7 @@ export function CreateCollectionForm({
             value={newCollName}
             onChange={(e) => setNewCollName(e.target.value)}
             placeholder="Ex: Jeux à platiner 2026, Co-op, Backlog..."
-            className="mt-1 w-full rounded-xl border border-seam bg-plank px-3 py-2 text-xs text-paper outline-none focus:border-paused"
+            className="mt-1 w-full rounded-control border border-seam bg-plank px-3 py-2 text-xs text-paper outline-none focus:border-paused"
           />
         </div>
         <div>
@@ -43,21 +43,21 @@ export function CreateCollectionForm({
             value={newCollDesc}
             onChange={(e) => setNewCollDesc(e.target.value)}
             placeholder="Objectifs, critères de sélection..."
-            className="mt-1 w-full rounded-xl border border-seam bg-plank px-3 py-2 text-xs text-paper outline-none focus:border-paused"
+            className="mt-1 w-full rounded-control border border-seam bg-plank px-3 py-2 text-xs text-paper outline-none focus:border-paused"
           />
         </div>
       </div>
       <div className="flex justify-end gap-2 pt-1">
         <button
           onClick={onCancel}
-          className="rounded-xl border border-seam bg-edge px-3 py-1.5 text-xs font-semibold text-paper-dim hover:bg-seam"
+          className="rounded-control border border-seam bg-edge px-3 py-1.5 text-xs font-semibold text-paper-dim hover:bg-seam"
         >
           Annuler
         </button>
         <button
           onClick={handleCreateCollection}
           disabled={!newCollName.trim()}
-          className="rounded-xl bg-paused px-4 py-1.5 text-xs font-bold text-paper hover:bg-paused disabled:opacity-50"
+          className="rounded-control bg-paused px-4 py-1.5 text-xs font-bold text-paper hover:bg-paused disabled:opacity-50"
         >
           Créer
         </button>

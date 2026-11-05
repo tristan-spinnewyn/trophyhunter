@@ -11,7 +11,6 @@ export interface PlatformTabItem {
   readonly count: number;
   readonly isConnected: boolean;
   readonly isActive: boolean;
-  readonly activeClass: string;
 }
 
 export interface FeatureTabItem {
@@ -19,8 +18,6 @@ export interface FeatureTabItem {
   readonly label: string;
   readonly count?: number;
   readonly isActive: boolean;
-  readonly activeClass: string;
-  readonly iconColorClass: string;
 }
 
 export interface LibraryNavTabsProps {

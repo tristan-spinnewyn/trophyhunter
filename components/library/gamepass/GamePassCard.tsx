@@ -17,7 +17,7 @@ export function GamePassCard({
   item, isOwned, isWishlisted, onAddGameToXbox, onToggleWishlist, onSelectGame,
 }: GamePassCardProps) {
   return (
-    <div className="group flex flex-col justify-between rounded-2xl border border-edge/90 bg-ink/80 overflow-hidden transition hover:border-done/50">
+    <div className="group flex flex-col justify-between rounded-sheet border border-edge/90 bg-ink/80 overflow-hidden transition hover:border-done/50">
       <div>
         <div
           onClick={() => onSelectGame(item.appId, item.name)}
@@ -36,11 +36,11 @@ export function GamePassCard({
             </div>
           )}
           <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-            <span className="rounded-lg bg-done/90 border border-done/40 px-2 py-0.5 text-[11px] font-bold text-done">
+            <span className="rounded-control bg-done/90 border border-done/40 px-2 py-0.5 text-[11px] font-bold text-done">
               {item.category}
             </span>
             {item.hasXboxAchievements && (
-              <span className="flex items-center gap-1 rounded-lg bg-lamp/90 border border-lamp/40 px-1.5 py-0.5 text-[11px] font-bold text-lamp-bright">
+              <span className="flex items-center gap-1 rounded-control bg-lamp/90 border border-lamp/40 px-1.5 py-0.5 text-[11px] font-bold text-lamp-bright">
                 <Trophy className="h-2.5 w-2.5" />
                 Succès
               </span>
@@ -82,7 +82,7 @@ export function GamePassCard({
           <button
             type="button"
             onClick={() => onSelectGame(item.appId, item.name)}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-done/40 bg-done/15 py-1.5 text-xs font-bold text-done transition hover:bg-done/25"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-control border border-done/40 bg-done/15 py-1.5 text-xs font-bold text-done transition hover:bg-done/25"
           >
             <Check className="h-3.5 w-3.5" />
             <span>Dans ma bibliothèque</span>
@@ -91,7 +91,7 @@ export function GamePassCard({
           <button
             type="button"
             onClick={() => void onAddGameToXbox(item)}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-done py-1.5 text-xs font-bold text-ink transition hover:bg-done"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-control bg-done py-1.5 text-xs font-bold text-ink transition hover:bg-done"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>Ajouter (Xbox/PC)</span>
@@ -101,7 +101,7 @@ export function GamePassCard({
           type="button"
           onClick={() => onSelectGame(item.appId, item.name)}
           title="Voir les succès"
-          className="rounded-xl border border-edge bg-plank p-1.5 text-paper-dim transition hover:border-seam hover:text-paper"
+          className="rounded-control border border-edge bg-plank p-1.5 text-paper-dim transition hover:border-seam hover:text-paper"
         >
           <ExternalLink className="h-3.5 w-3.5" />
         </button>
