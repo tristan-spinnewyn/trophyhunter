@@ -41,18 +41,18 @@ export function AuthModalForm({
 }: FormProps) {
   return (
     <div>
-      <p className="mb-4 text-sm text-slate-400">
+      <p className="mb-4 text-sm text-dust">
         Authentification sécurisée, stockage chiffré.
       </p>
 
-      <div className="mb-4 grid grid-cols-2 rounded-xl border border-slate-800 bg-slate-950 p-1">
+      <div className="mb-4 grid grid-cols-2 rounded-control border border-edge bg-ink p-1">
         <button
           type="button"
           onClick={() => setMode("login")}
-          className={`rounded-lg py-1.5 text-xs font-semibold transition ${
+          className={`rounded-control py-1.5 text-xs font-semibold transition ${
             mode === "login"
-              ? "bg-sky-600 text-white shadow-sm"
-              : "text-slate-400 hover:text-white"
+              ? "bg-lamp text-paper shadow-sm"
+              : "text-dust hover:text-paper"
           }`}
         >
           Connexion
@@ -60,10 +60,10 @@ export function AuthModalForm({
         <button
           type="button"
           onClick={() => setMode("register")}
-          className={`rounded-lg py-1.5 text-xs font-semibold transition ${
+          className={`rounded-control py-1.5 text-xs font-semibold transition ${
             mode === "register"
-              ? "bg-sky-600 text-white shadow-sm"
-              : "text-slate-400 hover:text-white"
+              ? "bg-lamp text-paper shadow-sm"
+              : "text-dust hover:text-paper"
           }`}
         >
           Créer un compte
@@ -71,13 +71,13 @@ export function AuthModalForm({
       </div>
 
       {errorMsg && (
-        <div className="mb-4 flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
+        <div className="mb-4 flex items-center gap-2 rounded-control border border-danger/30 bg-danger/10 p-3 text-xs text-danger">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
       {successMsg && (
-        <div className="mb-4 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-300">
+        <div className="mb-4 flex items-center gap-2 rounded-control border border-done/30 bg-done/10 p-3 text-xs text-done">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
           <span>{successMsg}</span>
         </div>
@@ -94,8 +94,8 @@ export function AuthModalForm({
           setDisplayName={setDisplayName}
         />
 
-        <div className="flex items-start gap-2 rounded-xl bg-slate-950/50 p-2.5 text-[11px] text-slate-400 border border-slate-800">
-          <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2 rounded-control bg-ink/50 p-2.5 text-[11px] text-dust border border-edge">
+          <ShieldCheck className="h-4 w-4 text-done shrink-0 mt-0.5" />
           <span>
             Vos clés API et sessions sont isolées et stockées de façon chiffrée
             (AES-256-GCM).
@@ -105,7 +105,7 @@ export function AuthModalForm({
         <button
           type="submit"
           disabled={isLoading}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-sky-500 disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-control bg-lamp px-4 py-2.5 text-xs font-bold text-paper transition hover:bg-lamp disabled:opacity-50"
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />

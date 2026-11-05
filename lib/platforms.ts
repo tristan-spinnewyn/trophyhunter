@@ -16,7 +16,6 @@ export const PLATFORM_META: Record<
     shortName: string;
     placeholder: string;
     badgeClass: string;
-    accentColor: string;
     trophyLabel: string;
     completeLabel: string;
     supportsAutoSync: boolean;
@@ -26,8 +25,7 @@ export const PLATFORM_META: Record<
     name: "Steam",
     shortName: "Steam",
     placeholder: "SteamID64 (7656119...), pseudo ou URL du profil",
-    badgeClass: "border-sky-500/40 bg-sky-500/10 text-sky-300",
-    accentColor: "from-sky-500 to-blue-600",
+    badgeClass: "border-lamp/40 bg-lamp/10 text-lamp-bright",
     trophyLabel: "Succès",
     completeLabel: "Jeux 100%",
     supportsAutoSync: true,
@@ -36,8 +34,7 @@ export const PLATFORM_META: Record<
     name: "Xbox Live",
     shortName: "Xbox",
     placeholder: "Gamertag Xbox (ex: MasterChief#1234)",
-    badgeClass: "border-emerald-500/40 bg-emerald-500/10 text-emerald-300",
-    accentColor: "from-emerald-500 to-green-700",
+    badgeClass: "border-done/40 bg-done/10 text-done",
     trophyLabel: "Succès",
     completeLabel: "Jeux 1000G",
     supportsAutoSync: true,
@@ -46,8 +43,7 @@ export const PLATFORM_META: Record<
     name: "Epic Games",
     shortName: "Epic",
     placeholder: "Pseudo Exophase ou compte Epic",
-    badgeClass: "border-purple-500/40 bg-purple-500/10 text-purple-300",
-    accentColor: "from-purple-500 to-fuchsia-700",
+    badgeClass: "border-platinum/40 bg-platinum/10 text-platinum",
     trophyLabel: "Succès Epic",
     completeLabel: "Platines Epic",
     supportsAutoSync: true,
@@ -56,8 +52,7 @@ export const PLATFORM_META: Record<
     name: "GOG Galaxy",
     shortName: "GOG",
     placeholder: "Pseudo GOG.com",
-    badgeClass: "border-violet-500/40 bg-violet-500/10 text-violet-300",
-    accentColor: "from-violet-500 to-purple-800",
+    badgeClass: "border-platinum/40 bg-platinum/10 text-platinum",
     trophyLabel: "Succès",
     completeLabel: "Jeux 100%",
     supportsAutoSync: true,

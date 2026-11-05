@@ -1,19 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+/** One family, its width axis does the talking: wide titles, narrow spines. */
+const archivo = Archivo({
+  variable: "--font-archivo",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  axes: ["wdth"],
 });
 
 export const viewport: Viewport = {
-  themeColor: "#020617",
+  themeColor: "#17141f",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -45,9 +42,9 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${archivo.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col bg-slate-950 text-slate-100 selection:bg-sky-500 selection:text-white">
+      <body className="min-h-full flex flex-col bg-ink text-paper selection:bg-lamp selection:text-ink">
         <AppShell>{children}</AppShell>
       </body>
     </html>

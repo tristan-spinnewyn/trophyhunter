@@ -15,14 +15,17 @@ function makeSummary(overrides: Partial<TrackingSummary> = {}): TrackingSummary 
   };
 }
 
+const lede = () => screen.getByText(/sur Steam, Xbox/).textContent;
+
 describe("LibraryHeaderBanner", () => {
   afterEach(cleanup);
 
-  it("counts the games and opens the add-game flow", () => {
+  it("describes the collection in a sentence and opens the add-game flow", () => {
     const onOpenAddGame = vi.fn();
     render(<LibraryHeaderBanner ownedGamesCount={11} onOpenAddGame={onOpenAddGame} trackingSummary={makeSummary()} />);
 
-    expect(screen.getByText("11 jeux sur Steam, Xbox, Epic Games et GOG")).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 1, name: "Ma collection" })).toBeTruthy();
+    expect(lede()).toBe("11 jeux sur Steam, Xbox, Epic Games et GOG, et 120 heures de jeu. 2 en cours, 3 à jouer.");
     fireEvent.click(screen.getByRole("button", { name: /^Ajouter/ }));
     expect(onOpenAddGame).toHaveBeenCalled();
   });
@@ -30,17 +33,17 @@ describe("LibraryHeaderBanner", () => {
   it("uses the singular for a single game", () => {
     render(<LibraryHeaderBanner ownedGamesCount={1} onOpenAddGame={vi.fn()} trackingSummary={makeSummary()} />);
 
-    expect(screen.getByText("1 jeu sur Steam, Xbox, Epic Games et GOG")).toBeTruthy();
+    expect(lede()).toMatch(/^1 jeu sur Steam/);
   });
 
-  it("hides the count and the tiles while loading or empty", () => {
+  it("hides the sentence while loading or empty", () => {
     render(<LibraryHeaderBanner ownedGamesCount={0} isLoading onOpenAddGame={vi.fn()} trackingSummary={makeSummary()} />);
 
     expect(screen.queryByText(/sur Steam, Xbox/)).toBeNull();
-    expect(screen.queryByText("En cours")).toBeNull();
+    expect(screen.queryByText(/en cours/)).toBeNull();
   });
 
-  it("summarises the tracking status, with achievements as a footnote", () => {
+  it("keeps achievements as a footnote", () => {
     render(
       <LibraryHeaderBanner
         ownedGamesCount={11}
@@ -49,8 +52,6 @@ describe("LibraryHeaderBanner", () => {
       />
     );
 
-    expect(screen.getByText("En cours").nextElementSibling?.textContent).toBe("2");
-    expect(screen.getByText("120 h")).toBeTruthy();
     expect(screen.getByText(/250 succès débloqués/).textContent).toContain("2 jeux à 100 %");
   });
 

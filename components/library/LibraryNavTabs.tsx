@@ -1,6 +1,6 @@
 // components/library/LibraryNavTabs.tsx
 
-import { Layers } from "lucide-react";
+import { textTabClassName } from "@/components/ui/textTab";
 import type { LibraryNavTabsProps } from "./nav/LibraryNavTabs.types";
 import { NavPlatformTabs } from "./nav/NavPlatformTabs";
 import { NavFeatureTabs } from "./nav/NavFeatureTabs";
@@ -22,22 +22,17 @@ export default function LibraryNavTabs({
   return (
     <nav
       aria-label="Navigation de la bibliothèque"
-      className="-mx-4 flex items-center gap-1 overflow-x-auto scrollbar-none px-4 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+      className="-mx-4 flex items-center gap-5 overflow-x-auto scrollbar-none border-b border-edge px-4 sm:mx-0 sm:flex-wrap sm:px-0"
     >
-      <div className="flex shrink-0 items-center gap-1">
+      <div className="flex shrink-0 items-center gap-5">
         <button
           type="button"
           onClick={() => onSelectTab("all")}
           aria-pressed={isAllActive}
-          className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition ${
-            isAllActive
-              ? "border-slate-700 bg-slate-800 text-white"
-              : "border-transparent text-slate-400 hover:bg-slate-900 hover:text-white"
-          }`}
+          className={textTabClassName(isAllActive)}
         >
-          <Layers className="h-3.5 w-3.5 shrink-0" />
-          <span>Tous</span>
-          <span className="text-xs tabular-nums text-slate-500">
+                    <span>Tous</span>
+          <span className="text-xs tabular-nums text-faint">
             {ownedGamesCount}
           </span>
         </button>
@@ -52,7 +47,7 @@ export default function LibraryNavTabs({
         />
       </div>
 
-      <div aria-hidden className="mx-1 h-5 w-px shrink-0 bg-slate-800" />
+      <div aria-hidden className="h-5 w-px shrink-0 bg-edge" />
 
       <NavFeatureTabs
         activePlatformTab={activePlatformTab}

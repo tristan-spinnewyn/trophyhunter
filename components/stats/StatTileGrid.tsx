@@ -22,16 +22,16 @@ export function StatTileGrid({ tiles }: { readonly tiles: readonly StatTile[] })
   return (
     <dl className={`grid grid-cols-2 gap-2 sm:gap-3 ${GRID_COLUMNS[tiles.length] ?? "lg:grid-cols-4"}`}>
       {tiles.map(({ label, value, detail, hint, icon: Icon, iconClass }) => (
-        <div key={label} className="rounded-xl border border-slate-800 bg-slate-900/60 px-3.5 py-3">
-          <dt className="flex items-center gap-1.5 text-xs text-slate-400">
+        <div key={label} className="rounded-control border border-edge bg-plank/60 px-3.5 py-3">
+          <dt className="flex items-center gap-1.5 text-xs text-dust">
             <Icon className={`h-3.5 w-3.5 shrink-0 ${iconClass}`} aria-hidden />
             {label}
           </dt>
           <dd className="mt-1 flex items-baseline gap-1.5">
-            <span className="text-2xl font-semibold tabular-nums text-white">{value}</span>
-            {detail && <span className="text-xs tabular-nums text-slate-500">{detail}</span>}
+            <span className="text-2xl font-semibold tabular-nums text-paper">{value}</span>
+            {detail && <span className="text-xs tabular-nums text-faint">{detail}</span>}
           </dd>
-          {hint && <dd className="mt-0.5 truncate text-xs text-slate-500">{hint}</dd>}
+          {hint && <dd className="mt-0.5 truncate text-xs text-faint">{hint}</dd>}
         </div>
       ))}
     </dl>

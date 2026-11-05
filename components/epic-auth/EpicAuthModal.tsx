@@ -61,13 +61,13 @@ export default function EpicAuthModal({
   return (
     <Modal
       title="Autorisation Epic Games"
-      icon={<KeyRound className="h-4 w-4 text-purple-400" />}
+      icon={<KeyRound className="h-4 w-4 text-platinum" />}
       onClose={() => {
         if (!isLoading) onClose();
       }}
     >
       <div className="space-y-5">
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-dust">
           {gameName ? `Synchronisation des succès de « ${gameName} »` : "Connexion et récupération des trophées Epic"}
         </p>
 

@@ -31,7 +31,7 @@ describe("AchievementItem", () => {
 
     const checkbox = screen.getByRole("checkbox", { name: "Wake Up Call" });
     expect(checkbox.getAttribute("aria-checked")).toBe("false");
-    expect(screen.getByText(/42.5% •/)).toBeTruthy();
+    expect(screen.getByText("42,5 %, rare")).toBeTruthy();
     expect(screen.getByText("Survive the manual override.")).toBeTruthy();
     fireEvent.click(checkbox);
 

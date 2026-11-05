@@ -19,6 +19,14 @@ describe("hunting-meta.services", () => {
     expect(getDifficultyMeta(10).label).toBe("Extrême");
   });
 
+  it("colours only the ends of the difficulty scale: easy in green, hard in red", () => {
+    expect(getDifficultyMeta(2).badgeClass).toContain("text-done");
+    expect(getDifficultyMeta(4).badgeClass).toContain("text-done");
+    expect(getDifficultyMeta(6).badgeClass).toContain("text-paper");
+    expect(getDifficultyMeta(8).badgeClass).toContain("text-danger");
+    expect(getDifficultyMeta(10).badgeClass).toContain("text-danger");
+  });
+
   it("estimates game difficulty based on rarity and missables", () => {
     expect(estimateGameDifficulty([])).toBe(1);
 

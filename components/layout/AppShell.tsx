@@ -31,8 +31,8 @@ function AppShellContent({ children }: { readonly children: React.ReactNode }) {
   } = useUserData();
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      <Suspense fallback={<div className="h-14 bg-slate-950 border-b border-slate-800" />}>
+    <div className="min-h-screen bg-ink text-paper flex flex-col">
+      <Suspense fallback={<div className="h-14 bg-ink border-b border-edge" />}>
         <Navbar />
       </Suspense>
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-24 sm:pt-8 md:pb-10">

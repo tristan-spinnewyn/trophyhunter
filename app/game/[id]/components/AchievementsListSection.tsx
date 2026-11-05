@@ -28,7 +28,7 @@ export function AchievementsListSection({
 }: ListSectionProps) {
   if (game.totalAchievements <= 0 && game.achievements.length === 0) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center text-slate-400">
+      <div className="rounded-sheet border border-dashed border-edge p-8 text-center text-dust">
         <p className="text-sm font-medium">
           Ce jeu ne comporte aucun succès répertorié sur cette plateforme.
         </p>
@@ -38,11 +38,11 @@ export function AchievementsListSection({
 
   if (displayedAchievements.length === 0) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center text-slate-400 space-y-2">
+      <div className="rounded-sheet border border-dashed border-edge p-8 text-center text-dust space-y-2">
         <p className="text-sm font-medium">Aucun succès ne correspond à ce filtre.</p>
         <button
           onClick={onResetFilters}
-          className="text-xs text-sky-400 underline hover:text-sky-300"
+          className="text-xs text-lamp-bright underline hover:text-lamp-bright"
         >
           Réinitialiser les filtres
         </button>
@@ -51,7 +51,7 @@ export function AchievementsListSection({
   }
 
   return (
-    <div className="space-y-2.5">
+    <div>
       {displayedAchievements.map((ach) => (
         <AchievementItem
           key={ach.id}

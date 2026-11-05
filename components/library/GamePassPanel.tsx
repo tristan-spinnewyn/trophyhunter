@@ -16,19 +16,19 @@ export default function GamePassPanel({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 flex items-center gap-1.5">
+        <span className="text-xs font-bold px-2.5 py-0.5 rounded-control border border-done/40 bg-done/10 text-done flex items-center gap-1.5">
           <MonitorPlay className="h-3.5 w-3.5" />
           {gp.filteredGames.length} / {gp.catalog.length} jeux PC Game Pass
         </span>
       </div>
 
-      <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-slate-900 via-slate-900/95 to-emerald-950/40 p-5 sm:p-6 space-y-4">
+      <div className="rounded-sheet border border-edge bg-plank/60 p-5 sm:p-6 space-y-4">
         <div className="space-y-1.5">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <MonitorPlay className="h-5 w-5 text-emerald-400" />
+          <h3 className="text-lg font-bold text-paper flex items-center gap-2">
+            <MonitorPlay className="h-5 w-5 text-done" />
             Catalogue Officiel PC Game Pass (En Direct)
           </h3>
-          <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+          <p className="text-xs text-paper-dim max-w-2xl leading-relaxed">
             Explorez l&apos;intégralité des jeux actuellement inclus dans l&apos;abonnement PC Game Pass en France.
             Ajoutez-les en un clic à votre bibliothèque Xbox/PC ou à votre liste d&apos;envies pour suivre leurs succès.
           </p>
@@ -48,26 +48,26 @@ export default function GamePassPanel({
       </div>
 
       {gp.isLoading ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-8 text-center space-y-2">
-          <p className="text-sm font-bold text-emerald-300 animate-pulse">
+        <div className="rounded-sheet border border-edge bg-ink/60 p-8 text-center space-y-2">
+          <p className="text-sm font-bold text-done animate-pulse">
             Synchronisation du catalogue officiel PC Game Pass...
           </p>
-          <p className="text-xs text-slate-400">Récupération des titres auprès de Microsoft Store.</p>
+          <p className="text-xs text-dust">Récupération des titres auprès de Microsoft Store.</p>
         </div>
       ) : gp.error ? (
-        <div className="rounded-2xl border border-rose-500/40 bg-rose-950/20 p-6 text-center space-y-2">
-          <p className="text-sm font-bold text-rose-300">{gp.error}</p>
+        <div className="rounded-sheet border border-danger/40 bg-danger/20 p-6 text-center space-y-2">
+          <p className="text-sm font-bold text-danger">{gp.error}</p>
           <button
             onClick={() => void gp.loadCatalog(true)}
-            className="rounded-xl bg-rose-500/20 border border-rose-500/40 px-3 py-1.5 text-xs font-bold text-rose-200 hover:bg-rose-500/30"
+            className="rounded-control bg-danger/20 border border-danger/40 px-3 py-1.5 text-xs font-bold text-danger hover:bg-danger/30"
           >
             Réessayer
           </button>
         </div>
       ) : gp.visibleGames.length === 0 ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-8 text-center space-y-1">
-          <p className="text-sm font-bold text-white">Aucun jeu PC Game Pass trouvé</p>
-          <p className="text-xs text-slate-400">Modifiez votre recherche ou vos filtres.</p>
+        <div className="rounded-sheet border border-edge bg-ink/60 p-8 text-center space-y-1">
+          <p className="text-sm font-bold text-paper">Aucun jeu PC Game Pass trouvé</p>
+          <p className="text-xs text-dust">Modifiez votre recherche ou vos filtres.</p>
         </div>
       ) : (
         <>
@@ -88,7 +88,7 @@ export default function GamePassPanel({
             <div className="flex justify-center pt-2">
               <button
                 onClick={gp.handleLoadMore}
-                className="rounded-2xl border border-emerald-500/40 bg-emerald-500/15 px-5 py-2.5 text-xs font-bold text-emerald-300 transition hover:bg-emerald-500/25"
+                className="rounded-sheet border border-done/40 bg-done/15 px-5 py-2.5 text-xs font-bold text-done transition hover:bg-done/25"
               >
                 Afficher plus de jeux ({gp.visibleGames.length} / {gp.filteredGames.length})
               </button>

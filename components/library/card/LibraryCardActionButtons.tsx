@@ -19,7 +19,7 @@ interface LibraryCardActionButtonsProps {
 }
 
 const ICON_BUTTON_CLASS =
-  "flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-800";
+  "flex h-8 w-8 items-center justify-center rounded-control text-faint transition hover:bg-edge";
 
 export function LibraryCardActionButtons({
   game: g,
@@ -47,7 +47,7 @@ export function LibraryCardActionButtons({
         title={wishlistLabel}
         aria-label={wishlistLabel}
         aria-pressed={isWishlisted}
-        className={`${ICON_BUTTON_CLASS} ${isWishlisted ? "text-rose-400" : "hover:text-rose-400"}`}
+        className={`${ICON_BUTTON_CLASS} ${isWishlisted ? "text-danger" : "hover:text-danger"}`}
       >
         <Heart className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`} />
       </button>
@@ -58,7 +58,7 @@ export function LibraryCardActionButtons({
           onClick={() => onOpenAddToCollection(g)}
           title="Ajouter à une collection"
           aria-label="Ajouter à une collection"
-          className={`${ICON_BUTTON_CLASS} hover:text-indigo-400`}
+          className={`${ICON_BUTTON_CLASS} hover:text-paused`}
         >
           <FolderPlus className="h-4 w-4" />
         </button>
@@ -70,7 +70,7 @@ export function LibraryCardActionButtons({
           onClick={() => onRemoveFromCollection(selectedCollId, g.appId, g.platform)}
           title="Retirer de cette collection"
           aria-label="Retirer de cette collection"
-          className={`${ICON_BUTTON_CLASS} hover:text-amber-400`}
+          className={`${ICON_BUTTON_CLASS} hover:text-lamp-bright`}
         >
           <Unlink className="h-4 w-4" />
         </button>
@@ -82,7 +82,7 @@ export function LibraryCardActionButtons({
           onClick={() => onSyncGame(g)}
           title={syncLabel}
           aria-label={syncLabel}
-          className={`${ICON_BUTTON_CLASS} hover:text-emerald-400`}
+          className={`${ICON_BUTTON_CLASS} hover:text-done`}
         >
           <RefreshCw className="h-4 w-4" />
         </button>
@@ -100,7 +100,7 @@ export function LibraryCardActionButtons({
         }}
         title="Retirer de ma bibliothèque"
         aria-label="Retirer de ma bibliothèque"
-        className={`${ICON_BUTTON_CLASS} hover:text-rose-400`}
+        className={`${ICON_BUTTON_CLASS} hover:text-danger`}
       >
         <Trash2 className="h-4 w-4" />
       </button>

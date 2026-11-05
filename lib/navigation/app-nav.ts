@@ -22,7 +22,7 @@ export const APP_NAV_ITEMS: readonly AppNavItem[] = [
   {
     id: "accounts",
     href: "/account",
-    label: "Comptes & Plateformes",
+    label: "Mes comptes",
     shortLabel: "Comptes",
     sections: [],
   },

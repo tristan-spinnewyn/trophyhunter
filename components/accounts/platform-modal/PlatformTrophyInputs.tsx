@@ -19,7 +19,7 @@ export function PlatformTrophyInputs({
     <>
       <div className="grid grid-cols-2 gap-2.5">
         <div>
-          <label className="text-[11px] text-slate-400">
+          <label className="text-[11px] text-dust">
             {PLATFORM_META[editingPlatform].trophyLabel} débloqués
           </label>
           <input
@@ -33,11 +33,11 @@ export function PlatformTrophyInputs({
               })
             }
             placeholder="Ex: 1250"
-            className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white outline-none focus:border-sky-500"
+            className="mt-1 w-full rounded-control border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
           />
         </div>
         <div>
-          <label className="text-[11px] text-slate-400">
+          <label className="text-[11px] text-dust">
             {PLATFORM_META[editingPlatform].completeLabel}
           </label>
           <input
@@ -51,14 +51,14 @@ export function PlatformTrophyInputs({
               })
             }
             placeholder="Ex: 12"
-            className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white outline-none focus:border-sky-500"
+            className="mt-1 w-full rounded-control border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
           />
         </div>
       </div>
 
       {editingPlatform === "xbox" && (
         <div>
-          <label className="text-[11px] text-slate-400">
+          <label className="text-[11px] text-dust">
             Gamerscore total (G)
           </label>
           <input
@@ -72,7 +72,7 @@ export function PlatformTrophyInputs({
               })
             }
             placeholder="Ex: 42500"
-            className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white outline-none focus:border-sky-500"
+            className="mt-1 w-full rounded-control border border-edge bg-ink px-3 py-2 text-xs text-paper outline-none focus:border-lamp"
           />
         </div>
       )}

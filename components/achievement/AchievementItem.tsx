@@ -27,12 +27,8 @@ export default function AchievementItem({
 
   return (
     <div
-      className={`group rounded-xl border transition-colors ${
-        isUnlocked
-          ? "border-emerald-500/25 bg-emerald-950/15"
-          : isPinned
-          ? "border-amber-500/40 bg-amber-950/10"
-          : "border-slate-800 bg-slate-900/60 hover:border-slate-700"
+      className={`group border-b border-edge/70 transition-colors ${
+        isPinned ? "rounded-r-control border-l-[3px] border-l-lamp bg-plank" : "hover:bg-plank/50"
       }`}
     >
       <div className="flex items-center justify-between">
@@ -54,22 +50,22 @@ export default function AchievementItem({
             <button
               type="button"
               onClick={onTogglePinned}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${
+              className={`flex h-9 w-9 items-center justify-center rounded-control transition ${
                 isPinned
-                  ? "text-amber-300"
-                  : "text-slate-500 hover:bg-slate-800 hover:text-amber-300"
+                  ? "text-lamp-bright"
+                  : "text-faint hover:bg-edge hover:text-lamp-bright"
               }`}
               title={isPinned ? "Retirer de la chasse active" : "Épingler en chasse active"}
               aria-label={isPinned ? "Retirer de la chasse active" : "Épingler en chasse active"}
               aria-pressed={isPinned}
             >
-              <Pin className={`h-4 w-4 ${isPinned ? "fill-amber-300" : ""}`} />
+              <Pin className={`h-4 w-4 ${isPinned ? "fill-lamp-bright" : ""}`} />
             </button>
           )}
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-800 hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-control text-faint hover:bg-edge hover:text-paper"
             title={isExpanded ? "Réduire" : "Voir le guide & notes"}
             aria-label={isExpanded ? "Réduire" : "Voir le guide & notes"}
             aria-expanded={isExpanded}

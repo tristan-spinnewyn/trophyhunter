@@ -38,7 +38,7 @@ export interface PlatformConnectionPanelProps {
 }
 
 const INPUT_CLASS =
-  "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder-slate-500 outline-none focus:border-sky-500";
+  "w-full rounded-control border border-seam bg-ink px-3 py-2 text-sm text-paper placeholder-faint outline-none focus:border-lamp";
 
 /** One connection flow for every platform: identify, optionally authorize, sync, see the result. */
 export function PlatformConnectionPanel({
@@ -56,10 +56,10 @@ export function PlatformConnectionPanel({
 
   const specific = getPlatformSpecificStat(platform, account);
   const tiles: StatTile[] = [
-    { label: "Dans ta collection", value: gameCount, icon: Gamepad2, iconClass: "text-sky-400" },
-    { label: "Succès débloqués", value: account?.stats.totalAchievements ?? 0, icon: Award, iconClass: "text-emerald-400" },
-    { label: "Jeux à 100 %", value: account?.stats.completedGames ?? 0, icon: Trophy, iconClass: "text-amber-400" },
-    ...(specific ? [{ ...specific, icon: Sparkles, iconClass: "text-slate-400" }] : []),
+    { label: "Dans ta collection", value: gameCount, icon: Gamepad2, iconClass: "text-lamp-bright" },
+    { label: "Succès débloqués", value: account?.stats.totalAchievements ?? 0, icon: Award, iconClass: "text-done" },
+    { label: "Jeux à 100 %", value: account?.stats.completedGames ?? 0, icon: Trophy, iconClass: "text-lamp-bright" },
+    ...(specific ? [{ ...specific, icon: Sparkles, iconClass: "text-dust" }] : []),
   ];
 
   return (
@@ -67,29 +67,29 @@ export function PlatformConnectionPanel({
       <PlatformCollectionLink platform={platform} gameCount={gameCount} />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="rounded-control border border-edge bg-plank/60 p-4">
           <div className="flex items-start gap-3">
             {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+              <img src={avatarUrl} alt="" className="h-12 w-12 shrink-0 rounded-control object-cover" />
             ) : (
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-slate-400">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-edge text-dust">
                 <Gamepad2 className="h-6 w-6" />
               </div>
             )}
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="truncate text-base font-semibold text-white">
+                <h2 className="truncate text-base font-semibold text-paper">
                   {connection.name ?? meta.name}
                 </h2>
                 {connection.isLinked ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400">
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-done">
                     <CheckCircle2 className="h-3.5 w-3.5" /> Lié
                   </span>
                 ) : (
-                  <span className="text-xs text-slate-500">Non lié</span>
+                  <span className="text-xs text-faint">Non lié</span>
                 )}
               </div>
-              <p className="mt-0.5 text-sm text-slate-400">
+              <p className="mt-0.5 text-sm text-dust">
                 {connection.lastSyncLabel ?? config.description}
               </p>
               {profileUrl && (
@@ -97,7 +97,7 @@ export function PlatformConnectionPanel({
                   href={profileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-1 inline-flex items-center gap-1 text-xs text-sky-400 hover:text-sky-300"
+                  className="mt-1 inline-flex items-center gap-1 text-xs text-lamp-bright hover:text-lamp-bright"
                 >
                   Voir le profil {meta.shortName} <ExternalLink className="h-3 w-3" />
                 </a>
@@ -105,11 +105,11 @@ export function PlatformConnectionPanel({
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-1 border-t border-slate-800 pt-3">
+          <div className="mt-4 flex flex-wrap gap-1 border-t border-edge pt-3">
             <button
               type="button"
               onClick={() => onEdit(platform)}
-              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-slate-400 hover:bg-slate-800 hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-xs text-dust hover:bg-edge hover:text-paper"
             >
               <Edit3 className="h-3.5 w-3.5" /> Modifier à la main
             </button>
@@ -117,7 +117,7 @@ export function PlatformConnectionPanel({
               <button
                 type="button"
                 onClick={() => onDisconnect(platform)}
-                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-slate-400 hover:bg-slate-800 hover:text-rose-300"
+                className="inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-xs text-dust hover:bg-edge hover:text-danger"
               >
                 <Unlink className="h-3.5 w-3.5" /> Délier
               </button>
@@ -126,14 +126,14 @@ export function PlatformConnectionPanel({
         </div>
 
         <form
-          className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/60 p-4"
+          className="space-y-3 rounded-control border border-edge bg-plank/60 p-4"
           onSubmit={(e) => {
             e.preventDefault();
             if (canSync) onSync();
           }}
         >
           <div>
-            <label htmlFor={identifierId} className="text-sm font-medium text-slate-300">
+            <label htmlFor={identifierId} className="text-sm font-medium text-paper-dim">
               {config.identifierLabel}
             </label>
             <div className="mt-1 flex gap-2">
@@ -148,7 +148,7 @@ export function PlatformConnectionPanel({
               <button
                 type="submit"
                 disabled={!canSync}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-sky-500 px-3.5 py-2 text-sm font-semibold text-slate-950 hover:bg-sky-400 disabled:opacity-50"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-control bg-lamp px-3.5 py-2 text-sm font-semibold text-ink hover:bg-lamp-bright disabled:opacity-50"
               >
                 <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
                 {connection.isLinked ? "Synchroniser" : "Importer"}
@@ -157,25 +157,25 @@ export function PlatformConnectionPanel({
           </div>
 
           {isSyncing && syncProgressText && (
-            <p role="status" className="flex items-center gap-2 text-xs text-sky-300">
+            <p role="status" className="flex items-center gap-2 text-xs text-lamp-bright">
               <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />
               <span className="truncate">{syncProgressText}</span>
             </p>
           )}
 
-          <details className="group rounded-lg border border-slate-800" open={secret.length > 0}>
-            <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-sm text-slate-300 [&::-webkit-details-marker]:hidden">
-              <KeyRound className="h-4 w-4 text-slate-500" />
+          <details className="group rounded-control border border-edge" open={secret.length > 0}>
+            <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-sm text-paper-dim [&::-webkit-details-marker]:hidden">
+              <KeyRound className="h-4 w-4 text-faint" />
               {config.secret.label}
               {secret ? (
-                <span className="text-xs text-emerald-400">renseigné</span>
+                <span className="text-xs text-done">renseigné</span>
               ) : account?.hasApiKey ? (
-                <span className="text-xs text-emerald-400">enregistrée</span>
+                <span className="text-xs text-done">enregistrée</span>
               ) : null}
-              <ChevronDown className="ml-auto h-4 w-4 text-slate-500 transition group-open:rotate-180" />
+              <ChevronDown className="ml-auto h-4 w-4 text-faint transition group-open:rotate-180" />
             </summary>
-            <div className="space-y-2 border-t border-slate-800 px-3 py-3">
-              <p className="text-xs text-slate-400">{config.secret.hint}</p>
+            <div className="space-y-2 border-t border-edge px-3 py-3">
+              <p className="text-xs text-dust">{config.secret.hint}</p>
               <input
                 id={secretId}
                 type="password"
@@ -190,7 +190,7 @@ export function PlatformConnectionPanel({
                   href={config.secret.helpUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-sky-400 hover:text-sky-300"
+                  className="inline-flex items-center gap-1 text-xs text-lamp-bright hover:text-lamp-bright"
                 >
                   {config.secret.helpLabel} <ExternalLink className="h-3 w-3" />
                 </a>
@@ -198,7 +198,7 @@ export function PlatformConnectionPanel({
                   <button
                     type="button"
                     onClick={onOpenGuidedAuth}
-                    className="text-xs text-sky-400 hover:text-sky-300"
+                    className="text-xs text-lamp-bright hover:text-lamp-bright"
                   >
                     Me guider pas à pas
                   </button>

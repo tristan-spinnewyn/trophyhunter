@@ -17,15 +17,15 @@ export function FeaturedGamesSection({ ownedGames }: FeaturedGamesSectionProps) 
   const router = useRouter();
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
+    <div className="rounded-sheet border border-edge bg-plank/60 p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Flame className="h-4 w-4 text-amber-400" />
-          <h3 className="text-sm font-bold text-white">
+          <Flame className="h-4 w-4 text-lamp-bright" />
+          <h3 className="text-sm font-bold text-paper">
             Jeux Populaires & Chasses Recommandées
           </h3>
         </div>
-        <span className="text-[11px] text-slate-500">
+        <span className="text-[11px] text-faint">
           Cliquez pour explorer les succès
         </span>
       </div>
@@ -37,25 +37,29 @@ export function FeaturedGamesSection({ ownedGames }: FeaturedGamesSectionProps) 
             <button
               key={game.id}
               onClick={() => router.push(`/game/${game.id}`)}
-              className="group relative flex flex-col items-center overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/60 p-1.5 transition-all hover:border-sky-500/50 hover:bg-slate-900 text-left"
+              className="group relative flex flex-col items-center overflow-hidden rounded-sheet border border-edge bg-ink/60 p-1.5 transition-all hover:border-lamp/50 hover:bg-plank text-left"
             >
-              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-slate-900">
+              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-control bg-plank">
                 <img
                   src={game.img}
                   alt={game.name}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
                 {isOwned && (
-                  <div className="absolute top-1 right-1 flex items-center justify-center rounded-md bg-emerald-500/90 p-0.5 shadow">
-                    <ShieldCheck className="h-3 w-3 text-slate-950" />
+                  <div
+                    role="img"
+                    aria-label="Déjà dans ta collection"
+                    className="absolute top-1 right-1 flex items-center justify-center rounded-control bg-done/90 p-0.5 shadow"
+                  >
+                    <ShieldCheck className="h-3 w-3 text-ink" />
                   </div>
                 )}
               </div>
               <div className="w-full px-1 pt-1.5 pb-0.5">
-                <div className="text-[11px] font-bold text-slate-200 truncate group-hover:text-sky-300">
+                <div className="text-[11px] font-bold text-paper truncate group-hover:text-lamp-bright">
                   {game.name}
                 </div>
-                <div className="text-[11px] text-slate-500 font-medium">
+                <div className="text-[11px] text-faint font-medium">
                   {game.count}
                 </div>
               </div>

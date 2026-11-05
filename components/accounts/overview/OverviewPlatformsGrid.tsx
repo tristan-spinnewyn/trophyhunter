@@ -19,23 +19,26 @@ export function OverviewPlatformsGrid({
   onEditPlatform,
   onDisconnectPlatform,
 }: OverviewPlatformsGridProps) {
-  return (
-    <section className="space-y-3">
-      <h2 className="text-lg font-semibold text-white">Mes plateformes</h2>
+  const largestCount = Math.max(0, ...ALL_PLATFORMS.map((p) => platformCounts[p] || 0));
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+  return (
+    <section>
+      <h2 className="sr-only">Mes plateformes</h2>
+
+      <ul className="border-t border-edge">
         {ALL_PLATFORMS.map((plat) => (
           <PlatformCard
             key={plat}
             platform={plat}
             account={accountProfile.accounts[plat]}
             count={platformCounts[plat] || 0}
+            largestCount={largestCount}
             onSelectPlatform={onSelectPlatform}
             onEditPlatform={onEditPlatform}
             onDisconnectPlatform={onDisconnectPlatform}
           />
         ))}
-      </div>
+      </ul>
     </section>
   );
 }

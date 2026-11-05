@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // __tests__/components/library/FeaturedGamesSection.test.tsx
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { makeOwnedGame } from "../../helpers/gameFixtures";
 
 const push = vi.fn();
@@ -26,7 +26,7 @@ describe("FeaturedGamesSection", () => {
     render(<FeaturedGamesSection ownedGames={[makeOwnedGame({ appId: first.id })]} />);
 
     const owned = screen.getByRole("button", { name: new RegExp(first.name) });
-    expect(owned.querySelector(".bg-emerald-500\\/90")).toBeTruthy();
-    expect(document.querySelectorAll(".bg-emerald-500\\/90")).toHaveLength(1);
+    expect(within(owned).getByLabelText("Déjà dans ta collection")).toBeTruthy();
+    expect(screen.getAllByLabelText("Déjà dans ta collection")).toHaveLength(1);
   });
 });

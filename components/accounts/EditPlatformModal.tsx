@@ -30,7 +30,7 @@ export default function EditPlatformModal({
       <div className="space-y-4">
         <div className="space-y-3">
           <div>
-            <label htmlFor="platform-username" className="text-sm font-medium text-slate-300">
+            <label htmlFor="platform-username" className="text-sm font-medium text-paper-dim">
               Identifiant / pseudo
             </label>
             <input
@@ -41,7 +41,7 @@ export default function EditPlatformModal({
                 setPlatForm({ ...platForm, username: e.target.value })
               }
               placeholder={PLATFORM_META[editingPlatform].placeholder}
-              className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-500"
+              className="mt-1 w-full rounded-control border border-seam bg-ink px-3 py-2 text-sm text-paper outline-none focus:border-lamp"
             />
           </div>
 
@@ -52,18 +52,18 @@ export default function EditPlatformModal({
           />
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-slate-800 pt-4">
+        <div className="flex justify-end gap-2 border-t border-edge pt-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800"
+            className="rounded-control border border-seam px-3 py-2 text-sm text-paper-dim hover:bg-edge"
           >
             Annuler
           </button>
           <button
             type="button"
             onClick={onSave}
-            className="rounded-lg bg-sky-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-sky-400"
+            className="rounded-control bg-lamp px-4 py-2 text-sm font-semibold text-ink hover:bg-lamp-bright"
           >
             {editingPlatform === "steam"
               ? "Synchroniser Steam"

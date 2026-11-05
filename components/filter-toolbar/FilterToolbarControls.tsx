@@ -23,13 +23,13 @@ export function FilterToolbarControls({
   return (
     <div className="flex flex-col sm:flex-row items-center gap-2">
       <div className="relative flex-1 w-full">
-        <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-dust" />
         <input
           type="text"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Filtrer les succès (nom, description)..."
-          className="w-full rounded-xl border border-slate-800 bg-slate-900 py-2 pl-9 pr-3 text-xs text-white placeholder-slate-500 outline-none transition focus:border-sky-500"
+          className="w-full rounded-control border border-edge bg-plank py-2 pl-9 pr-3 text-xs text-paper placeholder-faint outline-none transition focus:border-lamp"
         />
       </div>
 
@@ -38,22 +38,22 @@ export function FilterToolbarControls({
           <select
             value={sort}
             onChange={(e) => onSortChange(e.target.value as SortOrder)}
-            className="w-full sm:w-auto appearance-none rounded-xl border border-slate-800 bg-slate-900 py-2 pl-3 pr-8 text-xs text-slate-200 outline-none transition focus:border-sky-500"
+            className="w-full sm:w-auto appearance-none rounded-control border border-edge bg-plank py-2 pl-3 pr-8 text-xs text-paper outline-none transition focus:border-lamp"
           >
             <option value="default">Ordre Steam</option>
             <option value="rarity-asc">Rareté : Plus rare d&apos;abord</option>
             <option value="rarity-desc">Rareté : Plus commun d&apos;abord</option>
             <option value="name-asc">Nom (A - Z)</option>
           </select>
-          <ArrowUpDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+          <ArrowUpDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-dust" />
         </div>
 
         <button
           onClick={onToggleRevealSecrets}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition ${
+          className={`flex items-center gap-1.5 rounded-control border px-3 py-2 text-xs font-medium transition ${
             revealSecrets
-              ? "border-purple-500/50 bg-purple-500/20 text-purple-300"
-              : "border-slate-800 bg-slate-900 text-slate-400 hover:text-white"
+              ? "border-platinum/50 bg-platinum/20 text-platinum"
+              : "border-edge bg-plank text-dust hover:text-paper"
           }`}
           title={revealSecrets ? "Masquer les secrets" : "Révéler les secrets"}
         >

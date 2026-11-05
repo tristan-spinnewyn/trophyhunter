@@ -1,78 +1,58 @@
 // components/accounts/overview/PlatformCard.tsx
 
-import { Check } from "lucide-react";
 import type { PlatformType, PlatformAccount } from "@/lib/types";
 import { PLATFORM_META } from "@/lib/platforms";
 import { PlatformCardStats } from "./PlatformCardStats";
 import { PlatformCardActions } from "./PlatformCardActions";
+import { PlatformShelfLength } from "./PlatformShelfLength";
 
 interface PlatformCardProps {
   platform: PlatformType;
   account?: PlatformAccount;
   count: number;
+  /** Game count of the largest platform, to size this platform's shelf. */
+  largestCount: number;
   onSelectPlatform: (platform: PlatformType) => void;
   onEditPlatform: (platform: PlatformType) => void;
   onDisconnectPlatform: (platform: PlatformType) => void;
 }
 
+/** One store per row: its name, who it is linked to, its share of the collection, and what to do with it. */
 export function PlatformCard({
   platform: plat,
   account: acc,
   count,
+  largestCount,
   onSelectPlatform,
   onEditPlatform,
   onDisconnectPlatform,
 }: PlatformCardProps) {
   const meta = PLATFORM_META[plat];
+  const games = `${count} ${count > 1 ? "jeux" : "jeu"}`;
 
   return (
-    <div
-      className={`flex flex-col justify-between rounded-xl border p-3.5 ${
-        acc ? "border-slate-800 bg-slate-900/60" : "border-dashed border-slate-800"
-      }`}
-    >
-      <div>
-        <div className="flex items-center justify-between gap-2">
-          <span
-            className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-xs font-medium ${meta.badgeClass}`}
-          >
-            {meta.shortName}
-          </span>
+    <li className="grid grid-cols-[1fr_auto] items-center gap-x-7 gap-y-3 border-b border-edge py-6 md:grid-cols-[180px_1fr_auto]">
+      <h3 className={`font-wide text-[26px] font-extrabold leading-none tracking-[-0.02em] md:text-3xl ${acc ? "text-paper" : "text-dust"}`}>
+        {meta.shortName}
+      </h3>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs tabular-nums text-slate-500">
-              {count} {count > 1 ? "jeux" : "jeu"}
-            </span>
-            {acc ? (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400">
-                <Check className="h-3.5 w-3.5" /> Lié
-              </span>
-            ) : (
-              <span className="text-xs text-slate-500">Non lié</span>
-            )}
-          </div>
-        </div>
-
+      <div className="col-span-2 row-start-2 min-w-0 md:col-span-1 md:col-start-2 md:row-start-1">
         {acc ? (
-          <div className="mt-2.5 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="truncate text-sm font-semibold text-white">
-                {acc.displayName}
-              </div>
-              {acc.level ? (
-                <span className="text-xs font-medium tabular-nums text-amber-400">
-                  Niv. {acc.level}
-                </span>
-              ) : null}
-            </div>
-
+          <>
+            <p className="text-[15px] text-paper">
+              Lié à <strong className="font-semibold">{acc.displayName}</strong>
+              {acc.level ? <span className="ml-2 text-sm tabular-nums text-dust">Niv. {acc.level}</span> : null}
+            </p>
+            <p className="text-sm tabular-nums text-dust">{games}</p>
             <PlatformCardStats account={acc} meta={meta} />
-          </div>
+          </>
         ) : (
-          <p className="mt-2 text-sm text-slate-400">
-            Lie ton compte {meta.name} pour importer tes jeux et tes succès.
+          <p className="text-[15px] text-dust">
+            Pas encore lié. Lie ton compte {meta.name} pour importer tes jeux et tes succès.
+            {count > 0 && <span className="block text-sm tabular-nums">{games} ajoutés à la main</span>}
           </p>
         )}
+        <PlatformShelfLength count={count} largestCount={largestCount} />
       </div>
 
       <PlatformCardActions
@@ -82,6 +62,6 @@ export function PlatformCard({
         onEditPlatform={onEditPlatform}
         onDisconnectPlatform={onDisconnectPlatform}
       />
-    </div>
+    </li>
   );
 }

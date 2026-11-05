@@ -28,7 +28,7 @@ export function GameStatusSelect({
 }: GameStatusSelectProps) {
   const tone = status
     ? GAME_STATUS_META[status].badgeClass
-    : "border-sky-500 bg-sky-500 text-slate-950";
+    : "border-lamp bg-lamp text-ink";
 
   return (
     <select
@@ -36,7 +36,7 @@ export function GameStatusSelect({
       disabled={!onChange}
       onChange={(e) => onChange?.(resolveGameStatus(e.target.value))}
       aria-label={ariaLabel}
-      className={`min-w-0 cursor-pointer rounded-md border font-medium outline-none transition focus:border-sky-400 disabled:cursor-default ${tone} ${className}`}
+      className={`min-w-0 cursor-pointer rounded-control border font-medium outline-none transition focus:border-lamp-bright disabled:cursor-default ${tone} ${className}`}
     >
       {status === null && (
         <option value={NO_STATUS} disabled>
@@ -44,7 +44,7 @@ export function GameStatusSelect({
         </option>
       )}
       {GAME_STATUS_OPTIONS.map((opt) => (
-        <option key={opt.value} value={opt.value} className="bg-slate-900 text-slate-200">
+        <option key={opt.value} value={opt.value} className="bg-plank text-paper">
           {opt.label}
         </option>
       ))}

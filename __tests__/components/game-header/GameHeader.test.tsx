@@ -82,13 +82,12 @@ describe("GameHeader", () => {
     expect(props.onToggleFavorite).toHaveBeenCalled();
   });
 
-  it("offers to add a game outside the collection through the status select", () => {
+  it("offers to add a game outside the collection through the status picker", () => {
     const onChangeGameStatus = vi.fn();
     renderHeader({ onChangeGameStatus });
 
-    const select = screen.getByRole("combobox", { name: "Statut du jeu" }) as HTMLSelectElement;
-    expect(select.value).toBe("");
-    fireEvent.change(select, { target: { value: "in-progress" } });
+    expect(screen.getAllByRole("radio").some((r) => r.getAttribute("aria-checked") === "true")).toBe(false);
+    fireEvent.click(screen.getByRole("radio", { name: "En cours" }));
 
     expect(onChangeGameStatus).toHaveBeenCalledWith("in-progress");
     expect(screen.queryByRole("button", { name: "Retirer de ma collection" })).toBeNull();
@@ -97,7 +96,12 @@ describe("GameHeader", () => {
   it("shows the current status of an owned game", () => {
     renderHeader({ isOwned: true, gameStatus: "paused", onChangeGameStatus: vi.fn() });
 
-    expect((screen.getByRole("combobox", { name: "Statut du jeu" }) as HTMLSelectElement).value).toBe("paused");
+    expect(screen.getByRole("radio", { name: "En pause" }).getAttribute("aria-checked")).toBe("true");
+  });
+
+  it("shows the portrait box art of the game", () => {
+    renderHeader();
+    expect(document.querySelector("img")?.getAttribute("src")).toContain("/steam/apps/620/library_600x900.jpg");
   });
 
   it("removes an owned game from the collection only after confirmation", async () => {

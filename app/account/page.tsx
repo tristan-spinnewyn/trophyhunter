@@ -21,14 +21,15 @@ export default function AccountPage() {
   const connectedCount = countConnectedPlatforms(accountProfile);
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
-          Comptes & plateformes
+    <div className="space-y-10">
+      <header className="space-y-4">
+        <h1 className="font-wide text-[44px] font-extrabold leading-[0.92] tracking-[-0.035em] text-paper sm:text-7xl lg:text-8xl">
+          Mes comptes
         </h1>
-        <p className="mt-1 text-sm text-slate-400">
-          {connectedCount} {connectedCount > 1 ? "comptes liés" : "compte lié"} sur {ALL_PLATFORMS.length} ·{" "}
-          {ownedGames.length} {ownedGames.length > 1 ? "jeux" : "jeu"} dans ta collection
+        <p className="max-w-[52ch] text-[17px] text-dust">
+          {connectedCount} {connectedCount > 1 ? "comptes liés" : "compte lié"} sur {ALL_PLATFORMS.length}. Ils remplissent ta
+          collection de {ownedGames.length} {ownedGames.length > 1 ? "jeux" : "jeu"} et tiennent tes heures de jeu et tes
+          succès à jour.
         </p>
       </header>
 

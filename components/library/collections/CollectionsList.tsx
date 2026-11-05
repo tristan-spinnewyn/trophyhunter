@@ -20,10 +20,10 @@ export function CollectionsList({
     <div className="flex flex-wrap items-center gap-2">
       <button
         onClick={() => setSelectedCollId(null)}
-        className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+        className={`rounded-control px-3 py-1.5 text-xs font-semibold transition ${
           selectedCollId === null
-            ? "bg-indigo-600 text-white shadow-md"
-            : "border border-slate-800 bg-slate-900 text-slate-400 hover:text-white"
+            ? "bg-paused text-paper shadow-md"
+            : "border border-edge bg-plank text-dust hover:text-paper"
         }`}
       >
         Toutes les collections ({collections.length})
@@ -33,22 +33,22 @@ export function CollectionsList({
         <div key={coll.id} className="flex items-center gap-1">
           <button
             onClick={() => setSelectedCollId(coll.id)}
-            className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+            className={`flex items-center gap-1.5 rounded-control px-3 py-1.5 text-xs font-semibold transition ${
               selectedCollId === coll.id
-                ? "bg-indigo-600 text-white shadow-md"
-                : "border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/50 hover:text-white"
+                ? "bg-paused text-paper shadow-md"
+                : "border border-edge bg-plank text-paper-dim hover:border-paused/50 hover:text-paper"
             }`}
           >
-            <Folder className="h-3 w-3 text-indigo-400" />
+            <Folder className="h-3 w-3 text-paused" />
             <span>{coll.name}</span>
-            <span className="rounded-full bg-slate-800 px-1.5 py-px text-[11px] font-bold">
+            <span className="rounded-full bg-edge px-1.5 py-px text-[11px] font-bold">
               {coll.gameIds.length}
             </span>
           </button>
           <button
             onClick={() => handleDeleteCollection(coll.id)}
             title="Supprimer la collection"
-            className="rounded-lg p-1 text-slate-500 hover:bg-slate-800 hover:text-rose-400 transition"
+            className="rounded-control p-1 text-faint hover:bg-edge hover:text-danger transition"
           >
             <Trash2 className="h-3 w-3" />
           </button>

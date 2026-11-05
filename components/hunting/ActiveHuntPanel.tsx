@@ -27,8 +27,8 @@ export function ActiveHuntPanel({
 }: ActiveHuntPanelProps) {
   if (pinnedAchievements.length === 0) {
     return (
-      <p className="flex items-center gap-2 rounded-xl border border-dashed border-slate-800 px-3.5 py-2.5 text-sm text-slate-400">
-        <Target className="h-4 w-4 text-amber-400 shrink-0" />
+      <p className="flex items-center gap-2 rounded-control border border-dashed border-edge px-3.5 py-2.5 text-sm text-dust">
+        <Target className="h-4 w-4 text-lamp-bright shrink-0" />
         <span>
           Épingle jusqu&apos;à {MAX_PINNED_TARGETS} succès <Pin className="inline h-3.5 w-3.5 align-[-2px]" aria-label="épingle" /> pour les suivre ici.
         </span>
@@ -39,13 +39,13 @@ export function ActiveHuntPanel({
   const hasUnlockedPinned = pinnedAchievements.some((a) => unlockedIds.includes(a.id));
 
   return (
-    <section className="rounded-xl border border-amber-500/30 bg-amber-950/10 p-3.5 space-y-3">
+    <section className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Target className="h-4 w-4 text-amber-400" />
-          <h2 className="text-sm font-semibold text-white">
+          <Target className="h-4 w-4 text-lamp-bright" />
+          <h2 className="font-semiwide text-xl font-bold text-paper">
             Chasse active
-            <span className="ml-2 text-xs font-normal tabular-nums text-slate-400">
+            <span className="ml-2 text-xs font-normal tabular-nums text-dust">
               {pinnedAchievements.length} / {MAX_PINNED_TARGETS}
             </span>
           </h2>
@@ -56,7 +56,7 @@ export function ActiveHuntPanel({
             <button
               type="button"
               onClick={onClearUnlocked}
-              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-emerald-300 hover:bg-emerald-500/10"
+              className="flex items-center gap-1 rounded-control px-2 py-1 text-xs font-medium text-done hover:bg-done/10"
             >
               <Sparkles className="h-3 w-3" /> Retirer obtenus
             </button>
@@ -64,7 +64,7 @@ export function ActiveHuntPanel({
           <button
             type="button"
             onClick={onClearAll}
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-slate-400 hover:bg-slate-800 hover:text-white"
+            className="flex items-center gap-1 rounded-control px-2 py-1 text-xs font-medium text-dust hover:bg-edge hover:text-paper"
           >
             <Trash2 className="h-3 w-3" /> Vider
           </button>
