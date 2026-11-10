@@ -9,7 +9,7 @@ import type {
   User as UserType,
   PlatformType,
 } from "@/lib/types";
-import { assertValidGameStatus } from "@/lib/game-status/game-status.services";
+import { DEFAULT_GAME_STATUS, assertValidGameStatus } from "@/lib/game-status/game-status.services";
 
 interface UseGameOwnershipTogglesProps {
   readonly game: GameDetails | null;
@@ -70,7 +70,7 @@ export function useGameOwnershipToggles({
         unlockedCount: progress.unlockedIds.length,
         addedAt: new Date().toISOString(),
         source: "manual",
-        status: "backlog",
+        status: DEFAULT_GAME_STATUS,
       });
     }
   };

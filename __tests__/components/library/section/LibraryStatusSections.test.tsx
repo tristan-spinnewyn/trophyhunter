@@ -12,6 +12,7 @@ const games: OwnedGame[] = [
   makeOwnedGame({ appId: 2, name: "Hades", status: "backlog" }),
   makeOwnedGame({ appId: 3, name: "Starfield", status: "paused" }),
   makeOwnedGame({ appId: 4, name: "Portal", status: "completed" }),
+  makeOwnedGame({ appId: 5, name: "Celeste", status: undefined }),
 ];
 
 const renderCard = (g: OwnedGame) => <article key={g.appId} data-testid={`card-${g.appId}`}>{g.name} card</article>;
@@ -29,7 +30,7 @@ describe("LibraryStatusSections", () => {
 
   it("shelves the other games as spines named after the game", () => {
     renderSections();
-    const backlog = screen.getByRole("region", { name: "À jouer" });
+    const backlog = screen.getByRole("region", { name: "Backlog" });
     expect(within(backlog).getByRole("button", { name: "Hades" })).toBeTruthy();
     expect(screen.queryByTestId("card-2")).toBeNull();
   });
@@ -45,19 +46,26 @@ describe("LibraryStatusSections", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("keeps the backlog open and folds paused and finished games", () => {
+  it("keeps the backlog open and folds paused, unsorted and finished games", () => {
     const { container } = renderSections();
     const openTitles = [...container.querySelectorAll("details[open] summary")].map((s) => s.textContent);
     const folded = [...container.querySelectorAll("details:not([open]) summary")].map((s) => s.textContent);
 
-    expect(openTitles.join()).toContain("À jouer");
+    expect(openTitles.join()).toContain("Backlog");
+    expect(folded.join()).toContain("Non triés");
     expect(folded.join()).toContain("En pause");
     expect(folded.join()).toContain("Terminés");
   });
 
+  it("shelves a game without a status as unsorted rather than in the backlog", () => {
+    renderSections();
+    const unsorted = screen.getByRole("region", { name: "Non triés" });
+    expect(within(unsorted).getByRole("button", { name: "Celeste" })).toBeTruthy();
+  });
+
   it("counts the games on each shelf", () => {
     renderSections();
-    const backlog = screen.getByRole("region", { name: "À jouer" });
+    const backlog = screen.getByRole("region", { name: "Backlog" });
     expect(within(backlog).getByText("1")).toBeTruthy();
   });
 });

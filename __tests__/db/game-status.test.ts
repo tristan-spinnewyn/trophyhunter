@@ -21,7 +21,7 @@ describe("Database Game Status Across Platforms", () => {
     setDbForTesting(null);
   });
 
-  it("defaults new games to backlog across all platforms and preserves status on re-sync", () => {
+  it("defaults new games to unsorted across all platforms and preserves status on re-sync", () => {
     const user = createUser("StatusUser", "password123");
     const games: OwnedGame[] = [
       { appId: 1, name: "Steam Game", headerImg: "", platform: "steam", totalAchievements: 10, unlockedCount: 2, addedAt: "2026-01-01" },
@@ -32,7 +32,7 @@ describe("Database Game Status Across Platforms", () => {
 
     saveUserOwnedGames(user.id, games);
     const saved = getUserOwnedGames(user.id);
-    expect(saved.every((g) => g.status === "backlog")).toBe(true);
+    expect(saved.every((g) => g.status === "unsorted")).toBe(true);
 
     setUserGameStatus(user.id, 1, "steam", "in-progress");
     setUserGameStatus(user.id, 2, "xbox", "completed");
@@ -41,7 +41,7 @@ describe("Database Game Status Across Platforms", () => {
     expect(getUserGameStatus(user.id, 1, "steam")).toBe("in-progress");
     expect(getUserGameStatus(user.id, 2, "xbox")).toBe("completed");
     expect(getUserGameStatus(user.id, 3, "epic")).toBe("completed");
-    expect(getUserGameStatus(user.id, 4, "gog")).toBe("backlog");
+    expect(getUserGameStatus(user.id, 4, "gog")).toBe("unsorted");
 
     saveUserOwnedGames(user.id, [
       { appId: 1, name: "Steam Game", headerImg: "", platform: "steam", totalAchievements: 10, unlockedCount: 6, addedAt: "2026-01-01" },
@@ -51,7 +51,7 @@ describe("Database Game Status Across Platforms", () => {
 
   it("inserts missing game when setting status directly and rejects invalid status", () => {
     const user = createUser("StatusEdge", "password123");
-    expect(getUserGameStatus(user.id, 999, "gog")).toBe("backlog");
+    expect(getUserGameStatus(user.id, 999, "gog")).toBe("unsorted");
 
     setUserGameStatus(user.id, 999, "gog", "completed", "Cyberpunk GOG");
     expect(getUserGameStatus(user.id, 999, "gog")).toBe("completed");

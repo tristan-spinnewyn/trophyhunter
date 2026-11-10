@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { UserAccountProfile, OwnedGame, User as UserType, CollectionWithGames } from "@/lib/types";
+import { DEFAULT_GAME_STATUS } from "@/lib/game-status/game-status.services";
 import {
   fetchRemoteUserData,
   persistGameToServer,
@@ -99,11 +100,11 @@ export function useUserDataState() {
             updatedGame.totalAchievements > 0
               ? updatedGame.totalAchievements
               : next[idx].totalAchievements,
-          status: updatedGame.status ?? next[idx].status ?? "backlog",
+          status: updatedGame.status ?? next[idx].status ?? DEFAULT_GAME_STATUS,
         };
         return next;
       }
-      return [{ ...updatedGame, status: updatedGame.status ?? "backlog" }, ...prev];
+      return [{ ...updatedGame, status: updatedGame.status ?? DEFAULT_GAME_STATUS }, ...prev];
     });
     await persistGameToServer(currentUser, updatedGame);
   };

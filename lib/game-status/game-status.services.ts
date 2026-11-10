@@ -6,9 +6,10 @@ import {
   InvalidGameStatusError,
 } from "./game-status.types";
 
-export const DEFAULT_GAME_STATUS: GameStatus = "backlog";
+export const DEFAULT_GAME_STATUS: GameStatus = "unsorted";
 
 export const VALID_GAME_STATUSES: readonly GameStatus[] = [
+  "unsorted",
   "backlog",
   "in-progress",
   "paused",
@@ -17,12 +18,19 @@ export const VALID_GAME_STATUSES: readonly GameStatus[] = [
 ] as const;
 
 export const GAME_STATUS_META: Readonly<Record<GameStatus, GameStatusOption>> = {
-  backlog: {
-    value: "backlog",
-    label: "À jouer",
-    sectionTitle: "À jouer",
+  unsorted: {
+    value: "unsorted",
+    label: "Non trié",
+    sectionTitle: "Non triés",
     badgeClass: "border-seam bg-edge/90 text-paper-dim",
     dotClass: "bg-dust",
+  },
+  backlog: {
+    value: "backlog",
+    label: "Backlog",
+    sectionTitle: "Backlog",
+    badgeClass: "border-queued/40 bg-queued/10 text-queued",
+    dotClass: "bg-queued",
   },
   "in-progress": {
     value: "in-progress",

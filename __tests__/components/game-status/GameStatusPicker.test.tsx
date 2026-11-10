@@ -6,13 +6,14 @@ import { GameStatusPicker } from "@/components/game-status/GameStatusPicker";
 afterEach(cleanup);
 
 describe("GameStatusPicker", () => {
-  it("lists the five statuses as one radio group and checks the current one", () => {
+  it("lists every status, unsorted first, as one radio group and checks the current one", () => {
     render(<GameStatusPicker status="paused" onChange={vi.fn()} />);
 
     const group = screen.getByRole("radiogroup", { name: "Statut du jeu" });
     expect(group).toBeTruthy();
     expect(screen.getAllByRole("radio").map((r) => r.textContent)).toEqual([
-      "À jouer",
+      "Non trié",
+      "Backlog",
       "En cours",
       "En pause",
       "Terminé",
@@ -45,10 +46,13 @@ describe("GameStatusPicker", () => {
     const onChange = vi.fn();
     render(<GameStatusPicker status="backlog" onChange={onChange} />);
 
-    fireEvent.keyDown(screen.getByRole("radio", { name: "À jouer" }), { key: "ArrowRight" });
+    fireEvent.keyDown(screen.getByRole("radio", { name: "Backlog" }), { key: "ArrowRight" });
     expect(onChange).toHaveBeenLastCalledWith("in-progress");
 
-    fireEvent.keyDown(screen.getByRole("radio", { name: "À jouer" }), { key: "ArrowLeft" });
+    fireEvent.keyDown(screen.getByRole("radio", { name: "Backlog" }), { key: "ArrowLeft" });
+    expect(onChange).toHaveBeenLastCalledWith("unsorted");
+
+    fireEvent.keyDown(screen.getByRole("radio", { name: "Non trié" }), { key: "ArrowLeft" });
     expect(onChange).toHaveBeenLastCalledWith("abandoned");
   });
 
@@ -56,6 +60,6 @@ describe("GameStatusPicker", () => {
     render(<GameStatusPicker status="completed" onChange={vi.fn()} />);
 
     expect(screen.getByRole("radio", { name: "Terminé" }).getAttribute("tabindex")).toBe("0");
-    expect(screen.getByRole("radio", { name: "À jouer" }).getAttribute("tabindex")).toBe("-1");
+    expect(screen.getByRole("radio", { name: "Backlog" }).getAttribute("tabindex")).toBe("-1");
   });
 });

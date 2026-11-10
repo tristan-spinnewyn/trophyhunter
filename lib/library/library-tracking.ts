@@ -3,11 +3,12 @@
 import type { GameStatus, OwnedGame } from "@/lib/types";
 import { GAME_STATUS_META, resolveGameStatus } from "@/lib/game-status/game-status.services";
 
-/** Library sections, from what to play now to the archive. */
+/** Library sections: what to play now, then the pile left to sort, then the archive. */
 export const STATUS_SECTION_ORDER: readonly GameStatus[] = [
   "in-progress",
   "backlog",
   "paused",
+  "unsorted",
   "completed",
   "abandoned",
 ];

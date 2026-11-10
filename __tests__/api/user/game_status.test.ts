@@ -83,6 +83,6 @@ describe("PATCH /api/user/games (Game Status)", () => {
     );
     expect(res.status).toBe(200);
     expect(getUserGameStatus(userId, 500, "steam")).toBe("completed");
-    expect(getUserGameStatus(userId, 600, "xbox")).toBe("backlog");
+    expect(getUserGameStatus(userId, 600, "xbox")).toBe("unsorted");
   });
 });

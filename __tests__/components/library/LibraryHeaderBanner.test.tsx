@@ -7,7 +7,7 @@ import type { TrackingSummary } from "@/lib/library/library-tracking";
 
 function makeSummary(overrides: Partial<TrackingSummary> = {}): TrackingSummary {
   return {
-    countByStatus: { backlog: 3, "in-progress": 2, paused: 0, completed: 5, abandoned: 1 },
+    countByStatus: { unsorted: 7, backlog: 3, "in-progress": 2, paused: 0, completed: 5, abandoned: 1 },
     totalHours: 120,
     unlockedAchievements: 0,
     perfectGames: 0,
@@ -25,7 +25,7 @@ describe("LibraryHeaderBanner", () => {
     render(<LibraryHeaderBanner ownedGamesCount={11} onOpenAddGame={onOpenAddGame} trackingSummary={makeSummary()} />);
 
     expect(screen.getByRole("heading", { level: 1, name: "Ma collection" })).toBeTruthy();
-    expect(lede()).toBe("11 jeux sur Steam, Xbox, Epic Games et GOG, et 120 heures de jeu. 2 en cours, 3 à jouer.");
+    expect(lede()).toBe("11 jeux sur Steam, Xbox, Epic Games et GOG, et 120 heures de jeu. 2 en cours, 3 au backlog, 7 à trier.");
     fireEvent.click(screen.getByRole("button", { name: /^Ajouter/ }));
     expect(onOpenAddGame).toHaveBeenCalled();
   });

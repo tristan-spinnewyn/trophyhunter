@@ -19,7 +19,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "TrophyHunter : suivi de tes jeux",
-  description: "Suis tes jeux Steam, Xbox, Epic Games et GOG : en cours, à jouer, terminés, avec tes succès en bonus.",
+  description: "Suis tes jeux Steam, Xbox, Epic Games et GOG : en cours, au backlog, terminés, avec tes succès en bonus.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

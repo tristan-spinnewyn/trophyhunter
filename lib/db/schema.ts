@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS user_games (
   last_played TEXT,
   is_favorite INTEGER NOT NULL DEFAULT 0,
   is_wishlist INTEGER NOT NULL DEFAULT 0,
-  status TEXT NOT NULL DEFAULT 'backlog',
+  status TEXT NOT NULL DEFAULT 'unsorted',
   source TEXT,
   added_at TEXT NOT NULL,
   UNIQUE(user_id, platform, app_id)

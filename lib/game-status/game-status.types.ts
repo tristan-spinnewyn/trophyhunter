@@ -1,6 +1,9 @@
 // lib/game-status/game-status.types.ts
 
-export type GameStatus = "backlog" | "in-progress" | "paused" | "completed" | "abandoned";
+/**
+ * "unsorted" is where games land on import; "backlog" is only ever a deliberate choice.
+ */
+export type GameStatus = "unsorted" | "backlog" | "in-progress" | "paused" | "completed" | "abandoned";
 
 export interface GameStatusOption {
   readonly value: GameStatus;

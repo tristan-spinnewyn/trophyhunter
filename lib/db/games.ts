@@ -25,7 +25,7 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
 
   const insertStmt = db.prepare(
     `INSERT INTO user_games (id, user_id, app_id, platform, name, header_img, total_achievements, unlocked_count, playtime_hours, last_played, source, status, added_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, 'backlog'), ?)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, 'unsorted'), ?)
      ON CONFLICT(user_id, platform, app_id) DO UPDATE SET
        name = excluded.name,
        header_img = COALESCE(excluded.header_img, user_games.header_img),

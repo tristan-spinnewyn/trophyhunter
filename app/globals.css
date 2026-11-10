@@ -17,6 +17,7 @@
   --lamp: #f4c152;
   --lamp-bright: #f7cd6f;
   --platinum: #c9d1d9;
+  --queued: #e8935a;
   --paused: #6fa8dc;
   --done: #7cc49a;
   --dropped: #a2868b;
@@ -36,6 +37,7 @@
   --color-lamp: var(--lamp);
   --color-lamp-bright: var(--lamp-bright);
   --color-platinum: var(--platinum);
+  --color-queued: var(--queued);
   --color-paused: var(--paused);
   --color-done: var(--done);
   --color-dropped: var(--dropped);

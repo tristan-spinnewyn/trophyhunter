@@ -24,12 +24,13 @@ function game(status: GameStatus | undefined, extra: Partial<OwnedGame> = {}): O
 }
 
 describe("groupGamesByStatus", () => {
-  it("orders sections by what to play now: in progress, to play, paused, finished, abandoned", () => {
-    expect(STATUS_SECTION_ORDER).toEqual(["in-progress", "backlog", "paused", "completed", "abandoned"]);
+  it("orders sections from what to play now, through the unsorted pile, to the archive", () => {
+    expect(STATUS_SECTION_ORDER).toEqual(["in-progress", "backlog", "paused", "unsorted", "completed", "abandoned"]);
 
     const sections = groupGamesByStatus([
       game("abandoned"),
       game("completed"),
+      game("unsorted"),
       game("paused"),
       game("backlog"),
       game("in-progress"),
@@ -44,13 +45,13 @@ describe("groupGamesByStatus", () => {
     expect(sections.map((s) => s.status)).toEqual(["in-progress", "completed"]);
   });
 
-  it("treats a missing or unknown status as to play", () => {
+  it("treats a missing or unknown status as unsorted, not as a backlog choice", () => {
     const legacy = game(undefined);
     const odd = game("dropped" as GameStatus);
 
     const [section] = groupGamesByStatus([legacy, odd]);
 
-    expect(section.status).toBe("backlog");
+    expect(section.status).toBe("unsorted");
     expect(section.games).toEqual([legacy, odd]);
   });
 
@@ -66,6 +67,7 @@ describe("groupGamesByStatus", () => {
       game("in-progress"),
       game("backlog"),
       game("paused"),
+      game("unsorted"),
       game("completed"),
       game("abandoned"),
     ]);
@@ -74,6 +76,7 @@ describe("groupGamesByStatus", () => {
       "in-progress": true,
       backlog: true,
       paused: false,
+      unsorted: false,
       completed: false,
       abandoned: false,
     });
@@ -89,7 +92,7 @@ describe("groupGamesByStatus", () => {
 });
 
 describe("calculateTrackingSummary", () => {
-  it("counts games per status, with missing statuses counted as to play", () => {
+  it("counts games per status, with missing statuses counted as unsorted", () => {
     const summary = calculateTrackingSummary([
       game("in-progress"),
       game("in-progress"),
@@ -101,7 +104,8 @@ describe("calculateTrackingSummary", () => {
 
     expect(summary.countByStatus).toEqual({
       "in-progress": 2,
-      backlog: 2,
+      backlog: 1,
+      unsorted: 1,
       paused: 0,
       completed: 1,
       abandoned: 1,
@@ -131,7 +135,7 @@ describe("calculateTrackingSummary", () => {
 
   it("returns zeros for an empty library", () => {
     expect(calculateTrackingSummary([])).toEqual({
-      countByStatus: { "in-progress": 0, backlog: 0, paused: 0, completed: 0, abandoned: 0 },
+      countByStatus: { "in-progress": 0, backlog: 0, paused: 0, unsorted: 0, completed: 0, abandoned: 0 },
       totalHours: 0,
       unlockedAchievements: 0,
       perfectGames: 0,

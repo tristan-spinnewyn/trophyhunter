@@ -3,7 +3,7 @@ import { describeCollection } from "@/lib/library/collection-sentence";
 import type { TrackingSummary } from "@/lib/library/library-tracking";
 
 const summary = (overrides: Partial<TrackingSummary> = {}): TrackingSummary => ({
-  countByStatus: { backlog: 42, "in-progress": 3, paused: 0, completed: 5, abandoned: 1 },
+  countByStatus: { unsorted: 0, backlog: 42, "in-progress": 3, paused: 0, completed: 5, abandoned: 1 },
   totalHours: 1382,
   unlockedAchievements: 0,
   perfectGames: 0,
@@ -11,11 +11,11 @@ const summary = (overrides: Partial<TrackingSummary> = {}): TrackingSummary => (
 });
 
 describe("describeCollection", () => {
-  it("states the size, the hours, and what is being played and waiting", () => {
+  it("states the size, the hours, and what is being played and queued", () => {
     expect(describeCollection(214, summary())).toEqual({
       size: "214 jeux",
       hours: "1 382 heures", // narrow no-break space, as French typography wants
-      queue: "3 en cours, 42 à jouer.",
+      queue: "3 en cours, 42 au backlog.",
     });
   });
 
@@ -30,9 +30,14 @@ describe("describeCollection", () => {
   });
 
   it("only mentions the non-empty parts of the queue", () => {
-    const none = { backlog: 0, "in-progress": 0, paused: 0, completed: 2, abandoned: 0 };
+    const none = { unsorted: 0, backlog: 0, "in-progress": 0, paused: 0, completed: 2, abandoned: 0 };
     expect(describeCollection(2, summary({ countByStatus: none })).queue).toBeNull();
-    expect(describeCollection(2, summary({ countByStatus: { ...none, backlog: 2 } })).queue).toBe("2 à jouer.");
+    expect(describeCollection(2, summary({ countByStatus: { ...none, backlog: 2 } })).queue).toBe("2 au backlog.");
     expect(describeCollection(2, summary({ countByStatus: { ...none, "in-progress": 1 } })).queue).toBe("1 en cours.");
+  });
+
+  it("reminds how many games still wait to be sorted", () => {
+    const counts = { unsorted: 120, backlog: 4, "in-progress": 1, paused: 0, completed: 0, abandoned: 0 };
+    expect(describeCollection(125, summary({ countByStatus: counts })).queue).toBe("1 en cours, 4 au backlog, 120 à trier.");
   });
 });
