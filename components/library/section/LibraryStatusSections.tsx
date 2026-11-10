@@ -4,34 +4,52 @@
 
 import { useId, useState, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
-import type { OwnedGame } from "@/lib/types";
+import type { GameStatus, OwnedGame, PlatformType } from "@/lib/types";
 import { groupGamesByStatus, type StatusSection } from "@/lib/library/library-tracking";
 import { GAME_STATUS_META } from "@/lib/game-status/game-status.services";
 import { GameSpine } from "@/components/library/shelf/GameSpine";
 import { ShelfHeading } from "@/components/library/shelf/ShelfHeading";
 import { GamePeekDialog } from "@/components/library/shelf/GamePeekDialog";
+import { TriageDialog } from "@/components/library/triage/TriageDialog";
 
 interface LibraryStatusSectionsProps {
   readonly games: OwnedGame[];
   readonly renderGame: (game: OwnedGame) => ReactNode;
+  /** Enables quick sorting of the unsorted shelf. */
+  readonly onUpdateGameStatus?: (appId: number, platform: PlatformType, status: GameStatus) => Promise<void> | void;
 }
 
 const gameKey = (g: OwnedGame) => `${g.platform}_${g.appId}`;
 
 /** The collection as a bookcase: games being played face-out on a lit shelf, the rest spine-out. */
-export function LibraryStatusSections({ games, renderGame }: LibraryStatusSectionsProps) {
+export function LibraryStatusSections({ games, renderGame, onUpdateGameStatus }: LibraryStatusSectionsProps) {
   const [peekedKey, setPeekedKey] = useState<string | null>(null);
+  const [isSorting, setIsSorting] = useState(false);
+  const sections = groupGamesByStatus(games);
   // Looked up on every render so the dialog follows the game when its status changes.
   const peeked = peekedKey ? games.find((g) => gameKey(g) === peekedKey) : undefined;
 
   return (
     <div className="space-y-12">
-      {groupGamesByStatus(games).map((section) =>
+      {sections.map((section) =>
         section.status === "in-progress" ? (
           <FaceOutShelf key={section.status} section={section} renderGame={renderGame} />
         ) : (
-          <SpineShelf key={section.status} section={section} onOpen={(g) => setPeekedKey(gameKey(g))} />
+          <SpineShelf
+            key={section.status}
+            section={section}
+            onOpen={(g) => setPeekedKey(gameKey(g))}
+            onSort={section.status === "unsorted" && onUpdateGameStatus ? () => setIsSorting(true) : undefined}
+          />
         )
+      )}
+
+      {isSorting && onUpdateGameStatus && (
+        <TriageDialog
+          games={sections.find((s) => s.status === "unsorted")?.games ?? []}
+          onSetStatus={onUpdateGameStatus}
+          onClose={() => setIsSorting(false)}
+        />
       )}
 
       {peeked && (
@@ -62,7 +80,14 @@ function FaceOutShelf({ section, renderGame }: { readonly section: StatusSection
   );
 }
 
-function SpineShelf({ section, onOpen }: { readonly section: StatusSection; readonly onOpen: (g: OwnedGame) => void }) {
+interface SpineShelfProps {
+  readonly section: StatusSection;
+  readonly onOpen: (g: OwnedGame) => void;
+  /** Shows a "sort" action in the shelf heading. */
+  readonly onSort?: () => void;
+}
+
+function SpineShelf({ section, onOpen, onSort }: SpineShelfProps) {
   const headingId = useId();
   return (
     <section aria-labelledby={headingId}>
@@ -75,7 +100,20 @@ function SpineShelf({ section, onOpen }: { readonly section: StatusSection; read
             dotClass={GAME_STATUS_META[section.status].dotClass}
             size={section.isOpenByDefault ? "large" : "small"}
           />
-          <ChevronRight aria-hidden className="ml-auto h-4 w-4 text-dust transition group-open:rotate-90" />
+          {onSort && (
+            <button
+              type="button"
+              onClick={(e) => {
+                // Inside <summary>: sorting must not fold or unfold the shelf.
+                e.preventDefault();
+                onSort();
+              }}
+              className="ml-auto rounded-control border border-seam px-3 py-1.5 text-sm font-semibold text-paper hover:bg-edge"
+            >
+              Trier
+            </button>
+          )}
+          <ChevronRight aria-hidden className={`h-4 w-4 text-dust transition group-open:rotate-90 ${onSort ? "" : "ml-auto"}`} />
         </summary>
         <div className="spine-rows pb-2">
           {section.games.map((g) => (

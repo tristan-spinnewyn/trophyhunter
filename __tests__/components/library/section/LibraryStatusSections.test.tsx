@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { LibraryStatusSections } from "@/components/library/section/LibraryStatusSections";
 import { makeOwnedGame } from "../../../helpers/gameFixtures";
@@ -61,6 +61,32 @@ describe("LibraryStatusSections", () => {
     renderSections();
     const unsorted = screen.getByRole("region", { name: "Non triés" });
     expect(within(unsorted).getByRole("button", { name: "Celeste" })).toBeTruthy();
+  });
+
+  it("offers to sort the unsorted shelf one game at a time", () => {
+    const onUpdateGameStatus = vi.fn();
+    const { container } = render(
+      <LibraryStatusSections games={games} renderGame={renderCard} onUpdateGameStatus={onUpdateGameStatus} />
+    );
+    const unsorted = screen.getByRole("region", { name: "Non triés" });
+
+    fireEvent.click(within(unsorted).getByRole("button", { name: "Trier" }));
+
+    const triage = screen.getByRole("dialog", { name: "Trier mes jeux" });
+    expect(within(triage).getByRole("heading", { level: 3 }).textContent).toBe("Celeste");
+    expect(unsorted.querySelector("details")?.open).toBe(false);
+    expect(container.querySelectorAll("[role=dialog]")).toHaveLength(1);
+
+    fireEvent.click(within(triage).getByRole("button", { name: /^Backlog/ }));
+    expect(onUpdateGameStatus).toHaveBeenCalledWith(5, "steam", "backlog");
+
+    fireEvent.click(within(triage).getByRole("button", { name: "Terminer" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("has no sorting entry point when statuses cannot be changed", () => {
+    renderSections();
+    expect(screen.queryByRole("button", { name: "Trier" })).toBeNull();
   });
 
   it("counts the games on each shelf", () => {
