@@ -81,7 +81,7 @@ describe("useUserDataState", () => {
 
     const update = { ...syncPayload.games[0], totalAchievements: 0, unlockedCount: 5 } as OwnedGame;
     await act(() => result.current.upsertOwnedGameInMemoryAndDb(update));
-    expect(result.current.ownedGames[0]).toMatchObject({ unlockedCount: 5, totalAchievements: 15, status: "backlog" });
+    expect(result.current.ownedGames[0]).toMatchObject({ unlockedCount: 5, totalAchievements: 15, status: "unsorted" });
 
     const added = { ...update, appId: 99, platform: "gog" } as OwnedGame;
     await act(() => result.current.upsertOwnedGameInMemoryAndDb(added));

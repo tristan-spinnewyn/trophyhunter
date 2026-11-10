@@ -4,7 +4,7 @@ import { mergeGamesList, replacePlatformInList } from "@/lib/library/game-list";
 import type { OwnedGame } from "@/lib/types";
 
 describe("dashboard utils (mergeGamesList & replacePlatformInList)", () => {
-  it("defaults new games to backlog and preserves existing status on merge", () => {
+  it("defaults new games to unsorted and preserves existing status on merge", () => {
     const base: OwnedGame[] = [
       { appId: 1, name: "Hades", headerImg: "img1", platform: "steam", totalAchievements: 49, unlockedCount: 10, addedAt: "2026-01-01", status: "in-progress" },
     ];
@@ -19,7 +19,7 @@ describe("dashboard utils (mergeGamesList & replacePlatformInList)", () => {
 
     expect(hades?.status).toBe("in-progress");
     expect(hades?.unlockedCount).toBe(20);
-    expect(celeste?.status).toBe("backlog");
+    expect(celeste?.status).toBe("unsorted");
   });
 
   it("preserves status when replacing a platform list", () => {
@@ -34,7 +34,7 @@ describe("dashboard utils (mergeGamesList & replacePlatformInList)", () => {
 
     const replaced = replacePlatformInList(base, "xbox", incomingXbox);
     expect(replaced.find((g) => g.appId === 10)?.status).toBe("completed");
-    expect(replaced.find((g) => g.appId === 11)?.status).toBe("backlog");
+    expect(replaced.find((g) => g.appId === 11)?.status).toBe("unsorted");
     expect(replaced.find((g) => g.appId === 20)?.status).toBe("in-progress");
   });
 });

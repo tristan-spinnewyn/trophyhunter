@@ -61,7 +61,7 @@ describe("useEpicProfileConnect", () => {
     expect(merged.map((g) => g.appId)).toEqual([1, 100, 101]);
     const persisted = vi.mocked(deps.persistGames).mock.calls[0];
     expect(persisted[1]).toBe("epic");
-    expect((persisted[0] as OwnedGame[]).map((g) => [g.appId, g.platform, g.status])).toEqual([[100, "epic", "backlog"], [101, "epic", "backlog"]]);
+    expect((persisted[0] as OwnedGame[]).map((g) => [g.appId, g.platform, g.status])).toEqual([[100, "epic", "unsorted"], [101, "epic", "unsorted"]]);
     expect(deps.setBannerMsg).toHaveBeenLastCalledWith(expect.objectContaining({ type: "success", text: expect.stringContaining("2 jeux importés, dont 2 avec succès") }));
     expect(deps.setEpicCode).toHaveBeenCalledWith("");
     expect(deps.setIsSyncingEpic).toHaveBeenLastCalledWith(false);

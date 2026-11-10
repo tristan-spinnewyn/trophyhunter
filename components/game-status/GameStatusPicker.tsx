@@ -15,7 +15,7 @@ interface GameStatusPickerProps {
 const ORDER = GAME_STATUS_OPTIONS.map((o) => o.value);
 const STEP: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
 
-/** The five statuses side by side, each with its shelf colour; a WAI-ARIA radio group. */
+/** Every status side by side, each with its shelf colour; a WAI-ARIA radio group. */
 export function GameStatusPicker({ status, onChange }: GameStatusPickerProps) {
   const hintId = useId();
   const focusable = status ?? VALID_GAME_STATUSES[0];

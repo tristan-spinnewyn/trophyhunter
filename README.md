@@ -6,7 +6,7 @@ A self-hosted game tracker for **Steam, Xbox, Epic Games and GOG**: what you are
 
 ## ✨ Features
 
-* **Collection organised by status**: *À jouer*, *En cours*, *En pause*, *Terminé*, *Abandonné*. In-progress games come first; the archive (paused, finished, abandoned) is folded. Sorted by recent activity by default, using the real last session reported by the platform when available.
+* **Collection organised by status**: *Non trié*, *Backlog*, *En cours*, *En pause*, *Terminé*, *Abandonné*. Imported games land in *Non trié*; the backlog only holds games put there on purpose. In-progress games and the backlog come first; the rest (paused, unsorted, finished, abandoned) is folded. Sorted by recent activity by default, using the real last session reported by the platform when available.
 * **Platform accounts** (Steam, Xbox, Epic Games, GOG): import your games, playtime and achievements without sharing a password. Optional keys or tokens (Steam API key, OpenXBL key, Epic authorization code, GOG session token) unlock private profiles and achievement details.
 * **Library views**: one tab per platform, PC Game Pass catalogue, cross-platform duplicates, wishlist and custom collections.
 * **Achievements as a bonus**: per-game checklist with rarity, missable and secret achievements (spoilers hidden), personal notes, an "active hunt" list of pinned targets, and links to the PSTHC guide, Steam guides and French YouTube videos.

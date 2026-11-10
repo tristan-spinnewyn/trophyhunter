@@ -18,7 +18,7 @@ describe("useGameOwnershipToggles", () => {
     vi.restoreAllMocks();
   });
 
-  it("adds newly owned game with default backlog status and updates status via handleChangeGameStatus", async () => {
+  it("adds newly owned game with the default unsorted status and updates status via handleChangeGameStatus", async () => {
     const upsertMock = vi.fn().mockResolvedValue(undefined);
     const setFavoritesMock = vi.fn();
 
@@ -38,7 +38,7 @@ describe("useGameOwnershipToggles", () => {
       expect.objectContaining({
         appId: 420,
         platform: "xbox",
-        status: "backlog",
+        status: "unsorted",
         unlockedCount: 2,
       })
     );
@@ -74,7 +74,7 @@ describe("useGameOwnershipToggles", () => {
       playtimeHours: 24,
       addedAt: "2026-01-01",
       source: "manual",
-      status: "backlog",
+      status: "unsorted",
     };
 
     const { handleChangeGameStatus } = useGameOwnershipToggles({

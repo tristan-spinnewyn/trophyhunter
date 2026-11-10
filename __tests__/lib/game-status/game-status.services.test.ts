@@ -12,11 +12,12 @@ import {
 import { InvalidGameStatusError } from "@/lib/game-status/game-status.types";
 
 describe("game-status.services", () => {
-  it("exposes backlog as default and defines the five tracking statuses in display order", () => {
-    expect(DEFAULT_GAME_STATUS).toBe("backlog");
-    expect(VALID_GAME_STATUSES).toEqual(["backlog", "in-progress", "paused", "completed", "abandoned"]);
+  it("exposes unsorted as default and defines the six tracking statuses in display order", () => {
+    expect(DEFAULT_GAME_STATUS).toBe("unsorted");
+    expect(VALID_GAME_STATUSES).toEqual(["unsorted", "backlog", "in-progress", "paused", "completed", "abandoned"]);
     expect(GAME_STATUS_OPTIONS.map((o) => o.value)).toEqual(VALID_GAME_STATUSES);
-    expect(GAME_STATUS_META.backlog.label).toBe("À jouer");
+    expect(GAME_STATUS_META.unsorted.label).toBe("Non trié");
+    expect(GAME_STATUS_META.backlog.label).toBe("Backlog");
     expect(GAME_STATUS_META["in-progress"].label).toBe("En cours");
     expect(GAME_STATUS_META.paused.label).toBe("En pause");
     expect(GAME_STATUS_META.completed.label).toBe("Terminé");
@@ -24,7 +25,8 @@ describe("game-status.services", () => {
   });
 
   it("gives every status a plural section title for the library", () => {
-    expect(GAME_STATUS_META.backlog.sectionTitle).toBe("À jouer");
+    expect(GAME_STATUS_META.unsorted.sectionTitle).toBe("Non triés");
+    expect(GAME_STATUS_META.backlog.sectionTitle).toBe("Backlog");
     expect(GAME_STATUS_META["in-progress"].sectionTitle).toBe("En cours");
     expect(GAME_STATUS_META.paused.sectionTitle).toBe("En pause");
     expect(GAME_STATUS_META.completed.sectionTitle).toBe("Terminés");
@@ -32,6 +34,7 @@ describe("game-status.services", () => {
   });
 
   it("validates game status values strictly including null, undefined and non-strings", () => {
+    expect(isValidGameStatus("unsorted")).toBe(true);
     expect(isValidGameStatus("backlog")).toBe(true);
     expect(isValidGameStatus("in-progress")).toBe(true);
     expect(isValidGameStatus("completed")).toBe(true);
@@ -46,24 +49,25 @@ describe("game-status.services", () => {
     expect(isValidGameStatus({})).toBe(false);
   });
 
-  it("resolves invalid or missing statuses to backlog default", () => {
+  it("resolves invalid or missing statuses to the unsorted default, never to the backlog", () => {
     expect(resolveGameStatus("completed")).toBe("completed");
     expect(resolveGameStatus("in-progress")).toBe("in-progress");
     expect(resolveGameStatus("backlog")).toBe("backlog");
-    expect(resolveGameStatus(undefined)).toBe("backlog");
-    expect(resolveGameStatus(null)).toBe("backlog");
-    expect(resolveGameStatus("unknown-status")).toBe("backlog");
+    expect(resolveGameStatus(undefined)).toBe("unsorted");
+    expect(resolveGameStatus(null)).toBe("unsorted");
+    expect(resolveGameStatus("unknown-status")).toBe("unsorted");
   });
 
   it.each([
-    ["backlog", "dust"],
+    ["unsorted", "dust"],
+    ["backlog", "queued"],
     ["in-progress", "lamp"],
     ["paused", "paused"],
     ["completed", "done"],
     ["abandoned", "dropped"],
   ] as const)("colours the %s status with its own %s token everywhere", (status, token) => {
     expect(GAME_STATUS_META[status].dotClass).toBe(`bg-${token}`);
-    if (status !== "backlog") expect(GAME_STATUS_META[status].badgeClass).toContain(`border-${token}`);
+    if (status !== "unsorted") expect(GAME_STATUS_META[status].badgeClass).toContain(`border-${token}`);
   });
 
   it("throws InvalidGameStatusError when asserting an invalid status", () => {
