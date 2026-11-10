@@ -110,6 +110,7 @@ export default function LibrarySection({
       ) : filteredGames.length > 0 ? (
         <LibraryStatusSections
           games={filteredGames}
+          onUpdateGameStatus={onUpdateGameStatus}
           renderGame={(g) => (
             <LibraryGameCard
               key={`${g.platform}_${g.appId}`}
