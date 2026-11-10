@@ -3,6 +3,18 @@ import { describe, it, expect } from "vitest";
 import { validateSyncPayload, SyncPayloadValidationError } from "@/lib/security/sync-validator";
 
 describe("validateSyncPayload", () => {
+  it("keeps a whole-number backlog rank and drops anything else", () => {
+    const { games } = validateSyncPayload({
+      games: [
+        { appId: 1, platform: "steam", name: "Queued", status: "backlog", backlogRank: -2 },
+        { appId: 2, platform: "steam", name: "Odd", status: "backlog", backlogRank: "first" },
+        { appId: 3, platform: "steam", name: "Fraction", status: "backlog", backlogRank: 1.5 },
+      ],
+    });
+
+    expect(games.map((g) => g.backlogRank)).toEqual([-2, undefined, undefined]);
+  });
+
   it("sanitizes valid games, collections, progress, and strips unsafe headerImg URLs", () => {
     const result = validateSyncPayload({
       games: [

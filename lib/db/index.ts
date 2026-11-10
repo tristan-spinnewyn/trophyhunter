@@ -5,6 +5,7 @@ export * from "./sessions";
 export * from "./accounts";
 export * from "./games";
 export * from "./game-status";
+export * from "./backlog-order";
 export * from "./progress";
 export * from "./collections";
 export * from "./wishlist";

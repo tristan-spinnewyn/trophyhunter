@@ -89,6 +89,65 @@ describe("LibraryStatusSections", () => {
     expect(screen.queryByRole("button", { name: "Trier" })).toBeNull();
   });
 
+  describe("backlog queue", () => {
+    const queueGames: OwnedGame[] = [
+      makeOwnedGame({ appId: 6, name: "Tunic", status: "backlog" }),
+      makeOwnedGame({ appId: 2, name: "Hades", status: "backlog", backlogRank: 0 }),
+      makeOwnedGame({ appId: 3, name: "Starfield", status: "paused" }),
+    ];
+
+    function renderQueue() {
+      const onPlayNext = vi.fn();
+      const onRemoveFromQueue = vi.fn();
+      render(
+        <LibraryStatusSections games={queueGames} renderGame={renderCard} onPlayNext={onPlayNext} onRemoveFromQueue={onRemoveFromQueue} />
+      );
+      return { onPlayNext, onRemoveFromQueue };
+    }
+
+    it("shelves queued games first and numbers their spines", () => {
+      renderQueue();
+      const backlog = screen.getByRole("region", { name: "Backlog" });
+      const spines = within(backlog).getAllByRole("button");
+
+      expect(spines.map((s) => s.getAttribute("aria-label"))).toEqual(["Hades", "Tunic"]);
+      expect(spines[0].getAttribute("data-queue-position")).toBe("1");
+      expect(spines[1].hasAttribute("data-queue-position")).toBe(false);
+    });
+
+    it("lets a backlog game be played next from its dialog", () => {
+      const { onPlayNext } = renderQueue();
+      fireEvent.click(screen.getByRole("button", { name: "Tunic" }));
+
+      const dialog = screen.getByRole("dialog", { name: "Tunic" });
+      expect(within(dialog).getByText("Hors de la file")).toBeTruthy();
+      expect(within(dialog).queryByRole("button", { name: "Retirer de la file" })).toBeNull();
+      fireEvent.click(within(dialog).getByRole("button", { name: "Jouer ensuite" }));
+
+      expect(onPlayNext).toHaveBeenCalledWith(6, "steam");
+    });
+
+    it("lets the head of the queue be taken out, without offering to play it next again", () => {
+      const { onRemoveFromQueue } = renderQueue();
+      fireEvent.click(screen.getByRole("button", { name: "Hades" }));
+
+      const dialog = screen.getByRole("dialog", { name: "Hades" });
+      expect(within(dialog).getByText("N° 1 dans la file")).toBeTruthy();
+      expect(within(dialog).queryByRole("button", { name: "Jouer ensuite" })).toBeNull();
+      fireEvent.click(within(dialog).getByRole("button", { name: "Retirer de la file" }));
+
+      expect(onRemoveFromQueue).toHaveBeenCalledWith(2, "steam");
+    });
+
+    it("shows no queue controls outside the backlog", () => {
+      renderQueue();
+      fireEvent.click(screen.getByRole("button", { name: "Starfield" }));
+
+      const dialog = screen.getByRole("dialog", { name: "Starfield" });
+      expect(within(dialog).queryByRole("button", { name: "Jouer ensuite" })).toBeNull();
+    });
+  });
+
   it("counts the games on each shelf", () => {
     renderSections();
     const backlog = screen.getByRole("region", { name: "Backlog" });

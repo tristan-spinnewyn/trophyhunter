@@ -44,6 +44,9 @@ export function runDatabaseMigrations(db: DatabaseSync): void {
   if (!gameCols.has("status")) {
     db.exec("ALTER TABLE user_games ADD COLUMN status TEXT NOT NULL DEFAULT 'unsorted';");
   }
+  if (!gameCols.has("backlog_rank")) {
+    db.exec("ALTER TABLE user_games ADD COLUMN backlog_rank INTEGER;");
+  }
   moveImplicitBacklogToUnsorted(db);
 
   const progressCols = getTableColumnNames(db, "user_game_progress");

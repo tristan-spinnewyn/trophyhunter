@@ -37,4 +37,16 @@ describe("dashboard utils (mergeGamesList & replacePlatformInList)", () => {
     expect(replaced.find((g) => g.appId === 11)?.status).toBe("unsorted");
     expect(replaced.find((g) => g.appId === 20)?.status).toBe("in-progress");
   });
+
+  it("keeps a game's place in the backlog queue when its platform is synced again", () => {
+    const base: OwnedGame[] = [
+      { appId: 10, name: "Halo", headerImg: "", platform: "xbox", totalAchievements: 50, unlockedCount: 0, addedAt: "2026-01-01", status: "backlog", backlogRank: -3 },
+    ];
+    const incoming: OwnedGame[] = [
+      { appId: 10, name: "Halo", headerImg: "", platform: "xbox", totalAchievements: 50, unlockedCount: 2, addedAt: "2026-01-05" },
+    ];
+
+    expect(replacePlatformInList(base, "xbox", incoming)[0].backlogRank).toBe(-3);
+    expect(mergeGamesList(base, incoming)[0].backlogRank).toBe(-3);
+  });
 });

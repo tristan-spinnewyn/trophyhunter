@@ -21,9 +21,12 @@ export function setUserGameStatus(
     .get(userId, appId, platform) as { readonly id: string } | undefined;
 
   if (existing) {
+    // A game that leaves the backlog also leaves its queue.
     db.prepare(
-      "UPDATE user_games SET status = ? WHERE user_id = ? AND app_id = ? AND platform = ?"
-    ).run(validStatus, userId, appId, platform);
+      `UPDATE user_games
+       SET status = ?, backlog_rank = CASE WHEN ? = 'backlog' THEN backlog_rank ELSE NULL END
+       WHERE user_id = ? AND app_id = ? AND platform = ?`
+    ).run(validStatus, validStatus, userId, appId, platform);
   } else {
     db.prepare(
       `INSERT INTO user_games (id, user_id, app_id, platform, name, status, added_at)

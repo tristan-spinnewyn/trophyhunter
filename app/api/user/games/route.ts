@@ -6,6 +6,7 @@ import { InvalidGameStatusError } from "@/lib/game-status/game-status.types";
 import {
   handlePostOwnedGames,
   handlePatchOwnedGameStatus,
+  handlePatchBacklogRank,
   handleDeleteOwnedGames,
 } from "./handlers";
 import { publicErrorMessage } from "@/lib/error-message";
@@ -44,6 +45,9 @@ export async function PATCH(req: Request) {
 
   try {
     const body = await req.json();
+    if (body && typeof body === "object" && "backlogRank" in body) {
+      return await handlePatchBacklogRank(user.id, body);
+    }
     return await handlePatchOwnedGameStatus(user.id, body);
   } catch (err: unknown) {
     if (err instanceof InvalidGameStatusError) {

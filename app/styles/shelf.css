@@ -57,6 +57,19 @@
 .spine:focus-visible {
   transform: translateY(-14px);
 }
+/* Place in the backlog queue, standing on top of the spine like a bookmark tab. */
+.spine { position: relative; }
+.spine-rank {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--queued);
+  font-variant-numeric: tabular-nums;
+}
 .spine-title {
   /* Bottom-to-top, like a box spine; the rotate fallback would clip the start of long titles. */
   writing-mode: sideways-lr;

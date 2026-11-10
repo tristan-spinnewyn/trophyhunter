@@ -2,6 +2,7 @@
 
 import type { GameStatus, OwnedGame } from "@/lib/types";
 import { GAME_STATUS_META, resolveGameStatus } from "@/lib/game-status/game-status.services";
+import { sortBacklogQueue } from "./backlog-order";
 
 /** Library sections: what to play now, then the pile left to sort, then the archive. */
 export const STATUS_SECTION_ORDER: readonly GameStatus[] = [
@@ -41,7 +42,7 @@ export function groupGamesByStatus(games: readonly OwnedGame[]): StatusSection[]
   return STATUS_SECTION_ORDER.filter((status) => byStatus[status].length > 0).map((status) => ({
     status,
     title: GAME_STATUS_META[status].sectionTitle,
-    games: byStatus[status],
+    games: status === "backlog" ? sortBacklogQueue(byStatus[status]) : byStatus[status],
     isOpenByDefault: OPEN_BY_DEFAULT.has(status),
   }));
 }

@@ -42,6 +42,22 @@ describe("useGameStatusHandler", () => {
     );
   });
 
+  it("takes a game out of the backlog queue when it leaves the backlog", async () => {
+    const queued: OwnedGame = { appId: 1, name: "Hades", headerImg: "", platform: "steam", totalAchievements: 0, unlockedCount: 0, addedAt: "2026-01-01", status: "backlog", backlogRank: 2 };
+    let memoryGames: OwnedGame[] = [queued];
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}"));
+
+    const onOwnedGamesChange = (next: OwnedGame[]) => {
+      memoryGames = next;
+    };
+
+    await useGameStatusHandler({ ownedGames: memoryGames, onOwnedGamesChange }).handleUpdateGameStatus(1, "steam", "backlog");
+    expect(memoryGames[0].backlogRank).toBe(2);
+
+    await useGameStatusHandler({ ownedGames: memoryGames, onOwnedGamesChange }).handleUpdateGameStatus(1, "steam", "in-progress");
+    expect(memoryGames[0].backlogRank).toBeUndefined();
+  });
+
   it("rejects invalid game status before mutating state", async () => {
     const onOwnedGamesChange = vi.fn();
     const { handleUpdateGameStatus } = useGameStatusHandler({

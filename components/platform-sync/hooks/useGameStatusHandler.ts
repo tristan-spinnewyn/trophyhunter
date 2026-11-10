@@ -1,6 +1,7 @@
 // components/platform-sync/hooks/useGameStatusHandler.ts
 import type { GameStatus, OwnedGame, PlatformType } from "@/lib/types";
 import { assertValidGameStatus } from "@/lib/game-status/game-status.services";
+import { patchOwnedGame } from "./patchOwnedGame";
 
 interface UseGameStatusHandlerProps {
   readonly ownedGames: OwnedGame[];
@@ -19,20 +20,12 @@ export function useGameStatusHandler({
     const validStatus = assertValidGameStatus(status);
     const next = ownedGames.map((item) =>
       item.appId === appId && item.platform === platform
-        ? { ...item, status: validStatus }
+        ? { ...item, status: validStatus, backlogRank: validStatus === "backlog" ? item.backlogRank : undefined }
         : item
     );
     onOwnedGamesChange(next);
 
-    try {
-      await fetch("/api/user/games", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ appId, platform, status: validStatus }),
-      });
-    } catch (e) {
-      console.error("Failed to update game status on the server:", e);
-    }
+    await patchOwnedGame({ appId, platform, status: validStatus }, "Failed to update game status on the server:");
   };
 
   return { handleUpdateGameStatus };

@@ -40,6 +40,8 @@ export function HomeLibrarySection({ controller: c }: HomeLibrarySectionProps) {
       onSyncGame={ps.handleSyncGame}
       onRemoveGame={ps.handleRemoveGame}
       onUpdateGameStatus={ps.handleUpdateGameStatus}
+      onPlayNext={ps.handlePlayNext}
+      onRemoveFromQueue={ps.handleRemoveFromQueue}
     />
   );
 }

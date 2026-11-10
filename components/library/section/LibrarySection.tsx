@@ -50,6 +50,8 @@ export interface LibrarySectionProps {
     platform: PlatformType,
     status: GameStatus
   ) => Promise<void> | void;
+  readonly onPlayNext?: (appId: number, platform: PlatformType) => Promise<void> | void;
+  readonly onRemoveFromQueue?: (appId: number, platform: PlatformType) => Promise<void> | void;
 }
 
 
@@ -80,6 +82,8 @@ export default function LibrarySection({
   onSyncGame,
   onRemoveGame,
   onUpdateGameStatus,
+  onPlayNext,
+  onRemoveFromQueue,
 }: LibrarySectionProps) {
   return (
     <section className="space-y-4">
@@ -111,6 +115,8 @@ export default function LibrarySection({
         <LibraryStatusSections
           games={filteredGames}
           onUpdateGameStatus={onUpdateGameStatus}
+          onPlayNext={onPlayNext}
+          onRemoveFromQueue={onRemoveFromQueue}
           renderGame={(g) => (
             <LibraryGameCard
               key={`${g.platform}_${g.appId}`}
