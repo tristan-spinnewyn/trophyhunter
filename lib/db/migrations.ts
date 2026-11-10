@@ -47,6 +47,11 @@ export function runDatabaseMigrations(db: DatabaseSync): void {
   if (!gameCols.has("backlog_rank")) {
     db.exec("ALTER TABLE user_games ADD COLUMN backlog_rank INTEGER;");
   }
+  if (!gameCols.has("status_changed_at")) {
+    db.exec("ALTER TABLE user_games ADD COLUMN status_changed_at TEXT;");
+    // Statuses chosen before the upgrade count as chosen now: only later sessions are "since then".
+    db.prepare("UPDATE user_games SET status_changed_at = ?").run(new Date().toISOString());
+  }
   moveImplicitBacklogToUnsorted(db);
 
   const progressCols = getTableColumnNames(db, "user_game_progress");

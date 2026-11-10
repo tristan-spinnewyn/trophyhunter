@@ -3,6 +3,17 @@ import { describe, it, expect } from "vitest";
 import { validateSyncPayload, SyncPayloadValidationError } from "@/lib/security/sync-validator";
 
 describe("validateSyncPayload", () => {
+  it("keeps the date a status was chosen and drops anything that is not text", () => {
+    const { games } = validateSyncPayload({
+      games: [
+        { appId: 1, platform: "steam", name: "Dated", status: "backlog", statusChangedAt: "2026-11-01T10:00:00.000Z" },
+        { appId: 2, platform: "steam", name: "Odd", status: "backlog", statusChangedAt: 1730455200000 },
+      ],
+    });
+
+    expect(games.map((g) => g.statusChangedAt)).toEqual(["2026-11-01T10:00:00.000Z", undefined]);
+  });
+
   it("keeps a whole-number backlog rank and drops anything else", () => {
     const { games } = validateSyncPayload({
       games: [

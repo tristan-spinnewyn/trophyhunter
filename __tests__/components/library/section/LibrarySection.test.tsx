@@ -50,6 +50,20 @@ function heading() {
 describe("LibrarySection", () => {
   afterEach(cleanup);
 
+  it("proposes to move a launched backlog game to in progress", () => {
+    const onUpdateGameStatus = vi.fn();
+    renderSection({
+      filteredGames: [
+        makeOwnedGame({ appId: 7, name: "Hades", status: "backlog", statusChangedAt: "2026-11-01T10:00:00.000Z", lastPlayed: "2026-11-05T20:00:00.000Z" }),
+      ],
+      onUpdateGameStatus,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Passer Hades en cours" }));
+
+    expect(onUpdateGameStatus).toHaveBeenCalledWith(7, "steam", "in-progress");
+  });
+
   it("lists the games grouped by status", () => {
     renderSection({
       filteredGames: [makeOwnedGame(), makeOwnedGame({ appId: 400, name: "Portal", status: "completed" })],
