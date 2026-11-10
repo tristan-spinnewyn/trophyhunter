@@ -9,7 +9,7 @@ export function getUserOwnedGames(userId: string): OwnedGame[] {
   const db = getDb();
   const rows = db
     .prepare(
-      `SELECT app_id, name, header_img, platform, total_achievements, unlocked_count, playtime_hours, last_played, added_at, source, status
+      `SELECT app_id, name, header_img, platform, total_achievements, unlocked_count, playtime_hours, last_played, added_at, source, status, backlog_rank
        FROM user_games
        WHERE user_id = ?
        ORDER BY added_at DESC`
@@ -24,8 +24,8 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
   const db = getDb();
 
   const insertStmt = db.prepare(
-    `INSERT INTO user_games (id, user_id, app_id, platform, name, header_img, total_achievements, unlocked_count, playtime_hours, last_played, source, status, added_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, 'unsorted'), ?)
+    `INSERT INTO user_games (id, user_id, app_id, platform, name, header_img, total_achievements, unlocked_count, playtime_hours, last_played, source, status, added_at, backlog_rank)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, 'unsorted'), ?, ?)
      ON CONFLICT(user_id, platform, app_id) DO UPDATE SET
        name = excluded.name,
        header_img = COALESCE(excluded.header_img, user_games.header_img),
@@ -38,6 +38,7 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
          ELSE MAX(excluded.last_played, user_games.last_played)
        END,
        source = COALESCE(excluded.source, user_games.source),
+       backlog_rank = COALESCE(excluded.backlog_rank, user_games.backlog_rank),
        status = COALESCE(?, user_games.status)`
   );
 
@@ -58,6 +59,7 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
         g.source || null,
         explicitStatus,
         g.addedAt || new Date().toISOString(),
+        Number.isInteger(g.backlogRank) ? (g.backlogRank as number) : null,
         explicitStatus
       );
     }

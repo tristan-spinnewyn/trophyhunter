@@ -82,6 +82,14 @@ describe("groupGamesByStatus", () => {
     });
   });
 
+  it("shelves the backlog in queue order, queued games first", () => {
+    const later = game("backlog", { name: "Later" });
+    const second = game("backlog", { name: "Second", backlogRank: 4 });
+    const first = game("backlog", { name: "First", backlogRank: -1 });
+
+    expect(groupGamesByStatus([later, second, first])[0].games).toEqual([first, second, later]);
+  });
+
   it("uses the plural section titles", () => {
     expect(groupGamesByStatus([game("completed")])[0].title).toBe("Terminés");
   });

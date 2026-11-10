@@ -7,6 +7,7 @@ import {
   removeUserPlatformGames,
   clearAllUserData,
   setUserGameStatus,
+  setUserGameBacklogRank,
 } from "@/lib/db";
 import { assertValidGameStatus } from "@/lib/game-status/game-status.services";
 import type { PlatformType, OwnedGame } from "@/lib/types";
@@ -22,6 +23,12 @@ interface PatchGameStatusBody {
   readonly platform?: PlatformType;
   readonly status?: string;
   readonly name?: string;
+}
+
+interface PatchBacklogRankBody {
+  readonly appId?: number;
+  readonly platform?: PlatformType;
+  readonly backlogRank?: unknown;
 }
 
 export async function handlePostOwnedGames(userId: string, body: PostOwnedGamesBody) {
@@ -66,6 +73,21 @@ export async function handlePatchOwnedGameStatus(userId: string, body: PatchGame
     status: validStatus,
     games: getUserOwnedGames(userId),
   });
+}
+
+/** Queues a game in the backlog at `backlogRank`, or takes it out of the queue with `null`. */
+export async function handlePatchBacklogRank(userId: string, body: PatchBacklogRankBody) {
+  const appId = Number(body?.appId);
+  const platform = (body?.platform || "steam") as PlatformType;
+  const rank = body?.backlogRank;
+  if (!appId || Number.isNaN(appId)) {
+    return NextResponse.json({ error: "Paramètre appId requis." }, { status: 400 });
+  }
+  if (rank !== null && !Number.isInteger(rank)) {
+    return NextResponse.json({ error: "Paramètre backlogRank invalide." }, { status: 400 });
+  }
+  setUserGameBacklogRank(userId, appId, platform, rank as number | null);
+  return NextResponse.json({ success: true, appId, platform, backlogRank: rank });
 }
 
 export async function handleDeleteOwnedGames(userId: string, searchParams: URLSearchParams) {

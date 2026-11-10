@@ -6,10 +6,12 @@ import { useId, useState, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import type { GameStatus, OwnedGame, PlatformType } from "@/lib/types";
 import { groupGamesByStatus, type StatusSection } from "@/lib/library/library-tracking";
-import { GAME_STATUS_META } from "@/lib/game-status/game-status.services";
+import { GAME_STATUS_META, resolveGameStatus } from "@/lib/game-status/game-status.services";
+import { getQueuePositions } from "@/lib/library/backlog-order";
 import { GameSpine } from "@/components/library/shelf/GameSpine";
 import { ShelfHeading } from "@/components/library/shelf/ShelfHeading";
 import { GamePeekDialog } from "@/components/library/shelf/GamePeekDialog";
+import { BacklogQueueControls } from "@/components/library/shelf/BacklogQueueControls";
 import { TriageDialog } from "@/components/library/triage/TriageDialog";
 
 interface LibraryStatusSectionsProps {
@@ -17,15 +19,26 @@ interface LibraryStatusSectionsProps {
   readonly renderGame: (game: OwnedGame) => ReactNode;
   /** Enables quick sorting of the unsorted shelf. */
   readonly onUpdateGameStatus?: (appId: number, platform: PlatformType, status: GameStatus) => Promise<void> | void;
+  /** Together, these enable ordering the backlog as a queue. */
+  readonly onPlayNext?: (appId: number, platform: PlatformType) => Promise<void> | void;
+  readonly onRemoveFromQueue?: (appId: number, platform: PlatformType) => Promise<void> | void;
 }
 
 const gameKey = (g: OwnedGame) => `${g.platform}_${g.appId}`;
 
 /** The collection as a bookcase: games being played face-out on a lit shelf, the rest spine-out. */
-export function LibraryStatusSections({ games, renderGame, onUpdateGameStatus }: LibraryStatusSectionsProps) {
+export function LibraryStatusSections({
+  games,
+  renderGame,
+  onUpdateGameStatus,
+  onPlayNext,
+  onRemoveFromQueue,
+}: LibraryStatusSectionsProps) {
   const [peekedKey, setPeekedKey] = useState<string | null>(null);
   const [isSorting, setIsSorting] = useState(false);
   const sections = groupGamesByStatus(games);
+  const queuePositions = getQueuePositions(sections.find((s) => s.status === "backlog")?.games ?? []);
+  const canOrderBacklog = Boolean(onPlayNext && onRemoveFromQueue);
   // Looked up on every render so the dialog follows the game when its status changes.
   const peeked = peekedKey ? games.find((g) => gameKey(g) === peekedKey) : undefined;
 
@@ -38,6 +51,7 @@ export function LibraryStatusSections({ games, renderGame, onUpdateGameStatus }:
           <SpineShelf
             key={section.status}
             section={section}
+            queuePositions={section.status === "backlog" ? queuePositions : undefined}
             onOpen={(g) => setPeekedKey(gameKey(g))}
             onSort={section.status === "unsorted" && onUpdateGameStatus ? () => setIsSorting(true) : undefined}
           />
@@ -54,6 +68,13 @@ export function LibraryStatusSections({ games, renderGame, onUpdateGameStatus }:
 
       {peeked && (
         <GamePeekDialog title={peeked.name} onClose={() => setPeekedKey(null)}>
+          {canOrderBacklog && resolveGameStatus(peeked.status) === "backlog" && (
+            <BacklogQueueControls
+              position={queuePositions.get(gameKey(peeked))}
+              onPlayNext={() => void onPlayNext?.(peeked.appId, peeked.platform)}
+              onRemoveFromQueue={() => void onRemoveFromQueue?.(peeked.appId, peeked.platform)}
+            />
+          )}
           {renderGame(peeked)}
         </GamePeekDialog>
       )}
@@ -83,11 +104,13 @@ function FaceOutShelf({ section, renderGame }: { readonly section: StatusSection
 interface SpineShelfProps {
   readonly section: StatusSection;
   readonly onOpen: (g: OwnedGame) => void;
+  /** Places in the backlog queue, keyed like `gameKey`. */
+  readonly queuePositions?: ReadonlyMap<string, number>;
   /** Shows a "sort" action in the shelf heading. */
   readonly onSort?: () => void;
 }
 
-function SpineShelf({ section, onOpen, onSort }: SpineShelfProps) {
+function SpineShelf({ section, onOpen, queuePositions, onSort }: SpineShelfProps) {
   const headingId = useId();
   return (
     <section aria-labelledby={headingId}>
@@ -117,7 +140,7 @@ function SpineShelf({ section, onOpen, onSort }: SpineShelfProps) {
         </summary>
         <div className="spine-rows pb-2">
           {section.games.map((g) => (
-            <GameSpine key={gameKey(g)} game={g} onOpen={onOpen} />
+            <GameSpine key={gameKey(g)} game={g} onOpen={onOpen} queuePosition={queuePositions?.get(gameKey(g))} />
           ))}
         </div>
       </details>

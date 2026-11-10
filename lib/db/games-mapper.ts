@@ -14,6 +14,7 @@ export interface UserGameRow {
   readonly added_at: string;
   readonly source: string | null;
   readonly status?: string | null;
+  readonly backlog_rank?: number | null;
 }
 
 export function mapUserGameRow(r: UserGameRow): OwnedGame {
@@ -29,5 +30,6 @@ export function mapUserGameRow(r: UserGameRow): OwnedGame {
     addedAt: r.added_at,
     source: (r.source as OwnedGame["source"]) || undefined,
     status: resolveGameStatus(r.status),
+    backlogRank: r.backlog_rank ?? undefined,
   };
 }

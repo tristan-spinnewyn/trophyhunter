@@ -10,6 +10,7 @@ import { usePlatformModal } from "./usePlatformModal";
 import { useEpicAuthModalState } from "./useEpicAuthModalState";
 import { useGameSyncHandler } from "./useGameSyncHandler";
 import { useGameStatusHandler } from "./useGameStatusHandler";
+import { useBacklogOrderHandler } from "./useBacklogOrderHandler";
 import type {
   OwnedGame,
   UserAccountProfile,
@@ -47,6 +48,7 @@ export function usePlatformSync(props: UsePlatformSyncProps) {
 
   const db = usePlatformDb({ accountProfile, onAccountChange });
   const statusHandler = useGameStatusHandler({ ownedGames, onOwnedGamesChange });
+  const backlogOrder = useBacklogOrderHandler({ ownedGames, onOwnedGamesChange });
 
   const steam = useSteamSync({
     ownedGames, onOwnedGamesChange, onSteamUserChange, currentUser,
@@ -120,6 +122,8 @@ export function usePlatformSync(props: UsePlatformSyncProps) {
     handleSyncGame: gameHandler.handleSyncGame,
     handleRemoveGame: gameHandler.handleRemoveGame,
     handleUpdateGameStatus: statusHandler.handleUpdateGameStatus,
+    handlePlayNext: backlogOrder.handlePlayNext,
+    handleRemoveFromQueue: backlogOrder.handleRemoveFromQueue,
     handleScanEpicAchievements: epic.handleScanEpicAchievements,
     handleCleanEpicGames: epic.handleCleanEpicGames,
   };

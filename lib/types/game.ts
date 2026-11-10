@@ -71,6 +71,8 @@ export interface OwnedGame {
   addedAt: string;
   source?: "steam-auto" | "steam-import" | "manual";
   status?: GameStatus;
+  /** Place in the backlog queue, lowest first; undefined when the game is not queued. */
+  backlogRank?: number;
 }
 
 export interface DuplicateGameGroup {
