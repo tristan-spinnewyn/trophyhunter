@@ -49,4 +49,16 @@ describe("dashboard utils (mergeGamesList & replacePlatformInList)", () => {
     expect(replacePlatformInList(base, "xbox", incoming)[0].backlogRank).toBe(-3);
     expect(mergeGamesList(base, incoming)[0].backlogRank).toBe(-3);
   });
+
+  it("keeps the date a status was chosen when its platform is synced again", () => {
+    const base: OwnedGame[] = [
+      { appId: 10, name: "Halo", headerImg: "", platform: "xbox", totalAchievements: 50, unlockedCount: 0, addedAt: "2026-01-01", status: "backlog", statusChangedAt: "2026-11-01T10:00:00.000Z" },
+    ];
+    const incoming: OwnedGame[] = [
+      { appId: 10, name: "Halo", headerImg: "", platform: "xbox", totalAchievements: 50, unlockedCount: 2, addedAt: "2026-01-05", lastPlayed: "2026-11-05T20:00:00.000Z" },
+    ];
+
+    expect(replacePlatformInList(base, "xbox", incoming)[0].statusChangedAt).toBe("2026-11-01T10:00:00.000Z");
+    expect(mergeGamesList(base, incoming)[0].statusChangedAt).toBe("2026-11-01T10:00:00.000Z");
+  });
 });

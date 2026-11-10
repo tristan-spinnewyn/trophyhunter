@@ -45,6 +45,7 @@ export function validateSyncPayload(input: Record<string, unknown>): ValidatedSy
       addedAt: typeof rec.addedAt === "string" ? rec.addedAt.slice(0, 64) : new Date().toISOString(),
       status: resolveGameStatus(rec.status),
       backlogRank: Number.isInteger(rec.backlogRank) ? (rec.backlogRank as number) : undefined,
+      statusChangedAt: typeof rec.statusChangedAt === "string" ? rec.statusChangedAt.slice(0, 64) : undefined,
     });
   }
 

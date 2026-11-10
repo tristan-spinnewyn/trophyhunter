@@ -73,6 +73,8 @@ export interface OwnedGame {
   status?: GameStatus;
   /** Place in the backlog queue, lowest first; undefined when the game is not queued. */
   backlogRank?: number;
+  /** When the status was last chosen (ISO date); undefined for a status that was never chosen. */
+  statusChangedAt?: string;
 }
 
 export interface DuplicateGameGroup {

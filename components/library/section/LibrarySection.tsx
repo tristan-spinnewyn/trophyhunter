@@ -5,6 +5,7 @@ import { LibrarySectionFilters } from "./LibrarySectionFilters";
 import { LibrarySectionEmptyState } from "./LibrarySectionEmptyState";
 import { LibraryStatusSections } from "./LibraryStatusSections";
 import { LibrarySkeleton } from "./LibrarySkeleton";
+import { StartedBacklogNotice } from "./StartedBacklogNotice";
 import type {
   GameStatus,
   OwnedGame,
@@ -108,6 +109,10 @@ export default function LibrarySection({
         libSortOrder={libSortOrder}
         setLibSortOrder={setLibSortOrder}
       />
+
+      {!isLoading && onUpdateGameStatus && (
+        <StartedBacklogNotice games={filteredGames} onUpdateGameStatus={onUpdateGameStatus} />
+      )}
 
       {isLoading ? (
         <LibrarySkeleton />

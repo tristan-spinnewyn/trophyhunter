@@ -16,6 +16,7 @@ export function setUserGameStatus(
 ): void {
   const validStatus = assertValidGameStatus(status);
   const db = getDb();
+  const changedAt = new Date().toISOString();
   const existing = db
     .prepare("SELECT id FROM user_games WHERE user_id = ? AND app_id = ? AND platform = ?")
     .get(userId, appId, platform) as { readonly id: string } | undefined;
@@ -24,13 +25,14 @@ export function setUserGameStatus(
     // A game that leaves the backlog also leaves its queue.
     db.prepare(
       `UPDATE user_games
-       SET status = ?, backlog_rank = CASE WHEN ? = 'backlog' THEN backlog_rank ELSE NULL END
+       SET status = ?, status_changed_at = ?,
+           backlog_rank = CASE WHEN ? = 'backlog' THEN backlog_rank ELSE NULL END
        WHERE user_id = ? AND app_id = ? AND platform = ?`
-    ).run(validStatus, validStatus, userId, appId, platform);
+    ).run(validStatus, changedAt, validStatus, userId, appId, platform);
   } else {
     db.prepare(
-      `INSERT INTO user_games (id, user_id, app_id, platform, name, status, added_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO user_games (id, user_id, app_id, platform, name, status, added_at, status_changed_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       crypto.randomUUID(),
       userId,
@@ -38,7 +40,8 @@ export function setUserGameStatus(
       platform,
       fallbackName || `Game ${appId}`,
       validStatus,
-      new Date().toISOString()
+      changedAt,
+      changedAt
     );
   }
 }
