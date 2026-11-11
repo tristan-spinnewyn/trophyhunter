@@ -56,6 +56,27 @@ describe("/api/profile/* server API keys", () => {
     expect(data.notice).toContain("OpenXBL");
   });
 
+  it("does not copy the server Steam key into the signed-in user's account", async () => {
+    const user = createUser("SteamOwner", "password123");
+    mockCookieStore.set("trophyhunter_session", { name: "trophyhunter_session", value: createSession(user.id) });
+    vi.spyOn(global, "fetch").mockImplementation(async () => textResponse(""));
+
+    const res = await steamPost(profileSyncRequest("steam", { user: "76561198000000000" }));
+
+    expect(res.status).toBe(200);
+    expect(getUserPlatformApiKey(user.id, "steam")).toBeNull();
+  });
+
+  it("stores the Steam key the signed-in user provided", async () => {
+    const user = createUser("SteamKeyOwner", "password123");
+    mockCookieStore.set("trophyhunter_session", { name: "trophyhunter_session", value: createSession(user.id) });
+    vi.spyOn(global, "fetch").mockImplementation(async () => textResponse(""));
+
+    await steamPost(profileSyncRequest("steam", { user: "76561198000000000", secret: "user-own-key" }));
+
+    expect(getUserPlatformApiKey(user.id, "steam")).toBe("user-own-key");
+  });
+
   it("does not copy the server Xbox key into the signed-in user's account", async () => {
     const user = createUser("XboxOwner", "password123");
     mockCookieStore.set("trophyhunter_session", { name: "trophyhunter_session", value: createSession(user.id) });
