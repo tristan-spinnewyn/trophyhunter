@@ -9,6 +9,8 @@ import { LibraryHeaderBanner } from "@/components/library/LibraryHeaderBanner";
 import { FeaturedGamesSection } from "@/components/library/FeaturedGamesSection";
 import { RecentPlayPanel } from "@/components/library/RecentPlayPanel";
 import { useRecentPlaySessions } from "@/components/library/hooks/useRecentPlaySessions";
+import { PACE_WINDOW_DAYS } from "@/lib/library/backlog-estimate";
+import { recentWeekStart, sessionsSince } from "@/lib/library/session-feed";
 import { useHomePageController } from "./hooks/useHomePageController";
 import { HomeContextPanels } from "./components/HomeContextPanels";
 import { HomeLibrarySection } from "./components/HomeLibrarySection";
@@ -23,7 +25,8 @@ function showsGameList(tab: LibraryTab): boolean {
 export default function HomePage() {
   const c = useHomePageController();
   const router = useRouter();
-  const recentSessions = useRecentPlaySessions(Boolean(c.currentUser));
+  // Loaded once for the pace window; the weekly panel keeps the last seven days.
+  const recentSessions = useRecentPlaySessions(Boolean(c.currentUser), { days: PACE_WINDOW_DAYS });
 
   return (
     <div className="space-y-6">
@@ -34,7 +37,7 @@ export default function HomePage() {
         trackingSummary={c.trackingSummary}
       />
 
-      <RecentPlayPanel sessions={recentSessions} onSelectGame={(appId) => router.push(`/game/${appId}`)} />
+      <RecentPlayPanel sessions={sessionsSince(recentSessions, recentWeekStart(new Date()))} onSelectGame={(appId) => router.push(`/game/${appId}`)} />
 
       <FeedbackToasts
         bannerMsg={c.bannerMsg}
@@ -73,7 +76,7 @@ export default function HomePage() {
         onToggleWishlist={c.collectionsState.handleToggleWishlist}
       />
 
-      {showsGameList(c.activePlatformTab) && <HomeLibrarySection controller={c} />}
+      {showsGameList(c.activePlatformTab) && <HomeLibrarySection controller={c} recentSessions={recentSessions} />}
 
       {!c.isLoadingCollection && c.ownedGames.length === 0 && <FeaturedGamesSection ownedGames={c.ownedGames} />}
 

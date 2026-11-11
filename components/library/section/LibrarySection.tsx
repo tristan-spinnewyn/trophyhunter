@@ -13,7 +13,7 @@ import type {
   PlatformType,
   UserAccountProfile,
 } from "@/lib/types";
-import type { CollectionWithGames, GameDurations } from "@/lib/types";
+import type { CollectionWithGames, GameDurations, PlaySession } from "@/lib/types";
 import type { LibraryTab, AchievementFilterType } from "@/lib/library/library-filters";
 import type { SortOrderType } from "@/lib/library/library-sort";
 import { DEFAULT_USER_SETTINGS } from "@/lib/settings/user-settings-input";
@@ -61,6 +61,8 @@ export interface LibrarySectionProps {
   readonly backlogDurations?: Readonly<Record<string, GameDurations>>;
   /** Weeks without a session before an in-progress game is suggested a pause. */
   readonly staleAfterWeeks?: number;
+  /** Recent play sessions, for the backlog's pace estimate. */
+  readonly recentSessions?: readonly PlaySession[];
 }
 
 
@@ -96,6 +98,7 @@ export default function LibrarySection({
   onReorderQueue,
   backlogDurations,
   staleAfterWeeks = DEFAULT_USER_SETTINGS.staleAfterWeeks,
+  recentSessions,
 }: LibrarySectionProps) {
   return (
     <section className="space-y-4">
@@ -144,6 +147,7 @@ export default function LibrarySection({
           onRemoveFromQueue={onRemoveFromQueue}
           onReorderQueue={onReorderQueue}
           backlogDurations={backlogDurations}
+          recentSessions={recentSessions}
           renderGame={(g) => (
             <LibraryGameCard
               key={`${g.platform}_${g.appId}`}

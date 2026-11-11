@@ -121,6 +121,16 @@ describe("LibraryStatusSections", () => {
         }
       });
 
+      it("says how long the whole backlog takes at the recent pace", () => {
+        const recentSessions = [
+          { appId: 9, platform: "steam" as const, name: "X", minutes: 13 * 60, detectedAt: new Date().toISOString() },
+        ];
+        render(<LibraryStatusSections games={queueGames} renderGame={renderCard} backlogDurations={durations} recentSessions={recentSessions} />);
+
+        const backlog = screen.getByRole("region", { name: "Backlog" });
+        expect(within(backlog).getByText(/^≈ 22 h · environ 5 mois à ton rythme · dont \d+ jeux? sans durée connue$/)).toBeTruthy();
+      });
+
       it("spells out the durations in the game's dialog", () => {
         render(<LibraryStatusSections games={queueGames} renderGame={renderCard} backlogDurations={durations} />);
         fireEvent.click(screen.getByRole("button", { name: "Hades" }));
