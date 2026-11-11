@@ -6,16 +6,26 @@ import {
   GAME_STATUS_META,
   resolveGameStatus,
 } from "@/lib/game-status/game-status.services";
+import { isMergedGroup } from "@/lib/library/linked-games";
 
 interface DuplicateGroupCardProps {
   readonly group: { title: string; games: OwnedGame[] };
   readonly onSelectGame: (appId: number) => void;
+  /** Merges the copies into one game; left out where merging is not offered. */
+  readonly onMerge?: (games: OwnedGame[]) => void;
+  /** Unmerges the copies of the given primary game. */
+  readonly onUnmerge?: (primary: OwnedGame) => void;
 }
 
 export function DuplicateGroupCard({
   group,
   onSelectGame,
+  onMerge,
+  onUnmerge,
 }: DuplicateGroupCardProps) {
+  const isMerged = isMergedGroup(group.games);
+  const primary = isMerged ? group.games.find((g) => !g.mergedInto) : undefined;
+
   return (
     <div className="rounded-sheet border border-edge bg-ink/90 p-4 space-y-3">
       <div className="flex items-center justify-between gap-2 border-b border-edge/80 pb-2.5">
@@ -58,6 +68,11 @@ export function DuplicateGroupCard({
                     >
                       {statusMeta.label}
                     </span>
+                    {g === primary && (
+                      <span className="rounded px-1.5 py-0.5 text-[11px] font-bold border border-edge text-paper">
+                        Principal
+                      </span>
+                    )}
                   </div>
                   {g.totalAchievements > 0 ? (
                     <span className="text-[11px] font-semibold text-done">
@@ -90,6 +105,33 @@ export function DuplicateGroupCard({
           );
         })}
       </div>
+
+      {isMerged && primary && onUnmerge && (
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <span className="text-done">Fusionnés</span>
+          <button
+            type="button"
+            aria-label={`Dissocier ${group.title}`}
+            onClick={() => onUnmerge(primary)}
+            className="text-dust transition hover:text-paper"
+          >
+            Dissocier
+          </button>
+        </div>
+      )}
+      {!isMerged && onMerge && (
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <span className="text-dust">Un seul jeu, compté une fois dans tes étagères et ton année.</span>
+          <button
+            type="button"
+            aria-label={`Fusionner ${group.title}`}
+            onClick={() => onMerge(group.games)}
+            className="shrink-0 rounded-control border border-edge px-3 py-1 text-paper-dim transition hover:border-seam hover:text-paper"
+          >
+            Fusionner
+          </button>
+        </div>
+      )}
     </div>
   );
 }

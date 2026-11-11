@@ -163,3 +163,16 @@ describe("calculateTrackingSummary", () => {
     });
   });
 });
+
+describe("calculateTrackingSummary: merged games", () => {
+  it("counts a game merged across platforms once, with the hours of every copy", () => {
+    const summary = calculateTrackingSummary([
+      { appId: 1, name: "Hades", headerImg: "", platform: "steam", totalAchievements: 0, unlockedCount: 0, addedAt: "2026-01-01", status: "completed", playtimeHours: 30 },
+      { appId: 2, name: "Hades", headerImg: "", platform: "xbox", totalAchievements: 0, unlockedCount: 0, addedAt: "2026-01-01", status: "unsorted", playtimeHours: 4, mergedInto: { platform: "steam", appId: 1 } },
+    ]);
+
+    expect(summary.countByStatus.completed).toBe(1);
+    expect(summary.countByStatus.unsorted).toBe(0);
+    expect(summary.totalHours).toBe(34);
+  });
+});

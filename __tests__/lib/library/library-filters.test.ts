@@ -26,6 +26,14 @@ describe("filterGames platform and feature tabs", () => {
     expect(filterGames(baseParams)).toHaveLength(4);
     expect(filterGames({ ...baseParams, activePlatformTab: "gamepass" })).toHaveLength(4);
   });
+
+  it("shows a merged game once on the all tab, but each copy on its platform tab", () => {
+    const copy: OwnedGame = { ...SAMPLE_GAMES[0], appId: 5, platform: "gog", mergedInto: { platform: "steam", appId: 1 } };
+    const games = [...SAMPLE_GAMES, copy];
+
+    expect(filterGames({ ...baseParams, games }).map((g) => g.appId)).toEqual([1, 2, 3, 4]);
+    expect(filterGames({ ...baseParams, games, activePlatformTab: "gog" }).map((g) => g.appId)).toEqual([4, 5]);
+  });
 });
 
 describe("filterGames tabs, achievements and search", () => {

@@ -2,6 +2,7 @@
 
 import type { OwnedGame, PlatformType, CollectionWithGames } from "@/lib/types";
 import { ALL_PLATFORMS } from "@/lib/platforms";
+import { mergeLinkedGames } from "./linked-games";
 
 /** Which slice of the library is shown: one platform, everything, or a feature view. */
 export type LibraryTab =
@@ -44,8 +45,10 @@ export function filterGames(params: FilterParams): OwnedGame[] {
   } = params;
 
   const targetPlatform = isFeatureTab(activePlatformTab) ? libPlatformFilter : activePlatformTab;
+  // The whole collection shows a game merged across platforms once; platform views keep every copy.
+  const shown = activePlatformTab === "all" && targetPlatform === "all" ? mergeLinkedGames(games) : games;
 
-  return games.filter((g) => {
+  return shown.filter((g) => {
     if (activePlatformTab === "wishlist") {
       if (!wishlistIds.includes(g.appId)) return false;
     } else if (activePlatformTab === "collections") {

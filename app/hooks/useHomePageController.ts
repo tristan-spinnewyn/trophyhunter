@@ -12,6 +12,7 @@ import { useCollectionStats } from "@/components/library/hooks/useCollectionStat
 import { useLibraryFilters } from "@/components/library/hooks/useLibraryFilters";
 import { useAddGameFlow } from "@/components/library/hooks/useAddGameFlow";
 import { useBulkImport } from "@/components/library/hooks/useBulkImport";
+import { useGameLinks } from "@/components/library/hooks/useGameLinks";
 import { usePlatformSync } from "@/components/platform-sync/hooks/usePlatformSync";
 import { usePlatformInputs } from "@/components/platform-sync/hooks/usePlatformInputs";
 
@@ -61,6 +62,10 @@ export function useHomePageController() {
     ownedGames, activePlatformTab, wishlistIds, collections, selectedCollId: collectionsState.selectedCollId,
   });
 
+  const gameLinks = useGameLinks({
+    currentUser, setOwnedGames, onError: (text) => setBannerMsg({ type: "error", text }),
+  });
+
   const trackingSummary = useMemo(() => calculateTrackingSummary(ownedGames), [ownedGames]);
 
   const handleSelectTab = (tab: LibraryTab) => {
@@ -83,7 +88,7 @@ export function useHomePageController() {
   return {
     accountProfile, ownedGames, currentUser, setIsAuthOpen, steamAccount, bannerMsg, setBannerMsg,
     activePlatformTab, handleSelectTab, handleAddGamePassToXbox, platformInputs, collectionsState,
-    platformSync, addGameFlow, bulkImport, stats, libraryFilters, trackingSummary,
+    platformSync, addGameFlow, bulkImport, stats, libraryFilters, trackingSummary, gameLinks,
     isLoadingCollection: isCheckingAuth,
   };
 }

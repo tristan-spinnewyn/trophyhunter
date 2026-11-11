@@ -90,3 +90,12 @@ describe("describePick", () => {
     expect(describePick({ game, reason: "next-in-queue", remainingHours: null })).toBe("Le prochain de ta file");
   });
 });
+
+describe("pickGamesForTonight: merged games", () => {
+  it("offers a game merged across platforms once", () => {
+    const steam = makeOwnedGame({ appId: 1, name: "Hades", status: "in-progress" });
+    const xbox = makeOwnedGame({ appId: 2, platform: "xbox", name: "Hades", status: "backlog", mergedInto: { platform: "steam", appId: 1 } });
+
+    expect(pickGamesForTonight([steam, xbox], {}, "evening").map((p) => p.game.appId)).toEqual([1]);
+  });
+});

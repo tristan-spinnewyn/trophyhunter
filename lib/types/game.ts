@@ -2,6 +2,7 @@
 
 import type { GameStatus } from "../game-status/game-status.types";
 import type { GameHuntingOverride } from "../hunting/hunting.types";
+import type { PlatformType } from "./platform";
 
 export type { GameStatus, GameHuntingOverride };
 
@@ -63,7 +64,7 @@ export interface OwnedGame {
   appId: number;
   name: string;
   headerImg: string;
-  platform: import("./platform").PlatformType;
+  platform: PlatformType;
   totalAchievements: number;
   unlockedCount: number;
   playtimeHours?: number;
@@ -85,6 +86,16 @@ export interface OwnedGame {
   review?: string;
   /** Where the owner left off, written when setting the game aside. */
   resumeNote?: string;
+  /** Set on a copy merged into another one: the same game owned on another platform. */
+  mergedInto?: GameRef;
+  /** On a primary copy once merged for display: the copies folded into it. */
+  linkedCopies?: GameRef[];
+}
+
+/** Points at one game of the collection. */
+export interface GameRef {
+  readonly platform: PlatformType;
+  readonly appId: number;
 }
 
 export interface DuplicateGameGroup {
