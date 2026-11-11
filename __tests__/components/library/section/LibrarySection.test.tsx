@@ -50,6 +50,18 @@ function heading() {
 describe("LibrarySection", () => {
   afterEach(cleanup);
 
+  it("suggests pausing an in-progress game left aside longer than the chosen threshold", () => {
+    const longAgo = new Date(Date.now() - 30 * 86_400_000).toISOString();
+    const game = makeOwnedGame({ appId: 9, name: "Tunic", status: "in-progress", statusChangedAt: longAgo, lastPlayed: longAgo });
+
+    renderSection({ filteredGames: [game], onUpdateGameStatus: vi.fn(), staleAfterWeeks: 2 });
+    expect(screen.getByRole("region", { name: "Jeux en cours délaissés" })).toBeTruthy();
+    cleanup();
+
+    renderSection({ filteredGames: [game], onUpdateGameStatus: vi.fn() });
+    expect(screen.queryByRole("region", { name: "Jeux en cours délaissés" })).toBeNull();
+  });
+
   it("proposes to move a launched backlog game to in progress", () => {
     const onUpdateGameStatus = vi.fn();
     renderSection({

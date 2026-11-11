@@ -7,7 +7,6 @@ export * from "./games";
 export * from "./play-sessions";
 export * from "./user-settings";
 export * from "./game-status";
-export * from "./game-review";
 export * from "./backlog-order";
 export * from "./progress";
 export * from "./collections";

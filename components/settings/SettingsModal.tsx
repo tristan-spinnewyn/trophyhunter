@@ -8,7 +8,7 @@ import { useSettingsModalState } from "./useSettingsModalState";
 import { SteamSettingsSection } from "./SteamSettingsSection";
 import { MobileInstallGuide } from "./MobileInstallGuide";
 import { BackupSection } from "./BackupSection";
-import { AutoSyncSettingsSection } from "./AutoSyncSettingsSection";
+import { UserSettingsSections } from "./UserSettingsSections";
 
 export default function SettingsModal(props: SettingsModalProps) {
   const { isOpen, onClose } = props;
@@ -45,7 +45,7 @@ export default function SettingsModal(props: SettingsModalProps) {
           onSaveSteamUser={state.handleSaveSteamUser}
         />
 
-        <AutoSyncSettingsSection />
+        <UserSettingsSections />
 
         <MobileInstallGuide />
 

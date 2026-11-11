@@ -2,16 +2,18 @@
 "use client";
 
 import { RefreshCw } from "lucide-react";
+import type { UserSettings } from "@/lib/types";
 import { AUTO_SYNC_HOUR_CHOICES } from "@/lib/settings/user-settings-input";
-import { useUserSettings } from "./useUserSettings";
+
+interface AutoSyncSettingsSectionProps {
+  readonly settings: UserSettings;
+  readonly onChange: (changes: Partial<UserSettings>) => void;
+}
 
 const OFF = "off";
 
 /** Lets the signed-in owner have the server sync every connected platform on its own. */
-export function AutoSyncSettingsSection() {
-  const { settings, saveError, update } = useUserSettings();
-  if (!settings) return null;
-
+export function AutoSyncSettingsSection({ settings, onChange }: AutoSyncSettingsSectionProps) {
   const value = settings.autoSyncHours === null ? OFF : String(settings.autoSyncHours);
 
   return (
@@ -27,7 +29,7 @@ export function AutoSyncSettingsSection() {
         <select
           id="auto-sync-hours"
           value={value}
-          onChange={(e) => void update({ autoSyncHours: e.target.value === OFF ? null : Number(e.target.value) })}
+          onChange={(e) => onChange({ autoSyncHours: e.target.value === OFF ? null : Number(e.target.value) })}
           className="rounded-control border border-seam bg-ink px-3 py-1.5 text-xs text-paper outline-none focus:border-lamp"
         >
           <option value={OFF}>Jamais</option>
@@ -43,7 +45,6 @@ export function AutoSyncSettingsSection() {
           ? "Tes jeux ne se mettent à jour que quand tu lances une synchronisation."
           : `Le serveur met à jour tes comptes toutes les ${settings.autoSyncHours} h avec les clés enregistrées, même app fermée. Epic Games a besoin d'une connexion récente.`}
       </p>
-      {saveError && <p className="mt-2 text-[11px] text-danger">{saveError}</p>}
     </div>
   );
 }
