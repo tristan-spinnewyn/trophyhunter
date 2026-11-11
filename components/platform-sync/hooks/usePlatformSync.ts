@@ -124,6 +124,7 @@ export function usePlatformSync(props: UsePlatformSyncProps) {
     handleUpdateGameStatus: statusHandler.handleUpdateGameStatus,
     handlePlayNext: backlogOrder.handlePlayNext,
     handleRemoveFromQueue: backlogOrder.handleRemoveFromQueue,
+    handleReorderQueue: backlogOrder.handleReorderQueue,
     handleScanEpicAchievements: epic.handleScanEpicAchievements,
     handleCleanEpicGames: epic.handleCleanEpicGames,
   };

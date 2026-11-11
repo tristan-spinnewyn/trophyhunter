@@ -13,6 +13,7 @@ import { ShelfHeading } from "@/components/library/shelf/ShelfHeading";
 import { GamePeekDialog } from "@/components/library/shelf/GamePeekDialog";
 import { BacklogQueueControls } from "@/components/library/shelf/BacklogQueueControls";
 import { CompletedYearShelves } from "@/components/library/shelf/CompletedYearShelves";
+import { SortableBacklogSpines } from "@/components/library/shelf/SortableBacklogSpines";
 import { TriageDialog } from "@/components/library/triage/TriageDialog";
 
 interface LibraryStatusSectionsProps {
@@ -23,6 +24,8 @@ interface LibraryStatusSectionsProps {
   /** Together, these enable ordering the backlog as a queue. */
   readonly onPlayNext?: (appId: number, platform: PlatformType) => Promise<void> | void;
   readonly onRemoveFromQueue?: (appId: number, platform: PlatformType) => Promise<void> | void;
+  /** Enables dragging the backlog spines; receives the shelf as shown and its new queue. */
+  readonly onReorderQueue?: (visibleShelf: OwnedGame[], visibleQueue: OwnedGame[]) => Promise<void> | void;
 }
 
 const gameKey = (g: OwnedGame) => `${g.platform}_${g.appId}`;
@@ -34,6 +37,7 @@ export function LibraryStatusSections({
   onUpdateGameStatus,
   onPlayNext,
   onRemoveFromQueue,
+  onReorderQueue,
 }: LibraryStatusSectionsProps) {
   const [peekedKey, setPeekedKey] = useState<string | null>(null);
   const [isSorting, setIsSorting] = useState(false);
@@ -55,6 +59,11 @@ export function LibraryStatusSections({
             queuePositions={section.status === "backlog" ? queuePositions : undefined}
             onOpen={(g) => setPeekedKey(gameKey(g))}
             onSort={section.status === "unsorted" && onUpdateGameStatus ? () => setIsSorting(true) : undefined}
+            onReorder={
+              section.status === "backlog" && onReorderQueue
+                ? (queue) => void onReorderQueue(section.games, queue)
+                : undefined
+            }
           />
         )
       )}
@@ -109,9 +118,11 @@ interface SpineShelfProps {
   readonly queuePositions?: ReadonlyMap<string, number>;
   /** Shows a "sort" action in the shelf heading. */
   readonly onSort?: () => void;
+  /** Makes the spines draggable; receives the new queue of the shelf. */
+  readonly onReorder?: (queue: OwnedGame[]) => void;
 }
 
-function SpineShelf({ section, onOpen, queuePositions, onSort }: SpineShelfProps) {
+function SpineShelf({ section, onOpen, queuePositions, onSort, onReorder }: SpineShelfProps) {
   const headingId = useId();
   return (
     <section aria-labelledby={headingId}>
@@ -139,16 +150,33 @@ function SpineShelf({ section, onOpen, queuePositions, onSort }: SpineShelfProps
           )}
           <ChevronRight aria-hidden className={`h-4 w-4 text-dust transition group-open:rotate-90 ${onSort ? "" : "ml-auto"}`} />
         </summary>
-        {section.status === "completed" ? (
-          <CompletedYearShelves games={section.games} onOpen={onOpen} gameKey={gameKey} />
-        ) : (
-          <div className="spine-rows pb-2">
-            {section.games.map((g) => (
-              <GameSpine key={gameKey(g)} game={g} onOpen={onOpen} queuePosition={queuePositions?.get(gameKey(g))} />
-            ))}
-          </div>
-        )}
+        <SpineShelfContent section={section} onOpen={onOpen} queuePositions={queuePositions} onReorder={onReorder} />
       </details>
     </section>
+  );
+}
+
+/** Spines laid out by year for finished games, draggable for an orderable backlog, plain otherwise. */
+function SpineShelfContent({ section, onOpen, queuePositions, onReorder }: Omit<SpineShelfProps, "onSort">) {
+  if (section.status === "completed") {
+    return <CompletedYearShelves games={section.games} onOpen={onOpen} gameKey={gameKey} />;
+  }
+  if (onReorder) {
+    return (
+      <SortableBacklogSpines
+        games={section.games}
+        queuePositions={queuePositions ?? new Map()}
+        gameKey={gameKey}
+        onOpen={onOpen}
+        onReorder={onReorder}
+      />
+    );
+  }
+  return (
+    <div className="spine-rows pb-2">
+      {section.games.map((g) => (
+        <GameSpine key={gameKey(g)} game={g} onOpen={onOpen} queuePosition={queuePositions?.get(gameKey(g))} />
+      ))}
+    </div>
   );
 }

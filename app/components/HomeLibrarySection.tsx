@@ -42,6 +42,7 @@ export function HomeLibrarySection({ controller: c }: HomeLibrarySectionProps) {
       onUpdateGameStatus={ps.handleUpdateGameStatus}
       onPlayNext={ps.handlePlayNext}
       onRemoveFromQueue={ps.handleRemoveFromQueue}
+      onReorderQueue={ps.handleReorderQueue}
     />
   );
 }

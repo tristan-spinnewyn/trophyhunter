@@ -8,8 +8,11 @@ import {
   clearAllUserData,
   setUserGameStatus,
   setUserGameBacklogRank,
+  setUserBacklogQueue,
+  type QueuedGameRef,
 } from "@/lib/db";
 import { assertValidGameStatus } from "@/lib/game-status/game-status.services";
+import { ALL_PLATFORMS } from "@/lib/platforms";
 import type { PlatformType, OwnedGame } from "@/lib/types";
 
 interface PostOwnedGamesBody {
@@ -88,6 +91,29 @@ export async function handlePatchBacklogRank(userId: string, body: PatchBacklogR
   }
   setUserGameBacklogRank(userId, appId, platform, rank as number | null);
   return NextResponse.json({ success: true, appId, platform, backlogRank: rank });
+}
+
+const MAX_QUEUE_LENGTH = 1000;
+
+function parseBacklogQueue(value: unknown): QueuedGameRef[] | null {
+  if (!Array.isArray(value) || value.length > MAX_QUEUE_LENGTH) return null;
+  const queue: QueuedGameRef[] = [];
+  for (const entry of value) {
+    const { appId, platform } = (entry ?? {}) as { appId?: unknown; platform?: unknown };
+    if (!Number.isInteger(appId) || !ALL_PLATFORMS.includes(platform as PlatformType)) return null;
+    queue.push({ appId: appId as number, platform: platform as PlatformType });
+  }
+  return queue;
+}
+
+/** Replaces the whole backlog queue with `backlogQueue`, in order. */
+export async function handlePatchBacklogQueue(userId: string, body: { readonly backlogQueue?: unknown }) {
+  const queue = parseBacklogQueue(body?.backlogQueue);
+  if (!queue) {
+    return NextResponse.json({ error: "Paramètre backlogQueue invalide." }, { status: 400 });
+  }
+  setUserBacklogQueue(userId, queue);
+  return NextResponse.json({ success: true, backlogQueue: queue });
 }
 
 export async function handleDeleteOwnedGames(userId: string, searchParams: URLSearchParams) {

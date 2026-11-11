@@ -139,6 +139,21 @@ describe("LibraryStatusSections", () => {
       expect(onRemoveFromQueue).toHaveBeenCalledWith(2, "steam");
     });
 
+    it("lets the backlog spines be dragged into a new queue order when the queue can be saved", () => {
+      render(<LibraryStatusSections games={queueGames} renderGame={renderCard} onReorderQueue={vi.fn()} />);
+
+      const backlog = screen.getByRole("region", { name: "Backlog" });
+      const spines = within(backlog).getAllByRole("button");
+      expect(spines.every((s) => s.getAttribute("aria-roledescription") === "livre déplaçable")).toBe(true);
+      expect(screen.getByRole("button", { name: "Starfield" }).hasAttribute("aria-roledescription")).toBe(false);
+    });
+
+    it("keeps the backlog spines still when the queue cannot be saved", () => {
+      renderQueue();
+
+      expect(screen.getByRole("button", { name: "Hades" }).hasAttribute("aria-roledescription")).toBe(false);
+    });
+
     it("shows no queue controls outside the backlog", () => {
       renderQueue();
       fireEvent.click(screen.getByRole("button", { name: "Starfield" }));

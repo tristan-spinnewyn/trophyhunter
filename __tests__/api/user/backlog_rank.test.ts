@@ -59,4 +59,21 @@ describe("PATCH /api/user/games (backlog rank)", () => {
     expect((await patch({ platform: "steam", backlogRank: 1 })).status).toBe(400);
     expect(storedRank()).toBeUndefined();
   });
+
+  it("stores a whole queue order at once", async () => {
+    saveUserOwnedGames(userId, [makeOwnedGame({ appId: 501, status: "backlog" })]);
+
+    const res = await patch({ backlogQueue: [{ appId: 501, platform: "steam" }, { appId: 500, platform: "steam" }] });
+
+    expect(res.status).toBe(200);
+    const ranks = Object.fromEntries(getUserOwnedGames(userId).map((g) => [g.appId, g.backlogRank]));
+    expect(ranks).toEqual({ 500: 1, 501: 0 });
+  });
+
+  it("rejects a queue that is not a list of games", async () => {
+    expect((await patch({ backlogQueue: "500" })).status).toBe(400);
+    expect((await patch({ backlogQueue: [{ appId: "x", platform: "steam" }] })).status).toBe(400);
+    expect((await patch({ backlogQueue: [{ appId: 500, platform: "nes" }] })).status).toBe(400);
+    expect(storedRank()).toBeUndefined();
+  });
 });
