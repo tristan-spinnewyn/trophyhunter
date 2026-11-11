@@ -43,6 +43,18 @@ describe("YearReviewPage", () => {
     expect(within(bestRated()).getByRole("button", { name: /Portal/ })).toBeTruthy();
   });
 
+  it("offers yearly goals to a signed-in user only", async () => {
+    render(<YearReviewPage />);
+    expect(screen.queryByRole("region", { name: "Objectifs" })).toBeNull();
+    cleanup();
+
+    userData.currentUser = { id: "u1" };
+    vi.spyOn(global, "fetch").mockResolvedValue(new Response(JSON.stringify({ sessions: [], goals: [] })));
+    render(<YearReviewPage />);
+
+    expect(await screen.findByRole("region", { name: "Objectifs" })).toBeTruthy();
+  });
+
   it("opens a game's page", () => {
     render(<YearReviewPage />);
 

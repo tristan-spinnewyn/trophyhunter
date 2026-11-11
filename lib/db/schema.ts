@@ -88,6 +88,17 @@ CREATE TABLE IF NOT EXISTS user_settings (
   updated_at TEXT NOT NULL
 );
 
+-- Goals set for a calendar year; baseline is the backlog size when a backlog-reduction goal was set.
+CREATE TABLE IF NOT EXISTS user_goals (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  year INTEGER NOT NULL,
+  kind TEXT NOT NULL,
+  target INTEGER NOT NULL,
+  baseline INTEGER,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (user_id, year, kind)
+);
+
 -- Games wished for, owned or not yet: a wishlist outlives the collection it may later join.
 CREATE TABLE IF NOT EXISTS user_wishlist (
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

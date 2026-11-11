@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { useUserData } from "@/context/UserDataContext";
 import { usePlaySessions } from "@/components/library/hooks/usePlaySessions";
 import { YearReviewView } from "@/components/year-review/YearReviewView";
+import { YearGoalsSection } from "@/components/goals/YearGoalsSection";
+import { useYearGoals } from "@/components/goals/useYearGoals";
 import { buildYearReview, reviewYears } from "@/lib/library/year-review";
 
 /** "Mon année": one calendar year of gaming, the current one first. */
@@ -17,13 +19,19 @@ export default function YearReviewPage() {
   const years = reviewYears(ownedGames, sessions, new Date());
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const year = selectedYear ?? years[0];
+  const goals = useYearGoals(year, Boolean(currentUser));
 
   return (
-    <YearReviewView
-      review={buildYearReview(year, ownedGames, sessions)}
-      years={years}
-      onSelectYear={setSelectedYear}
-      onOpenGame={(appId) => router.push(`/game/${appId}`)}
-    />
+    <div className="space-y-6">
+      <YearReviewView
+        review={buildYearReview(year, ownedGames, sessions)}
+        years={years}
+        onSelectYear={setSelectedYear}
+        onOpenGame={(appId) => router.push(`/game/${appId}`)}
+      />
+      {currentUser && (
+        <YearGoalsSection goals={goals.goals} error={goals.error} onSetGoal={goals.setGoal} onRemoveGoal={goals.removeGoal} />
+      )}
+    </div>
   );
 }
