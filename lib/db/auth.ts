@@ -70,6 +70,12 @@ export function authenticateUser(username: string, plainPassword: string): User 
   return mapUserRow(row);
 }
 
+/** Every account of the instance, for the server's background jobs. */
+export function listUserIds(): string[] {
+  const rows = getDb().prepare("SELECT id FROM users ORDER BY created_at").all() as unknown as { id: string }[];
+  return rows.map((r) => r.id);
+}
+
 export function hasAnyUser(): boolean {
   const db = getDb();
   return Boolean(db.prepare("SELECT 1 FROM users LIMIT 1").get());

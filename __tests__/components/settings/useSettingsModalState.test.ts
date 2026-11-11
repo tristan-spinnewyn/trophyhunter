@@ -18,12 +18,12 @@ const baseProps = {
   onRefreshData: vi.fn().mockResolvedValue(undefined),
   onDataReset: vi.fn(),
 };
-const syncData = { profile: { displayName: "Gabe" }, games: [{ appId: 1 }], steamApiKey: "k" };
+const backupData = { format: "trophyhunter-backup", version: 2, games: [{ appId: 1 }], sessions: [] };
 
 function mockApi(overrides: Partial<Record<string, Response>> = {}) {
   return vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
     const key = `${init?.method || "GET"} ${String(input)}`;
-    return overrides[key] ?? jsonResponse(key === "GET /api/user/sync" ? syncData : { success: true });
+    return overrides[key] ?? jsonResponse(key === "GET /api/user/backup" ? backupData : { success: true });
   });
 }
 
@@ -56,7 +56,7 @@ describe("useSettingsModalState", () => {
     expect(result.current.statusMsg?.type).toBe("error");
   });
 
-  it("copies the export to the clipboard", async () => {
+  it("copies the full backup to the clipboard", async () => {
     mockApi();
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
@@ -64,14 +64,12 @@ describe("useSettingsModalState", () => {
 
     await act(() => result.current.handleExport());
 
-    const exported = JSON.parse(writeText.mock.calls[0][0]);
-    expect(exported).toMatchObject({ profile: syncData.profile, games: syncData.games, favorites: [] });
-    expect(exported).not.toHaveProperty("steamApiKey");
+    expect(JSON.parse(writeText.mock.calls[0][0])).toEqual(backupData);
     expect(result.current.copied).toBe(true);
   });
 
   it("reports export and download failures", async () => {
-    mockApi({ "GET /api/user/sync": jsonResponse({}, 500) });
+    mockApi({ "GET /api/user/backup": jsonResponse({}, 500) });
     const { result } = renderHook(() => useSettingsModalState(baseProps));
     await act(() => result.current.handleExport());
     expect(result.current.statusMsg?.text).toContain("exporter");
@@ -93,7 +91,29 @@ describe("useSettingsModalState", () => {
     expect(result.current.statusMsg?.type).toBe("success");
   });
 
-  it("imports pasted JSON, ignores empty input and rejects invalid JSON", async () => {
+  it("restores a full backup through the backup API", async () => {
+    const fetchSpy = mockApi();
+    const { result } = renderHook(() => useSettingsModalState(baseProps));
+
+    act(() => result.current.setImportText(JSON.stringify(backupData)));
+    await act(() => result.current.handleImport());
+
+    expect(fetchSpy).toHaveBeenCalledWith("/api/user/backup", expect.objectContaining({ method: "POST", body: JSON.stringify(backupData) }));
+    expect(baseProps.onRefreshData).toHaveBeenCalled();
+    expect(result.current.statusMsg?.type).toBe("success");
+  });
+
+  it("explains a backup the server refused", async () => {
+    mockApi({ "POST /api/user/backup": jsonResponse({ error: "Fichier de sauvegarde invalide." }, 400) });
+    const { result } = renderHook(() => useSettingsModalState(baseProps));
+
+    act(() => result.current.setImportText(JSON.stringify(backupData)));
+    await act(() => result.current.handleImport());
+
+    expect(result.current.statusMsg).toEqual({ type: "error", text: "Fichier de sauvegarde invalide." });
+  });
+
+  it("imports an older export, ignores empty input and rejects invalid JSON", async () => {
     const fetchSpy = mockApi();
     const { result } = renderHook(() => useSettingsModalState(baseProps));
 

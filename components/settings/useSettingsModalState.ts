@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import type { SettingsModalProps, StatusMsg } from "./SettingsModal.types";
-import { fetchExportJson, parseSyncPayload, saveSteamAccountApi } from "./settingsBackupUtils";
+import { BackupImportError, fetchExportJson, importBackupText, saveSteamAccountApi } from "./settingsBackupUtils";
 import { useConfirm } from "@/components/ui/confirm/useConfirm";
 
 export function useSettingsModalState(props: SettingsModalProps) {
@@ -69,14 +69,13 @@ export function useSettingsModalState(props: SettingsModalProps) {
   const handleImport = async () => {
     if (!importText.trim()) return;
     try {
-      const syncPayload = parseSyncPayload(importText);
-      const res = await fetch("/api/user/sync", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(syncPayload) });
-      if (!res.ok) throw new Error("Sync failed");
+      await importBackupText(importText);
       if (onRefreshData) await onRefreshData();
       setImportText("");
-      setStatusMsg({ type: "success", text: "Données importées dans la base SQLite avec succès !" });
-    } catch {
-      setStatusMsg({ type: "error", text: "Format JSON invalide. Vérifiez vos données." });
+      setStatusMsg({ type: "success", text: "Sauvegarde restaurée avec succès !" });
+    } catch (error) {
+      const text = error instanceof BackupImportError ? error.message : "Format JSON invalide. Vérifiez vos données.";
+      setStatusMsg({ type: "error", text });
     }
   };
 

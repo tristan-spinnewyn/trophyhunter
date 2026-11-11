@@ -1,6 +1,7 @@
 // lib/security/sync-validator.ts
 import { parseGameReviewInput } from "../game-review/game-review";
 import { parseResumeNoteInput } from "../game-resume/resume-note";
+import { parseGameRef } from "../library/game-ref-input";
 import type { OwnedGame, PlatformType, UserAccountProfile, UserGameProgress } from "../types";
 import { resolveGameStatus } from "../game-status/game-status.services";
 import { ALLOWED_PLATFORMS, type ValidatedSyncCollection, type ValidatedSyncPayload } from "./security.types";
@@ -68,6 +69,7 @@ export function validateSyncPayload(input: Record<string, unknown>): ValidatedSy
       abandonedAt: typeof rec.abandonedAt === "string" ? rec.abandonedAt.slice(0, 64) : undefined,
       ...backedUpReview(rec),
       resumeNote: backedUpResumeNote(rec),
+      mergedInto: parseGameRef(rec.mergedInto) ?? undefined,
     });
   }
 

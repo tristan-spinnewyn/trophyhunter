@@ -1,14 +1,25 @@
 // components/settings/settingsBackupUtils.ts
+import { isBackupFile } from "@/lib/backup/backup-format";
 
+/** The full backup of the signed-in user, as pretty-printed JSON. */
 export async function fetchExportJson(): Promise<string> {
-  const res = await fetch("/api/user/sync");
+  const res = await fetch("/api/user/backup");
   if (!res.ok) throw new Error("Export failed");
-  const syncData = await res.json();
-  return JSON.stringify({
-    profile: syncData.profile, games: syncData.games || [],
-    progress: syncData.progress || {}, favorites: syncData.favorites || [],
-    wishlist: syncData.wishlist || [], collections: syncData.collections || [],
-  }, null, 2);
+  return JSON.stringify(await res.json(), null, 2);
+}
+
+/** Thrown with the server's own explanation when it refuses an import. */
+export class BackupImportError extends Error {}
+
+/** Sends pasted JSON to the right place: a full backup is restored, an older export goes through the sync. */
+export async function importBackupText(importText: string): Promise<void> {
+  const parsed: unknown = JSON.parse(importText);
+  const [url, body] = isBackupFile(parsed) ? ["/api/user/backup", parsed] : ["/api/user/sync", parseSyncPayload(importText)];
+  const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!res.ok) {
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new BackupImportError(data.error ?? "L'import a échoué.");
+  }
 }
 
 export function parseSyncPayload(importText: string) {
