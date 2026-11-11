@@ -10,9 +10,9 @@ vi.mock("@/components/settings/useSettingsModalState", () => ({
   useSettingsModalState: () => state,
 }));
 
-// The automatic sync section loads its own settings; it has its own tests.
-vi.mock("@/components/settings/AutoSyncSettingsSection", () => ({
-  AutoSyncSettingsSection: () => <div data-testid="auto-sync-section" />,
+// The user settings sections load their own settings; they have their own tests.
+vi.mock("@/components/settings/UserSettingsSections", () => ({
+  UserSettingsSections: () => <div data-testid="user-settings-sections" />,
 }));
 
 const { default: SettingsModal } = await import("@/components/settings/SettingsModal");

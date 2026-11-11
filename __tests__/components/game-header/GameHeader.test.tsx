@@ -108,21 +108,6 @@ describe("GameHeader", () => {
     expect(screen.queryByLabelText("Terminé le")).toBeNull();
   });
 
-  it("lets a finished or abandoned game be rated", () => {
-    const onSaveReview = vi.fn();
-    renderHeader({ isOwned: true, gameStatus: "abandoned", rating: 2, onSaveReview });
-
-    fireEvent.click(screen.getByRole("radio", { name: "4 sur 5" }));
-
-    expect(onSaveReview).toHaveBeenCalledWith({ rating: 4, review: null });
-  });
-
-  it("asks for no rating while the game is still being played", () => {
-    renderHeader({ isOwned: true, gameStatus: "in-progress", onSaveReview: vi.fn() });
-
-    expect(screen.queryByRole("radiogroup", { name: "Ta note" })).toBeNull();
-  });
-
   it("shows the current status of an owned game", () => {
     renderHeader({ isOwned: true, gameStatus: "paused", onChangeGameStatus: vi.fn() });
 

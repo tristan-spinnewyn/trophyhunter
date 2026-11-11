@@ -50,16 +50,3 @@ describe("runDatabaseMigrations: explicit backlog", () => {
     expect(storedStatuses()).toEqual(["backlog"]);
   });
 });
-
-describe("runDatabaseMigrations: game reviews", () => {
-  it("adds the rating and review columns to a database created before them", () => {
-    const db = initDatabase(":memory:");
-    db.exec("ALTER TABLE user_games DROP COLUMN rating;");
-    db.exec("ALTER TABLE user_games DROP COLUMN review;");
-
-    runDatabaseMigrations(db);
-
-    const columns = (db.prepare("PRAGMA table_info(user_games)").all() as unknown as { name: string }[]).map((c) => c.name);
-    expect(columns).toEqual(expect.arrayContaining(["rating", "review"]));
-  });
-});

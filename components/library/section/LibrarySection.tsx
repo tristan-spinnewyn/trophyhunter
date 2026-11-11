@@ -16,6 +16,8 @@ import type {
 import type { CollectionWithGames, GameDurations } from "@/lib/types";
 import type { LibraryTab, AchievementFilterType } from "@/lib/library/library-filters";
 import type { SortOrderType } from "@/lib/library/library-sort";
+import { DEFAULT_USER_SETTINGS } from "@/lib/settings/user-settings-input";
+import { StaleInProgressNotice } from "./StaleInProgressNotice";
 
 export interface LibrarySectionProps {
   readonly isLoading?: boolean;
@@ -57,6 +59,8 @@ export interface LibrarySectionProps {
   readonly onReorderQueue?: (visibleShelf: OwnedGame[], visibleQueue: OwnedGame[]) => Promise<void> | void;
   /** How long the backlog games take to beat, keyed `platform_appId`. */
   readonly backlogDurations?: Readonly<Record<string, GameDurations>>;
+  /** Weeks without a session before an in-progress game is suggested a pause. */
+  readonly staleAfterWeeks?: number;
 }
 
 
@@ -91,6 +95,7 @@ export default function LibrarySection({
   onRemoveFromQueue,
   onReorderQueue,
   backlogDurations,
+  staleAfterWeeks = DEFAULT_USER_SETTINGS.staleAfterWeeks,
 }: LibrarySectionProps) {
   return (
     <section className="space-y-4">
@@ -119,6 +124,7 @@ export default function LibrarySection({
       {!isLoading && onUpdateGameStatus && (
         <>
           <StartedBacklogNotice games={filteredGames} onUpdateGameStatus={onUpdateGameStatus} />
+          <StaleInProgressNotice games={filteredGames} staleAfterWeeks={staleAfterWeeks} onUpdateGameStatus={onUpdateGameStatus} />
           <AcquiredWishlistNotice
             games={filteredGames}
             wishlistIds={wishlistIds}

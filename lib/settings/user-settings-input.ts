@@ -5,6 +5,9 @@ import type { UserSettings } from "@/lib/types";
 export const AUTO_SYNC_HOUR_CHOICES = [6, 12, 24] as const;
 export const STALE_WEEKS_RANGE = { min: 1, max: 52 } as const;
 
+/** What a user who never opened the settings gets. */
+export const DEFAULT_USER_SETTINGS: UserSettings = { autoSyncHours: null, staleAfterWeeks: 6 };
+
 export type UserSettingsInput =
   | { readonly ok: true; readonly changes: Partial<UserSettings> }
   | { readonly ok: false; readonly error: string };

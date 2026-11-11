@@ -2,12 +2,7 @@
 
 import type { OwnedGame } from "@/lib/types";
 import { resolveGameStatus } from "@/lib/game-status/game-status.services";
-
-function toTime(date: string | undefined): number | null {
-  if (!date) return null;
-  const time = new Date(date).getTime();
-  return Number.isNaN(time) ? null : time;
-}
+import { toTime } from "./date-time";
 
 /**
  * Backlog games played after they were put in the backlog, most recent session first.

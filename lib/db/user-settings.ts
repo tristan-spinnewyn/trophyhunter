@@ -1,8 +1,9 @@
 // lib/db/user-settings.ts
 import { getDb } from "./connection";
 import type { UserSettings } from "../types";
+import { DEFAULT_USER_SETTINGS } from "../settings/user-settings-input";
 
-export const DEFAULT_USER_SETTINGS: UserSettings = { autoSyncHours: null, staleAfterWeeks: 6 };
+export { DEFAULT_USER_SETTINGS };
 
 interface UserSettingsRow {
   readonly auto_sync_hours: number | null;

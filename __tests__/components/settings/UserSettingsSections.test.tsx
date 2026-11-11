@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
-// __tests__/components/settings/AutoSyncSettingsSection.test.tsx
+// __tests__/components/settings/UserSettingsSections.test.tsx
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { AutoSyncSettingsSection } from "@/components/settings/AutoSyncSettingsSection";
+import { UserSettingsSections } from "@/components/settings/UserSettingsSections";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
 
-describe("AutoSyncSettingsSection", () => {
+describe("UserSettingsSections", () => {
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
@@ -20,7 +20,7 @@ describe("AutoSyncSettingsSection", () => {
       .mockResolvedValueOnce(jsonResponse({ settings: { autoSyncHours: null, staleAfterWeeks: 6 } }))
       .mockResolvedValueOnce(jsonResponse({ settings: { autoSyncHours: 12, staleAfterWeeks: 6 } }));
 
-    render(<AutoSyncSettingsSection />);
+    render(<UserSettingsSections />);
 
     const select = (await screen.findByLabelText("Synchroniser mes plateformes")) as HTMLSelectElement;
     expect(select.value).toBe("off");
@@ -40,7 +40,7 @@ describe("AutoSyncSettingsSection", () => {
       .mockResolvedValueOnce(jsonResponse({ settings: { autoSyncHours: 24, staleAfterWeeks: 6 } }))
       .mockResolvedValueOnce(jsonResponse({ settings: { autoSyncHours: null, staleAfterWeeks: 6 } }));
 
-    render(<AutoSyncSettingsSection />);
+    render(<UserSettingsSections />);
     const select = (await screen.findByLabelText("Synchroniser mes plateformes")) as HTMLSelectElement;
     fireEvent.change(select, { target: { value: "off" } });
 
@@ -51,7 +51,7 @@ describe("AutoSyncSettingsSection", () => {
   it("stays hidden for a signed-out visitor", async () => {
     const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ error: "Non authentifié" }, 401));
 
-    const { container } = render(<AutoSyncSettingsSection />);
+    const { container } = render(<UserSettingsSections />);
 
     await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
     expect(container.innerHTML).toBe("");
@@ -62,11 +62,40 @@ describe("AutoSyncSettingsSection", () => {
       .mockResolvedValueOnce(jsonResponse({ settings: { autoSyncHours: 6, staleAfterWeeks: 6 } }))
       .mockResolvedValueOnce(jsonResponse({ error: "x" }, 500));
 
-    render(<AutoSyncSettingsSection />);
+    render(<UserSettingsSections />);
     const select = (await screen.findByLabelText("Synchroniser mes plateformes")) as HTMLSelectElement;
     fireEvent.change(select, { target: { value: "24" } });
 
     await screen.findByText("Impossible d'enregistrer ce réglage.");
     expect(select.value).toBe("6");
+  });
+
+  it("saves how many weeks before an in-progress game is called left aside", async () => {
+    const fetchSpy = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValueOnce(jsonResponse({ settings: { autoSyncHours: null, staleAfterWeeks: 6 } }))
+      .mockResolvedValueOnce(jsonResponse({ settings: { autoSyncHours: null, staleAfterWeeks: 4 } }));
+
+    render(<UserSettingsSections />);
+    const field = (await screen.findByLabelText("Semaines sans jouer avant le rappel")) as HTMLInputElement;
+    expect(field.value).toBe("6");
+
+    fireEvent.change(field, { target: { value: "4" } });
+    fireEvent.blur(field);
+
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(2));
+    expect(fetchSpy.mock.calls[1][1]).toMatchObject({ body: JSON.stringify({ staleAfterWeeks: 4 }) });
+  });
+
+  it("does not save a number of weeks out of range", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValueOnce(jsonResponse({ settings: { autoSyncHours: null, staleAfterWeeks: 6 } }));
+
+    render(<UserSettingsSections />);
+    const field = (await screen.findByLabelText("Semaines sans jouer avant le rappel")) as HTMLInputElement;
+    fireEvent.change(field, { target: { value: "99" } });
+    fireEvent.blur(field);
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(field.value).toBe("6");
   });
 });

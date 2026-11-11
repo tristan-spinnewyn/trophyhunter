@@ -77,10 +77,6 @@ export interface OwnedGame {
   statusChangedAt?: string;
   /** When the game was last marked finished (ISO date); undefined when unknown, as for games finished before tracking began. */
   completedAt?: string;
-  /** The owner's rating, 1 to 5, once the game is finished or abandoned. */
-  rating?: number;
-  /** The owner's short review. */
-  review?: string;
 }
 
 export interface DuplicateGameGroup {

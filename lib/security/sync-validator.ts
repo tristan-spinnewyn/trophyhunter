@@ -1,5 +1,4 @@
 // lib/security/sync-validator.ts
-import { parseGameReviewInput } from "../game-review/game-review";
 import type { OwnedGame, PlatformType, UserAccountProfile, UserGameProgress } from "../types";
 import { resolveGameStatus } from "../game-status/game-status.services";
 import { ALLOWED_PLATFORMS, type ValidatedSyncCollection, type ValidatedSyncPayload } from "./security.types";
@@ -7,16 +6,6 @@ import { sanitizeExternalHref } from "./url-validator";
 
 const MAX_BATCH = 2000;
 const MAX_STR = 256;
-
-/** The rating and review of a backed-up game, each kept only when valid. */
-function backedUpReview(rec: Record<string, unknown>): { rating?: number; review?: string } {
-  const rating = parseGameReviewInput({ rating: rec.rating });
-  const review = parseGameReviewInput({ review: rec.review });
-  return {
-    rating: rating.ok ? rating.review.rating ?? undefined : undefined,
-    review: review.ok ? review.review.review ?? undefined : undefined,
-  };
-}
 
 export class SyncPayloadValidationError extends Error {
   constructor(message: string) {
@@ -58,7 +47,6 @@ export function validateSyncPayload(input: Record<string, unknown>): ValidatedSy
       backlogRank: Number.isInteger(rec.backlogRank) ? (rec.backlogRank as number) : undefined,
       statusChangedAt: typeof rec.statusChangedAt === "string" ? rec.statusChangedAt.slice(0, 64) : undefined,
       completedAt: typeof rec.completedAt === "string" ? rec.completedAt.slice(0, 64) : undefined,
-      ...backedUpReview(rec),
     });
   }
 
