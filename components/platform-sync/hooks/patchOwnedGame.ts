@@ -3,7 +3,8 @@ import type { GameStatus, PlatformType } from "@/lib/types";
 
 type OwnedGamePatch =
   | { readonly appId: number; readonly platform: PlatformType; readonly status: GameStatus }
-  | { readonly appId: number; readonly platform: PlatformType; readonly backlogRank: number | null };
+  | { readonly appId: number; readonly platform: PlatformType; readonly backlogRank: number | null }
+  | { readonly backlogQueue: readonly { readonly appId: number; readonly platform: PlatformType }[] };
 
 /** Sends one tracking change of a game to the server. The caller has already applied it in memory. */
 export async function patchOwnedGame(patch: OwnedGamePatch, failureLog: string): Promise<void> {

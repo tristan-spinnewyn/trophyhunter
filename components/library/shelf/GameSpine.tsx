@@ -1,19 +1,25 @@
 // components/library/shelf/GameSpine.tsx
 
-import type { CSSProperties } from "react";
+import type { ButtonHTMLAttributes, CSSProperties, HTMLAttributes, Ref } from "react";
 import type { OwnedGame } from "@/lib/types";
 import { PLATFORM_META } from "@/lib/platforms";
 import { getSpineStyle } from "@/lib/library/spine-style";
+
+type DataAttributes = { readonly [key: `data-${string}`]: string | number | undefined };
 
 interface GameSpineProps {
   readonly game: OwnedGame;
   readonly onOpen: (game: OwnedGame) => void;
   /** 1-based place in the backlog queue, shown above the spine. */
   readonly queuePosition?: number;
+  /** Lets a shelf move the spine around, as when the backlog queue is dragged into a new order. */
+  readonly slotRef?: Ref<HTMLDivElement>;
+  readonly slotProps?: HTMLAttributes<HTMLDivElement> & DataAttributes;
+  readonly buttonProps?: ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
 /** A game stored spine-out: its title reads bottom to top, its store sits at the foot. */
-export function GameSpine({ game, onOpen, queuePosition }: GameSpineProps) {
+export function GameSpine({ game, onOpen, queuePosition, slotRef, slotProps, buttonProps }: GameSpineProps) {
   const spine = getSpineStyle(game);
   const style = {
     "--spine-bg": spine.background,
@@ -23,9 +29,10 @@ export function GameSpine({ game, onOpen, queuePosition }: GameSpineProps) {
   } as CSSProperties;
 
   return (
-    <div className="spine-slot">
+    <div ref={slotRef} {...slotProps} className={`spine-slot ${slotProps?.className ?? ""}`.trim()}>
       <button
         type="button"
+        {...buttonProps}
         className="spine"
         style={style}
         aria-label={game.name}

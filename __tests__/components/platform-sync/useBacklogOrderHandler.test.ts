@@ -62,4 +62,30 @@ describe("useBacklogOrderHandler", () => {
 
     expect(rankOf(2)).toBe(1);
   });
+
+  it("saves the order dragged on the shelf, in memory and on the server", async () => {
+    const { props, fetchMock, rankOf } = setup();
+    const handler = useBacklogOrderHandler(props);
+
+    await handler.handleReorderQueue(games, [games[2], games[1]]);
+
+    expect([rankOf(3), rankOf(2), rankOf(1)]).toEqual([0, 1, undefined]);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/user/games",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ backlogQueue: [{ appId: 3, platform: "gog" }, { appId: 2, platform: "steam" }] }),
+      })
+    );
+  });
+
+  it("keeps queued games hidden by a filter in the queue", async () => {
+    const { props, rankOf } = setup();
+    const handler = useBacklogOrderHandler(props);
+    const visibleShelf = [games[1], games[2]];
+
+    await handler.handleReorderQueue(visibleShelf, [games[2]]);
+
+    expect([rankOf(1), rankOf(3), rankOf(2)]).toEqual([0, 1, undefined]);
+  });
 });

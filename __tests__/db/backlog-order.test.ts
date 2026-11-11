@@ -9,6 +9,7 @@ import {
   getUserOwnedGames,
   setUserGameStatus,
   setUserGameBacklogRank,
+  setUserBacklogQueue,
 } from "@/lib/db";
 import { runDatabaseMigrations } from "@/lib/db/migrations";
 import { makeOwnedGame } from "../helpers/gameFixtures";
@@ -79,5 +80,25 @@ describe("backlog order in the database", () => {
     setUserGameBacklogRank(userId, 2, "steam", 1);
 
     expect(rankOf(2)).toBe(1);
+  });
+
+  it("stores a whole queue in its order and takes the other backlog games out of it", () => {
+    saveUserOwnedGames(userId, [makeOwnedGame({ appId: 3, name: "Tunic", status: "backlog", platform: "gog" })]);
+    setUserGameBacklogRank(userId, 1, "steam", 0);
+
+    setUserBacklogQueue(userId, [
+      { appId: 3, platform: "gog" },
+      { appId: 2, platform: "steam" },
+    ]);
+
+    expect([rankOf(3), rankOf(2), rankOf(1)]).toEqual([0, 1, undefined]);
+  });
+
+  it("only queues games that are in the backlog", () => {
+    saveUserOwnedGames(userId, [makeOwnedGame({ appId: 4, name: "Doom", status: "completed" })]);
+
+    setUserBacklogQueue(userId, [{ appId: 4, platform: "steam" }]);
+
+    expect(rankOf(4)).toBeUndefined();
   });
 });

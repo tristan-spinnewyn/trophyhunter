@@ -97,3 +97,12 @@
   .spine { width: calc(var(--spine-w) * .85); height: calc(var(--spine-h) * .8); }
   .spine-title { font-size: 16px; max-height: calc(var(--spine-h) * .8 - 48px); }
 }
+
+/* Backlog spines can be dragged to reorder the queue. */
+.spine-slot-sortable .spine { cursor: grab; }
+.spine-slot-sortable[data-dragging="true"] { position: relative; z-index: 10; }
+.spine-slot-sortable[data-dragging="true"] .spine {
+  cursor: grabbing;
+  transform: translateY(-14px);
+  box-shadow: 0 12px 24px rgb(0 0 0 / .5), inset -6px 0 10px -6px rgb(0 0 0 / .45);
+}
