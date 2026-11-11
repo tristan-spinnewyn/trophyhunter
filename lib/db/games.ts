@@ -4,6 +4,7 @@ import { getDb, withTransaction } from "./connection";
 import type { OwnedGame, PlatformType } from "../types";
 import { isValidGameStatus } from "../game-status/game-status.services";
 import { mapUserGameRow, type UserGameRow } from "./games-mapper";
+import { recordPlaytimeGrowth } from "./play-sessions";
 
 export function getUserOwnedGames(userId: string): OwnedGame[] {
   const db = getDb();
@@ -44,8 +45,16 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
        status = COALESCE(?, user_games.status)`
   );
 
+  const previousPlaytimeStmt = db.prepare(
+    "SELECT playtime_hours FROM user_games WHERE user_id = ? AND platform = ? AND app_id = ?"
+  );
+
   withTransaction(db, () => {
     for (const g of games) {
+      const previous = previousPlaytimeStmt.get(userId, g.platform, g.appId) as
+        | { playtime_hours: number | null }
+        | undefined;
+      recordPlaytimeGrowth(db, userId, g, previous ? previous.playtime_hours : null);
       const explicitStatus = isValidGameStatus(g.status) ? g.status : null;
       insertStmt.run(
         crypto.randomUUID(),

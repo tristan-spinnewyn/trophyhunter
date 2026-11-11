@@ -2,10 +2,13 @@
 
 "use client";
 
+import { useRouter } from "next/navigation";
 import FeedbackToasts from "@/components/ui/FeedbackToasts";
 import LibraryNavTabs from "@/components/library/LibraryNavTabs";
 import { LibraryHeaderBanner } from "@/components/library/LibraryHeaderBanner";
 import { FeaturedGamesSection } from "@/components/library/FeaturedGamesSection";
+import { RecentPlayPanel } from "@/components/library/RecentPlayPanel";
+import { useRecentPlaySessions } from "@/components/library/hooks/useRecentPlaySessions";
 import { useHomePageController } from "./hooks/useHomePageController";
 import { HomeContextPanels } from "./components/HomeContextPanels";
 import { HomeLibrarySection } from "./components/HomeLibrarySection";
@@ -19,6 +22,8 @@ function showsGameList(tab: LibraryTab): boolean {
 
 export default function HomePage() {
   const c = useHomePageController();
+  const router = useRouter();
+  const recentSessions = useRecentPlaySessions(Boolean(c.currentUser));
 
   return (
     <div className="space-y-6">
@@ -28,6 +33,8 @@ export default function HomePage() {
         onOpenAddGame={() => c.addGameFlow.setIsAddGameOpen(true)}
         trackingSummary={c.trackingSummary}
       />
+
+      <RecentPlayPanel sessions={recentSessions} onSelectGame={(appId) => router.push(`/game/${appId}`)} />
 
       <FeedbackToasts
         bannerMsg={c.bannerMsg}

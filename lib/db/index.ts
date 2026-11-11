@@ -4,6 +4,7 @@ export * from "./auth";
 export * from "./sessions";
 export * from "./accounts";
 export * from "./games";
+export * from "./play-sessions";
 export * from "./game-status";
 export * from "./backlog-order";
 export * from "./progress";
