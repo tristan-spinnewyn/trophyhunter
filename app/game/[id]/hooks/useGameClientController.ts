@@ -7,12 +7,13 @@ import { useGameDetails } from "./useGameDetails";
 import { useGameProgressActions } from "./useGameProgressActions";
 import { useAchievementFilters } from "./useAchievementFilters";
 import { useHuntingActions } from "./useHuntingActions";
+import { useGameReview } from "./useGameReview";
 
 export function useGameClientController(id: string) {
   const appId = parseInt(id, 10);
   const {
     currentUser, ownedGames, accountProfile, steamUser,
-    favorites, setFavorites, upsertOwnedGameInMemoryAndDb,
+    favorites, setFavorites, upsertOwnedGameInMemoryAndDb, setOwnedGames,
   } = useUserData();
 
   const owned = ownedGames.find((g) => g.appId === appId);
@@ -40,6 +41,8 @@ export function useGameClientController(id: string) {
     setSyncNotice: details.setSyncNotice,
   });
 
+  const review = useGameReview({ owned, currentUser, setOwnedGames });
+
   const filters = useAchievementFilters(details.game?.achievements, details.progress);
 
   return {
@@ -47,6 +50,7 @@ export function useGameClientController(id: string) {
     ...details,
     ...actions,
     ...hunting,
+    ...review,
     ...filters,
   };
 }

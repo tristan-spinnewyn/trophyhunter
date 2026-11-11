@@ -73,4 +73,16 @@ describe("dashboard utils (mergeGamesList & replacePlatformInList)", () => {
     expect(replacePlatformInList(base, "xbox", incoming)[0].completedAt).toBe("2026-05-01T10:00:00.000Z");
     expect(mergeGamesList(base, incoming)[0].completedAt).toBe("2026-05-01T10:00:00.000Z");
   });
+
+  it("keeps the rating and review when the platform is synced again", () => {
+    const base: OwnedGame[] = [
+      { appId: 10, name: "Halo", headerImg: "", platform: "xbox", totalAchievements: 50, unlockedCount: 50, addedAt: "2026-01-01", status: "completed", rating: 5, review: "Culte." },
+    ];
+    const incoming: OwnedGame[] = [
+      { appId: 10, name: "Halo", headerImg: "", platform: "xbox", totalAchievements: 50, unlockedCount: 50, addedAt: "2026-01-05" },
+    ];
+
+    expect(replacePlatformInList(base, "xbox", incoming)[0]).toMatchObject({ rating: 5, review: "Culte." });
+    expect(mergeGamesList(base, incoming)[0]).toMatchObject({ rating: 5, review: "Culte." });
+  });
 });

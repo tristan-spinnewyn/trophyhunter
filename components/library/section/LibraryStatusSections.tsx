@@ -12,6 +12,7 @@ import { describeDurations, shortDurationLabel } from "@/lib/library/duration-la
 import { GameSpine } from "@/components/library/shelf/GameSpine";
 import { ShelfHeading } from "@/components/library/shelf/ShelfHeading";
 import { GamePeekDialog } from "@/components/library/shelf/GamePeekDialog";
+import { describeRating } from "@/lib/game-review/game-review";
 import { BacklogQueueControls } from "@/components/library/shelf/BacklogQueueControls";
 import { CompletedYearShelves } from "@/components/library/shelf/CompletedYearShelves";
 import { SortableBacklogSpines } from "@/components/library/shelf/SortableBacklogSpines";
@@ -94,6 +95,7 @@ export function LibraryStatusSections({
             />
           )}
           {peekedDurations && <p className="mb-4 text-sm text-paper-dim">{peekedDurations}</p>}
+          {describeRating(peeked.rating) && <p className="mb-4 text-sm text-paper-dim">{describeRating(peeked.rating)}</p>}
           {renderGame(peeked)}
         </GamePeekDialog>
       )}

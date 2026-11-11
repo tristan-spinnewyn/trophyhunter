@@ -7,6 +7,8 @@ import { GameHeaderGuides } from "./GameHeaderGuides";
 import { GameHuntingMetaBar } from "../hunting/GameHuntingMetaBar";
 import { GameStatusPicker } from "../game-status/GameStatusPicker";
 import { CompletionDateField } from "../game-status/CompletionDateField";
+import { GameReviewField } from "../game-status/GameReviewField";
+import { canBeReviewed, type GameReview } from "@/lib/game-review/game-review";
 import { getSpineStyle } from "@/lib/library/spine-style";
 import { getPortraitCoverUrl } from "@/lib/library/cover-image";
 import { resolveGameStatus } from "@/lib/game-status/game-status.services";
@@ -27,6 +29,10 @@ export interface GameHeaderProps {
   /** When a finished game was finished (ISO date); editable through `onChangeCompletedAt`. */
   readonly completedAt?: string;
   readonly onChangeCompletedAt?: (day: string) => void;
+  /** The owner's rating and review, offered once the game is finished or abandoned. */
+  readonly rating?: number;
+  readonly review?: string;
+  readonly onSaveReview?: (review: GameReview) => void;
   readonly huntingMeta?: GameHuntingMeta;
   readonly onSaveHuntingOverride?: (override: GameHuntingOverride | undefined) => void;
   readonly onBackToLibrary?: () => void;
@@ -45,12 +51,16 @@ export default function GameHeader({
   onChangeGameStatus,
   completedAt,
   onChangeCompletedAt,
+  rating,
+  review,
+  onSaveReview,
   huntingMeta,
   onSaveHuntingOverride,
   onBackToLibrary,
   playtimeHours,
 }: GameHeaderProps) {
   const isFinished = isOwned && resolveGameStatus(gameStatus) === "completed";
+  const isReviewable = isOwned && canBeReviewed(gameStatus);
   // The game's spine colour carries over from the shelf to the top of its page.
   const spine = getSpineStyle({ appId: game.id, name: game.name, platform });
   const bandStyle = {
@@ -93,6 +103,7 @@ export default function GameHeader({
           {isFinished && onChangeCompletedAt && (
             <CompletionDateField completedAt={completedAt} onChange={onChangeCompletedAt} />
           )}
+          {isReviewable && onSaveReview && <GameReviewField rating={rating} review={review} onSave={onSaveReview} />}
           <GameHeaderActions
             isFavorite={isFavorite}
             onToggleFavorite={onToggleFavorite}

@@ -70,6 +70,12 @@ export function runDatabaseMigrations(db: DatabaseSync): void {
     // No date is invented for games finished before: they stay "finished at an unknown date".
     db.exec("ALTER TABLE user_games ADD COLUMN completed_at TEXT;");
   }
+  if (!gameCols.has("rating")) {
+    db.exec("ALTER TABLE user_games ADD COLUMN rating INTEGER;");
+  }
+  if (!gameCols.has("review")) {
+    db.exec("ALTER TABLE user_games ADD COLUMN review TEXT;");
+  }
   moveImplicitBacklogToUnsorted(db);
   moveWishlistFlagsToTable(db);
 
