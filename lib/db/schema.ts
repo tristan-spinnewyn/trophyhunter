@@ -77,6 +77,15 @@ CREATE TABLE IF NOT EXISTS play_sessions (
 );
 CREATE INDEX IF NOT EXISTS idx_play_sessions_user_date ON play_sessions(user_id, detected_at);
 
+-- Per-user preferences; a missing row means the defaults.
+CREATE TABLE IF NOT EXISTS user_settings (
+  user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  auto_sync_hours INTEGER,
+  stale_after_weeks INTEGER NOT NULL DEFAULT 6,
+  last_auto_sync_at TEXT,
+  updated_at TEXT NOT NULL
+);
+
 -- Games wished for, owned or not yet: a wishlist outlives the collection it may later join.
 CREATE TABLE IF NOT EXISTS user_wishlist (
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
