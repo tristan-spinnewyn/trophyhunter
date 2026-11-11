@@ -66,6 +66,29 @@ describe("User Wishlist & Duplicates API", () => {
     expect(wishlistData.wishlist[0].appId).toBe(100);
   });
 
+  it("keeps a wished-for game that is not owned, with a safe cover only", async () => {
+    const post = (body: unknown) =>
+      toggleWishlist(
+        new Request("http://localhost/api/user/wishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        })
+      );
+
+    await post({ appId: 900, platform: "xbox", isWishlist: true, name: "Starfield", headerImg: "https://example.com/sf.jpg" });
+    await post({ appId: 901, platform: "xbox", isWishlist: true, name: "Halo", headerImg: "javascript:alert(1)" });
+
+    const { wishlist } = await (await getWishlist()).json();
+    expect(wishlist).toHaveLength(2);
+    expect(wishlist).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ appId: 900, platform: "xbox", name: "Starfield", headerImg: "https://example.com/sf.jpg" }),
+        expect.objectContaining({ appId: 901, name: "Halo", headerImg: "" }),
+      ])
+    );
+  });
+
   it("returns cross-platform duplicate games", async () => {
     const dupData = await (await getDuplicates()).json();
     expect(dupData.duplicates.length).toBe(1);

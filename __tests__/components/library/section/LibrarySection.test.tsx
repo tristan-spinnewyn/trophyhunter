@@ -64,6 +64,22 @@ describe("LibrarySection", () => {
     expect(onUpdateGameStatus).toHaveBeenCalledWith(7, "steam", "in-progress");
   });
 
+  it("proposes to queue a wished-for game that a sync brought in", () => {
+    const onUpdateGameStatus = vi.fn();
+    const onToggleWishlist = vi.fn();
+    renderSection({
+      filteredGames: [makeOwnedGame({ appId: 8, name: "Starfield", platform: "xbox", status: "unsorted" })],
+      wishlistIds: [8],
+      onUpdateGameStatus,
+      onToggleWishlist,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Mettre Starfield au backlog" }));
+
+    expect(onUpdateGameStatus).toHaveBeenCalledWith(8, "xbox", "backlog");
+    expect(onToggleWishlist).toHaveBeenCalledWith(8, "xbox");
+  });
+
   it("lists the games grouped by status", () => {
     renderSection({
       filteredGames: [makeOwnedGame(), makeOwnedGame({ appId: 400, name: "Portal", status: "completed" })],

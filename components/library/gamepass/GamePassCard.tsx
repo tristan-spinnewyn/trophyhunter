@@ -2,14 +2,14 @@
 
 import { Trophy, Heart, Plus, Check, ExternalLink } from "lucide-react";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
-import type { PlatformType } from "@/lib/types";
+import type { PlatformType, WishlistGameDetails } from "@/lib/types";
 
 interface GamePassCardProps {
   readonly item: GamePassCatalogItem;
   readonly isOwned: boolean;
   readonly isWishlisted: boolean;
   readonly onAddGameToXbox: (item: GamePassCatalogItem) => Promise<void>;
-  readonly onToggleWishlist: (appId: number, platform: PlatformType) => Promise<void>;
+  readonly onToggleWishlist: (appId: number, platform: PlatformType, details?: WishlistGameDetails) => Promise<void>;
   readonly onSelectGame: (appId: number, name: string) => void;
 }
 
@@ -50,7 +50,7 @@ export function GamePassCard({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              void onToggleWishlist(item.appId, "xbox");
+              void onToggleWishlist(item.appId, "xbox", { name: item.name, headerImg: item.headerImg });
             }}
             title={isWishlisted ? "Retirer de la liste d'envies" : "Ajouter à la liste d'envies"}
             className={`absolute top-2 right-2 rounded-full p-1.5 transition ${

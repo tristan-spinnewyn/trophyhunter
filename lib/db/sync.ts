@@ -3,6 +3,7 @@ import { saveUserPlatformAccount } from "./accounts";
 import { saveUserOwnedGames } from "./games";
 import { saveUserGameProgress } from "./progress";
 import { createCollection, addGameToCollection } from "./collections";
+import { addWishlistIds } from "./wishlist";
 import type { DatabaseSyncPayload, PlatformType } from "../types";
 
 export function syncFromLocalStorage(
@@ -58,11 +59,7 @@ export function syncFromLocalStorage(
 
     // 5. Sync Wishlist
     if (payload.wishlist && Array.isArray(payload.wishlist)) {
-      for (const appId of payload.wishlist) {
-        db.prepare(
-          "UPDATE user_games SET is_wishlist = 1 WHERE user_id = ? AND app_id = ?"
-        ).run(userId, Number(appId));
-      }
+      addWishlistIds(userId, payload.wishlist.map(Number));
     }
 
     // 6. Sync Collections

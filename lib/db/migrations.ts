@@ -9,6 +9,7 @@ interface SqliteColumnInfo {
 
 /** Bumped by each one-shot data migration, stored in SQLite's `PRAGMA user_version`. */
 const EXPLICIT_BACKLOG_VERSION = 1;
+const WISHLIST_TABLE_VERSION = 2;
 
 function getSchemaVersion(db: DatabaseSync): number {
   const row = db.prepare("PRAGMA user_version").get() as { readonly user_version?: number } | undefined;
@@ -23,6 +24,19 @@ function moveImplicitBacklogToUnsorted(db: DatabaseSync): void {
   if (getSchemaVersion(db) >= EXPLICIT_BACKLOG_VERSION) return;
   db.exec("UPDATE user_games SET status = 'unsorted' WHERE status = 'backlog';");
   db.exec(`PRAGMA user_version = ${EXPLICIT_BACKLOG_VERSION};`);
+}
+
+/** The wishlist used to be a flag on collection games; flagged games move to the wishlist table once. */
+function moveWishlistFlagsToTable(db: DatabaseSync): void {
+  if (getSchemaVersion(db) >= WISHLIST_TABLE_VERSION) return;
+  const hasWishlistTable = getTableColumnNames(db, "user_wishlist").size > 0;
+  if (hasWishlistTable && getTableColumnNames(db, "user_games").has("is_wishlist")) {
+    db.exec(
+      `INSERT OR IGNORE INTO user_wishlist (user_id, app_id, platform, name, header_img, added_at)
+       SELECT user_id, app_id, platform, name, header_img, added_at FROM user_games WHERE is_wishlist = 1;`
+    );
+  }
+  db.exec(`PRAGMA user_version = ${WISHLIST_TABLE_VERSION};`);
 }
 
 function getTableColumnNames(db: DatabaseSync, tableName: string): Set<string> {
@@ -57,6 +71,7 @@ export function runDatabaseMigrations(db: DatabaseSync): void {
     db.exec("ALTER TABLE user_games ADD COLUMN completed_at TEXT;");
   }
   moveImplicitBacklogToUnsorted(db);
+  moveWishlistFlagsToTable(db);
 
   const progressCols = getTableColumnNames(db, "user_game_progress");
   if (!progressCols.has("pinned_ids_json")) {

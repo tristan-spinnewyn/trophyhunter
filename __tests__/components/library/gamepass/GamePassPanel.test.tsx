@@ -133,7 +133,7 @@ describe("GamePassPanel", () => {
     fireEvent.click(screen.getByTitle("Ajouter à la liste d'envies"));
 
     expect(props.onAddGameToXbox).toHaveBeenCalledWith(makeItem());
-    expect(props.onToggleWishlist).toHaveBeenCalledWith(1001, "xbox");
+    expect(props.onToggleWishlist).toHaveBeenCalledWith(1001, "xbox", { name: "Halo Infinite", headerImg: "https://example.test/halo.jpg" });
     expect(props.onSelectGame).not.toHaveBeenCalled();
   });
 
