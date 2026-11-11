@@ -2,6 +2,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { isIgdbConfigured, igdbQuery, resetIgdbTokenForTesting } from "@/lib/igdb/igdb-client";
 
+/** Tells the Twitch token request apart from IGDB queries by host, never by a prefix of the URL text. */
+const isTokenRequest = (url: unknown) => new URL(String(url)).hostname === "id.twitch.tv";
+const tokenRequestCount = (fetchMock: { mock: { calls: unknown[][] } }) =>
+  fetchMock.mock.calls.filter(([url]) => isTokenRequest(url)).length;
+
 const tokenResponse = (expiresIn = 5_000_000) =>
   new Response(JSON.stringify({ access_token: "token-1", expires_in: expiresIn, token_type: "bearer" }));
 
@@ -54,16 +59,16 @@ describe("igdb client", () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-11-11T00:00:00.000Z"));
     const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (url) =>
-      String(url).startsWith("https://id.twitch.tv") ? tokenResponse(3600) : new Response("[]")
+      isTokenRequest(url) ? tokenResponse(3600) : new Response("[]")
     );
 
     await igdbQuery("games", "fields id;");
     await igdbQuery("games", "fields id;");
-    expect(fetchMock.mock.calls.filter(([u]) => String(u).includes("twitch")).length).toBe(1);
+    expect(tokenRequestCount(fetchMock)).toBe(1);
 
     vi.setSystemTime(new Date("2026-11-11T00:59:30.000Z"));
     await igdbQuery("games", "fields id;");
-    expect(fetchMock.mock.calls.filter(([u]) => String(u).includes("twitch")).length).toBe(2);
+    expect(tokenRequestCount(fetchMock)).toBe(2);
   });
 
   it("fails clearly when IGDB refuses a query", async () => {
