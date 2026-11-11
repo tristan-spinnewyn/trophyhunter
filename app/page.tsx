@@ -8,6 +8,7 @@ import LibraryNavTabs from "@/components/library/LibraryNavTabs";
 import { LibraryHeaderBanner } from "@/components/library/LibraryHeaderBanner";
 import { FeaturedGamesSection } from "@/components/library/FeaturedGamesSection";
 import { RecentPlayPanel } from "@/components/library/RecentPlayPanel";
+import { PriceReachedNotice } from "@/components/library/wishlist/PriceReachedNotice";
 import { useRecentPlaySessions } from "@/components/library/hooks/useRecentPlaySessions";
 import { PACE_WINDOW_DAYS } from "@/lib/library/backlog-estimate";
 import { recentWeekStart, sessionsSince } from "@/lib/library/session-feed";
@@ -38,6 +39,8 @@ export default function HomePage() {
         trackingSummary={c.trackingSummary}
         platforms={ALL_PLATFORMS.filter((p) => (c.stats.platformCounts[p] ?? 0) > 0)}
       />
+
+      <PriceReachedNotice ownedGames={c.ownedGames} isSignedIn={Boolean(c.currentUser)} />
 
       <RecentPlayPanel sessions={sessionsSince(recentSessions, recentWeekStart(new Date()))} onSelectGame={(appId) => router.push(`/game/${appId}`)} />
 

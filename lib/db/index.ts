@@ -12,6 +12,7 @@ export * from "./backlog-order";
 export * from "./progress";
 export * from "./collections";
 export * from "./wishlist";
+export * from "./wishlist-prices";
 export * from "./duplicates";
 export * from "./clear";
 export * from "./sync";

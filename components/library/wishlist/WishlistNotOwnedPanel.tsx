@@ -1,17 +1,11 @@
 // components/library/wishlist/WishlistNotOwnedPanel.tsx
 "use client";
 
-import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import type { OwnedGame, PlatformType } from "@/lib/types";
 import { PLATFORM_META } from "@/lib/platforms";
-
-interface WishlistEntry {
-  readonly appId: number;
-  readonly platform: PlatformType;
-  readonly name: string;
-  readonly headerImg: string;
-}
+import { useWishlistEntries } from "./useWishlistEntries";
+import { WishlistPriceField } from "./WishlistPriceField";
 
 interface WishlistNotOwnedPanelProps {
   readonly ownedGames: readonly OwnedGame[];
@@ -21,23 +15,7 @@ interface WishlistNotOwnedPanelProps {
 
 /** The wished-for games that are not in the collection yet, which the library shelves cannot show. */
 export function WishlistNotOwnedPanel({ ownedGames, wishlistIds, onToggleWishlist }: WishlistNotOwnedPanelProps) {
-  const [entries, setEntries] = useState<readonly WishlistEntry[]>([]);
-  const wishlistKey = wishlistIds.join(",");
-
-  useEffect(() => {
-    let isCurrent = true;
-    fetch("/api/user/wishlist")
-      .then((res) => (res.ok ? res.json() : { wishlist: [] }))
-      .then((data: { wishlist?: WishlistEntry[] }) => {
-        if (isCurrent) setEntries(data.wishlist ?? []);
-      })
-      .catch(() => {
-        if (isCurrent) setEntries([]);
-      });
-    return () => {
-      isCurrent = false;
-    };
-  }, [wishlistKey]);
+  const { entries, saveTargetPrice } = useWishlistEntries(wishlistIds.join(","));
 
   const owned = new Set(ownedGames.map((g) => g.appId));
   const wished = new Set(wishlistIds);
@@ -55,10 +33,11 @@ export function WishlistNotOwnedPanel({ ownedGames, wishlistIds, onToggleWishlis
             ) : (
               <span aria-hidden className="h-10 w-20 shrink-0 rounded-object bg-edge" />
             )}
-            <p className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 space-y-1">
               <span className="block truncate text-sm font-semibold text-paper">{entry.name}</span>
               <span className="text-xs text-dust">{PLATFORM_META[entry.platform]?.shortName}</span>
-            </p>
+              <WishlistPriceField key={entry.targetPriceCents ?? "none"} entry={entry} onSaveTarget={saveTargetPrice} />
+            </div>
             <button
               type="button"
               aria-label={`Retirer ${entry.name} de la liste d'envies`}

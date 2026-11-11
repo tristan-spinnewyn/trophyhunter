@@ -83,6 +83,18 @@ export function runDatabaseMigrations(db: DatabaseSync): void {
   moveImplicitBacklogToUnsorted(db);
   moveWishlistFlagsToTable(db);
 
+  const wishlistCols = getTableColumnNames(db, "user_wishlist");
+  for (const [column, type] of [
+    ["target_price_cents", "INTEGER"],
+    ["last_price_cents", "INTEGER"],
+    ["currency", "TEXT"],
+    ["price_checked_at", "TEXT"],
+  ] as const) {
+    if (wishlistCols.size > 0 && !wishlistCols.has(column)) {
+      db.exec(`ALTER TABLE user_wishlist ADD COLUMN ${column} ${type};`);
+    }
+  }
+
   const progressCols = getTableColumnNames(db, "user_game_progress");
   if (!progressCols.has("pinned_ids_json")) {
     db.exec("ALTER TABLE user_game_progress ADD COLUMN pinned_ids_json TEXT NOT NULL DEFAULT '[]';");

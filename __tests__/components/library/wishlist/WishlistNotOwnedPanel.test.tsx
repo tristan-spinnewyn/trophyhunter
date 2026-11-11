@@ -60,4 +60,20 @@ describe("WishlistNotOwnedPanel", () => {
 
     await waitFor(() => expect(container.innerHTML).toBe(""));
   });
+
+  it("shows each wished game's price and saves the price waited for", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response(JSON.stringify({ wishlist: [{ ...entries[0], platform: "steam", lastPriceCents: 6999, currency: "EUR" }] })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true })));
+    render(<WishlistNotOwnedPanel ownedGames={[]} wishlistIds={[900]} onToggleWishlist={vi.fn()} />);
+
+    const field = await screen.findByLabelText("Prix cible pour Starfield (€)");
+    expect(screen.getByText(/69,99/)).toBeTruthy();
+    fireEvent.change(field, { target: { value: "40" } });
+    fireEvent.blur(field);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/user/wishlist/target");
+  });
 });
