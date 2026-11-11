@@ -37,6 +37,7 @@ export function mergeGamesList(
         abandonedAt: g.abandonedAt ?? existing.abandonedAt,
         rating: g.rating ?? existing.rating,
         review: g.review ?? existing.review,
+        resumeNote: g.resumeNote ?? existing.resumeNote,
         status: isValidGameStatus(g.status)
           ? g.status
           : resolveGameStatus(existing.status),
@@ -80,6 +81,7 @@ export function replacePlatformInList(
       abandonedAt: g.abandonedAt ?? prev.abandonedAt,
       rating: g.rating ?? prev.rating,
       review: g.review ?? prev.review,
+      resumeNote: g.resumeNote ?? prev.resumeNote,
       status: isValidGameStatus(g.status)
         ? g.status
         : resolveGameStatus(prev.status),

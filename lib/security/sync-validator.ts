@@ -1,5 +1,6 @@
 // lib/security/sync-validator.ts
 import { parseGameReviewInput } from "../game-review/game-review";
+import { parseResumeNoteInput } from "../game-resume/resume-note";
 import type { OwnedGame, PlatformType, UserAccountProfile, UserGameProgress } from "../types";
 import { resolveGameStatus } from "../game-status/game-status.services";
 import { ALLOWED_PLATFORMS, type ValidatedSyncCollection, type ValidatedSyncPayload } from "./security.types";
@@ -16,6 +17,12 @@ function backedUpReview(rec: Record<string, unknown>): { rating?: number; review
     rating: rating.ok ? rating.review.rating ?? undefined : undefined,
     review: review.ok ? review.review.review ?? undefined : undefined,
   };
+}
+
+/** The resume note of a backed-up game, kept only when valid. */
+function backedUpResumeNote(rec: Record<string, unknown>): string | undefined {
+  const input = parseResumeNoteInput(rec.resumeNote);
+  return input.ok ? input.note ?? undefined : undefined;
 }
 
 export class SyncPayloadValidationError extends Error {
@@ -60,6 +67,7 @@ export function validateSyncPayload(input: Record<string, unknown>): ValidatedSy
       completedAt: typeof rec.completedAt === "string" ? rec.completedAt.slice(0, 64) : undefined,
       abandonedAt: typeof rec.abandonedAt === "string" ? rec.abandonedAt.slice(0, 64) : undefined,
       ...backedUpReview(rec),
+      resumeNote: backedUpResumeNote(rec),
     });
   }
 

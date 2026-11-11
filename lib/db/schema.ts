@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS user_games (
   abandoned_at TEXT,
   rating INTEGER,
   review TEXT,
+  resume_note TEXT,
   source TEXT,
   added_at TEXT NOT NULL,
   UNIQUE(user_id, platform, app_id)

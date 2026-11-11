@@ -9,6 +9,7 @@ import {
   handlePatchBacklogRank,
   handlePatchBacklogQueue,
   handlePatchGameReview,
+  handlePatchResumeNote,
   handleDeleteOwnedGames,
 } from "./handlers";
 import { publicErrorMessage } from "@/lib/error-message";
@@ -49,6 +50,9 @@ export async function PATCH(req: Request) {
     const body = await req.json();
     if (body && typeof body === "object" && "backlogQueue" in body) {
       return await handlePatchBacklogQueue(user.id, body);
+    }
+    if (body && typeof body === "object" && "resumeNote" in body) {
+      return await handlePatchResumeNote(user.id, body);
     }
     if (body && typeof body === "object" && ("rating" in body || "review" in body)) {
       return await handlePatchGameReview(user.id, body);

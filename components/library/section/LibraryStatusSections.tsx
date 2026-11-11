@@ -13,6 +13,7 @@ import { GameSpine } from "@/components/library/shelf/GameSpine";
 import { ShelfHeading } from "@/components/library/shelf/ShelfHeading";
 import { GamePeekDialog } from "@/components/library/shelf/GamePeekDialog";
 import { describeRating } from "@/lib/game-review/game-review";
+import { ResumeNoteReminder } from "@/components/game-status/ResumeNoteReminder";
 import { describeBacklogEstimate, estimateBacklog } from "@/lib/library/backlog-estimate";
 import { BacklogQueueControls } from "@/components/library/shelf/BacklogQueueControls";
 import { CompletedYearShelves } from "@/components/library/shelf/CompletedYearShelves";
@@ -105,6 +106,7 @@ export function LibraryStatusSections({
           )}
           {peekedDurations && <p className="mb-4 text-sm text-paper-dim">{peekedDurations}</p>}
           {describeRating(peeked.rating) && <p className="mb-4 text-sm text-paper-dim">{describeRating(peeked.rating)}</p>}
+          <ResumeNoteReminder game={peeked} className="mb-4" />
           {renderGame(peeked)}
         </GamePeekDialog>
       )}

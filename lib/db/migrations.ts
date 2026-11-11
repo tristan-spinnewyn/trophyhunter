@@ -80,6 +80,9 @@ export function runDatabaseMigrations(db: DatabaseSync): void {
   if (!gameCols.has("review")) {
     db.exec("ALTER TABLE user_games ADD COLUMN review TEXT;");
   }
+  if (!gameCols.has("resume_note")) {
+    db.exec("ALTER TABLE user_games ADD COLUMN resume_note TEXT;");
+  }
   moveImplicitBacklogToUnsorted(db);
   moveWishlistFlagsToTable(db);
 
