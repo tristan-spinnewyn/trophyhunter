@@ -9,7 +9,7 @@ import type {
   User as UserType,
   PlatformType,
 } from "@/lib/types";
-import { DEFAULT_GAME_STATUS, assertValidGameStatus } from "@/lib/game-status/game-status.services";
+import { DEFAULT_GAME_STATUS, assertValidGameStatus, statusChangeDates } from "@/lib/game-status/game-status.services";
 import { completionDateFromInput } from "@/lib/library/completion-date";
 
 interface UseGameOwnershipTogglesProps {
@@ -92,6 +92,7 @@ export function useGameOwnershipToggles({
     source: existing?.source || "manual",
     status: existing?.status,
     completedAt: existing?.completedAt,
+    abandonedAt: existing?.abandonedAt,
     ...changes,
   });
 
@@ -101,12 +102,7 @@ export function useGameOwnershipToggles({
     const existing = findOwned();
     const changedAt = new Date().toISOString();
     await upsertOwnedGameInMemoryAndDb(
-      toOwnedGame(game, existing, {
-        status: validStatus,
-        statusChangedAt: changedAt,
-        // A game picked up again keeps its last finish date.
-        completedAt: validStatus === "completed" ? changedAt : existing?.completedAt,
-      })
+      toOwnedGame(game, existing, { status: validStatus, ...statusChangeDates(validStatus, changedAt, existing) })
     );
   };
 

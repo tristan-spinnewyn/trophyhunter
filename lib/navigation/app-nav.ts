@@ -1,6 +1,6 @@
 // lib/navigation/app-nav.ts
 
-export type AppNavItemId = "library" | "accounts";
+export type AppNavItemId = "library" | "review" | "accounts";
 
 export interface AppNavItem {
   readonly id: AppNavItemId;
@@ -18,6 +18,13 @@ export const APP_NAV_ITEMS: readonly AppNavItem[] = [
     label: "Ma collection",
     shortLabel: "Collection",
     sections: ["/game"],
+  },
+  {
+    id: "review",
+    href: "/annee",
+    label: "Mon année",
+    shortLabel: "Mon année",
+    sections: [],
   },
   {
     id: "accounts",

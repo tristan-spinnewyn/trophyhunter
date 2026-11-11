@@ -2,6 +2,7 @@
 import { describe, it, expect } from "vitest";
 import {
   DEFAULT_GAME_STATUS,
+  statusChangeDates,
   VALID_GAME_STATUSES,
   GAME_STATUS_OPTIONS,
   GAME_STATUS_META,
@@ -77,5 +78,23 @@ describe("game-status.services", () => {
     expect(assertValidGameStatus("completed")).toBe("completed");
     expect(() => assertValidGameStatus("invalid")).toThrow(InvalidGameStatusError);
     expect(() => assertValidGameStatus(null)).toThrow(InvalidGameStatusError);
+  });
+});
+
+describe("statusChangeDates", () => {
+  const AT = "2026-11-11T12:00:00.000Z";
+  const before = { completedAt: "2025-01-01T00:00:00.000Z", abandonedAt: "2025-06-01T00:00:00.000Z" };
+
+  it("dates the status choice and a finish", () => {
+    expect(statusChangeDates("completed", AT, before)).toEqual({ statusChangedAt: AT, completedAt: AT, abandonedAt: before.abandonedAt });
+  });
+
+  it("dates an abandon", () => {
+    expect(statusChangeDates("abandoned", AT, before)).toEqual({ statusChangedAt: AT, completedAt: before.completedAt, abandonedAt: AT });
+  });
+
+  it("keeps the previous finish and abandon dates for any other status", () => {
+    expect(statusChangeDates("in-progress", AT, before)).toEqual({ statusChangedAt: AT, ...before });
+    expect(statusChangeDates("backlog", AT, undefined)).toEqual({ statusChangedAt: AT, completedAt: undefined, abandonedAt: undefined });
   });
 });

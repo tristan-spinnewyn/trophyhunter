@@ -1,6 +1,6 @@
 // components/platform-sync/hooks/useGameStatusHandler.ts
 import type { GameStatus, OwnedGame, PlatformType } from "@/lib/types";
-import { assertValidGameStatus } from "@/lib/game-status/game-status.services";
+import { assertValidGameStatus, statusChangeDates } from "@/lib/game-status/game-status.services";
 import { patchOwnedGame } from "./patchOwnedGame";
 
 interface UseGameStatusHandlerProps {
@@ -18,14 +18,13 @@ export function useGameStatusHandler({
     status: GameStatus
   ): Promise<void> => {
     const validStatus = assertValidGameStatus(status);
-    const statusChangedAt = new Date().toISOString();
+    const changedAt = new Date().toISOString();
     const next = ownedGames.map((item) =>
       item.appId === appId && item.platform === platform
         ? {
             ...item,
             status: validStatus,
-            statusChangedAt,
-            completedAt: validStatus === "completed" ? statusChangedAt : item.completedAt,
+            ...statusChangeDates(validStatus, changedAt, item),
             backlogRank: validStatus === "backlog" ? item.backlogRank : undefined,
           }
         : item
