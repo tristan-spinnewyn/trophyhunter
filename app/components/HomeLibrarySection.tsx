@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import LibrarySection from "@/components/library/section/LibrarySection";
+import { useBacklogDurations } from "@/components/library/hooks/useBacklogDurations";
 import type { useHomePageController } from "../hooks/useHomePageController";
 
 interface HomeLibrarySectionProps {
@@ -11,6 +12,7 @@ interface HomeLibrarySectionProps {
 export function HomeLibrarySection({ controller: c }: HomeLibrarySectionProps) {
   const router = useRouter();
   const { collectionsState: cs, platformSync: ps, addGameFlow: ag, stats, libraryFilters: lf } = c;
+  const backlogDurations = useBacklogDurations(c.ownedGames, Boolean(c.currentUser));
 
   return (
     <LibrarySection
@@ -43,6 +45,7 @@ export function HomeLibrarySection({ controller: c }: HomeLibrarySectionProps) {
       onPlayNext={ps.handlePlayNext}
       onRemoveFromQueue={ps.handleRemoveFromQueue}
       onReorderQueue={ps.handleReorderQueue}
+      backlogDurations={backlogDurations}
     />
   );
 }

@@ -4,10 +4,11 @@
 
 import { useId, useState, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
-import type { GameStatus, OwnedGame, PlatformType } from "@/lib/types";
+import type { GameDurations, GameStatus, OwnedGame, PlatformType } from "@/lib/types";
 import { groupGamesByStatus, type StatusSection } from "@/lib/library/library-tracking";
 import { GAME_STATUS_META, resolveGameStatus } from "@/lib/game-status/game-status.services";
 import { getQueuePositions } from "@/lib/library/backlog-order";
+import { describeDurations, shortDurationLabel } from "@/lib/library/duration-label";
 import { GameSpine } from "@/components/library/shelf/GameSpine";
 import { ShelfHeading } from "@/components/library/shelf/ShelfHeading";
 import { GamePeekDialog } from "@/components/library/shelf/GamePeekDialog";
@@ -26,6 +27,8 @@ interface LibraryStatusSectionsProps {
   readonly onRemoveFromQueue?: (appId: number, platform: PlatformType) => Promise<void> | void;
   /** Enables dragging the backlog spines; receives the shelf as shown and its new queue. */
   readonly onReorderQueue?: (visibleShelf: OwnedGame[], visibleQueue: OwnedGame[]) => Promise<void> | void;
+  /** How long the backlog games take to beat, keyed `platform_appId`. */
+  readonly backlogDurations?: Readonly<Record<string, GameDurations>>;
 }
 
 const gameKey = (g: OwnedGame) => `${g.platform}_${g.appId}`;
@@ -38,6 +41,7 @@ export function LibraryStatusSections({
   onPlayNext,
   onRemoveFromQueue,
   onReorderQueue,
+  backlogDurations,
 }: LibraryStatusSectionsProps) {
   const [peekedKey, setPeekedKey] = useState<string | null>(null);
   const [isSorting, setIsSorting] = useState(false);
@@ -46,6 +50,9 @@ export function LibraryStatusSections({
   const canOrderBacklog = Boolean(onPlayNext && onRemoveFromQueue);
   // Looked up on every render so the dialog follows the game when its status changes.
   const peeked = peekedKey ? games.find((g) => gameKey(g) === peekedKey) : undefined;
+  const durationLabelOf = (g: OwnedGame) => shortDurationLabel(backlogDurations?.[gameKey(g)]);
+  const peekedDurations =
+    peeked && resolveGameStatus(peeked.status) === "backlog" ? describeDurations(backlogDurations?.[gameKey(peeked)]) : null;
 
   return (
     <div className="space-y-12">
@@ -57,6 +64,7 @@ export function LibraryStatusSections({
             key={section.status}
             section={section}
             queuePositions={section.status === "backlog" ? queuePositions : undefined}
+            durationLabelOf={section.status === "backlog" ? durationLabelOf : undefined}
             onOpen={(g) => setPeekedKey(gameKey(g))}
             onSort={section.status === "unsorted" && onUpdateGameStatus ? () => setIsSorting(true) : undefined}
             onReorder={
@@ -85,6 +93,7 @@ export function LibraryStatusSections({
               onRemoveFromQueue={() => void onRemoveFromQueue?.(peeked.appId, peeked.platform)}
             />
           )}
+          {peekedDurations && <p className="mb-4 text-sm text-paper-dim">{peekedDurations}</p>}
           {renderGame(peeked)}
         </GamePeekDialog>
       )}
@@ -120,9 +129,11 @@ interface SpineShelfProps {
   readonly onSort?: () => void;
   /** Makes the spines draggable; receives the new queue of the shelf. */
   readonly onReorder?: (queue: OwnedGame[]) => void;
+  /** How long each game takes to beat ("12 h"), shown on its spine. */
+  readonly durationLabelOf?: (game: OwnedGame) => string | null;
 }
 
-function SpineShelf({ section, onOpen, queuePositions, onSort, onReorder }: SpineShelfProps) {
+function SpineShelf({ section, onOpen, queuePositions, onSort, onReorder, durationLabelOf }: SpineShelfProps) {
   const headingId = useId();
   return (
     <section aria-labelledby={headingId}>
@@ -150,14 +161,14 @@ function SpineShelf({ section, onOpen, queuePositions, onSort, onReorder }: Spin
           )}
           <ChevronRight aria-hidden className={`h-4 w-4 text-dust transition group-open:rotate-90 ${onSort ? "" : "ml-auto"}`} />
         </summary>
-        <SpineShelfContent section={section} onOpen={onOpen} queuePositions={queuePositions} onReorder={onReorder} />
+        <SpineShelfContent section={section} onOpen={onOpen} queuePositions={queuePositions} onReorder={onReorder} durationLabelOf={durationLabelOf} />
       </details>
     </section>
   );
 }
 
 /** Spines laid out by year for finished games, draggable for an orderable backlog, plain otherwise. */
-function SpineShelfContent({ section, onOpen, queuePositions, onReorder }: Omit<SpineShelfProps, "onSort">) {
+function SpineShelfContent({ section, onOpen, queuePositions, onReorder, durationLabelOf }: Omit<SpineShelfProps, "onSort">) {
   if (section.status === "completed") {
     return <CompletedYearShelves games={section.games} onOpen={onOpen} gameKey={gameKey} />;
   }
@@ -168,6 +179,7 @@ function SpineShelfContent({ section, onOpen, queuePositions, onReorder }: Omit<
         queuePositions={queuePositions ?? new Map()}
         gameKey={gameKey}
         onOpen={onOpen}
+        durationLabelOf={durationLabelOf}
         onReorder={onReorder}
       />
     );
@@ -175,7 +187,13 @@ function SpineShelfContent({ section, onOpen, queuePositions, onReorder }: Omit<
   return (
     <div className="spine-rows pb-2">
       {section.games.map((g) => (
-        <GameSpine key={gameKey(g)} game={g} onOpen={onOpen} queuePosition={queuePositions?.get(gameKey(g))} />
+        <GameSpine
+          key={gameKey(g)}
+          game={g}
+          onOpen={onOpen}
+          queuePosition={queuePositions?.get(gameKey(g))}
+          durationLabel={durationLabelOf?.(g)}
+        />
       ))}
     </div>
   );

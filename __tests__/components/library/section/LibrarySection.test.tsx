@@ -80,6 +80,15 @@ describe("LibrarySection", () => {
     expect(onToggleWishlist).toHaveBeenCalledWith(8, "xbox");
   });
 
+  it("shows how long the backlog games take to beat", () => {
+    renderSection({
+      filteredGames: [makeOwnedGame({ appId: 7, name: "Hades", status: "backlog" })],
+      backlogDurations: { steam_7: { hastilySeconds: null, normallySeconds: 22 * 3600, completelySeconds: null } },
+    });
+
+    expect(screen.getByRole("button", { name: "Hades" }).querySelector(".spine-duration")?.textContent).toBe("22 h");
+  });
+
   it("lists the games grouped by status", () => {
     renderSection({
       filteredGames: [makeOwnedGame(), makeOwnedGame({ appId: 400, name: "Portal", status: "completed" })],

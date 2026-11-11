@@ -13,7 +13,7 @@ import type {
   PlatformType,
   UserAccountProfile,
 } from "@/lib/types";
-import type { CollectionWithGames } from "@/lib/types";
+import type { CollectionWithGames, GameDurations } from "@/lib/types";
 import type { LibraryTab, AchievementFilterType } from "@/lib/library/library-filters";
 import type { SortOrderType } from "@/lib/library/library-sort";
 
@@ -55,6 +55,8 @@ export interface LibrarySectionProps {
   readonly onPlayNext?: (appId: number, platform: PlatformType) => Promise<void> | void;
   readonly onRemoveFromQueue?: (appId: number, platform: PlatformType) => Promise<void> | void;
   readonly onReorderQueue?: (visibleShelf: OwnedGame[], visibleQueue: OwnedGame[]) => Promise<void> | void;
+  /** How long the backlog games take to beat, keyed `platform_appId`. */
+  readonly backlogDurations?: Readonly<Record<string, GameDurations>>;
 }
 
 
@@ -88,6 +90,7 @@ export default function LibrarySection({
   onPlayNext,
   onRemoveFromQueue,
   onReorderQueue,
+  backlogDurations,
 }: LibrarySectionProps) {
   return (
     <section className="space-y-4">
@@ -134,6 +137,7 @@ export default function LibrarySection({
           onPlayNext={onPlayNext}
           onRemoveFromQueue={onRemoveFromQueue}
           onReorderQueue={onReorderQueue}
+          backlogDurations={backlogDurations}
           renderGame={(g) => (
             <LibraryGameCard
               key={`${g.platform}_${g.appId}`}

@@ -89,3 +89,10 @@ export interface WishlistGameDetails {
   readonly name?: string;
   readonly headerImg?: string;
 }
+
+/** How long a game takes to beat, in seconds, from IGDB; null where IGDB does not know. */
+export interface GameDurations {
+  readonly hastilySeconds: number | null;
+  readonly normallySeconds: number | null;
+  readonly completelySeconds: number | null;
+}
