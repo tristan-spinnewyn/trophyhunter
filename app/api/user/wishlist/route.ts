@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { getUserWishlist, setGameWishlist } from "@/lib/db";
 import type { PlatformType } from "@/lib/types";
 import { errorMessage } from "@/lib/error-message";
+import { sanitizeExternalHref } from "@/lib/security/url-validator";
 
 export async function GET() {
   const user = await getAuthenticatedUser();
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { appId, platform, isWishlist } = body || {};
+    const { appId, platform, isWishlist, name, headerImg } = body || {};
 
     if (!appId || !platform) {
       return NextResponse.json(
@@ -31,7 +32,11 @@ export async function POST(req: Request) {
       );
     }
 
-    setGameWishlist(user.id, Number(appId), platform as PlatformType, Boolean(isWishlist));
+    // A game not in the collection yet is shown from these, so only safe text and links are kept.
+    setGameWishlist(user.id, Number(appId), platform as PlatformType, Boolean(isWishlist), {
+      name: typeof name === "string" ? name.trim().slice(0, 200) : undefined,
+      headerImg: typeof headerImg === "string" ? sanitizeExternalHref(headerImg) || undefined : undefined,
+    });
     return NextResponse.json({ success: true, isWishlist: Boolean(isWishlist) });
   } catch (err) {
     console.error("Wishlist error:", err);

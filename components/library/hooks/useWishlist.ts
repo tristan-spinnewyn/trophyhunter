@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { PlatformType, User as UserType } from "@/lib/types";
+import type { PlatformType, User as UserType, WishlistGameDetails } from "@/lib/types";
 
 interface UseWishlistProps {
   currentUser?: UserType | null;
@@ -23,7 +23,8 @@ export function useWishlist({
     setWishlistIds(initialWishlist);
   }, [initialWishlist]);
 
-  const handleToggleWishlist = async (appId: number, platform: PlatformType) => {
+  /** `details` names a game that is not in the collection, so the wishlist can show it. */
+  const handleToggleWishlist = async (appId: number, platform: PlatformType, details?: WishlistGameDetails) => {
     const isCurrentlyWishlisted = wishlistIds.includes(appId);
     const nextAdded = !isCurrentlyWishlisted;
     const nextWishlist = nextAdded
@@ -38,7 +39,7 @@ export function useWishlist({
         await fetch("/api/user/wishlist", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ appId, platform, isWishlist: nextAdded }),
+          body: JSON.stringify({ appId, platform, isWishlist: nextAdded, ...details }),
         });
       } catch {}
     }

@@ -63,6 +63,16 @@ CREATE TABLE IF NOT EXISTS user_games (
 CREATE INDEX IF NOT EXISTS idx_user_games_user ON user_games(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_games_lookup ON user_games(user_id, platform, app_id);
 
+-- Games wished for, owned or not yet: a wishlist outlives the collection it may later join.
+CREATE TABLE IF NOT EXISTS user_wishlist (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  app_id INTEGER NOT NULL,
+  platform TEXT NOT NULL,
+  name TEXT NOT NULL,
+  header_img TEXT,
+  added_at TEXT NOT NULL,
+  PRIMARY KEY (user_id, app_id)
+);
 CREATE TABLE IF NOT EXISTS user_game_progress (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

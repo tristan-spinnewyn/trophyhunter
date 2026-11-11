@@ -7,6 +7,7 @@ export function clearAllUserData(userId: string): void {
     db.prepare("DELETE FROM collections WHERE user_id = ?").run(userId);
     db.prepare("DELETE FROM user_game_progress WHERE user_id = ?").run(userId);
     db.prepare("DELETE FROM user_games WHERE user_id = ?").run(userId);
+    db.prepare("DELETE FROM user_wishlist WHERE user_id = ?").run(userId);
     db.prepare("DELETE FROM platform_accounts WHERE user_id = ?").run(userId);
   });
 }

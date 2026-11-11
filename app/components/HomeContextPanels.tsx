@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import CollectionsPanel from "@/components/library/CollectionsPanel";
 import DuplicatesPanel from "@/components/library/DuplicatesPanel";
 import GamePassPanel from "@/components/library/GamePassPanel";
+import { WishlistNotOwnedPanel } from "@/components/library/wishlist/WishlistNotOwnedPanel";
 import type { LibraryTab } from "@/lib/library/library-filters";
-import type { CollectionWithGames, OwnedGame, PlatformType } from "@/lib/types";
+import type { CollectionWithGames, OwnedGame, PlatformType, WishlistGameDetails } from "@/lib/types";
 import type { GamePassCatalogItem } from "@/lib/gamepass/gamepass.types";
 
 interface HomeContextPanelsProps {
@@ -25,7 +26,7 @@ interface HomeContextPanelsProps {
   readonly handleDeleteCollection: (collId: string) => Promise<void>;
   readonly duplicateGroups: Array<{ title: string; games: OwnedGame[] }>;
   readonly onAddGamePassToXbox: (item: GamePassCatalogItem) => Promise<void>;
-  readonly onToggleWishlist: (appId: number, platform: PlatformType) => Promise<void>;
+  readonly onToggleWishlist: (appId: number, platform: PlatformType, details?: WishlistGameDetails) => Promise<void>;
 }
 
 export function HomeContextPanels({
@@ -79,6 +80,10 @@ export function HomeContextPanels({
         handleDeleteCollection={handleDeleteCollection}
       />
     );
+  }
+
+  if (activePlatformTab === "wishlist") {
+    return <WishlistNotOwnedPanel ownedGames={ownedGames} wishlistIds={wishlistIds} onToggleWishlist={onToggleWishlist} />;
   }
 
   if (activePlatformTab === "duplicates") {

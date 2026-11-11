@@ -6,6 +6,7 @@ import { LibrarySectionEmptyState } from "./LibrarySectionEmptyState";
 import { LibraryStatusSections } from "./LibraryStatusSections";
 import { LibrarySkeleton } from "./LibrarySkeleton";
 import { StartedBacklogNotice } from "./StartedBacklogNotice";
+import { AcquiredWishlistNotice } from "./AcquiredWishlistNotice";
 import type {
   GameStatus,
   OwnedGame,
@@ -113,7 +114,15 @@ export default function LibrarySection({
       />
 
       {!isLoading && onUpdateGameStatus && (
-        <StartedBacklogNotice games={filteredGames} onUpdateGameStatus={onUpdateGameStatus} />
+        <>
+          <StartedBacklogNotice games={filteredGames} onUpdateGameStatus={onUpdateGameStatus} />
+          <AcquiredWishlistNotice
+            games={filteredGames}
+            wishlistIds={wishlistIds}
+            onUpdateGameStatus={onUpdateGameStatus}
+            onToggleWishlist={onToggleWishlist}
+          />
+        </>
       )}
 
       {isLoading ? (

@@ -83,3 +83,9 @@ export interface DuplicateGameGroup {
   normalizedTitle: string;
   games: OwnedGame[];
 }
+
+/** Names a wished-for game that may not be in the collection, so the wishlist can show it. */
+export interface WishlistGameDetails {
+  readonly name?: string;
+  readonly headerImg?: string;
+}
