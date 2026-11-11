@@ -11,9 +11,15 @@ interface UseWishlistProps {
   setBannerMsg: (msg: { type: "success" | "error"; text: string } | null) => void;
 }
 
+/**
+ * The default must be the same list on every render: the hook re-reads `initialWishlist` when it
+ * changes, and a fresh `[]` each time made every toggle reset the wishlist and render forever.
+ */
+const NO_INITIAL_WISHLIST: number[] = [];
+
 export function useWishlist({
   currentUser,
-  initialWishlist = [],
+  initialWishlist = NO_INITIAL_WISHLIST,
   onWishlistChange,
   setBannerMsg,
 }: UseWishlistProps) {
