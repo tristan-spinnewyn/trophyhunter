@@ -58,6 +58,17 @@ describe("validateSyncPayload", () => {
     expect(games.map((g) => g.resumeNote)).toEqual(["Chapitre 4.", undefined]);
   });
 
+  it("keeps the merge of a backed-up copy and drops a malformed one", () => {
+    const { games } = validateSyncPayload({
+      games: [
+        { appId: 2, platform: "xbox", name: "Hades", mergedInto: { platform: "steam", appId: 1 } },
+        { appId: 3, platform: "gog", name: "Hades", mergedInto: { platform: "atari", appId: 1 } },
+      ],
+    });
+
+    expect(games.map((g) => g.mergedInto)).toEqual([{ platform: "steam", appId: 1 }, undefined]);
+  });
+
   it("keeps a whole-number backlog rank and drops anything else", () => {
     const { games } = validateSyncPayload({
       games: [

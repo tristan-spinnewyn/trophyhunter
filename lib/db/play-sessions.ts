@@ -87,3 +87,28 @@ export function getPlaySessions(userId: string, { since, limit }: PlaySessionQue
     lastPlayed: row.last_played ?? undefined,
   }));
 }
+
+export interface RestoredPlaySession {
+  readonly appId: number;
+  readonly platform: PlatformType;
+  readonly minutes: number;
+  readonly detectedAt: string;
+  readonly lastPlayed?: string;
+}
+
+/** Writes backed-up sessions, skipping any already recorded for the same game at the same moment; returns how many were added. */
+export function restorePlaySessions(userId: string, sessions: readonly RestoredPlaySession[]): number {
+  const db = getDb();
+  const exists = db.prepare("SELECT 1 FROM play_sessions WHERE user_id = ? AND platform = ? AND app_id = ? AND detected_at = ?");
+  const insert = db.prepare(
+    `INSERT INTO play_sessions (user_id, platform, app_id, minutes, detected_at, last_played)
+     VALUES (?, ?, ?, ?, ?, ?)`
+  );
+  let added = 0;
+  for (const s of sessions) {
+    if (exists.get(userId, s.platform, s.appId, s.detectedAt)) continue;
+    insert.run(userId, s.platform, s.appId, s.minutes, s.detectedAt, s.lastPlayed ?? null);
+    added += 1;
+  }
+  return added;
+}
