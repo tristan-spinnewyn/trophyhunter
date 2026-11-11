@@ -50,3 +50,6 @@ data/
 .encryption_key
 .idea/
 
+
+# local Claude Code config and worktrees
+/.claude/
