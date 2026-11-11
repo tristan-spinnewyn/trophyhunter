@@ -33,6 +33,7 @@ export function mergeGamesList(
         addedAt: existing.addedAt || g.addedAt,
         backlogRank: g.backlogRank ?? existing.backlogRank,
         statusChangedAt: g.statusChangedAt ?? existing.statusChangedAt,
+        completedAt: g.completedAt ?? existing.completedAt,
         status: isValidGameStatus(g.status)
           ? g.status
           : resolveGameStatus(existing.status),
@@ -72,6 +73,7 @@ export function replacePlatformInList(
         : prev.headerImg || g.headerImg,
       backlogRank: g.backlogRank ?? prev.backlogRank,
       statusChangedAt: g.statusChangedAt ?? prev.statusChangedAt,
+      completedAt: g.completedAt ?? prev.completedAt,
       status: isValidGameStatus(g.status)
         ? g.status
         : resolveGameStatus(prev.status),

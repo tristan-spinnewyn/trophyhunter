@@ -148,6 +148,39 @@ describe("LibraryStatusSections", () => {
     });
   });
 
+  describe("finished games by year", () => {
+    const finished: OwnedGame[] = [
+      makeOwnedGame({ appId: 21, name: "Portal", status: "completed" }),
+      makeOwnedGame({ appId: 22, name: "Tunic", status: "completed", completedAt: "2026-03-01T10:00:00.000Z" }),
+      makeOwnedGame({ appId: 23, name: "Celeste", status: "completed", completedAt: "2025-07-01T10:00:00.000Z" }),
+      makeOwnedGame({ appId: 24, name: "Hades", status: "completed", completedAt: "2026-09-01T10:00:00.000Z" }),
+    ];
+
+    it("splits the finished shelf by year, latest first, with undated games last", () => {
+      render(<LibraryStatusSections games={finished} renderGame={renderCard} />);
+      const shelf = screen.getByRole("region", { name: "Terminés" });
+
+      const years = within(shelf).getAllByRole("heading", { level: 4 }).map((h) => h.textContent);
+      expect(years).toEqual(["2026", "2025", "Date inconnue"]);
+      const thisYear = within(shelf).getByRole("group", { name: "2026" });
+      expect(within(thisYear).getAllByRole("button").map((b) => b.getAttribute("aria-label"))).toEqual(["Hades", "Tunic"]);
+      expect(within(within(shelf).getByRole("group", { name: "Date inconnue" })).getByRole("button", { name: "Portal" })).toBeTruthy();
+    });
+
+    it("tells how many games were finished each year", () => {
+      render(<LibraryStatusSections games={finished} renderGame={renderCard} />);
+      const thisYear = within(screen.getByRole("region", { name: "Terminés" })).getByRole("group", { name: "2026" });
+
+      expect(within(thisYear).getByText("2 jeux")).toBeTruthy();
+    });
+
+    it("keeps the other shelves in one piece", () => {
+      renderSections();
+
+      expect(within(screen.getByRole("region", { name: "Backlog" })).queryByRole("heading", { level: 4 })).toBeNull();
+    });
+  });
+
   it("counts the games on each shelf", () => {
     renderSections();
     const backlog = screen.getByRole("region", { name: "Backlog" });

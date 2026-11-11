@@ -12,6 +12,7 @@ import { GameSpine } from "@/components/library/shelf/GameSpine";
 import { ShelfHeading } from "@/components/library/shelf/ShelfHeading";
 import { GamePeekDialog } from "@/components/library/shelf/GamePeekDialog";
 import { BacklogQueueControls } from "@/components/library/shelf/BacklogQueueControls";
+import { CompletedYearShelves } from "@/components/library/shelf/CompletedYearShelves";
 import { TriageDialog } from "@/components/library/triage/TriageDialog";
 
 interface LibraryStatusSectionsProps {
@@ -138,11 +139,15 @@ function SpineShelf({ section, onOpen, queuePositions, onSort }: SpineShelfProps
           )}
           <ChevronRight aria-hidden className={`h-4 w-4 text-dust transition group-open:rotate-90 ${onSort ? "" : "ml-auto"}`} />
         </summary>
-        <div className="spine-rows pb-2">
-          {section.games.map((g) => (
-            <GameSpine key={gameKey(g)} game={g} onOpen={onOpen} queuePosition={queuePositions?.get(gameKey(g))} />
-          ))}
-        </div>
+        {section.status === "completed" ? (
+          <CompletedYearShelves games={section.games} onOpen={onOpen} gameKey={gameKey} />
+        ) : (
+          <div className="spine-rows pb-2">
+            {section.games.map((g) => (
+              <GameSpine key={gameKey(g)} game={g} onOpen={onOpen} queuePosition={queuePositions?.get(gameKey(g))} />
+            ))}
+          </div>
+        )}
       </details>
     </section>
   );

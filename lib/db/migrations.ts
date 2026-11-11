@@ -52,6 +52,10 @@ export function runDatabaseMigrations(db: DatabaseSync): void {
     // Statuses chosen before the upgrade count as chosen now: only later sessions are "since then".
     db.prepare("UPDATE user_games SET status_changed_at = ?").run(new Date().toISOString());
   }
+  if (!gameCols.has("completed_at")) {
+    // No date is invented for games finished before: they stay "finished at an unknown date".
+    db.exec("ALTER TABLE user_games ADD COLUMN completed_at TEXT;");
+  }
   moveImplicitBacklogToUnsorted(db);
 
   const progressCols = getTableColumnNames(db, "user_game_progress");
