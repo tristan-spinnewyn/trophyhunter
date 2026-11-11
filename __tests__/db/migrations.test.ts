@@ -63,3 +63,15 @@ describe("runDatabaseMigrations: game reviews", () => {
     expect(columns).toEqual(expect.arrayContaining(["rating", "review"]));
   });
 });
+
+describe("runDatabaseMigrations: resume notes", () => {
+  it("adds the resume note column to a database created before it", () => {
+    const db = initDatabase(":memory:");
+    db.exec("ALTER TABLE user_games DROP COLUMN resume_note;");
+
+    runDatabaseMigrations(db);
+
+    const columns = (db.prepare("PRAGMA table_info(user_games)").all() as unknown as { name: string }[]).map((c) => c.name);
+    expect(columns).toContain("resume_note");
+  });
+});

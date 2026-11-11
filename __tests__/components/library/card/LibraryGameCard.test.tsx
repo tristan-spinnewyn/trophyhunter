@@ -54,6 +54,18 @@ describe("LibraryGameCard", () => {
     expect(screen.getByText("3 h · joué hier")).toBeTruthy();
   });
 
+  it("reminds where you left off in a game being played", () => {
+    renderCard({ game: makeOwnedGame({ status: "in-progress", resumeNote: "Chapitre 4." }) });
+
+    expect(screen.getByText("Où tu en étais : Chapitre 4.")).toBeTruthy();
+  });
+
+  it("keeps the resume note off a finished game", () => {
+    renderCard({ game: makeOwnedGame({ status: "completed", resumeNote: "Chapitre 4." }) });
+
+    expect(screen.queryByText(/Où tu en étais/)).toBeNull();
+  });
+
   it("explains a missing playtime", () => {
     renderCard();
     expect(screen.getByText("Temps de jeu inconnu")).toBeTruthy();

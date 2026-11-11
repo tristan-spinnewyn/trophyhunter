@@ -83,6 +83,8 @@ export interface OwnedGame {
   rating?: number;
   /** The owner's short review. */
   review?: string;
+  /** Where the owner left off, written when setting the game aside. */
+  resumeNote?: string;
 }
 
 export interface DuplicateGameGroup {

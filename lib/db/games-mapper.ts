@@ -20,6 +20,7 @@ export interface UserGameRow {
   readonly abandoned_at?: string | null;
   readonly rating?: number | null;
   readonly review?: string | null;
+  readonly resume_note?: string | null;
 }
 
 export function mapUserGameRow(r: UserGameRow): OwnedGame {
@@ -41,5 +42,6 @@ export function mapUserGameRow(r: UserGameRow): OwnedGame {
     abandonedAt: r.abandoned_at ?? undefined,
     rating: r.rating ?? undefined,
     review: r.review ?? undefined,
+    resumeNote: r.resume_note ?? undefined,
   };
 }

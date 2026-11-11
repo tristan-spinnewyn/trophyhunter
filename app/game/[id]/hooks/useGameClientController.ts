@@ -8,6 +8,7 @@ import { useGameProgressActions } from "./useGameProgressActions";
 import { useAchievementFilters } from "./useAchievementFilters";
 import { useHuntingActions } from "./useHuntingActions";
 import { useGameReview } from "./useGameReview";
+import { useGameResumeNote } from "./useGameResumeNote";
 
 export function useGameClientController(id: string) {
   const appId = parseInt(id, 10);
@@ -42,6 +43,7 @@ export function useGameClientController(id: string) {
   });
 
   const review = useGameReview({ owned, currentUser, setOwnedGames });
+  const resumeNote = useGameResumeNote({ owned, currentUser, setOwnedGames });
 
   const filters = useAchievementFilters(details.game?.achievements, details.progress);
 
@@ -51,6 +53,7 @@ export function useGameClientController(id: string) {
     ...actions,
     ...hunting,
     ...review,
+    ...resumeNote,
     ...filters,
   };
 }

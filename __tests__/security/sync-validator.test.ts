@@ -47,6 +47,17 @@ describe("validateSyncPayload", () => {
     expect(games.map((g) => g.abandonedAt)).toEqual(["2026-04-01T10:00:00.000Z", undefined]);
   });
 
+  it("keeps a valid resume note from a backup and drops an invalid one", () => {
+    const { games } = validateSyncPayload({
+      games: [
+        { appId: 1, platform: "steam", name: "Paused", status: "paused", resumeNote: "  Chapitre 4.  " },
+        { appId: 2, platform: "steam", name: "Odd", status: "paused", resumeNote: 12 },
+      ],
+    });
+
+    expect(games.map((g) => g.resumeNote)).toEqual(["Chapitre 4.", undefined]);
+  });
+
   it("keeps a whole-number backlog rank and drops anything else", () => {
     const { games } = validateSyncPayload({
       games: [
