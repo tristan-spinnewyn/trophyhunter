@@ -12,6 +12,8 @@ interface GameSpineProps {
   readonly onOpen: (game: OwnedGame) => void;
   /** 1-based place in the backlog queue, shown above the spine. */
   readonly queuePosition?: number;
+  /** How long the game takes to beat ("12 h"), shown at the foot of the spine. */
+  readonly durationLabel?: string | null;
   /** Lets a shelf move the spine around, as when the backlog queue is dragged into a new order. */
   readonly slotRef?: Ref<HTMLDivElement>;
   readonly slotProps?: HTMLAttributes<HTMLDivElement> & DataAttributes;
@@ -19,7 +21,7 @@ interface GameSpineProps {
 }
 
 /** A game stored spine-out: its title reads bottom to top, its store sits at the foot. */
-export function GameSpine({ game, onOpen, queuePosition, slotRef, slotProps, buttonProps }: GameSpineProps) {
+export function GameSpine({ game, onOpen, queuePosition, durationLabel, slotRef, slotProps, buttonProps }: GameSpineProps) {
   const spine = getSpineStyle(game);
   const style = {
     "--spine-bg": spine.background,
@@ -48,6 +50,11 @@ export function GameSpine({ game, onOpen, queuePosition, slotRef, slotProps, but
         <span className="spine-title" aria-hidden>
           {game.name}
         </span>
+        {durationLabel && (
+          <span className="spine-duration" aria-hidden>
+            {durationLabel}
+          </span>
+        )}
         <span className="spine-platform" aria-hidden>
           {PLATFORM_META[game.platform]?.shortName}
         </span>

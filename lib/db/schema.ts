@@ -73,6 +73,18 @@ CREATE TABLE IF NOT EXISTS user_wishlist (
   added_at TEXT NOT NULL,
   PRIMARY KEY (user_id, app_id)
 );
+
+-- How long games take to beat, from IGDB: game data shared by every user, refreshed now and then.
+CREATE TABLE IF NOT EXISTS game_time_to_beat (
+  platform TEXT NOT NULL,
+  app_id INTEGER NOT NULL,
+  igdb_game_id INTEGER,
+  hastily_seconds INTEGER,
+  normally_seconds INTEGER,
+  completely_seconds INTEGER,
+  fetched_at TEXT NOT NULL,
+  PRIMARY KEY (platform, app_id)
+);
 CREATE TABLE IF NOT EXISTS user_game_progress (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

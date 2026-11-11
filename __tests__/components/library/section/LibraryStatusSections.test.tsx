@@ -105,6 +105,31 @@ describe("LibraryStatusSections", () => {
       return { onPlayNext, onRemoveFromQueue };
     }
 
+    describe("time to beat", () => {
+      const durations = { steam_2: { hastilySeconds: 20 * 3600, normallySeconds: 22 * 3600, completelySeconds: 95 * 3600 } };
+
+      it("shows on each backlog spine how long the game takes, whether the queue can be dragged or not", () => {
+        for (const onReorderQueue of [undefined, vi.fn()]) {
+          const { unmount } = render(
+            <LibraryStatusSections games={queueGames} renderGame={renderCard} backlogDurations={durations} onReorderQueue={onReorderQueue} />
+          );
+
+          const hades = screen.getByRole("button", { name: "Hades" });
+          expect(hades.querySelector(".spine-duration")?.textContent).toBe("22 h");
+          expect(screen.getByRole("button", { name: "Tunic" }).querySelector(".spine-duration")).toBeNull();
+          unmount();
+        }
+      });
+
+      it("spells out the durations in the game's dialog", () => {
+        render(<LibraryStatusSections games={queueGames} renderGame={renderCard} backlogDurations={durations} />);
+        fireEvent.click(screen.getByRole("button", { name: "Hades" }));
+
+        const dialog = screen.getByRole("dialog", { name: "Hades" });
+        expect(within(dialog).getByText("Environ 22 h · histoire seule 20 h · à 100 % 95 h")).toBeTruthy();
+      });
+    });
+
     it("shelves queued games first and numbers their spines", () => {
       renderQueue();
       const backlog = screen.getByRole("region", { name: "Backlog" });
