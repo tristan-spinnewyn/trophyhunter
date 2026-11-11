@@ -25,6 +25,8 @@ interface HomeContextPanelsProps {
   readonly handleCreateCollection: () => Promise<void>;
   readonly handleDeleteCollection: (collId: string) => Promise<void>;
   readonly duplicateGroups: Array<{ title: string; games: OwnedGame[] }>;
+  readonly onMergeDuplicates: (games: OwnedGame[]) => void;
+  readonly onUnmergeDuplicates: (primary: OwnedGame) => void;
   readonly onAddGamePassToXbox: (item: GamePassCatalogItem) => Promise<void>;
   readonly onToggleWishlist: (appId: number, platform: PlatformType, details?: WishlistGameDetails) => Promise<void>;
 }
@@ -45,6 +47,8 @@ export function HomeContextPanels({
   handleCreateCollection,
   handleDeleteCollection,
   duplicateGroups,
+  onMergeDuplicates,
+  onUnmergeDuplicates,
   onAddGamePassToXbox,
   onToggleWishlist,
 }: HomeContextPanelsProps) {
@@ -91,6 +95,8 @@ export function HomeContextPanels({
       <DuplicatesPanel
         duplicateGroups={duplicateGroups}
         onSelectGame={(appId) => router.push(`/game/${appId}`)}
+        onMerge={onMergeDuplicates}
+        onUnmerge={onUnmergeDuplicates}
       />
     );
   }

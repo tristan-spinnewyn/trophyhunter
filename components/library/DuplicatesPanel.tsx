@@ -9,11 +9,15 @@ import { DuplicateGroupCard } from "./duplicates/DuplicateGroupCard";
 interface DuplicatesPanelProps {
   duplicateGroups: Array<{ title: string; games: OwnedGame[] }>;
   onSelectGame: (appId: number) => void;
+  onMerge?: (games: OwnedGame[]) => void;
+  onUnmerge?: (primary: OwnedGame) => void;
 }
 
 export default function DuplicatesPanel({
   duplicateGroups,
   onSelectGame,
+  onMerge,
+  onUnmerge,
 }: DuplicatesPanelProps) {
   return (
     <div className="space-y-4">
@@ -49,6 +53,8 @@ export default function DuplicatesPanel({
               key={gIdx}
               group={group}
               onSelectGame={onSelectGame}
+              onMerge={onMerge}
+              onUnmerge={onUnmerge}
             />
           ))}
         </div>

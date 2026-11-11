@@ -4,11 +4,14 @@
 import { getPlaySessions, getUserGoals, getUserOwnedGames, setUserGoal } from "@/lib/db";
 import { buildYearReview } from "@/lib/library/year-review";
 import { resolveGameStatus } from "@/lib/game-status/game-status.services";
+import { mergeLinkedGames } from "@/lib/library/linked-games";
 import type { OwnedGame } from "@/lib/types";
 import { computeGoalProgress, type GoalProgress } from "./goal-progress";
 import type { GoalKey } from "./year-goals";
 
-const backlogSize = (games: readonly OwnedGame[]) => games.filter((g) => resolveGameStatus(g.status) === "backlog").length;
+/** Backlog games, a game merged across platforms counting once. */
+const backlogSize = (games: readonly OwnedGame[]) =>
+  mergeLinkedGames(games).filter((g) => resolveGameStatus(g.status) === "backlog").length;
 
 /** Sets a goal; a backlog-reduction goal starts from the backlog as it stands now. */
 export function setYearGoal(userId: string, goal: GoalKey & { readonly target: number }): void {

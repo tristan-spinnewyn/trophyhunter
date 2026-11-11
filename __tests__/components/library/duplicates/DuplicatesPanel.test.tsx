@@ -44,4 +44,29 @@ describe("DuplicatesPanel", () => {
 
     expect(img.style.display).toBe("none");
   });
+
+  it("merges the copies of a game into the one to keep", () => {
+    const onMerge = vi.fn();
+    const games = [makeOwnedGame({ playtimeHours: 8 }), makeOwnedGame({ appId: 77, platform: "xbox" })];
+    render(<DuplicatesPanel duplicateGroups={[{ title: "Portal 2", games }]} onSelectGame={vi.fn()} onMerge={onMerge} onUnmerge={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Fusionner Portal 2" }));
+
+    expect(onMerge).toHaveBeenCalledWith(games);
+  });
+
+  it("shows a merged game with its main copy and unmerges it", () => {
+    const onUnmerge = vi.fn();
+    const primary = makeOwnedGame({ playtimeHours: 8 });
+    const copy = makeOwnedGame({ appId: 77, platform: "xbox", mergedInto: { platform: "steam", appId: 620 } });
+    render(<DuplicatesPanel duplicateGroups={[{ title: "Portal 2", games: [primary, copy] }]} onSelectGame={vi.fn()} onMerge={vi.fn()} onUnmerge={onUnmerge} />);
+
+    expect(screen.getByText("Fusionnés")).toBeTruthy();
+    expect(screen.getByText("Principal")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Fusionner Portal 2" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Dissocier Portal 2" }));
+
+    expect(onUnmerge).toHaveBeenCalledWith(primary);
+  });
 });

@@ -1,6 +1,6 @@
 // __tests__/lib/goals/goals.services.test.ts
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { initDatabase, setDbForTesting, createUser, saveUserOwnedGames, getUserGoals } from "@/lib/db";
+import { initDatabase, setDbForTesting, createUser, saveUserOwnedGames, getUserGoals, linkGames } from "@/lib/db";
 import { getYearGoalProgress, setYearGoal } from "@/lib/goals/goals.services";
 import { makeOwnedGame } from "../../helpers/gameFixtures";
 
@@ -45,5 +45,14 @@ describe("yearly goals service", () => {
       ["games-finished", 1, 4],
       ["backlog-reduction", 1, 2],
     ]);
+  });
+
+  it("counts a backlog game merged across platforms once", () => {
+    saveUserOwnedGames(userId, [makeOwnedGame({ appId: 5, platform: "xbox", status: "backlog" })]);
+    linkGames(userId, { platform: "steam", appId: 3 }, [{ platform: "xbox", appId: 5 }]);
+
+    setYearGoal(userId, { year: 2027, kind: "backlog-reduction", target: 2 });
+
+    expect(getUserGoals(userId, 2027)[0].baseline).toBe(2);
   });
 });

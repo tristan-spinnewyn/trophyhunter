@@ -3,6 +3,7 @@
 import type { OwnedGame, PlatformType, PlaySession } from "@/lib/types";
 import { toTime } from "./date-time";
 import { summarizeRecentPlay, type RecentlyPlayedGame } from "./session-feed";
+import { mergeLinkedGames } from "./linked-games";
 
 const BEST_RATED_COUNT = 3;
 
@@ -49,7 +50,9 @@ function topSessionPlatform(played: readonly RecentlyPlayedGame[]): { platform: 
 }
 
 /** "What did my year of gaming look like?": finishes, abandons, time played and favourites of one calendar year. */
-export function buildYearReview(year: number, games: readonly OwnedGame[], sessions: readonly PlaySession[]): YearReview {
+export function buildYearReview(year: number, allGames: readonly OwnedGame[], sessions: readonly PlaySession[]): YearReview {
+  // A game merged across platforms is one game of the year.
+  const games = mergeLinkedGames(allGames);
   const finished = datedIn(year, games, (g) => g.completedAt);
   const abandoned = datedIn(year, games, (g) => g.abandonedAt);
   const played = summarizeRecentPlay(sessions.filter((s) => yearOf(s.detectedAt) === year));

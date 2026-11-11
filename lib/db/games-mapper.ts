@@ -21,6 +21,8 @@ export interface UserGameRow {
   readonly rating?: number | null;
   readonly review?: string | null;
   readonly resume_note?: string | null;
+  readonly primary_platform?: string | null;
+  readonly primary_app_id?: number | null;
 }
 
 export function mapUserGameRow(r: UserGameRow): OwnedGame {
@@ -43,5 +45,9 @@ export function mapUserGameRow(r: UserGameRow): OwnedGame {
     rating: r.rating ?? undefined,
     review: r.review ?? undefined,
     resumeNote: r.resume_note ?? undefined,
+    mergedInto:
+      r.primary_platform && r.primary_app_id !== null && r.primary_app_id !== undefined
+        ? { platform: r.primary_platform as PlatformType, appId: r.primary_app_id }
+        : undefined,
   };
 }

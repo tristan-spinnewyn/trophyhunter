@@ -98,3 +98,13 @@ describe("dashboard utils (mergeGamesList & replacePlatformInList)", () => {
     expect(mergeGamesList(base, incoming)[0].abandonedAt).toBe("2026-05-01T10:00:00.000Z");
   });
 });
+
+describe("replacePlatformInList: merged copies", () => {
+  it("keeps the merge of a copy when its platform is synced again", () => {
+    const copy = { appId: 2, name: "Hades", headerImg: "", platform: "xbox" as const, totalAchievements: 0, unlockedCount: 0, addedAt: "2026-01-01", mergedInto: { platform: "steam" as const, appId: 1 } };
+
+    const [synced] = replacePlatformInList([copy], "xbox", [{ ...copy, mergedInto: undefined, playtimeHours: 3 }]);
+
+    expect(synced.mergedInto).toEqual({ platform: "steam", appId: 1 });
+  });
+});

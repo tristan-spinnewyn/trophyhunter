@@ -3,6 +3,7 @@
 import type { GameStatus, OwnedGame } from "@/lib/types";
 import { GAME_STATUS_META, resolveGameStatus } from "@/lib/game-status/game-status.services";
 import { sortBacklogQueue } from "./backlog-order";
+import { mergeLinkedGames } from "./linked-games";
 
 /** Library sections: what to play now, then the pile left to sort, then the archive, then what was set aside. */
 export const STATUS_SECTION_ORDER: readonly GameStatus[] = [
@@ -58,7 +59,8 @@ export function calculateTrackingSummary(games: readonly OwnedGame[]): TrackingS
   let unlockedAchievements = 0;
   let perfectGames = 0;
 
-  for (const g of games) {
+  // A game merged across platforms counts once.
+  for (const g of mergeLinkedGames(games)) {
     countByStatus[resolveGameStatus(g.status)] += 1;
     hours += g.playtimeHours || 0;
     unlockedAchievements += g.unlockedCount || 0;

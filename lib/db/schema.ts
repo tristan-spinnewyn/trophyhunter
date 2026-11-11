@@ -99,6 +99,17 @@ CREATE TABLE IF NOT EXISTS user_goals (
   PRIMARY KEY (user_id, year, kind)
 );
 
+-- The same game owned on several platforms, merged by the owner: each copy points at its primary game.
+CREATE TABLE IF NOT EXISTS game_links (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  platform TEXT NOT NULL,
+  app_id INTEGER NOT NULL,
+  primary_platform TEXT NOT NULL,
+  primary_app_id INTEGER NOT NULL,
+  linked_at TEXT NOT NULL,
+  PRIMARY KEY (user_id, platform, app_id)
+);
+
 -- Games wished for, owned or not yet: a wishlist outlives the collection it may later join.
 CREATE TABLE IF NOT EXISTS user_wishlist (
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

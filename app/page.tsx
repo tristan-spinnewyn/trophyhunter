@@ -93,6 +93,8 @@ export default function HomePage() {
         handleCreateCollection={c.collectionsState.handleCreateCollection}
         handleDeleteCollection={c.collectionsState.handleDeleteCollection}
         duplicateGroups={c.stats.duplicateGroups}
+        onMergeDuplicates={c.gameLinks.mergeGames}
+        onUnmergeDuplicates={c.gameLinks.unmergeGames}
         onAddGamePassToXbox={c.handleAddGamePassToXbox}
         onToggleWishlist={c.collectionsState.handleToggleWishlist}
       />

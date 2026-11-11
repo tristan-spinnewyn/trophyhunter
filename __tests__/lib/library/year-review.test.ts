@@ -70,3 +70,12 @@ describe("reviewYears", () => {
     expect(reviewYears(games, sessions, new Date("2027-01-15T00:00:00.000Z"))).toEqual([2027, 2026, 2025]);
   });
 });
+
+describe("buildYearReview: merged games", () => {
+  it("counts a game finished on two merged platforms once", () => {
+    const steam = makeOwnedGame({ appId: 1, name: "Hades", status: "completed", completedAt: "2026-03-01T00:00:00.000Z" });
+    const xbox = makeOwnedGame({ appId: 2, platform: "xbox", name: "Hades", status: "completed", completedAt: "2026-04-01T00:00:00.000Z", mergedInto: { platform: "steam", appId: 1 } });
+
+    expect(buildYearReview(2026, [steam, xbox], []).finished.map((g) => g.appId)).toEqual([1]);
+  });
+});

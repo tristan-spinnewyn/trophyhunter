@@ -82,6 +82,7 @@ export function replacePlatformInList(
       rating: g.rating ?? prev.rating,
       review: g.review ?? prev.review,
       resumeNote: g.resumeNote ?? prev.resumeNote,
+      mergedInto: g.mergedInto ?? prev.mergedInto,
       status: isValidGameStatus(g.status)
         ? g.status
         : resolveGameStatus(prev.status),

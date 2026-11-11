@@ -10,10 +10,12 @@ export function getUserOwnedGames(userId: string): OwnedGame[] {
   const db = getDb();
   const rows = db
     .prepare(
-      `SELECT app_id, name, header_img, platform, total_achievements, unlocked_count, playtime_hours, last_played, added_at, source, status, backlog_rank, status_changed_at, completed_at, abandoned_at, rating, review, resume_note
-       FROM user_games
-       WHERE user_id = ?
-       ORDER BY added_at DESC`
+      `SELECT g.app_id, g.name, g.header_img, g.platform, g.total_achievements, g.unlocked_count, g.playtime_hours, g.last_played, g.added_at, g.source, g.status, g.backlog_rank, g.status_changed_at, g.completed_at, g.abandoned_at, g.rating, g.review, g.resume_note,
+              l.primary_platform, l.primary_app_id
+       FROM user_games g
+       LEFT JOIN game_links l ON l.user_id = g.user_id AND l.platform = g.platform AND l.app_id = g.app_id
+       WHERE g.user_id = ?
+       ORDER BY g.added_at DESC`
     )
     .all(userId) as unknown as UserGameRow[];
 

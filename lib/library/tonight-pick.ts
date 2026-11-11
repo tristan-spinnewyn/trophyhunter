@@ -6,6 +6,7 @@ import { resolveGameStatus } from "@/lib/game-status/game-status.services";
 import { usualDurationSeconds } from "./duration-label";
 import { sortBacklogQueue } from "./backlog-order";
 import { toTime } from "./date-time";
+import { mergeLinkedGames } from "./linked-games";
 
 export type TimeBudget = "hour" | "evening" | "weekend";
 
@@ -42,7 +43,9 @@ const fits = (hoursLeft: number | null, budget: number): hoursLeft is number => 
  * then the games being played (latest session first), then backlog games short enough,
  * then the rest of the backlog in queue order. A paused game only comes back when it can be finished.
  */
-export function pickGamesForTonight(games: readonly OwnedGame[], durations: DurationsByGame, budget: TimeBudget): TonightPick[] {
+export function pickGamesForTonight(allGames: readonly OwnedGame[], durations: DurationsByGame, budget: TimeBudget): TonightPick[] {
+  // A game merged across platforms is offered once.
+  const games = mergeLinkedGames(allGames);
   const budgetHours = TIME_BUDGETS.find((b) => b.value === budget)?.hours ?? 0;
   const withRemaining = (game: OwnedGame) => ({ game, remainingHours: remainingHours(game, durations) });
   const byStatus = (status: string) => games.filter((g) => resolveGameStatus(g.status) === status).map(withRemaining);
