@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await syncSteamProfile(rawUser, apiKey, authUser?.id);
+    const result = await syncSteamProfile(rawUser, apiKey, authUser?.id, secret);
     return NextResponse.json(result);
   } catch (error) {
     console.error("Steam Profile API error:", error);
