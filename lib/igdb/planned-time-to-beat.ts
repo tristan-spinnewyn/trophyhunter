@@ -1,10 +1,10 @@
-// lib/igdb/backlog-time-to-beat.ts
-// How long the games of a backlog take to beat: from the cache, completed by IGDB when stale.
+// lib/igdb/planned-time-to-beat.ts
+// How long the games still ahead take to beat: from the cache, completed by IGDB when stale.
 
 import { getUserOwnedGames } from "@/lib/db";
 import type { GameDurations } from "@/lib/types";
 import { getStoredTimeToBeat, saveTimeToBeat, type StoredTimeToBeat } from "@/lib/db/time-to-beat";
-import { resolveGameStatus } from "@/lib/game-status/game-status.services";
+import { isPlannedGame } from "@/lib/library/planned-games";
 import { isIgdbConfigured } from "./igdb-client";
 import { lookupTimeToBeat } from "./time-to-beat-lookup";
 
@@ -20,11 +20,11 @@ function isFresh(entry: StoredTimeToBeat, now: number): boolean {
 
 const NO_ENTRY = { igdbGameId: null, hastilySeconds: null, normallySeconds: null, completelySeconds: null };
 
-/** Durations of the user's backlog games, keyed `platform_appId`; games without any known duration are left out. */
-export async function getBacklogTimeToBeat(userId: string): Promise<Record<string, GameDurations>> {
+/** Durations of the user's backlog, in-progress and paused games, keyed `platform_appId`; games without any known duration are left out. */
+export async function getPlannedTimeToBeat(userId: string): Promise<Record<string, GameDurations>> {
   if (!isIgdbConfigured()) return {};
 
-  const backlog = getUserOwnedGames(userId).filter((g) => resolveGameStatus(g.status) === "backlog");
+  const backlog = getUserOwnedGames(userId).filter(isPlannedGame);
   const stored = getStoredTimeToBeat(backlog);
   const now = Date.now();
   const stale = backlog.filter((g) => {

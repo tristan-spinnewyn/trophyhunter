@@ -3,9 +3,9 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { initDatabase, setDbForTesting, createUser, createSession } from "@/lib/db";
 import type { CookieRecord } from "../../helpers/cookies";
 
-const { mockCookieStore, getBacklogTimeToBeat } = vi.hoisted(() => ({
+const { mockCookieStore, getPlannedTimeToBeat } = vi.hoisted(() => ({
   mockCookieStore: new Map<string, CookieRecord>(),
-  getBacklogTimeToBeat: vi.fn(),
+  getPlannedTimeToBeat: vi.fn(),
 }));
 
 vi.mock("next/headers", () => ({
@@ -19,7 +19,7 @@ vi.mock("next/headers", () => ({
     },
   }),
 }));
-vi.mock("@/lib/igdb/backlog-time-to-beat", () => ({ getBacklogTimeToBeat }));
+vi.mock("@/lib/igdb/planned-time-to-beat", () => ({ getPlannedTimeToBeat }));
 
 import { GET } from "@/app/api/user/time-to-beat/route";
 
@@ -29,7 +29,7 @@ describe("GET /api/user/time-to-beat", () => {
   beforeEach(() => {
     setDbForTesting(initDatabase(":memory:"));
     mockCookieStore.clear();
-    getBacklogTimeToBeat.mockReset();
+    getPlannedTimeToBeat.mockReset();
     userId = createUser("TimeUser", "password123").id;
   });
 
@@ -37,17 +37,17 @@ describe("GET /api/user/time-to-beat", () => {
     const res = await GET();
 
     expect(res.status).toBe(401);
-    expect(getBacklogTimeToBeat).not.toHaveBeenCalled();
+    expect(getPlannedTimeToBeat).not.toHaveBeenCalled();
   });
 
   it("returns the durations of the signed-in user's backlog", async () => {
     mockCookieStore.set("trophyhunter_session", { name: "trophyhunter_session", value: createSession(userId) });
-    getBacklogTimeToBeat.mockResolvedValue({ steam_620: { hastilySeconds: 28800, normallySeconds: 36000, completelySeconds: null } });
+    getPlannedTimeToBeat.mockResolvedValue({ steam_620: { hastilySeconds: 28800, normallySeconds: 36000, completelySeconds: null } });
 
     const res = await GET();
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ durations: { steam_620: { hastilySeconds: 28800, normallySeconds: 36000, completelySeconds: null } } });
-    expect(getBacklogTimeToBeat).toHaveBeenCalledWith(userId);
+    expect(getPlannedTimeToBeat).toHaveBeenCalledWith(userId);
   });
 });

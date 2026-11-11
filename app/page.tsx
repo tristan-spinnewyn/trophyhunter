@@ -10,6 +10,8 @@ import { FeaturedGamesSection } from "@/components/library/FeaturedGamesSection"
 import { RecentPlayPanel } from "@/components/library/RecentPlayPanel";
 import { PriceReachedNotice } from "@/components/library/wishlist/PriceReachedNotice";
 import { useRecentPlaySessions } from "@/components/library/hooks/useRecentPlaySessions";
+import { usePlannedGameDurations } from "@/components/library/hooks/usePlannedGameDurations";
+import { TonightPickPanel } from "@/components/library/tonight/TonightPickPanel";
 import { PACE_WINDOW_DAYS } from "@/lib/library/backlog-estimate";
 import { recentWeekStart, sessionsSince } from "@/lib/library/session-feed";
 import { useHomePageController } from "./hooks/useHomePageController";
@@ -29,6 +31,7 @@ export default function HomePage() {
   const router = useRouter();
   // Loaded once for the pace window; the weekly panel keeps the last seven days.
   const recentSessions = useRecentPlaySessions(Boolean(c.currentUser), { days: PACE_WINDOW_DAYS });
+  const plannedDurations = usePlannedGameDurations(c.ownedGames, Boolean(c.currentUser));
 
   return (
     <div className="space-y-6">
@@ -43,6 +46,13 @@ export default function HomePage() {
       <PriceReachedNotice ownedGames={c.ownedGames} isSignedIn={Boolean(c.currentUser)} />
 
       <RecentPlayPanel sessions={sessionsSince(recentSessions, recentWeekStart(new Date()))} onSelectGame={(appId) => router.push(`/game/${appId}`)} />
+
+      <TonightPickPanel
+        games={c.ownedGames}
+        durations={plannedDurations}
+        onSelectGame={(appId) => router.push(`/game/${appId}`)}
+        onStartGame={(game) => c.platformSync.handleUpdateGameStatus(game.appId, game.platform, "in-progress")}
+      />
 
       <FeedbackToasts
         bannerMsg={c.bannerMsg}
@@ -81,7 +91,7 @@ export default function HomePage() {
         onToggleWishlist={c.collectionsState.handleToggleWishlist}
       />
 
-      {showsGameList(c.activePlatformTab) && <HomeLibrarySection controller={c} recentSessions={recentSessions} />}
+      {showsGameList(c.activePlatformTab) && <HomeLibrarySection controller={c} recentSessions={recentSessions} plannedDurations={plannedDurations} />}
 
       {!c.isLoadingCollection && c.ownedGames.length === 0 && <FeaturedGamesSection ownedGames={c.ownedGames} />}
 

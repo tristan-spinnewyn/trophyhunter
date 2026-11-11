@@ -2,20 +2,20 @@
 
 import { useRouter } from "next/navigation";
 import LibrarySection from "@/components/library/section/LibrarySection";
-import { useBacklogDurations } from "@/components/library/hooks/useBacklogDurations";
 import { useUserSettings } from "@/components/settings/useUserSettings";
 import type { useHomePageController } from "../hooks/useHomePageController";
-import type { PlaySession } from "@/lib/types";
+import type { GameDurations, PlaySession } from "@/lib/types";
 
 interface HomeLibrarySectionProps {
   readonly controller: ReturnType<typeof useHomePageController>;
   readonly recentSessions?: readonly PlaySession[];
+  /** How long the games ahead take to beat, keyed `platform_appId`. */
+  readonly plannedDurations: Readonly<Record<string, GameDurations>>;
 }
 
-export function HomeLibrarySection({ controller: c, recentSessions }: HomeLibrarySectionProps) {
+export function HomeLibrarySection({ controller: c, recentSessions, plannedDurations }: HomeLibrarySectionProps) {
   const router = useRouter();
   const { collectionsState: cs, platformSync: ps, addGameFlow: ag, stats, libraryFilters: lf } = c;
-  const backlogDurations = useBacklogDurations(c.ownedGames, Boolean(c.currentUser));
   const { settings } = useUserSettings();
 
   return (
@@ -49,7 +49,7 @@ export function HomeLibrarySection({ controller: c, recentSessions }: HomeLibrar
       onPlayNext={ps.handlePlayNext}
       onRemoveFromQueue={ps.handleRemoveFromQueue}
       onReorderQueue={ps.handleReorderQueue}
-      backlogDurations={backlogDurations}
+      backlogDurations={plannedDurations}
       staleAfterWeeks={settings?.staleAfterWeeks}
       recentSessions={recentSessions}
     />
