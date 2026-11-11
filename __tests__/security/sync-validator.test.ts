@@ -25,6 +25,17 @@ describe("validateSyncPayload", () => {
     expect(games.map((g) => g.completedAt)).toEqual(["2026-04-01T10:00:00.000Z", undefined]);
   });
 
+  it("keeps a valid rating and review from a backup and drops invalid ones", () => {
+    const { games } = validateSyncPayload({
+      games: [
+        { appId: 1, platform: "steam", name: "Rated", status: "completed", rating: 4, review: "  Bien.  " },
+        { appId: 2, platform: "steam", name: "Odd", status: "completed", rating: 9, review: 12 },
+      ],
+    });
+
+    expect(games.map((g) => [g.rating, g.review])).toEqual([[4, "Bien."], [undefined, undefined]]);
+  });
+
   it("keeps a whole-number backlog rank and drops anything else", () => {
     const { games } = validateSyncPayload({
       games: [

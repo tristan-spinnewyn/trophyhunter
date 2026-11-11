@@ -34,6 +34,8 @@ export function mergeGamesList(
         backlogRank: g.backlogRank ?? existing.backlogRank,
         statusChangedAt: g.statusChangedAt ?? existing.statusChangedAt,
         completedAt: g.completedAt ?? existing.completedAt,
+        rating: g.rating ?? existing.rating,
+        review: g.review ?? existing.review,
         status: isValidGameStatus(g.status)
           ? g.status
           : resolveGameStatus(existing.status),
@@ -74,6 +76,8 @@ export function replacePlatformInList(
       backlogRank: g.backlogRank ?? prev.backlogRank,
       statusChangedAt: g.statusChangedAt ?? prev.statusChangedAt,
       completedAt: g.completedAt ?? prev.completedAt,
+      rating: g.rating ?? prev.rating,
+      review: g.review ?? prev.review,
       status: isValidGameStatus(g.status)
         ? g.status
         : resolveGameStatus(prev.status),
