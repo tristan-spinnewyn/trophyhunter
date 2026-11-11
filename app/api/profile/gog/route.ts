@@ -1,13 +1,9 @@
 // app/api/profile/gog/route.ts
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
-import {
-  saveUserGameProgress,
-  saveUserOwnedGames,
-  saveUserPlatformAccount,
-} from "@/lib/db";
 import { publicErrorMessage } from "@/lib/error-message";
 import { fetchGogProfile, GogSyncError } from "@/lib/gog/service";
+import { persistGogSync } from "@/lib/gog/persist-sync";
 import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
 import { anonymousRateLimitResponse } from "@/lib/security/anonymous-rate-limit";
 
@@ -31,28 +27,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { account, discoveredGames, gameProgress } = await fetchGogProfile(
-      rawUser,
-      token
-    );
+    const result = await fetchGogProfile(rawUser, token);
+    const { account, discoveredGames } = result;
 
     if (authUser) {
       try {
-        saveUserPlatformAccount(authUser.id, account, token || undefined);
-        if (discoveredGames.length > 0) {
-          saveUserOwnedGames(authUser.id, discoveredGames);
-        }
-        if (gameProgress) {
-          for (const [appIdStr, unlockedIds] of Object.entries(gameProgress)) {
-            const appId = parseInt(appIdStr, 10);
-            if (appId && unlockedIds.length > 0) {
-              saveUserGameProgress(authUser.id, appId, "gog", {
-                unlockedIds: [...unlockedIds],
-                notes: {},
-              });
-            }
-          }
-        }
+        persistGogSync(authUser.id, result, token);
       } catch (saveErr: unknown) {
         console.warn("Could not auto-persist GOG data to database:", saveErr);
       }
