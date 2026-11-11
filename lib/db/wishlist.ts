@@ -1,6 +1,6 @@
 // lib/db/wishlist.ts
 import { getDb } from "./connection";
-import type { PlatformType, WishlistGameDetails } from "../types";
+import type { PlatformType, WishlistEntry, WishlistGameDetails } from "../types";
 
 /**
  * Adds a game to the wishlist, owned or not; removing it forgets it on every platform.
@@ -76,18 +76,12 @@ export function getUserFavoriteAppIds(userId: string): number[] {
   return rows.map((r) => r.app_id);
 }
 
-export interface WishlistEntry {
-  readonly appId: number;
-  readonly platform: PlatformType;
-  readonly name: string;
-  readonly headerImg: string;
-  readonly addedAt: string;
-}
+export type { WishlistEntry };
 
 export function getUserWishlist(userId: string): WishlistEntry[] {
   const rows = getDb()
     .prepare(
-      `SELECT app_id, platform, name, header_img, added_at
+      `SELECT app_id, platform, name, header_img, added_at, target_price_cents, last_price_cents, currency, price_checked_at
        FROM user_wishlist
        WHERE user_id = ?
        ORDER BY added_at DESC, app_id`
@@ -98,6 +92,10 @@ export function getUserWishlist(userId: string): WishlistEntry[] {
     name: string;
     header_img: string | null;
     added_at: string;
+    target_price_cents: number | null;
+    last_price_cents: number | null;
+    currency: string | null;
+    price_checked_at: string | null;
   }>;
 
   return rows.map((r) => ({
@@ -106,5 +104,9 @@ export function getUserWishlist(userId: string): WishlistEntry[] {
     name: r.name,
     headerImg: r.header_img || "",
     addedAt: r.added_at,
+    targetPriceCents: r.target_price_cents ?? undefined,
+    lastPriceCents: r.last_price_cents ?? undefined,
+    currency: r.currency ?? undefined,
+    priceCheckedAt: r.price_checked_at ?? undefined,
   }));
 }

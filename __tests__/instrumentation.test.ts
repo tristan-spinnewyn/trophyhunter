@@ -1,8 +1,9 @@
 // __tests__/instrumentation.test.ts
 import { describe, it, expect, vi, afterEach } from "vitest";
 
-const { startAutoSyncScheduler } = vi.hoisted(() => ({ startAutoSyncScheduler: vi.fn() }));
+const { startAutoSyncScheduler, runScheduledJobs } = vi.hoisted(() => ({ startAutoSyncScheduler: vi.fn(), runScheduledJobs: vi.fn() }));
 vi.mock("@/lib/accounts/auto-sync-scheduler", () => ({ startAutoSyncScheduler }));
+vi.mock("@/lib/scheduler/scheduled-jobs", () => ({ runScheduledJobs }));
 
 import { register } from "@/instrumentation";
 
@@ -12,12 +13,12 @@ describe("instrumentation register", () => {
     startAutoSyncScheduler.mockReset();
   });
 
-  it("starts the automatic sync on the Node.js server", async () => {
+  it("starts the scheduled jobs on the Node.js server", async () => {
     vi.stubEnv("NEXT_RUNTIME", "nodejs");
 
     await register();
 
-    expect(startAutoSyncScheduler).toHaveBeenCalled();
+    expect(startAutoSyncScheduler).toHaveBeenCalledWith(runScheduledJobs);
   });
 
   it("does not start it on the edge runtime", async () => {

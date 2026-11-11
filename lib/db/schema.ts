@@ -95,6 +95,10 @@ CREATE TABLE IF NOT EXISTS user_wishlist (
   name TEXT NOT NULL,
   header_img TEXT,
   added_at TEXT NOT NULL,
+  target_price_cents INTEGER,
+  last_price_cents INTEGER,
+  currency TEXT,
+  price_checked_at TEXT,
   PRIMARY KEY (user_id, app_id)
 );
 
