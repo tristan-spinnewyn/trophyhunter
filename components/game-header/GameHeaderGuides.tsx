@@ -2,8 +2,11 @@
 
 import { ExternalLink, BookOpen, Trophy, Video, Gamepad2 } from "lucide-react";
 import type { GameDetails } from "@/lib/types";
+import { isManualGameId } from "@/lib/game/manual-game";
 
 export function GameHeaderGuides({ game }: { game: GameDetails }) {
+  // A game added by hand has no Steam page to link to.
+  const hasSteamPage = !isManualGameId(game.id);
   return (
     <div className="mt-4 grid grid-cols-2 gap-2 pt-4 border-t border-edge sm:flex sm:flex-wrap">
       <a
@@ -17,6 +20,7 @@ export function GameHeaderGuides({ game }: { game: GameDetails }) {
         <ExternalLink className="h-3 w-3 text-faint" aria-hidden />
       </a>
 
+      {game.guideLinks.steamGuidesUrl && (
       <a
         href={game.guideLinks.steamGuidesUrl}
         target="_blank"
@@ -27,6 +31,7 @@ export function GameHeaderGuides({ game }: { game: GameDetails }) {
         Guides Steam
         <ExternalLink className="h-3 w-3 text-faint" aria-hidden />
       </a>
+      )}
 
       <a
         href={game.guideLinks.youtubeUrl}
@@ -39,6 +44,7 @@ export function GameHeaderGuides({ game }: { game: GameDetails }) {
         <ExternalLink className="h-3 w-3 text-faint" aria-hidden />
       </a>
 
+      {hasSteamPage && (
       <a
         href={`https://store.steampowered.com/app/${game.id}`}
         target="_blank"
@@ -49,6 +55,7 @@ export function GameHeaderGuides({ game }: { game: GameDetails }) {
         Magasin Steam
         <ExternalLink className="h-3 w-3 text-faint" aria-hidden />
       </a>
+      )}
     </div>
   );
 }

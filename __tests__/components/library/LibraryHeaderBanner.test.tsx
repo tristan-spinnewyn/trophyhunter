@@ -25,9 +25,15 @@ describe("LibraryHeaderBanner", () => {
     render(<LibraryHeaderBanner ownedGamesCount={11} onOpenAddGame={onOpenAddGame} trackingSummary={makeSummary()} />);
 
     expect(screen.getByRole("heading", { level: 1, name: "Ma collection" })).toBeTruthy();
-    expect(lede()).toBe("11 jeux sur Steam, Xbox, Epic Games et GOG, et 120 heures de jeu. 2 en cours, 3 au backlog, 7 à trier.");
+    expect(lede()).toBe("11 jeux sur Steam, Xbox Live, Epic Games et GOG Galaxy, et 120 heures de jeu. 2 en cours, 3 au backlog, 7 à trier.");
     fireEvent.click(screen.getByRole("button", { name: /^Ajouter/ }));
     expect(onOpenAddGame).toHaveBeenCalled();
+  });
+
+  it("names the platforms the collection spans", () => {
+    render(<LibraryHeaderBanner ownedGamesCount={3} platforms={["steam", "switch"]} onOpenAddGame={vi.fn()} trackingSummary={makeSummary()} />);
+
+    expect(screen.getByText(/sur Steam et Nintendo Switch/)).toBeTruthy();
   });
 
   it("uses the singular for a single game", () => {

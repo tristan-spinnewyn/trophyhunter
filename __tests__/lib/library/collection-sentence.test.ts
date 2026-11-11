@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { describeCollection } from "@/lib/library/collection-sentence";
+import { describeCollection, describePlatforms } from "@/lib/library/collection-sentence";
 import type { TrackingSummary } from "@/lib/library/library-tracking";
 
 const summary = (overrides: Partial<TrackingSummary> = {}): TrackingSummary => ({
@@ -46,5 +46,13 @@ describe("describeCollection with games set aside", () => {
   it("does not count games marked not interested as left to sort", () => {
     const counts = { unsorted: 3, backlog: 0, "in-progress": 0, paused: 0, completed: 0, abandoned: 0, "not-interested": 250 };
     expect(describeCollection(253, summary({ countByStatus: counts })).queue).toBe("3 à trier.");
+  });
+});
+
+describe("describePlatforms", () => {
+  it("names the platforms in French, joined with « et »", () => {
+    expect(describePlatforms(["steam", "switch"])).toBe("Steam et Nintendo Switch");
+    expect(describePlatforms(["steam", "xbox", "epic", "gog"])).toBe("Steam, Xbox Live, Epic Games et GOG Galaxy");
+    expect(describePlatforms(["playstation"])).toBe("PlayStation");
   });
 });

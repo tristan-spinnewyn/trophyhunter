@@ -5,7 +5,7 @@
 import { useRouter } from "next/navigation";
 import AccountDashboard from "@/components/accounts/AccountDashboard";
 import { useUserData } from "@/context/UserDataContext";
-import { ALL_PLATFORMS, countConnectedPlatforms } from "@/lib/platforms";
+import { CONNECTABLE_PLATFORMS, countConnectedPlatforms } from "@/lib/platforms";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function AccountPage() {
           Mes comptes
         </h1>
         <p className="max-w-[52ch] text-[17px] text-dust">
-          {connectedCount} {connectedCount > 1 ? "comptes liés" : "compte lié"} sur {ALL_PLATFORMS.length}. Ils remplissent ta
+          {connectedCount} {connectedCount > 1 ? "comptes liés" : "compte lié"} sur {CONNECTABLE_PLATFORMS.length}. Ils remplissent ta
           collection de {ownedGames.length} {ownedGames.length > 1 ? "jeux" : "jeu"} et tiennent tes heures de jeu et tes
           succès à jour.
         </p>

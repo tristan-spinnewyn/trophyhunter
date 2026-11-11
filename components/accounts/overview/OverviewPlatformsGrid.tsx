@@ -1,7 +1,7 @@
 // components/accounts/overview/OverviewPlatformsGrid.tsx
 
 import type { UserAccountProfile, PlatformType } from "@/lib/types";
-import { ALL_PLATFORMS } from "@/lib/platforms";
+import { CONNECTABLE_PLATFORMS } from "@/lib/platforms";
 import { PlatformCard } from "./PlatformCard";
 
 interface OverviewPlatformsGridProps {
@@ -19,14 +19,14 @@ export function OverviewPlatformsGrid({
   onEditPlatform,
   onDisconnectPlatform,
 }: OverviewPlatformsGridProps) {
-  const largestCount = Math.max(0, ...ALL_PLATFORMS.map((p) => platformCounts[p] || 0));
+  const largestCount = Math.max(0, ...CONNECTABLE_PLATFORMS.map((p) => platformCounts[p] || 0));
 
   return (
     <section>
       <h2 className="sr-only">Mes plateformes</h2>
 
       <ul className="border-t border-edge">
-        {ALL_PLATFORMS.map((plat) => (
+        {CONNECTABLE_PLATFORMS.map((plat) => (
           <PlatformCard
             key={plat}
             platform={plat}

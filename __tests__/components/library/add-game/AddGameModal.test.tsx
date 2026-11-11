@@ -4,6 +4,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import AddGameModal, { type AddGameModalProps } from "@/components/library/AddGameModal";
 import { makeOwnedGame } from "../../../helpers/gameFixtures";
+import { manualGameId } from "@/lib/game/manual-game";
 
 const results = [
   { id: 620, name: "Portal 2", img: "https://example.test/p2.jpg" },
@@ -67,6 +68,23 @@ describe("AddGameModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "+ Ajouter" }));
 
     expect(props.handleAddGameToLibrary).toHaveBeenCalledWith(results[1]);
+  });
+
+  it("adds a title as typed on a platform tracked by hand", () => {
+    const { props } = renderModal({ selectedPlatformForAdd: "switch", addGameQuery: "  Mario Kart 8 " });
+
+    fireEvent.click(screen.getByRole("button", { name: "Ajouter « Mario Kart 8 » tel quel" }));
+
+    expect(props.handleAddGameToLibrary).toHaveBeenCalledWith({ id: manualGameId("Mario Kart 8"), name: "Mario Kart 8", img: "" });
+  });
+
+  it("only searches stores for a connected platform, and waits for a title", () => {
+    renderModal({ selectedPlatformForAdd: "steam", addGameQuery: "Mario" });
+    expect(screen.queryByRole("button", { name: /tel quel/ })).toBeNull();
+    cleanup();
+
+    renderModal({ selectedPlatformForAdd: "playstation", addGameQuery: "   " });
+    expect(screen.queryByRole("button", { name: /tel quel/ })).toBeNull();
   });
 
   it("imports a pasted list of Steam games", () => {

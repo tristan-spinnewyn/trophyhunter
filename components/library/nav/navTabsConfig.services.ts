@@ -1,7 +1,7 @@
 // components/library/nav/navTabsConfig.services.ts
 
 import type { UserAccountProfile } from "@/lib/types";
-import { ALL_PLATFORMS, PLATFORM_META } from "@/lib/platforms";
+import { ALL_PLATFORMS, PLATFORM_META, isManualPlatform } from "@/lib/platforms";
 import type { LibraryTab } from "@/lib/library/library-filters";
 import type { PlatformTabItem, FeatureTabItem } from "./LibraryNavTabs.types";
 
@@ -10,10 +10,16 @@ export function buildPlatformTabItems(
   platformCounts: Record<string, number>,
   accountProfile: UserAccountProfile
 ): PlatformTabItem[] {
-  return ALL_PLATFORMS.map((platform) => {
-    const meta = PLATFORM_META[platform];
+  const countOf = (platform: string) => {
     const rawCount = platformCounts[platform];
-    const count = typeof rawCount === "number" && rawCount > 0 ? rawCount : 0;
+    return typeof rawCount === "number" && rawCount > 0 ? rawCount : 0;
+  };
+  // Platforms tracked by hand only get a tab once they hold games.
+  const shown = ALL_PLATFORMS.filter((platform) => !isManualPlatform(platform) || countOf(platform) > 0);
+
+  return shown.map((platform) => {
+    const meta = PLATFORM_META[platform];
+    const count = countOf(platform);
     const isConnected = Boolean(accountProfile?.accounts?.[platform]);
 
     return {

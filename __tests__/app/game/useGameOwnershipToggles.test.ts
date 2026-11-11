@@ -160,6 +160,19 @@ describe("useGameOwnershipToggles finish date", () => {
     expect(upsertMock).toHaveBeenLastCalledWith(expect.objectContaining({ abandonedAt: expect.not.stringMatching(/^2025/) }));
   });
 
+  it("saves hours typed by hand and dates the session when they grow", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-11T18:00:00.000Z"));
+    const { handleChangePlaytime, upsertMock } = useToggles([owned({ playtimeHours: 5, lastPlayed: "2026-10-01T00:00:00.000Z" })]);
+
+    await handleChangePlaytime(7);
+    expect(upsertMock).toHaveBeenLastCalledWith(expect.objectContaining({ playtimeHours: 7, lastPlayed: "2026-11-11T18:00:00.000Z" }));
+
+    await handleChangePlaytime(4);
+    expect(upsertMock).toHaveBeenLastCalledWith(expect.objectContaining({ playtimeHours: 4, lastPlayed: "2026-10-01T00:00:00.000Z" }));
+    vi.useRealTimers();
+  });
+
   it("keeps the last finish date when the game is picked up again", async () => {
     const { handleChangeGameStatus, upsertMock } = useToggles([owned({ status: "completed", completedAt: "2025-03-01T12:00:00.000Z" })]);
 

@@ -41,6 +41,7 @@ export default function GameClientPage({ id }: { id: string }) {
         onSaveHuntingOverride={c.handleSaveHuntingOverride}
         onBackToLibrary={() => router.push("/")}
         playtimeHours={c.owned?.playtimeHours}
+        onChangePlaytime={c.handleChangePlaytime}
       />
 
       <div className="lg:grid lg:grid-cols-12 lg:gap-12 items-start space-y-8 lg:space-y-0">

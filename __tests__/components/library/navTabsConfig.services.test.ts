@@ -26,6 +26,13 @@ describe("navTabsConfig.services", () => {
     },
   };
 
+  it("shows a hand-tracked platform's tab only once it holds games", () => {
+    const items = buildPlatformTabItems("all", { steam: 3, switch: 2, playstation: 0 }, mockProfile);
+
+    expect(items.map((i) => i.id)).toEqual(["steam", "xbox", "epic", "gog", "switch"]);
+    expect(items.find((i) => i.id === "switch")).toMatchObject({ label: "Switch", count: 2, isConnected: false });
+  });
+
   it("builds platform tab items with accurate counts, active state, and connection status", () => {
     const items = buildPlatformTabItems(
       "steam",

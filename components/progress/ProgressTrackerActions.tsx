@@ -1,6 +1,8 @@
 // components/progress/ProgressTrackerActions.tsx
 "use client";
 
+import type { PlatformType } from "@/lib/types";
+import { isManualPlatform } from "@/lib/platforms";
 import { RefreshCw, KeyRound, RotateCcw } from "lucide-react";
 import { useConfirm } from "@/components/ui/confirm/useConfirm";
 
@@ -10,7 +12,7 @@ interface ActionsProps {
   onSync?: () => void;
   isSyncing?: boolean;
   hasSteamUser?: boolean;
-  platform?: "steam" | "epic" | "xbox" | "gog";
+  platform?: PlatformType;
   platformConnected?: boolean;
   onOpenEpicModal?: () => void;
 }
@@ -34,7 +36,7 @@ export function ProgressTrackerActions({
 
   return (
     <div className="flex items-center gap-1">
-      {onSync && (
+      {onSync && !isManualPlatform(platform) && (
         <button
           type="button"
           onClick={onSync}

@@ -1,6 +1,6 @@
 # 🎮 TrophyHunter
 
-A self-hosted game tracker for **Steam, Xbox, Epic Games and GOG**: what you are playing, what is next, what you finished. Achievements come as a bonus, with checklists and French guides for the games you want to complete. The interface is in French and installs on a phone as a PWA.
+A self-hosted game tracker for **Steam, Xbox, Epic Games and GOG**, plus games from other platforms added by hand: what you are playing, what is next, what you finished. Achievements come as a bonus, with checklists and French guides for the games you want to complete. The interface is in French and installs on a phone as a PWA.
 
 ---
 
@@ -10,6 +10,7 @@ A self-hosted game tracker for **Steam, Xbox, Epic Games and GOG**: what you are
 * **Play journal**: each sync compares the playtime a platform reports with the previous one and records the difference as a play session. The collection opens on *Cette semaine*, the time played on each game over the last seven days. Steam and GOG report playtime; Xbox and Epic Games do not, so their games never show there.
 * **Mon année**: a yearly review page with the games finished and abandoned that year, the hours played, the platform and game of the year, the games completed at 100 % and the best ratings; earlier years stay one click away.
 * **Platform accounts** (Steam, Xbox, Epic Games, GOG): import your games, playtime and achievements without sharing a password. Optional keys or tokens (Steam API key, OpenXBL key, Epic authorization code, GOG session token) unlock private profiles and achievement details.
+* **Games from other platforms**: Nintendo Switch, PlayStation and other (physical copies…) games are added by hand from the add-game dialog, through the Steam search or by typing their title. They get statuses, ratings and the year review like any other game, and their playtime is typed on their page; each increase counts as a play session.
 * **Library views**: one tab per platform, PC Game Pass catalogue, cross-platform duplicates, wishlist and custom collections. The wishlist keeps games you do not own yet (with their name and cover); when a sync brings one into the collection, the library offers to put it in the backlog.
 * **Achievements as a bonus**: per-game checklist with rarity, missable and secret achievements (spoilers hidden), personal notes, an "active hunt" list of pinned targets, and links to the PSTHC guide, Steam guides and French YouTube videos.
 * **Automatic sync**: in the settings, the server can sync every connected platform on its own every 6, 12 or 24 hours, using the stored keys and tokens (Epic Games needs a recent sign-in, since its tokens expire).

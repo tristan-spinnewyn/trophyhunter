@@ -1,7 +1,7 @@
 // components/accounts/active-tab/PlatformTabSwitcher.tsx
 
-import type { PlatformType } from "@/lib/types";
-import { ALL_PLATFORMS } from "@/lib/platforms";
+import type { ConnectablePlatform } from "@/lib/types";
+import { CONNECTABLE_PLATFORMS } from "@/lib/platforms";
 import { PlatformConnectionPanel, type PlatformConnectionPanelProps } from "../PlatformConnectionPanel";
 import { EpicLibraryTools } from "../EpicLibraryTools";
 import type { DashboardSectionProps } from "../hooks/useAccountDashboardController";
@@ -12,7 +12,7 @@ type PlatformFields = Pick<
 >;
 
 /** Maps the controller's per-platform inputs and actions onto the shared connection panel. */
-function platformFields(platform: PlatformType, { controller: c }: DashboardSectionProps): PlatformFields {
+function platformFields(platform: ConnectablePlatform, { controller: c }: DashboardSectionProps): PlatformFields {
   const { platformInputs: pi, platformSync: ps, stats } = c;
 
   switch (platform) {
@@ -52,8 +52,8 @@ function platformFields(platform: PlatformType, { controller: c }: DashboardSect
   }
 }
 
-function isPlatform(tab: string): tab is PlatformType {
-  return (ALL_PLATFORMS as readonly string[]).includes(tab);
+function isPlatform(tab: string): tab is ConnectablePlatform {
+  return (CONNECTABLE_PLATFORMS as readonly string[]).includes(tab);
 }
 
 export function PlatformTabSwitcher(section: DashboardSectionProps) {

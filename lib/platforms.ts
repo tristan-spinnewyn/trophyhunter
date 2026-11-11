@@ -1,13 +1,14 @@
 // lib/platforms.ts
 // Client-safe display metadata for the supported game platforms.
-import type { PlatformType, UserAccountProfile } from "./types";
+import type { ConnectablePlatform, ManualPlatform, PlatformType, UserAccountProfile } from "./types";
 
-export const ALL_PLATFORMS: PlatformType[] = [
-  "steam",
-  "xbox",
-  "epic",
-  "gog",
-];
+export const CONNECTABLE_PLATFORMS: ConnectablePlatform[] = ["steam", "xbox", "epic", "gog"];
+export const MANUAL_PLATFORMS: ManualPlatform[] = ["switch", "playstation", "other"];
+export const ALL_PLATFORMS: PlatformType[] = [...CONNECTABLE_PLATFORMS, ...MANUAL_PLATFORMS];
+
+export function isManualPlatform(platform: PlatformType): platform is ManualPlatform {
+  return (MANUAL_PLATFORMS as readonly string[]).includes(platform);
+}
 
 export const PLATFORM_META: Record<
   PlatformType,
@@ -57,8 +58,35 @@ export const PLATFORM_META: Record<
     completeLabel: "Jeux 100%",
     supportsAutoSync: true,
   },
+  switch: {
+    name: "Nintendo Switch",
+    shortName: "Switch",
+    placeholder: "",
+    badgeClass: "border-dropped/40 bg-dropped/10 text-dropped",
+    trophyLabel: "Succès",
+    completeLabel: "Jeux 100%",
+    supportsAutoSync: false,
+  },
+  playstation: {
+    name: "PlayStation",
+    shortName: "PlayStation",
+    placeholder: "",
+    badgeClass: "border-paused/40 bg-paused/10 text-paused",
+    trophyLabel: "Trophées",
+    completeLabel: "Platines",
+    supportsAutoSync: false,
+  },
+  other: {
+    name: "Autre / physique",
+    shortName: "Autre",
+    placeholder: "",
+    badgeClass: "border-seam bg-edge text-paper-dim",
+    trophyLabel: "Succès",
+    completeLabel: "Jeux 100%",
+    supportsAutoSync: false,
+  },
 };
 
 export function countConnectedPlatforms(profile: UserAccountProfile): number {
-  return ALL_PLATFORMS.filter((p) => Boolean(profile.accounts[p])).length;
+  return CONNECTABLE_PLATFORMS.filter((p) => Boolean(profile.accounts[p])).length;
 }

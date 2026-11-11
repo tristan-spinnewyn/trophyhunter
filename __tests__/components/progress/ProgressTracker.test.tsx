@@ -86,6 +86,12 @@ describe("ProgressTracker", () => {
     expect(screen.getByRole("button", { name: "Lier Steam" })).toBeTruthy();
   });
 
+  it("offers no sync for a platform tracked by hand", () => {
+    renderTracker({ onSync: vi.fn(), platform: "switch" });
+
+    expect(screen.queryByRole("button", { name: /Lier|Synchroniser/ })).toBeNull();
+  });
+
   it("treats Epic as connected and opens the Epic code modal", () => {
     const onOpenEpicModal = vi.fn();
     renderTracker({ onSync: vi.fn(), platform: "epic", onOpenEpicModal });
