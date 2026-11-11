@@ -15,6 +15,7 @@ export const TRIAGE_DESTINATIONS: readonly TriageDestination[] = [
   { status: "paused", shortcut: "p" },
   { status: "completed", shortcut: "t" },
   { status: "abandoned", shortcut: "a" },
+  { status: "not-interested", shortcut: "n" },
 ];
 
 export const TRIAGE_SKIP_SHORTCUT = "s";

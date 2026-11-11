@@ -18,6 +18,7 @@ describe("GameStatusPicker", () => {
       "En pause",
       "Terminé",
       "Abandonné",
+      "Pas intéressé",
     ]);
     expect(screen.getByRole("radio", { name: "En pause" }).getAttribute("aria-checked")).toBe("true");
     expect(screen.getByRole("radio", { name: "En cours" }).getAttribute("aria-checked")).toBe("false");
@@ -53,7 +54,7 @@ describe("GameStatusPicker", () => {
     expect(onChange).toHaveBeenLastCalledWith("unsorted");
 
     fireEvent.keyDown(screen.getByRole("radio", { name: "Non trié" }), { key: "ArrowLeft" });
-    expect(onChange).toHaveBeenLastCalledWith("abandoned");
+    expect(onChange).toHaveBeenLastCalledWith("not-interested");
   });
 
   it("makes only the checked status reachable with Tab", () => {

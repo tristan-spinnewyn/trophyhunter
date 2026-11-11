@@ -15,6 +15,7 @@ export const VALID_GAME_STATUSES: readonly GameStatus[] = [
   "paused",
   "completed",
   "abandoned",
+  "not-interested",
 ] as const;
 
 export const GAME_STATUS_META: Readonly<Record<GameStatus, GameStatusOption>> = {
@@ -59,6 +60,13 @@ export const GAME_STATUS_META: Readonly<Record<GameStatus, GameStatusOption>> = 
     sectionTitle: "Abandonnés",
     badgeClass: "border-dropped/40 bg-dropped/10 text-dropped",
     dotClass: "bg-dropped",
+  },
+  "not-interested": {
+    value: "not-interested",
+    label: "Pas intéressé",
+    sectionTitle: "Pas intéressés",
+    badgeClass: "border-seam bg-ink/60 text-faint",
+    dotClass: "bg-faint",
   },
 };
 

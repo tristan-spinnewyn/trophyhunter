@@ -43,6 +43,7 @@ describe("TriageDialog", () => {
       "paused",
       "completed",
       "abandoned",
+      "not-interested",
     ]);
   });
 
@@ -111,6 +112,15 @@ describe("TriageDialog", () => {
       [2, "gog", "paused"],
       [3, "steam", "completed"],
     ]);
+  });
+
+  it("sets a game aside for good with N, so it stops coming back at every sort", () => {
+    const { onSetStatus } = renderTriage();
+
+    fireEvent.keyDown(document, { key: "n" });
+
+    expect(onSetStatus).toHaveBeenCalledWith(1, "steam", "not-interested");
+    expect(currentGame()).toBe("Celeste");
   });
 
   it("ignores shortcuts combined with a modifier key, so browser shortcuts keep working", () => {
