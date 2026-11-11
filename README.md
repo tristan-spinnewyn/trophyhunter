@@ -11,6 +11,7 @@ A self-hosted game tracker for **Steam, Xbox, Epic Games and GOG**: what you are
 * **Platform accounts** (Steam, Xbox, Epic Games, GOG): import your games, playtime and achievements without sharing a password. Optional keys or tokens (Steam API key, OpenXBL key, Epic authorization code, GOG session token) unlock private profiles and achievement details.
 * **Library views**: one tab per platform, PC Game Pass catalogue, cross-platform duplicates, wishlist and custom collections. The wishlist keeps games you do not own yet (with their name and cover); when a sync brings one into the collection, the library offers to put it in the backlog.
 * **Achievements as a bonus**: per-game checklist with rarity, missable and secret achievements (spoilers hidden), personal notes, an "active hunt" list of pinned targets, and links to the PSTHC guide, Steam guides and French YouTube videos.
+* **Automatic sync**: in the settings, the server can sync every connected platform on its own every 6, 12 or 24 hours, using the stored keys and tokens (Epic Games needs a recent sign-in, since its tokens expire).
 * **Backup**: export and import your data as JSON from the settings.
 
 ---
@@ -41,6 +42,7 @@ pnpm test:coverage  # unit tests with the 80% coverage gate
 * **Encryption key.** Stored platform tokens are encrypted with a key read from `APP_ENCRYPTION_KEY` (64 hex chars, or any passphrase hashed with SHA-256). Without it, a key is generated in `data/.encryption_key`, in the same volume as the database, so a copy of the volume is enough to decrypt the tokens. Set `APP_ENCRYPTION_KEY` from a secret store in production, and keep it: changing it makes stored tokens unreadable.
 * **Registration.** Sign-up is open only until the first account exists, so whoever reaches a fresh instance first becomes its owner: create your account right after deploying. Set `ALLOW_REGISTRATION=true` to keep sign-up open.
 * **Time to beat (optional).** Durations on the backlog come from the [IGDB API](https://api-docs.igdb.com/). Create an application in the [Twitch developer console](https://dev.twitch.tv/console/apps) and set `IGDB_CLIENT_ID` and `IGDB_CLIENT_SECRET`. Without them, no duration is shown. Steam and GOG games are matched by store id, the others by exact name; results are cached in the database (a month for found games, a week for unknown ones), and only signed-in users trigger lookups.
+* **Automatic sync.** The server checks every 15 minutes for users whose automatic sync is due (off by default, chosen per user in the settings). Set `AUTO_SYNC_ENABLED=false` to turn the scheduler off for the whole instance.
 * **Data volume.** The Docker image keeps the database and the generated key in `/app/data`; mount a volume there.
 
 ---

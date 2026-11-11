@@ -2,7 +2,8 @@
 
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { saveUserPlatformAccount, saveUserOwnedGames } from "@/lib/db";
+import { saveUserPlatformAccount } from "@/lib/db";
+import { persistXboxSync } from "@/lib/xbox/persist-sync";
 import { fetchXboxProfileLive, buildFallbackXboxAccount } from "@/lib/xbox/service";
 import { XboxApiError } from "@/lib/xbox/types";
 import { readProfileSyncRequest } from "@/lib/accounts/profile-sync-request";
@@ -33,19 +34,12 @@ export async function POST(request: Request) {
 
   if (apiKey) {
     try {
-      const { account, discoveredGames } = await fetchXboxProfileLive(
-        rawUser,
-        apiKey,
-        nowIso
-      );
+      const result = await fetchXboxProfileLive(rawUser, apiKey, nowIso);
+      const { account, discoveredGames } = result;
 
       if (authUser) {
         try {
-          // Only the caller's own key is stored: the server key must not be copied into a user record.
-          saveUserPlatformAccount(authUser.id, account, secret || undefined);
-          if (discoveredGames.length > 0) {
-            saveUserOwnedGames(authUser.id, discoveredGames);
-          }
+          persistXboxSync(authUser.id, result, secret);
         } catch (saveErr: unknown) {
           console.warn("Could not auto-persist Xbox data to database:", saveErr);
         }
