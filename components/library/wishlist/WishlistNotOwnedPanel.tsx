@@ -6,6 +6,7 @@ import type { OwnedGame, PlatformType } from "@/lib/types";
 import { PLATFORM_META } from "@/lib/platforms";
 import { useWishlistEntries } from "./useWishlistEntries";
 import { WishlistPriceField } from "./WishlistPriceField";
+import { WishlistReleaseBadge } from "./WishlistReleaseBadge";
 
 interface WishlistNotOwnedPanelProps {
   readonly ownedGames: readonly OwnedGame[];
@@ -36,6 +37,7 @@ export function WishlistNotOwnedPanel({ ownedGames, wishlistIds, onToggleWishlis
             <div className="min-w-0 flex-1 space-y-1">
               <span className="block truncate text-sm font-semibold text-paper">{entry.name}</span>
               <span className="text-xs text-dust">{PLATFORM_META[entry.platform]?.shortName}</span>
+              <WishlistReleaseBadge releaseDate={entry.releaseDate} />
               <WishlistPriceField key={entry.targetPriceCents ?? "none"} entry={entry} onSaveTarget={saveTargetPrice} />
             </div>
             <button

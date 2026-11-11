@@ -76,4 +76,14 @@ describe("WishlistNotOwnedPanel", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     expect(fetchMock.mock.calls[1][0]).toBe("/api/user/wishlist/target");
   });
+
+  it("counts down to the release of a wished game", async () => {
+    const soon = new Date(Date.now() + 12 * 86_400_000).toISOString();
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ wishlist: [{ ...entries[0], releaseDate: soon }] }))
+    );
+    render(<WishlistNotOwnedPanel ownedGames={[]} wishlistIds={[900]} onToggleWishlist={vi.fn()} />);
+
+    expect(await screen.findByText(/^Sort dans 1[12] j$/)).toBeTruthy();
+  });
 });

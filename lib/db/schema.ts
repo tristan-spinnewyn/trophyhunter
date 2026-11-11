@@ -136,6 +136,16 @@ CREATE TABLE IF NOT EXISTS game_time_to_beat (
   fetched_at TEXT NOT NULL,
   PRIMARY KEY (platform, app_id)
 );
+-- When wished games come out, from IGDB: game data shared by every user, refreshed now and then.
+CREATE TABLE IF NOT EXISTS game_release_dates (
+  platform TEXT NOT NULL,
+  app_id INTEGER NOT NULL,
+  igdb_game_id INTEGER,
+  release_date TEXT,
+  fetched_at TEXT NOT NULL,
+  PRIMARY KEY (platform, app_id)
+);
+
 CREATE TABLE IF NOT EXISTS user_game_progress (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
