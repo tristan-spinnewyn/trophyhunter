@@ -11,6 +11,7 @@ import { GameClientLoading } from "./components/GameClientLoading";
 import { GameClientError } from "./components/GameClientError";
 import { GameClientSidebar } from "./components/GameClientSidebar";
 import { AchievementsListSection } from "./components/AchievementsListSection";
+import { GameSeriesSection } from "@/components/series/GameSeriesSection";
 
 export default function GameClientPage({ id }: { id: string }) {
   const router = useRouter();
@@ -45,6 +46,15 @@ export default function GameClientPage({ id }: { id: string }) {
         playtimeHours={c.owned?.playtimeHours}
         onChangePlaytime={c.handleChangePlaytime}
       />
+
+      {c.gameSeries && (
+        <GameSeriesSection
+          series={c.gameSeries}
+          wishlistIds={c.wishlistIds}
+          onWish={c.handleWishForSeriesGame}
+          onOpenGame={(appId) => router.push(`/game/${appId}`)}
+        />
+      )}
 
       <div className="lg:grid lg:grid-cols-12 lg:gap-12 items-start space-y-8 lg:space-y-0">
         <GameClientSidebar

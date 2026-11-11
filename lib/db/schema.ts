@@ -146,6 +146,15 @@ CREATE TABLE IF NOT EXISTS game_release_dates (
   PRIMARY KEY (platform, app_id)
 );
 
+-- The series each game belongs to, from IGDB (series_json null: none): game data shared by every user.
+CREATE TABLE IF NOT EXISTS game_series_cache (
+  platform TEXT NOT NULL,
+  app_id INTEGER NOT NULL,
+  series_json TEXT,
+  fetched_at TEXT NOT NULL,
+  PRIMARY KEY (platform, app_id)
+);
+
 CREATE TABLE IF NOT EXISTS user_game_progress (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
