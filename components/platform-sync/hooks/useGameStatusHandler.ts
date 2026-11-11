@@ -25,6 +25,7 @@ export function useGameStatusHandler({
             ...item,
             status: validStatus,
             statusChangedAt,
+            completedAt: validStatus === "completed" ? statusChangedAt : item.completedAt,
             backlogRank: validStatus === "backlog" ? item.backlogRank : undefined,
           }
         : item

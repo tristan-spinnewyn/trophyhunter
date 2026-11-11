@@ -75,6 +75,8 @@ export interface OwnedGame {
   backlogRank?: number;
   /** When the status was last chosen (ISO date); undefined for a status that was never chosen. */
   statusChangedAt?: string;
+  /** When the game was last marked finished (ISO date); undefined when unknown, as for games finished before tracking began. */
+  completedAt?: string;
 }
 
 export interface DuplicateGameGroup {

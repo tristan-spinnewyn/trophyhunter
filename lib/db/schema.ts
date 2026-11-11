@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS user_games (
   status TEXT NOT NULL DEFAULT 'unsorted',
   backlog_rank INTEGER,
   status_changed_at TEXT,
+  completed_at TEXT,
   source TEXT,
   added_at TEXT NOT NULL,
   UNIQUE(user_id, platform, app_id)

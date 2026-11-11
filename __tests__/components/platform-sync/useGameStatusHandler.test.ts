@@ -76,6 +76,23 @@ describe("useGameStatusHandler", () => {
     expect(stamped).toBeLessThanOrEqual(Date.now());
   });
 
+  it("dates the finish of a game, and keeps that date when it is picked up again", async () => {
+    const game: OwnedGame = { appId: 1, name: "Hades", headerImg: "", platform: "steam", totalAchievements: 0, unlockedCount: 0, addedAt: "2026-01-01" };
+    let memoryGames: OwnedGame[] = [game];
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}"));
+    const onOwnedGamesChange = (next: OwnedGame[]) => {
+      memoryGames = next;
+    };
+    const before = Date.now();
+
+    await useGameStatusHandler({ ownedGames: memoryGames, onOwnedGamesChange }).handleUpdateGameStatus(1, "steam", "completed");
+    const finishedAt = memoryGames[0].completedAt;
+    expect(new Date(finishedAt ?? "").getTime()).toBeGreaterThanOrEqual(before);
+
+    await useGameStatusHandler({ ownedGames: memoryGames, onOwnedGamesChange }).handleUpdateGameStatus(1, "steam", "in-progress");
+    expect(memoryGames[0].completedAt).toBe(finishedAt);
+  });
+
   it("rejects invalid game status before mutating state", async () => {
     const onOwnedGamesChange = vi.fn();
     const { handleUpdateGameStatus } = useGameStatusHandler({
