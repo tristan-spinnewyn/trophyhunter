@@ -22,12 +22,13 @@ describe("runScheduledJobs", () => {
     expect(prices).toHaveBeenCalled();
   });
 
-  it("runs the automatic sync, the wishlist prices and the weekly backups by default", async () => {
+  it("runs the automatic sync, the wishlist prices and release dates, and the weekly backups by default", async () => {
     const { runDueSyncs } = await import("@/lib/accounts/auto-sync-scheduler");
     const { checkWishlistPrices } = await import("@/lib/wishlist/price-check-job");
+    const { refreshWishlistReleaseDates } = await import("@/lib/wishlist/release-date-job");
     const { writeWeeklyBackups } = await import("@/lib/backup/weekly-backup-job");
     const { DEFAULT_SCHEDULED_JOBS } = await import("@/lib/scheduler/scheduled-jobs");
 
-    expect(DEFAULT_SCHEDULED_JOBS).toEqual([runDueSyncs, checkWishlistPrices, writeWeeklyBackups]);
+    expect(DEFAULT_SCHEDULED_JOBS).toEqual([runDueSyncs, checkWishlistPrices, refreshWishlistReleaseDates, writeWeeklyBackups]);
   });
 });

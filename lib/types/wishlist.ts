@@ -14,4 +14,6 @@ export interface WishlistEntry {
   readonly lastPriceCents?: number;
   readonly currency?: string;
   readonly priceCheckedAt?: string;
+  /** When the game comes (or came) out, from IGDB. */
+  readonly releaseDate?: string;
 }

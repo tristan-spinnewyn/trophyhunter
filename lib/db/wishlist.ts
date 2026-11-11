@@ -81,10 +81,12 @@ export type { WishlistEntry };
 export function getUserWishlist(userId: string): WishlistEntry[] {
   const rows = getDb()
     .prepare(
-      `SELECT app_id, platform, name, header_img, added_at, target_price_cents, last_price_cents, currency, price_checked_at
-       FROM user_wishlist
-       WHERE user_id = ?
-       ORDER BY added_at DESC, app_id`
+      `SELECT w.app_id, w.platform, w.name, w.header_img, w.added_at, w.target_price_cents, w.last_price_cents, w.currency, w.price_checked_at,
+              r.release_date
+       FROM user_wishlist w
+       LEFT JOIN game_release_dates r ON r.platform = w.platform AND r.app_id = w.app_id
+       WHERE w.user_id = ?
+       ORDER BY w.added_at DESC, w.app_id`
     )
     .all(userId) as Array<{
     app_id: number;
@@ -96,6 +98,7 @@ export function getUserWishlist(userId: string): WishlistEntry[] {
     last_price_cents: number | null;
     currency: string | null;
     price_checked_at: string | null;
+    release_date: string | null;
   }>;
 
   return rows.map((r) => ({
@@ -108,5 +111,6 @@ export function getUserWishlist(userId: string): WishlistEntry[] {
     lastPriceCents: r.last_price_cents ?? undefined,
     currency: r.currency ?? undefined,
     priceCheckedAt: r.price_checked_at ?? undefined,
+    releaseDate: r.release_date ?? undefined,
   }));
 }
