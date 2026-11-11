@@ -10,6 +10,7 @@ import type {
   PlatformType,
 } from "@/lib/types";
 import { DEFAULT_GAME_STATUS, assertValidGameStatus } from "@/lib/game-status/game-status.services";
+import { completionDateFromInput } from "@/lib/library/completion-date";
 
 interface UseGameOwnershipTogglesProps {
   readonly game: GameDetails | null;
@@ -75,24 +76,47 @@ export function useGameOwnershipToggles({
     }
   };
 
+  const findOwned = () => ownedGames.find((g) => g.appId === game?.id && g.platform === activePlatform);
+
+  /** The page's game as saved in the collection, keeping what the collection already knows. */
+  const toOwnedGame = (current: GameDetails, existing: OwnedGame | undefined, changes: Partial<OwnedGame>): OwnedGame => ({
+    appId: current.id,
+    name: existing?.name || current.name,
+    headerImg: existing?.headerImg || current.headerImg,
+    platform: activePlatform,
+    totalAchievements: existing?.totalAchievements || current.totalAchievements,
+    unlockedCount: Math.max(existing?.unlockedCount || 0, progress.unlockedIds.length),
+    playtimeHours: existing?.playtimeHours,
+    lastPlayed: existing?.lastPlayed,
+    addedAt: existing?.addedAt || new Date().toISOString(),
+    source: existing?.source || "manual",
+    status: existing?.status,
+    completedAt: existing?.completedAt,
+    ...changes,
+  });
+
   const handleChangeGameStatus = async (status: GameStatus) => {
     if (!game) return;
     const validStatus = assertValidGameStatus(status);
-    const existing = ownedGames.find((g) => g.appId === game.id && g.platform === activePlatform);
-    await upsertOwnedGameInMemoryAndDb({
-      appId: game.id,
-      name: existing?.name || game.name,
-      headerImg: existing?.headerImg || game.headerImg,
-      platform: activePlatform,
-      totalAchievements: existing?.totalAchievements || game.totalAchievements,
-      unlockedCount: Math.max(existing?.unlockedCount || 0, progress.unlockedIds.length),
-      playtimeHours: existing?.playtimeHours,
-      lastPlayed: existing?.lastPlayed,
-      addedAt: existing?.addedAt || new Date().toISOString(),
-      source: existing?.source || "manual",
-      status: validStatus,
-    });
+    const existing = findOwned();
+    const changedAt = new Date().toISOString();
+    await upsertOwnedGameInMemoryAndDb(
+      toOwnedGame(game, existing, {
+        status: validStatus,
+        statusChangedAt: changedAt,
+        // A game picked up again keeps its last finish date.
+        completedAt: validStatus === "completed" ? changedAt : existing?.completedAt,
+      })
+    );
   };
 
-  return { handleToggleFavorite, handleToggleOwned, handleChangeGameStatus };
+  /** Sets by hand the day a finished game was finished; ignores days that cannot be one. */
+  const handleChangeCompletedAt = async (day: string) => {
+    const existing = findOwned();
+    const completedAt = completionDateFromInput(day, new Date());
+    if (!game || !existing || !completedAt) return;
+    await upsertOwnedGameInMemoryAndDb(toOwnedGame(game, existing, { completedAt }));
+  };
+
+  return { handleToggleFavorite, handleToggleOwned, handleChangeGameStatus, handleChangeCompletedAt };
 }

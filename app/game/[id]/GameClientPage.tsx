@@ -32,6 +32,8 @@ export default function GameClientPage({ id }: { id: string }) {
         onToggleOwned={c.handleToggleOwned}
         gameStatus={c.owned?.status}
         onChangeGameStatus={c.handleChangeGameStatus}
+        completedAt={c.owned?.completedAt}
+        onChangeCompletedAt={c.handleChangeCompletedAt}
         huntingMeta={hasAchievements ? c.huntingMeta : undefined}
         onSaveHuntingOverride={c.handleSaveHuntingOverride}
         onBackToLibrary={() => router.push("/")}

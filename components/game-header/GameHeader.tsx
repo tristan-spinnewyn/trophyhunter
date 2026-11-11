@@ -6,6 +6,7 @@ import { GameHeaderActions, GameHeaderBackButton } from "./GameHeaderActions";
 import { GameHeaderGuides } from "./GameHeaderGuides";
 import { GameHuntingMetaBar } from "../hunting/GameHuntingMetaBar";
 import { GameStatusPicker } from "../game-status/GameStatusPicker";
+import { CompletionDateField } from "../game-status/CompletionDateField";
 import { getSpineStyle } from "@/lib/library/spine-style";
 import { getPortraitCoverUrl } from "@/lib/library/cover-image";
 import { resolveGameStatus } from "@/lib/game-status/game-status.services";
@@ -23,6 +24,9 @@ export interface GameHeaderProps {
   readonly onToggleOwned?: () => void;
   readonly gameStatus?: GameStatus;
   readonly onChangeGameStatus?: (status: GameStatus) => void;
+  /** When a finished game was finished (ISO date); editable through `onChangeCompletedAt`. */
+  readonly completedAt?: string;
+  readonly onChangeCompletedAt?: (day: string) => void;
   readonly huntingMeta?: GameHuntingMeta;
   readonly onSaveHuntingOverride?: (override: GameHuntingOverride | undefined) => void;
   readonly onBackToLibrary?: () => void;
@@ -39,11 +43,14 @@ export default function GameHeader({
   onToggleOwned,
   gameStatus,
   onChangeGameStatus,
+  completedAt,
+  onChangeCompletedAt,
   huntingMeta,
   onSaveHuntingOverride,
   onBackToLibrary,
   playtimeHours,
 }: GameHeaderProps) {
+  const isFinished = isOwned && resolveGameStatus(gameStatus) === "completed";
   // The game's spine colour carries over from the shelf to the top of its page.
   const spine = getSpineStyle({ appId: game.id, name: game.name, platform });
   const bandStyle = {
@@ -82,6 +89,9 @@ export default function GameHeader({
         <div className="col-span-2 space-y-3 sm:col-span-1">
           {onChangeGameStatus && (
             <GameStatusPicker status={isOwned ? resolveGameStatus(gameStatus) : null} onChange={onChangeGameStatus} />
+          )}
+          {isFinished && onChangeCompletedAt && (
+            <CompletionDateField completedAt={completedAt} onChange={onChangeCompletedAt} />
           )}
           <GameHeaderActions
             isFavorite={isFavorite}

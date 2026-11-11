@@ -93,6 +93,21 @@ describe("GameHeader", () => {
     expect(screen.queryByRole("button", { name: "Retirer de ma collection" })).toBeNull();
   });
 
+  it("lets the finish date of a finished game be set", () => {
+    const onChangeCompletedAt = vi.fn();
+    renderHeader({ isOwned: true, gameStatus: "completed", onChangeGameStatus: vi.fn(), onChangeCompletedAt });
+
+    fireEvent.change(screen.getByLabelText("Terminé le"), { target: { value: "2023-08-14" } });
+
+    expect(onChangeCompletedAt).toHaveBeenCalledWith("2023-08-14");
+  });
+
+  it("asks for no finish date while the game is not finished", () => {
+    renderHeader({ isOwned: true, gameStatus: "in-progress", onChangeGameStatus: vi.fn(), onChangeCompletedAt: vi.fn() });
+
+    expect(screen.queryByLabelText("Terminé le")).toBeNull();
+  });
+
   it("shows the current status of an owned game", () => {
     renderHeader({ isOwned: true, gameStatus: "paused", onChangeGameStatus: vi.fn() });
 
