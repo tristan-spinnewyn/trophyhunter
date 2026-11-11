@@ -3,6 +3,7 @@
 import type { OwnedGame } from "@/lib/types";
 import { ALL_PLATFORMS } from "@/lib/platforms";
 import { normalizeGameTitle } from "@/lib/game-title";
+import { mergeLinkedGames } from "./linked-games";
 
 export interface EpicGameCounts {
   readonly total: number;
@@ -33,8 +34,9 @@ export function calculateDuplicateGroups(ownedGames: OwnedGame[]): DuplicateGrou
   return result;
 }
 
+/** Games per platform tab; the whole collection ("all") counts a game merged across platforms once. */
 export function calculatePlatformCounts(ownedGames: OwnedGame[]): Record<string, number> {
-  const counts: Record<string, number> = { all: ownedGames.length };
+  const counts: Record<string, number> = { all: mergeLinkedGames(ownedGames).length };
   for (const p of ALL_PLATFORMS) counts[p] = 0;
   for (const g of ownedGames) counts[g.platform] = (counts[g.platform] || 0) + 1;
   return counts;

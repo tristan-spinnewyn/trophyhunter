@@ -40,7 +40,7 @@ export default function HomePage() {
   return (
     <div className="space-y-6">
       <LibraryHeaderBanner
-        ownedGamesCount={c.ownedGames.length}
+        ownedGamesCount={c.stats.platformCounts.all ?? 0}
         isLoading={c.isLoadingCollection}
         onOpenAddGame={() => c.addGameFlow.setIsAddGameOpen(true)}
         trackingSummary={c.trackingSummary}
@@ -69,7 +69,7 @@ export default function HomePage() {
       <LibraryNavTabs
         activePlatformTab={c.activePlatformTab}
         onSelectTab={c.handleSelectTab}
-        ownedGamesCount={c.ownedGames.length}
+        ownedGamesCount={c.stats.platformCounts.all ?? 0}
         platformCounts={c.stats.platformCounts}
         accountProfile={c.accountProfile}
         duplicateCount={c.stats.duplicateGroups.length}

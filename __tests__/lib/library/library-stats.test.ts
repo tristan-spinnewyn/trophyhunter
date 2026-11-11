@@ -54,3 +54,14 @@ describe("calculateDuplicateGroups edition matching", () => {
     expect(groups[0].games.map((g) => g.platform)).toEqual(["steam", "epic"]);
   });
 });
+
+describe("calculatePlatformCounts: merged games", () => {
+  it("counts a merged game once in the whole collection, and each copy on its platform", () => {
+    const games: OwnedGame[] = [
+      baseGame({ appId: 1, name: "Hades", platform: "steam" }),
+      baseGame({ appId: 2, name: "Hades", platform: "epic", mergedInto: { platform: "steam", appId: 1 } }),
+    ];
+
+    expect(calculatePlatformCounts(games)).toMatchObject({ all: 1, steam: 1, epic: 1 });
+  });
+});
