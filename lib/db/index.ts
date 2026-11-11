@@ -16,6 +16,7 @@ export * from "./collections";
 export * from "./wishlist";
 export * from "./wishlist-prices";
 export * from "./release-dates";
+export * from "./series-cache";
 export * from "./duplicates";
 export * from "./game-links";
 export * from "./clear";

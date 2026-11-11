@@ -9,12 +9,13 @@ import { useAchievementFilters } from "./useAchievementFilters";
 import { useHuntingActions } from "./useHuntingActions";
 import { useGameReview } from "./useGameReview";
 import { useGameResumeNote } from "./useGameResumeNote";
+import { useGameSeries } from "@/components/series/useGameSeries";
 
 export function useGameClientController(id: string) {
   const appId = parseInt(id, 10);
   const {
     currentUser, ownedGames, accountProfile, steamUser,
-    favorites, setFavorites, upsertOwnedGameInMemoryAndDb, setOwnedGames,
+    favorites, setFavorites, upsertOwnedGameInMemoryAndDb, setOwnedGames, wishlistIds, setWishlistIds,
   } = useUserData();
 
   const owned = ownedGames.find((g) => g.appId === appId);
@@ -45,10 +46,17 @@ export function useGameClientController(id: string) {
   const review = useGameReview({ owned, currentUser, setOwnedGames });
   const resumeNote = useGameResumeNote({ owned, currentUser, setOwnedGames });
 
+  const series = useGameSeries(
+    owned ? { platform: owned.platform, appId: owned.appId } : undefined,
+    Boolean(currentUser),
+    (wishedId) => setWishlistIds((prev) => (prev.includes(wishedId) ? prev : [...prev, wishedId]))
+  );
+
   const filters = useAchievementFilters(details.game?.achievements, details.progress);
 
   return {
-    appId, owned, activePlatform, favorites, ownedGames, accountProfile, steamUser,
+    appId, owned, activePlatform, favorites, ownedGames, accountProfile, steamUser, wishlistIds,
+    gameSeries: series.series, handleWishForSeriesGame: series.wishFor,
     ...details,
     ...actions,
     ...hunting,
