@@ -9,10 +9,12 @@ import {
   setUserGameStatus,
   setUserGameBacklogRank,
   setUserBacklogQueue,
+  setUserGameReview,
   type QueuedGameRef,
 } from "@/lib/db";
 import { assertValidGameStatus } from "@/lib/game-status/game-status.services";
 import { ALL_PLATFORMS } from "@/lib/platforms";
+import { parseGameReviewInput } from "@/lib/game-review/game-review";
 import type { PlatformType, OwnedGame } from "@/lib/types";
 
 interface PostOwnedGamesBody {
@@ -91,6 +93,30 @@ export async function handlePatchBacklogRank(userId: string, body: PatchBacklogR
   }
   setUserGameBacklogRank(userId, appId, platform, rank as number | null);
   return NextResponse.json({ success: true, appId, platform, backlogRank: rank });
+}
+
+interface PatchGameReviewBody {
+  readonly appId?: number;
+  readonly platform?: PlatformType;
+  readonly rating?: unknown;
+  readonly review?: unknown;
+}
+
+/** Sets or clears the rating and review of a game in the collection. */
+export async function handlePatchGameReview(userId: string, body: PatchGameReviewBody) {
+  const appId = Number(body?.appId);
+  const platform = (body?.platform || "steam") as PlatformType;
+  if (!appId || Number.isNaN(appId)) {
+    return NextResponse.json({ error: "Paramètre appId requis." }, { status: 400 });
+  }
+  const input = parseGameReviewInput(body);
+  if (!input.ok) {
+    return NextResponse.json({ error: input.error }, { status: 400 });
+  }
+  if (!setUserGameReview(userId, appId, platform, input.review)) {
+    return NextResponse.json({ error: "Jeu absent de la collection." }, { status: 404 });
+  }
+  return NextResponse.json({ success: true, appId, platform, ...input.review });
 }
 
 const MAX_QUEUE_LENGTH = 1000;
