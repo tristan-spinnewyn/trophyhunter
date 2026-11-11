@@ -8,6 +8,8 @@ import { GameHuntingMetaBar } from "../hunting/GameHuntingMetaBar";
 import { GameStatusPicker } from "../game-status/GameStatusPicker";
 import { CompletionDateField } from "../game-status/CompletionDateField";
 import { GameReviewField } from "../game-status/GameReviewField";
+import { ResumeNoteField } from "../game-status/ResumeNoteField";
+import { canHaveResumeNote } from "@/lib/game-resume/resume-note";
 import { PlaytimeField } from "../game-status/PlaytimeField";
 import { isManualPlatform } from "@/lib/platforms";
 import { canBeReviewed, type GameReview } from "@/lib/game-review/game-review";
@@ -35,6 +37,9 @@ export interface GameHeaderProps {
   readonly rating?: number;
   readonly review?: string;
   readonly onSaveReview?: (review: GameReview) => void;
+  /** Where the owner left off, offered while the game is in progress or paused. */
+  readonly resumeNote?: string;
+  readonly onSaveResumeNote?: (note: string | null) => void;
   readonly huntingMeta?: GameHuntingMeta;
   readonly onSaveHuntingOverride?: (override: GameHuntingOverride | undefined) => void;
   readonly onBackToLibrary?: () => void;
@@ -58,6 +63,8 @@ export default function GameHeader({
   rating,
   review,
   onSaveReview,
+  resumeNote,
+  onSaveResumeNote,
   huntingMeta,
   onSaveHuntingOverride,
   onBackToLibrary,
@@ -66,6 +73,7 @@ export default function GameHeader({
 }: GameHeaderProps) {
   const isFinished = isOwned && resolveGameStatus(gameStatus) === "completed";
   const isReviewable = isOwned && canBeReviewed(gameStatus);
+  const isResumable = isOwned && canHaveResumeNote(gameStatus);
   const isTimedByHand = isOwned && isManualPlatform(platform) && Boolean(onChangePlaytime);
   // The game's spine colour carries over from the shelf to the top of its page.
   const spine = getSpineStyle({ appId: game.id, name: game.name, platform });
@@ -111,6 +119,7 @@ export default function GameHeader({
           )}
           {isTimedByHand && onChangePlaytime && <PlaytimeField playtimeHours={playtimeHours} onChange={onChangePlaytime} />}
           {isReviewable && onSaveReview && <GameReviewField rating={rating} review={review} onSave={onSaveReview} />}
+          {isResumable && onSaveResumeNote && <ResumeNoteField note={resumeNote} onSave={onSaveResumeNote} />}
           <GameHeaderActions
             isFavorite={isFavorite}
             onToggleFavorite={onToggleFavorite}

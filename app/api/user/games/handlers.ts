@@ -10,11 +10,13 @@ import {
   setUserGameBacklogRank,
   setUserBacklogQueue,
   setUserGameReview,
+  setUserGameResumeNote,
   type QueuedGameRef,
 } from "@/lib/db";
 import { assertValidGameStatus } from "@/lib/game-status/game-status.services";
 import { ALL_PLATFORMS } from "@/lib/platforms";
 import { parseGameReviewInput } from "@/lib/game-review/game-review";
+import { parseResumeNoteInput } from "@/lib/game-resume/resume-note";
 import type { PlatformType, OwnedGame } from "@/lib/types";
 
 interface PostOwnedGamesBody {
@@ -117,6 +119,29 @@ export async function handlePatchGameReview(userId: string, body: PatchGameRevie
     return NextResponse.json({ error: "Jeu absent de la collection." }, { status: 404 });
   }
   return NextResponse.json({ success: true, appId, platform, ...input.review });
+}
+
+interface PatchResumeNoteBody {
+  readonly appId?: number;
+  readonly platform?: PlatformType;
+  readonly resumeNote?: unknown;
+}
+
+/** Sets or clears where the owner left off in a game of the collection. */
+export async function handlePatchResumeNote(userId: string, body: PatchResumeNoteBody) {
+  const appId = Number(body?.appId);
+  const platform = (body?.platform || "steam") as PlatformType;
+  if (!appId || Number.isNaN(appId)) {
+    return NextResponse.json({ error: "Paramètre appId requis." }, { status: 400 });
+  }
+  const input = parseResumeNoteInput(body.resumeNote);
+  if (!input.ok) {
+    return NextResponse.json({ error: input.error }, { status: 400 });
+  }
+  if (!setUserGameResumeNote(userId, appId, platform, input.note)) {
+    return NextResponse.json({ error: "Jeu absent de la collection." }, { status: 404 });
+  }
+  return NextResponse.json({ success: true, appId, platform, resumeNote: input.note });
 }
 
 const MAX_QUEUE_LENGTH = 1000;

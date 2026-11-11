@@ -10,7 +10,7 @@ export function getUserOwnedGames(userId: string): OwnedGame[] {
   const db = getDb();
   const rows = db
     .prepare(
-      `SELECT app_id, name, header_img, platform, total_achievements, unlocked_count, playtime_hours, last_played, added_at, source, status, backlog_rank, status_changed_at, completed_at, abandoned_at, rating, review
+      `SELECT app_id, name, header_img, platform, total_achievements, unlocked_count, playtime_hours, last_played, added_at, source, status, backlog_rank, status_changed_at, completed_at, abandoned_at, rating, review, resume_note
        FROM user_games
        WHERE user_id = ?
        ORDER BY added_at DESC`
@@ -25,8 +25,8 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
   const db = getDb();
 
   const insertStmt = db.prepare(
-    `INSERT INTO user_games (id, user_id, app_id, platform, name, header_img, total_achievements, unlocked_count, playtime_hours, last_played, source, status, added_at, backlog_rank, status_changed_at, completed_at, abandoned_at, rating, review)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, 'unsorted'), ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO user_games (id, user_id, app_id, platform, name, header_img, total_achievements, unlocked_count, playtime_hours, last_played, source, status, added_at, backlog_rank, status_changed_at, completed_at, abandoned_at, rating, review, resume_note)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, 'unsorted'), ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(user_id, platform, app_id) DO UPDATE SET
        name = excluded.name,
        header_img = COALESCE(excluded.header_img, user_games.header_img),
@@ -45,6 +45,7 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
        abandoned_at = COALESCE(excluded.abandoned_at, user_games.abandoned_at),
        rating = COALESCE(excluded.rating, user_games.rating),
        review = COALESCE(excluded.review, user_games.review),
+       resume_note = COALESCE(excluded.resume_note, user_games.resume_note),
        status = COALESCE(?, user_games.status)`
   );
 
@@ -79,6 +80,7 @@ export function saveUserOwnedGames(userId: string, games: OwnedGame[]): void {
         g.abandonedAt || null,
         g.rating ?? null,
         g.review || null,
+        g.resumeNote || null,
         explicitStatus
       );
     }

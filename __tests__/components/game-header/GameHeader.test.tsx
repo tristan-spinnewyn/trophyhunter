@@ -124,6 +124,23 @@ describe("GameHeader", () => {
     expect(screen.queryByRole("radiogroup", { name: "Ta note" })).toBeNull();
   });
 
+  it("lets where you left off be noted on a paused game", () => {
+    const onSaveResumeNote = vi.fn();
+    renderHeader({ isOwned: true, gameStatus: "paused", resumeNote: "Chapitre 2.", onSaveResumeNote });
+
+    const field = screen.getByLabelText("Où tu en es");
+    fireEvent.change(field, { target: { value: "Chapitre 3." } });
+    fireEvent.blur(field);
+
+    expect(onSaveResumeNote).toHaveBeenCalledWith("Chapitre 3.");
+  });
+
+  it("asks for no resume note on a finished game", () => {
+    renderHeader({ isOwned: true, gameStatus: "completed", onSaveResumeNote: vi.fn() });
+
+    expect(screen.queryByLabelText("Où tu en es")).toBeNull();
+  });
+
   it("lets the playtime of a game on a platform tracked by hand be typed", () => {
     const onChangePlaytime = vi.fn();
     renderHeader({ isOwned: true, platform: "switch", gameStatus: "in-progress", playtimeHours: 5, onChangePlaytime });

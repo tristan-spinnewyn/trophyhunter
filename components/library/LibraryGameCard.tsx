@@ -1,5 +1,6 @@
 // components/library/LibraryGameCard.tsx
 "use client";
+import { ResumeNoteReminder } from "@/components/game-status/ResumeNoteReminder";
 import { LibraryGameCardCover } from "./card/LibraryGameCardCover";
 import { LibraryGameCardProgress } from "./card/LibraryGameCardProgress";
 import { LibraryGameStatusSelector } from "./card/LibraryGameStatusSelector";
@@ -78,6 +79,8 @@ export default function LibraryGameCard({
           pct={pct}
           onSelectGame={onSelectGame}
         />
+
+        <ResumeNoteReminder game={g} className="line-clamp-2" />
 
         <LibraryGameCardActions
           game={g}

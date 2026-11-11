@@ -46,6 +46,18 @@ describe("LibraryStatusSections", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
+  it("reminds where you left off when a paused game is taken off the shelf", () => {
+    render(
+      <LibraryStatusSections
+        games={[makeOwnedGame({ appId: 3, name: "Starfield", status: "paused", resumeNote: "Quête de Constellation." })]}
+        renderGame={renderCard}
+      />
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Starfield" }));
+
+    expect(within(screen.getByRole("dialog", { name: "Starfield" })).getByText("Où tu en étais : Quête de Constellation.")).toBeTruthy();
+  });
+
   it("keeps the backlog open and folds paused, unsorted and finished games", () => {
     const { container } = renderSections();
     const openTitles = [...container.querySelectorAll("details[open] summary")].map((s) => s.textContent);
