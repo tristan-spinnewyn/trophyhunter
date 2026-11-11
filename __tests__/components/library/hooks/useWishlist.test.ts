@@ -6,7 +6,6 @@ import { useWishlist } from "@/components/library/hooks/useWishlist";
 
 afterEach(() => vi.restoreAllMocks());
 
-// The hook re-reads `initialWishlist` whenever it changes, so it must be a stable list.
 const NO_WISHLIST: number[] = [];
 
 describe("useWishlist", () => {
@@ -26,5 +25,31 @@ describe("useWishlist", () => {
       name: "Starfield",
       headerImg: "https://example.com/sf.jpg",
     });
+  });
+
+  it("keeps a toggled game when no initial wishlist is given, instead of rendering forever", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}"));
+    let renders = 0;
+    const { result } = renderHook(() => {
+      renders += 1;
+      // A render loop would never end on its own: break out of it, so the test fails instead of hanging.
+      if (renders > 20) throw new Error("useWishlist keeps rendering");
+      return useWishlist({ currentUser: { id: "u1", username: "me" } as never, setBannerMsg: vi.fn() });
+    });
+
+    await act(() => result.current.handleToggleWishlist(5, "steam"));
+
+    expect(result.current.wishlistIds).toEqual([5]);
+    expect(renders).toBeLessThan(5);
+  });
+
+  it("follows a new initial wishlist", () => {
+    const { result, rerender } = renderHook(({ initial }) => useWishlist({ initialWishlist: initial, setBannerMsg: vi.fn() }), {
+      initialProps: { initial: [1] },
+    });
+
+    rerender({ initial: [1, 2] });
+
+    expect(result.current.wishlistIds).toEqual([1, 2]);
   });
 });
