@@ -63,6 +63,18 @@ CREATE TABLE IF NOT EXISTS user_games (
 CREATE INDEX IF NOT EXISTS idx_user_games_user ON user_games(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_games_lookup ON user_games(user_id, platform, app_id);
 
+-- Play sessions, deduced from the playtime a sync brings compared to the previous one.
+CREATE TABLE IF NOT EXISTS play_sessions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  platform TEXT NOT NULL,
+  app_id INTEGER NOT NULL,
+  minutes INTEGER NOT NULL,
+  detected_at TEXT NOT NULL,
+  last_played TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_play_sessions_user_date ON play_sessions(user_id, detected_at);
+
 -- Games wished for, owned or not yet: a wishlist outlives the collection it may later join.
 CREATE TABLE IF NOT EXISTS user_wishlist (
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
