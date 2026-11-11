@@ -3,11 +3,17 @@
 
 import { useEffect, useState } from "react";
 import type { PlaySession } from "@/lib/types";
-import { recentWeekStart } from "@/lib/library/session-feed";
+import { daysBefore } from "@/lib/library/session-feed";
 
-/** The signed-in user's play sessions of the last seven days; empty when signed out or on error. */
-export function useRecentPlaySessions(isSignedIn: boolean, now?: Date): readonly PlaySession[] {
-  const [since] = useState(() => recentWeekStart(now ?? new Date()));
+interface RecentPlaySessionsOptions {
+  /** How many days back to load. */
+  readonly days: number;
+  readonly now?: Date;
+}
+
+/** The signed-in user's play sessions of the last `days` days; empty when signed out or on error. */
+export function useRecentPlaySessions(isSignedIn: boolean, { days, now }: RecentPlaySessionsOptions): readonly PlaySession[] {
+  const [since] = useState(() => daysBefore(now ?? new Date(), days));
   const [sessions, setSessions] = useState<readonly PlaySession[]>([]);
 
   useEffect(() => {

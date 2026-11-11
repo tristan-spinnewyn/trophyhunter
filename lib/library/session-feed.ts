@@ -1,7 +1,7 @@
 // lib/library/session-feed.ts
 import type { PlatformType, PlaySession } from "@/lib/types";
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface RecentlyPlayedGame {
   readonly appId: number;
@@ -26,9 +26,19 @@ export function playedTimeLabel(minutes: number): string {
   return rest === 0 ? `${hours} h` : `${hours} h ${String(rest).padStart(2, "0")}`;
 }
 
+/** The ISO date `days` days before `now`. */
+export function daysBefore(now: Date, days: number): string {
+  return new Date(now.getTime() - days * DAY_MS).toISOString();
+}
+
 /** The ISO date seven days before `now`: the start of "this week" for the feed. */
 export function recentWeekStart(now: Date): string {
-  return new Date(now.getTime() - WEEK_MS).toISOString();
+  return daysBefore(now, 7);
+}
+
+/** The sessions detected at or after `since` (an ISO date). */
+export function sessionsSince(sessions: readonly PlaySession[], since: string): PlaySession[] {
+  return sessions.filter((s) => s.detectedAt >= since);
 }
 
 /** Adds up the sessions game by game, so a game played three evenings shows once. */

@@ -6,9 +6,14 @@ function hoursLabel(seconds: number): string {
   return seconds < 3600 ? "< 1 h" : `${Math.round(seconds / 3600)} h`;
 }
 
-/** "12 h" for a spine: the usual playthrough, else the quickest, else the full one. */
+/** The duration a game stands for: the usual playthrough, else the quickest, else the full one. */
+export function usualDurationSeconds(durations: GameDurations | undefined): number | null {
+  return durations?.normallySeconds ?? durations?.hastilySeconds ?? durations?.completelySeconds ?? null;
+}
+
+/** "12 h" for a spine, from the usual duration. */
 export function shortDurationLabel(durations: GameDurations | undefined): string | null {
-  const seconds = durations?.normallySeconds ?? durations?.hastilySeconds ?? durations?.completelySeconds ?? null;
+  const seconds = usualDurationSeconds(durations);
   return seconds === null ? null : hoursLabel(seconds);
 }
 

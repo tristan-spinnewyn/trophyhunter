@@ -5,12 +5,14 @@ import LibrarySection from "@/components/library/section/LibrarySection";
 import { useBacklogDurations } from "@/components/library/hooks/useBacklogDurations";
 import { useUserSettings } from "@/components/settings/useUserSettings";
 import type { useHomePageController } from "../hooks/useHomePageController";
+import type { PlaySession } from "@/lib/types";
 
 interface HomeLibrarySectionProps {
   readonly controller: ReturnType<typeof useHomePageController>;
+  readonly recentSessions?: readonly PlaySession[];
 }
 
-export function HomeLibrarySection({ controller: c }: HomeLibrarySectionProps) {
+export function HomeLibrarySection({ controller: c, recentSessions }: HomeLibrarySectionProps) {
   const router = useRouter();
   const { collectionsState: cs, platformSync: ps, addGameFlow: ag, stats, libraryFilters: lf } = c;
   const backlogDurations = useBacklogDurations(c.ownedGames, Boolean(c.currentUser));
@@ -49,6 +51,7 @@ export function HomeLibrarySection({ controller: c }: HomeLibrarySectionProps) {
       onReorderQueue={ps.handleReorderQueue}
       backlogDurations={backlogDurations}
       staleAfterWeeks={settings?.staleAfterWeeks}
+      recentSessions={recentSessions}
     />
   );
 }

@@ -1,6 +1,6 @@
 // __tests__/lib/library/session-feed.test.ts
 import { describe, it, expect } from "vitest";
-import { playedTimeLabel, recentWeekStart, summarizeRecentPlay } from "@/lib/library/session-feed";
+import { daysBefore, playedTimeLabel, recentWeekStart, sessionsSince, summarizeRecentPlay } from "@/lib/library/session-feed";
 import type { PlaySession } from "@/lib/types";
 
 function session(appId: number, minutes: number, detectedAt: string): PlaySession {
@@ -51,5 +51,20 @@ describe("summarizeRecentPlay", () => {
 
   it("is empty without sessions", () => {
     expect(summarizeRecentPlay([])).toEqual({ totalMinutes: 0, games: [] });
+  });
+});
+
+describe("daysBefore", () => {
+  it("goes back the given number of days", () => {
+    expect(daysBefore(new Date("2026-11-11T12:00:00.000Z"), 90)).toBe("2026-08-13T12:00:00.000Z");
+  });
+});
+
+describe("sessionsSince", () => {
+  it("keeps the sessions detected at or after the date", () => {
+    const kept = session(1, 30, "2026-11-10T20:00:00.000Z");
+    const old = session(2, 30, "2026-10-01T20:00:00.000Z");
+
+    expect(sessionsSince([kept, old], "2026-11-04T12:00:00.000Z")).toEqual([kept]);
   });
 });
