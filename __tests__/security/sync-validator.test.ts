@@ -36,6 +36,17 @@ describe("validateSyncPayload", () => {
     expect(games.map((g) => [g.rating, g.review])).toEqual([[4, "Bien."], [undefined, undefined]]);
   });
 
+  it("keeps the date a game was abandoned and drops anything that is not text", () => {
+    const { games } = validateSyncPayload({
+      games: [
+        { appId: 1, platform: "steam", name: "Dropped", status: "abandoned", abandonedAt: "2026-04-01T10:00:00.000Z" },
+        { appId: 2, platform: "steam", name: "Odd", status: "abandoned", abandonedAt: 5 },
+      ],
+    });
+
+    expect(games.map((g) => g.abandonedAt)).toEqual(["2026-04-01T10:00:00.000Z", undefined]);
+  });
+
   it("keeps a whole-number backlog rank and drops anything else", () => {
     const { games } = validateSyncPayload({
       games: [

@@ -58,6 +58,7 @@ export function validateSyncPayload(input: Record<string, unknown>): ValidatedSy
       backlogRank: Number.isInteger(rec.backlogRank) ? (rec.backlogRank as number) : undefined,
       statusChangedAt: typeof rec.statusChangedAt === "string" ? rec.statusChangedAt.slice(0, 64) : undefined,
       completedAt: typeof rec.completedAt === "string" ? rec.completedAt.slice(0, 64) : undefined,
+      abandonedAt: typeof rec.abandonedAt === "string" ? rec.abandonedAt.slice(0, 64) : undefined,
       ...backedUpReview(rec),
     });
   }

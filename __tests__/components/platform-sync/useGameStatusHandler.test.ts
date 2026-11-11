@@ -93,6 +93,16 @@ describe("useGameStatusHandler", () => {
     expect(memoryGames[0].completedAt).toBe(finishedAt);
   });
 
+  it("dates the abandon of a game", async () => {
+    const game: OwnedGame = { appId: 1, name: "Anthem", headerImg: "", platform: "steam", totalAchievements: 0, unlockedCount: 0, addedAt: "2026-01-01" };
+    let memoryGames: OwnedGame[] = [game];
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}"));
+
+    await useGameStatusHandler({ ownedGames: memoryGames, onOwnedGamesChange: (next) => { memoryGames = next; } }).handleUpdateGameStatus(1, "steam", "abandoned");
+
+    expect(memoryGames[0].abandonedAt).toBe(memoryGames[0].statusChangedAt);
+  });
+
   it("rejects invalid game status before mutating state", async () => {
     const onOwnedGamesChange = vi.fn();
     const { handleUpdateGameStatus } = useGameStatusHandler({

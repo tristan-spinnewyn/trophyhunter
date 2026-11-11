@@ -19,6 +19,13 @@ describe("MobileTabBar", () => {
     const html = renderToStaticMarkup(<MobileTabBar />);
     expect(html).toContain('href="/"');
     expect(html).toContain('href="/account"');
+    expect(html).toContain('href="/annee"');
+    expect(html).toContain("grid-cols-3");
+  });
+
+  it("highlights the year in review on its page", () => {
+    pathname = "/annee";
+    expect(currentLinks(renderToStaticMarkup(<MobileTabBar />))).toEqual(["Mon année"]);
   });
 
   it("highlights the library on a game page", () => {

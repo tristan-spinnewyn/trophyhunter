@@ -17,6 +17,7 @@ export interface UserGameRow {
   readonly backlog_rank?: number | null;
   readonly status_changed_at?: string | null;
   readonly completed_at?: string | null;
+  readonly abandoned_at?: string | null;
   readonly rating?: number | null;
   readonly review?: string | null;
 }
@@ -37,6 +38,7 @@ export function mapUserGameRow(r: UserGameRow): OwnedGame {
     backlogRank: r.backlog_rank ?? undefined,
     statusChangedAt: r.status_changed_at ?? undefined,
     completedAt: r.completed_at ?? undefined,
+    abandonedAt: r.abandoned_at ?? undefined,
     rating: r.rating ?? undefined,
     review: r.review ?? undefined,
   };

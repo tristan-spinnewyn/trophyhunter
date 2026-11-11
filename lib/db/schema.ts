@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS user_games (
   backlog_rank INTEGER,
   status_changed_at TEXT,
   completed_at TEXT,
+  abandoned_at TEXT,
   rating INTEGER,
   review TEXT,
   source TEXT,

@@ -150,6 +150,16 @@ describe("useGameOwnershipToggles finish date", () => {
     );
   });
 
+  it("dates an abandon and keeps the earlier one when the game is picked up again", async () => {
+    const { handleChangeGameStatus, upsertMock } = useToggles([owned({ status: "abandoned", abandonedAt: "2025-03-01T12:00:00.000Z" })]);
+
+    await handleChangeGameStatus("in-progress");
+    expect(upsertMock).toHaveBeenLastCalledWith(expect.objectContaining({ abandonedAt: "2025-03-01T12:00:00.000Z" }));
+
+    await handleChangeGameStatus("abandoned");
+    expect(upsertMock).toHaveBeenLastCalledWith(expect.objectContaining({ abandonedAt: expect.not.stringMatching(/^2025/) }));
+  });
+
   it("keeps the last finish date when the game is picked up again", async () => {
     const { handleChangeGameStatus, upsertMock } = useToggles([owned({ status: "completed", completedAt: "2025-03-01T12:00:00.000Z" })]);
 

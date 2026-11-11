@@ -14,7 +14,7 @@ export function MobileTabBar() {
       aria-label="Navigation principale"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-edge bg-ink/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] md:hidden"
     >
-      <div className="grid grid-cols-2">
+      <div className="grid grid-cols-3">
         {APP_NAV_ITEMS.map((item) => {
           const isActive = isNavItemActive(item, pathname);
           const Icon = APP_NAV_ICONS[item.id];

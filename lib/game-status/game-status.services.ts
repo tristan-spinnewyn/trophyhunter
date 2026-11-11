@@ -91,3 +91,25 @@ export function assertValidGameStatus(value: unknown): GameStatus {
   }
   return value;
 }
+
+export interface StatusChangeDates {
+  readonly statusChangedAt: string;
+  readonly completedAt?: string;
+  readonly abandonedAt?: string;
+}
+
+/**
+ * The dates a status choice leaves on a game: the choice itself, plus a new finish or abandon date.
+ * A game picked up again keeps its last finish and abandon dates.
+ */
+export function statusChangeDates(
+  status: GameStatus,
+  changedAt: string,
+  previous: { readonly completedAt?: string; readonly abandonedAt?: string } | undefined
+): StatusChangeDates {
+  return {
+    statusChangedAt: changedAt,
+    completedAt: status === "completed" ? changedAt : previous?.completedAt,
+    abandonedAt: status === "abandoned" ? changedAt : previous?.abandonedAt,
+  };
+}

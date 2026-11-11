@@ -5,8 +5,8 @@ const library = APP_NAV_ITEMS.find((item) => item.id === "library")!;
 const accounts = APP_NAV_ITEMS.find((item) => item.id === "accounts")!;
 
 describe("APP_NAV_ITEMS", () => {
-  it("lists the library first, then the accounts page", () => {
-    expect(APP_NAV_ITEMS.map((item) => item.href)).toEqual(["/", "/account"]);
+  it("lists the library first, then the year in review, then the accounts page", () => {
+    expect(APP_NAV_ITEMS.map((item) => item.href)).toEqual(["/", "/annee", "/account"]);
   });
 });
 

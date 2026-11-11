@@ -27,13 +27,14 @@ export function setUserGameStatus(
       `UPDATE user_games
        SET status = ?, status_changed_at = ?,
            backlog_rank = CASE WHEN ? = 'backlog' THEN backlog_rank ELSE NULL END,
-           completed_at = CASE WHEN ? = 'completed' THEN ? ELSE completed_at END
+           completed_at = CASE WHEN ? = 'completed' THEN ? ELSE completed_at END,
+           abandoned_at = CASE WHEN ? = 'abandoned' THEN ? ELSE abandoned_at END
        WHERE user_id = ? AND app_id = ? AND platform = ?`
-    ).run(validStatus, changedAt, validStatus, validStatus, changedAt, userId, appId, platform);
+    ).run(validStatus, changedAt, validStatus, validStatus, changedAt, validStatus, changedAt, userId, appId, platform);
   } else {
     db.prepare(
-      `INSERT INTO user_games (id, user_id, app_id, platform, name, status, added_at, status_changed_at, completed_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO user_games (id, user_id, app_id, platform, name, status, added_at, status_changed_at, completed_at, abandoned_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       crypto.randomUUID(),
       userId,
@@ -43,7 +44,8 @@ export function setUserGameStatus(
       validStatus,
       changedAt,
       changedAt,
-      validStatus === "completed" ? changedAt : null
+      validStatus === "completed" ? changedAt : null,
+      validStatus === "abandoned" ? changedAt : null
     );
   }
 }
