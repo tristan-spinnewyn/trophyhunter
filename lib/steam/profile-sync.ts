@@ -120,10 +120,16 @@ export interface SteamSyncResult {
   discoveredGames: OwnedGame[];
 }
 
+/**
+ * Syncs a Steam profile and, for a signed-in user, persists it.
+ * `apiKey` is the key used for the calls (possibly the server key); only
+ * `keyToStore`, the caller's own key, is ever written to the user's account.
+ */
 export async function syncSteamProfile(
   rawUser: string,
   apiKey?: string,
-  authUserId?: string
+  authUserId?: string,
+  keyToStore?: string
 ): Promise<SteamSyncResult> {
   const { userIdentifier, isVanity, baseUrl } = parseSteamIdentifier(rawUser);
   const rawPages = await fetchRawSteamProfilePages(baseUrl, rawUser);
@@ -158,7 +164,7 @@ export async function syncSteamProfile(
 
   if (authUserId) {
     try {
-      saveUserPlatformAccount(authUserId, account, apiKey || undefined);
+      saveUserPlatformAccount(authUserId, account, keyToStore || undefined);
       if (discoveredGames.length > 0) {
         saveUserOwnedGames(authUserId, discoveredGames);
       }
