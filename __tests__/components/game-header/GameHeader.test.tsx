@@ -6,6 +6,7 @@ import GameHeader, { type GameHeaderProps } from "@/components/game-header/GameH
 import { ConfirmProvider } from "@/components/ui/confirm/ConfirmProvider";
 import type { GameHuntingMeta } from "@/lib/hunting/hunting.types";
 import { makeGameDetails } from "../../helpers/gameFixtures";
+import { manualGameId } from "@/lib/game/manual-game";
 
 const huntingMeta: GameHuntingMeta = {
   difficultyRating: 3,
@@ -121,6 +122,33 @@ describe("GameHeader", () => {
     renderHeader({ isOwned: true, gameStatus: "in-progress", onSaveReview: vi.fn() });
 
     expect(screen.queryByRole("radiogroup", { name: "Ta note" })).toBeNull();
+  });
+
+  it("lets the playtime of a game on a platform tracked by hand be typed", () => {
+    const onChangePlaytime = vi.fn();
+    renderHeader({ isOwned: true, platform: "switch", gameStatus: "in-progress", playtimeHours: 5, onChangePlaytime });
+
+    const field = screen.getByLabelText("Heures jouées");
+    fireEvent.change(field, { target: { value: "7" } });
+    fireEvent.blur(field);
+
+    expect(onChangePlaytime).toHaveBeenCalledWith(7);
+  });
+
+  it("keeps the playtime read-only for a synced platform", () => {
+    renderHeader({ isOwned: true, platform: "steam", playtimeHours: 5, onChangePlaytime: vi.fn() });
+
+    expect(screen.queryByLabelText("Heures jouées")).toBeNull();
+    expect(screen.getByText("5 h jouées")).toBeTruthy();
+  });
+
+  it("links no Steam page for a game added by hand", () => {
+    const id = manualGameId("Kirby Air Riders");
+    renderHeader({ game: { ...makeGameDetails(), id, guideLinks: { steamGuidesUrl: "", psthcUrl: "https://psthc.test", youtubeUrl: "https://yt.test" } }, platform: "switch" });
+
+    expect(screen.queryByRole("link", { name: /Magasin Steam/ })).toBeNull();
+    expect(screen.queryByRole("link", { name: /Guides Steam/ })).toBeNull();
+    expect(screen.getByRole("link", { name: /Guide PSTHC/ })).toBeTruthy();
   });
 
   it("shows the current status of an owned game", () => {

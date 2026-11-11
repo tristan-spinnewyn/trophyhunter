@@ -114,5 +114,18 @@ export function useGameOwnershipToggles({
     await upsertOwnedGameInMemoryAndDb(toOwnedGame(game, existing, { completedAt }));
   };
 
-  return { handleToggleFavorite, handleToggleOwned, handleChangeGameStatus, handleChangeCompletedAt };
+  /**
+   * Sets by hand the hours played on a game no account times. More hours mean the game was just played,
+   * which dates its last session (and lets the server record that session).
+   */
+  const handleChangePlaytime = async (hours: number) => {
+    const existing = findOwned();
+    if (!game || !existing) return;
+    const hasGrown = hours > (existing.playtimeHours ?? 0);
+    await upsertOwnedGameInMemoryAndDb(
+      toOwnedGame(game, existing, { playtimeHours: hours, lastPlayed: hasGrown ? new Date().toISOString() : existing.lastPlayed })
+    );
+  };
+
+  return { handleToggleFavorite, handleToggleOwned, handleChangeGameStatus, handleChangeCompletedAt, handleChangePlaytime };
 }

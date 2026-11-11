@@ -2,6 +2,8 @@
 
 import { Search, Loader2 } from "lucide-react";
 import type { GameSearchResult, OwnedGame, PlatformType } from "@/lib/types";
+import { isManualPlatform } from "@/lib/platforms";
+import { manualGameId } from "@/lib/game/manual-game";
 
 interface AddGameSearchSectionProps {
   selectedPlatformForAdd: PlatformType;
@@ -22,6 +24,10 @@ export function AddGameSearchSection({
   ownedGames,
   handleAddGameToLibrary,
 }: AddGameSearchSectionProps) {
+  const typedTitle = addGameQuery.trim();
+  // Consoles and physical copies have no store to search: the title is enough.
+  const canAddAsTyped = isManualPlatform(selectedPlatformForAdd) && typedTitle.length > 0;
+
   return (
     <div className="space-y-2">
       <label htmlFor="add-game-search" className="text-sm font-medium text-paper-dim">
@@ -84,6 +90,16 @@ export function AddGameSearchSection({
             );
           })}
         </div>
+      )}
+
+      {canAddAsTyped && (
+        <button
+          type="button"
+          onClick={() => handleAddGameToLibrary({ id: manualGameId(typedTitle), name: typedTitle, img: "" })}
+          className="w-full rounded-control border border-seam px-3 py-2 text-left text-sm font-semibold text-paper transition hover:bg-edge"
+        >
+          Ajouter « {typedTitle} » tel quel
+        </button>
       )}
     </div>
   );

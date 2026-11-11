@@ -2,6 +2,7 @@
 import type { DatabaseSync } from "node:sqlite";
 import { getDb } from "./connection";
 import type { OwnedGame, PlatformType, PlaySession } from "../types";
+import { isManualPlatform } from "../platforms";
 
 /** Platforms round playtime to a tenth of an hour: anything smaller is noise, not a session. */
 const MIN_SESSION_MINUTES = 6;
@@ -17,6 +18,19 @@ export function playtimeGrowthMinutes(
   if (previousHours == null || nextHours == null) return null;
   const minutes = Math.round((nextHours - previousHours) * 60);
   return minutes >= MIN_SESSION_MINUTES ? minutes : null;
+}
+
+/**
+ * The playtime to compare a write against. A game seen for the first time has none (its total is history,
+ * not a session). A game already in the collection without playtime starts from zero on a platform timed by hand,
+ * where the first hours typed are play, but stays unknown elsewhere, where a store's first report is a lifetime total.
+ */
+export function previousPlaytimeHours(
+  platform: PlatformType,
+  storedRow: { readonly playtime_hours: number | null } | undefined
+): number | null {
+  if (!storedRow) return null;
+  return storedRow.playtime_hours ?? (isManualPlatform(platform) ? 0 : null);
 }
 
 /** Writes a session when the incoming game carries more playtime than the stored one. */

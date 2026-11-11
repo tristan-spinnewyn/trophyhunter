@@ -1,7 +1,7 @@
 // lib/accounts/platform-connection.ts
 // Client-safe description of how each platform is connected, shared by the accounts page.
 
-import type { PlatformAccount, PlatformType } from "@/lib/types";
+import type { ConnectablePlatform, PlatformAccount, PlatformType } from "@/lib/types";
 import { EPIC_AUTH_CODE_URL, parseEpicAuthInput } from "@/lib/epic/auth-input";
 
 export interface PlatformConnectionConfig {
@@ -21,7 +21,7 @@ export interface PlatformConnectionConfig {
   };
 }
 
-export const PLATFORM_CONNECTIONS: Readonly<Record<PlatformType, PlatformConnectionConfig>> = {
+export const PLATFORM_CONNECTIONS: Readonly<Record<ConnectablePlatform, PlatformConnectionConfig>> = {
   steam: {
     identifierLabel: "SteamID, pseudo ou URL de profil",
     identifierPlaceholder: "76561198… ou steamcommunity.com/id/…",
@@ -91,7 +91,7 @@ export function describeConnection(account: PlatformAccount | undefined): Connec
   return { isLinked: true, name: account.displayName || account.username, lastSyncLabel };
 }
 
-export function canStartSync(platform: PlatformType, identifier: string, isSyncing: boolean): boolean {
+export function canStartSync(platform: ConnectablePlatform, identifier: string, isSyncing: boolean): boolean {
   if (isSyncing) return false;
   return !PLATFORM_CONNECTIONS[platform].identifierRequired || identifier.trim().length > 0;
 }

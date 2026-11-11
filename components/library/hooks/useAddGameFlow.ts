@@ -2,7 +2,7 @@
 "use client";
 import { useState } from "react";
 import type { OwnedGame, PlatformType, GameSearchResult } from "@/lib/types";
-import { PLATFORM_META } from "@/lib/platforms";
+import { PLATFORM_META, isManualPlatform } from "@/lib/platforms";
 import { mergeGamesList } from "@/lib/library/game-list";
 import { useAddGameSearch } from "./useAddGameSearch";
 
@@ -59,7 +59,9 @@ export function useAddGameFlow({
     let updatedList = mergeGamesList(ownedGames, [newGame]);
     onOwnedGamesChange(updatedList);
 
-    if (selectedPlatformForAdd === "steam" && steamUsername) {
+    if (isManualPlatform(selectedPlatformForAdd)) {
+      // No account to read achievements from: the game is tracked by status and playtime only.
+    } else if (selectedPlatformForAdd === "steam" && steamUsername) {
       newGame = await syncSingleSteamGame(steamUsername, newGame);
       updatedList = mergeGamesList(ownedGames, [newGame]);
       onOwnedGamesChange(updatedList);

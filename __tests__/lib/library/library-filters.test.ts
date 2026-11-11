@@ -80,7 +80,8 @@ describe("parseLibraryTab", () => {
   it("falls back to all for a missing or unknown value", () => {
     expect(parseLibraryTab(null)).toBe("all");
     expect(parseLibraryTab("")).toBe("all");
-    expect(parseLibraryTab("playstation")).toBe("all");
+    expect(parseLibraryTab("dreamcast")).toBe("all");
+    expect(parseLibraryTab("playstation")).toBe("playstation");
   });
 });
 

@@ -1,7 +1,7 @@
 // __tests__/lib/accounts/platform-connection.test.ts
 import { describe, it, expect } from "vitest";
 import type { PlatformAccount } from "@/lib/types";
-import { ALL_PLATFORMS } from "@/lib/platforms";
+import { CONNECTABLE_PLATFORMS } from "@/lib/platforms";
 import {
   PLATFORM_CONNECTIONS,
   canStartSync,
@@ -22,7 +22,7 @@ function account(overrides: Partial<PlatformAccount> = {}): PlatformAccount {
 
 describe("PLATFORM_CONNECTIONS", () => {
   it("describes how to connect every platform", () => {
-    for (const platform of ALL_PLATFORMS) {
+    for (const platform of CONNECTABLE_PLATFORMS) {
       const config = PLATFORM_CONNECTIONS[platform];
       expect(config.identifierLabel).toBeTruthy();
       expect(config.secret.label).toBeTruthy();

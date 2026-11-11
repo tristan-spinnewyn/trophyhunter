@@ -6,7 +6,7 @@ import {
   Award, CheckCircle2, ChevronDown, Edit3, ExternalLink, Gamepad2, KeyRound,
   Loader2, RefreshCw, Sparkles, Trophy, Unlink,
 } from "lucide-react";
-import type { PlatformAccount, PlatformType } from "@/lib/types";
+import type { ConnectablePlatform, PlatformAccount, PlatformType } from "@/lib/types";
 import { PLATFORM_META } from "@/lib/platforms";
 import { sanitizeExternalHref } from "@/lib/security/url-validator";
 import {
@@ -19,7 +19,7 @@ import { StatTileGrid, type StatTile } from "@/components/stats/StatTileGrid";
 import { PlatformCollectionLink } from "./PlatformCollectionLink";
 
 export interface PlatformConnectionPanelProps {
-  readonly platform: PlatformType;
+  readonly platform: ConnectablePlatform;
   readonly account?: PlatformAccount;
   readonly gameCount: number;
   readonly identifier: string;

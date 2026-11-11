@@ -4,13 +4,17 @@
 
 import { Plus, Trophy } from "lucide-react";
 import type { TrackingSummary } from "@/lib/library/library-tracking";
-import { describeCollection } from "@/lib/library/collection-sentence";
+import { describeCollection, describePlatforms } from "@/lib/library/collection-sentence";
+import { CONNECTABLE_PLATFORMS } from "@/lib/platforms";
+import type { PlatformType } from "@/lib/types";
 
 interface LibraryHeaderBannerProps {
   readonly ownedGamesCount: number;
   readonly onOpenAddGame: () => void;
   readonly trackingSummary: TrackingSummary;
   readonly isLoading?: boolean;
+  /** The platforms the collection holds games on; the connectable ones when unknown. */
+  readonly platforms?: readonly PlatformType[];
 }
 
 export function LibraryHeaderBanner({
@@ -18,6 +22,7 @@ export function LibraryHeaderBanner({
   onOpenAddGame,
   trackingSummary,
   isLoading = false,
+  platforms = CONNECTABLE_PLATFORMS,
 }: LibraryHeaderBannerProps) {
   const sentence = describeCollection(ownedGamesCount, trackingSummary);
   const { unlockedAchievements, perfectGames } = trackingSummary;
@@ -45,7 +50,7 @@ export function LibraryHeaderBanner({
 
       {hasGames && (
         <p className="max-w-[52ch] text-[17px] text-dust">
-          <strong className="font-semibold text-paper">{sentence.size}</strong> sur Steam, Xbox, Epic Games et GOG
+          <strong className="font-semibold text-paper">{sentence.size}</strong> sur {describePlatforms(platforms)}
           {sentence.hours && (
             <>
               , et <strong className="font-semibold text-paper">{sentence.hours}</strong> de jeu

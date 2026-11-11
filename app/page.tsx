@@ -16,6 +16,7 @@ import { HomeContextPanels } from "./components/HomeContextPanels";
 import { HomeLibrarySection } from "./components/HomeLibrarySection";
 import { HomeModalsContainer } from "./components/HomeModalsContainer";
 import type { LibraryTab } from "@/lib/library/library-filters";
+import { ALL_PLATFORMS } from "@/lib/platforms";
 
 /** Game Pass and duplicates have their own panel; listing the whole collection under them is noise. */
 function showsGameList(tab: LibraryTab): boolean {
@@ -35,6 +36,7 @@ export default function HomePage() {
         isLoading={c.isLoadingCollection}
         onOpenAddGame={() => c.addGameFlow.setIsAddGameOpen(true)}
         trackingSummary={c.trackingSummary}
+        platforms={ALL_PLATFORMS.filter((p) => (c.stats.platformCounts[p] ?? 0) > 0)}
       />
 
       <RecentPlayPanel sessions={sessionsSince(recentSessions, recentWeekStart(new Date()))} onSelectGame={(appId) => router.push(`/game/${appId}`)} />

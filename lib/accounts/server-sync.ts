@@ -1,6 +1,7 @@
 // lib/accounts/server-sync.ts
 import { getUserById, getUserPlatformAccounts, getUserPlatformApiKey } from "@/lib/db";
-import type { PlatformAccount, PlatformType } from "@/lib/types";
+import type { ConnectablePlatform, PlatformAccount, PlatformType } from "@/lib/types";
+import { isManualPlatform } from "@/lib/platforms";
 import { resolvePlatformApiKey } from "./platform-api-key";
 import { syncSteamProfile } from "@/lib/steam/profile-sync";
 import { fetchGogProfile } from "@/lib/gog/service";
@@ -22,7 +23,7 @@ class PlatformRefusedError extends Error {}
  * How each platform syncs without the user at the keyboard, from what is stored for them.
  * Keys are never written back: the stored ones stay, server keys never land in a user record.
  */
-const SERVER_SYNCERS: Readonly<Record<PlatformType, ServerSyncer>> = {
+const SERVER_SYNCERS: Readonly<Record<ConnectablePlatform, ServerSyncer>> = {
   steam: async (userId, account) => {
     await syncSteamProfile(account.username, resolvePlatformApiKey("steam", { userId }), userId);
     return "synced";
@@ -52,8 +53,10 @@ export async function syncUserPlatforms(userId: string): Promise<PlatformSyncOut
   const accounts = Object.values(getUserPlatformAccounts(userId));
   const outcomes: PlatformSyncOutcome[] = [];
   for (const account of accounts) {
+    const platform = account.platform;
+    if (isManualPlatform(platform)) continue;
     try {
-      outcomes.push({ platform: account.platform, status: await SERVER_SYNCERS[account.platform](userId, account) });
+      outcomes.push({ platform, status: await SERVER_SYNCERS[platform](userId, account) });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.warn(`Automatic ${account.platform} sync failed:`, message);

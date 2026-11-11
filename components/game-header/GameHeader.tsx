@@ -8,6 +8,8 @@ import { GameHuntingMetaBar } from "../hunting/GameHuntingMetaBar";
 import { GameStatusPicker } from "../game-status/GameStatusPicker";
 import { CompletionDateField } from "../game-status/CompletionDateField";
 import { GameReviewField } from "../game-status/GameReviewField";
+import { PlaytimeField } from "../game-status/PlaytimeField";
+import { isManualPlatform } from "@/lib/platforms";
 import { canBeReviewed, type GameReview } from "@/lib/game-review/game-review";
 import { getSpineStyle } from "@/lib/library/spine-style";
 import { getPortraitCoverUrl } from "@/lib/library/cover-image";
@@ -38,6 +40,8 @@ export interface GameHeaderProps {
   readonly onBackToLibrary?: () => void;
   /** Hours played, when the game is in the collection. */
   readonly playtimeHours?: number;
+  /** Lets the hours be typed, for platforms that do not report playtime. */
+  readonly onChangePlaytime?: (hours: number) => void;
 }
 
 export default function GameHeader({
@@ -58,9 +62,11 @@ export default function GameHeader({
   onSaveHuntingOverride,
   onBackToLibrary,
   playtimeHours,
+  onChangePlaytime,
 }: GameHeaderProps) {
   const isFinished = isOwned && resolveGameStatus(gameStatus) === "completed";
   const isReviewable = isOwned && canBeReviewed(gameStatus);
+  const isTimedByHand = isOwned && isManualPlatform(platform) && Boolean(onChangePlaytime);
   // The game's spine colour carries over from the shelf to the top of its page.
   const spine = getSpineStyle({ appId: game.id, name: game.name, platform });
   const bandStyle = {
@@ -90,7 +96,7 @@ export default function GameHeader({
 
         <p className="col-span-2 flex flex-wrap gap-x-4 text-paper/80 sm:col-span-1">
           {game.developers && game.developers.length > 0 && <span className="truncate">{game.developers.join(", ")}</span>}
-          {playtimeHours !== undefined && playtimeHours > 0 && (
+          {!isTimedByHand && playtimeHours !== undefined && playtimeHours > 0 && (
             <span className="font-semibold text-paper">{playtimeHours} h jouées</span>
           )}
           <span>{game.totalAchievements} succès</span>
@@ -103,6 +109,7 @@ export default function GameHeader({
           {isFinished && onChangeCompletedAt && (
             <CompletionDateField completedAt={completedAt} onChange={onChangeCompletedAt} />
           )}
+          {isTimedByHand && onChangePlaytime && <PlaytimeField playtimeHours={playtimeHours} onChange={onChangePlaytime} />}
           {isReviewable && onSaveReview && <GameReviewField rating={rating} review={review} onSave={onSaveReview} />}
           <GameHeaderActions
             isFavorite={isFavorite}

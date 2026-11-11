@@ -114,3 +114,18 @@ describe("validateSyncPayload", () => {
     expect(() => validateSyncPayload({ progress: oversizedProgress })).toThrow(SyncPayloadValidationError);
   });
 });
+
+describe("validateSyncPayload: platforms tracked by hand", () => {
+  it("keeps games from the Switch, PlayStation or another platform", () => {
+    const { games } = validateSyncPayload({
+      games: [
+        { appId: 1, platform: "switch", name: "Zelda" },
+        { appId: 2, platform: "playstation", name: "Astro Bot" },
+        { appId: 3, platform: "other", name: "Boîte" },
+        { appId: 4, platform: "dreamcast", name: "Unknown" },
+      ],
+    });
+
+    expect(games.map((g) => g.platform)).toEqual(["switch", "playstation", "other"]);
+  });
+});

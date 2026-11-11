@@ -1,6 +1,8 @@
 // lib/library/collection-sentence.ts
 
 import type { TrackingSummary } from "./library-tracking";
+import type { PlatformType } from "@/lib/types";
+import { PLATFORM_META } from "@/lib/platforms";
 
 export interface CollectionSentence {
   /** "214 jeux" */
@@ -30,4 +32,10 @@ export function describeCollection(gamesCount: number, summary: TrackingSummary)
     hours: summary.totalHours > 0 ? plural(summary.totalHours, "heure", "heures") : null,
     queue: queueParts.length > 0 ? `${queueParts.join(", ")}.` : null,
   };
+}
+
+/** "Steam, Xbox Live et Nintendo Switch": the platforms a collection spans, in a French list. */
+export function describePlatforms(platforms: readonly PlatformType[]): string {
+  const names = platforms.map((p) => PLATFORM_META[p].name);
+  return names.length <= 1 ? (names[0] ?? "") : `${names.slice(0, -1).join(", ")} et ${names[names.length - 1]}`;
 }

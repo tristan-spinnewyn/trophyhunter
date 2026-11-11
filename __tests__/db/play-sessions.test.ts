@@ -85,6 +85,20 @@ describe("play sessions journal", () => {
     expect(sessions[0].detectedAt).toEqual(expect.any(String));
   });
 
+  it("counts the first hours typed for a game on a platform tracked by hand", () => {
+    saveUserOwnedGames(userId, [{ ...steamGame(7, undefined), platform: "switch" }]);
+    saveUserOwnedGames(userId, [{ ...steamGame(7, 3), platform: "switch" }]);
+
+    expect(getPlaySessions(userId)).toMatchObject([{ appId: 7, platform: "switch", minutes: 180 }]);
+  });
+
+  it("does not count the first playtime a store reports for a game added without one", () => {
+    saveUserOwnedGames(userId, [steamGame(8, undefined)]);
+    saveUserOwnedGames(userId, [steamGame(8, 300)]);
+
+    expect(getPlaySessions(userId)).toEqual([]);
+  });
+
   it("records nothing when the same playtime is written again", () => {
     saveUserOwnedGames(userId, [steamGame(1, 10)]);
     saveUserOwnedGames(userId, [steamGame(1, 12)]);

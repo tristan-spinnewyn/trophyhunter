@@ -2,6 +2,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/game/[id]/route";
+import { manualGameId } from "@/lib/game/manual-game";
 import { jsonResponse, textResponse } from "../../helpers/responses";
 import { requestUrl } from "../../helpers/networkGuard";
 
@@ -9,6 +10,17 @@ describe("GET /api/game/[id] - Store HTML & Xbox", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     delete process.env.OPENXBL_API_KEY;
+  });
+
+  it("describes a game added by hand without calling any store", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch");
+    const id = String(manualGameId("Mario Kart 8"));
+
+    const res = await GET(new Request(`http://localhost:3000/api/game/${id}?name=Mario%20Kart%208&platform=switch`), { params: Promise.resolve({ id }) });
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ id: Number(id), name: "Mario Kart 8", totalAchievements: 0, achievements: [] });
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it("rejects invalid non-numeric app IDs", async () => {

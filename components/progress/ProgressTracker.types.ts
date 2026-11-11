@@ -1,4 +1,5 @@
 // components/progress/ProgressTracker.types.ts
+import type { PlatformType } from "@/lib/types";
 
 export interface ProgressTrackerProps {
   readonly total: number;
@@ -9,7 +10,7 @@ export interface ProgressTrackerProps {
   readonly onSync?: () => void;
   readonly isSyncing?: boolean;
   readonly hasSteamUser?: boolean;
-  readonly platform?: "steam" | "epic" | "xbox" | "gog";
+  readonly platform?: PlatformType;
   readonly platformConnected?: boolean;
   readonly onOpenEpicModal?: () => void;
 }

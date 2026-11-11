@@ -1,4 +1,5 @@
 // lib/security/security.types.ts
+import { ALL_PLATFORMS } from "../platforms";
 import type { PlatformType, OwnedGame, UserGameProgress, UserAccountProfile } from "../types";
 
 export interface RateLimitConfig {
@@ -35,9 +36,4 @@ export interface SafePlatformUrlResult {
   readonly normalizedUrl: string | undefined;
 }
 
-export const ALLOWED_PLATFORMS: readonly PlatformType[] = [
-  "steam",
-  "epic",
-  "gog",
-  "xbox",
-] as const;
+export const ALLOWED_PLATFORMS: readonly PlatformType[] = ALL_PLATFORMS;

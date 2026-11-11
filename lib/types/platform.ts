@@ -1,5 +1,9 @@
 // lib/types/platform.ts
-export type PlatformType = "steam" | "xbox" | "epic" | "gog";
+/** Platforms whose account the app connects to and syncs. */
+export type ConnectablePlatform = "steam" | "xbox" | "epic" | "gog";
+/** Platforms with no account sync: their games and playtime are entered by hand. */
+export type ManualPlatform = "switch" | "playstation" | "other";
+export type PlatformType = ConnectablePlatform | ManualPlatform;
 
 export interface PlatformStats {
   gamesOwned: number;

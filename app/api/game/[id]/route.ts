@@ -7,6 +7,7 @@ import { getSteamGameDetails } from "@/lib/steam/game-details";
 import { getEpicAchievementsForUser } from "@/lib/epic/game-sync";
 import { getGogAchievementsForUser } from "@/lib/gog/service";
 import { getXboxAchievementsForUser } from "@/lib/xbox/game-details";
+import { isManualGameId, manualGameDetails } from "@/lib/game/manual-game";
 
 export async function GET(
   request: Request,
@@ -35,6 +36,10 @@ export async function GET(
     if (rateLimited) return rateLimited;
 
     const numericAppId = parseInt(appId, 10);
+    // A game added by hand has no store page: its details come from its name alone.
+    if (isManualGameId(numericAppId)) {
+      return NextResponse.json(manualGameDetails(numericAppId, nameParam || `Jeu #${numericAppId}`));
+    }
     const isEpic = platform === "epic" && !!authUser;
     const isGog = platform === "gog" && !!authUser;
     const isXbox = platform === "xbox";

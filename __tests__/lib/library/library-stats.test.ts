@@ -35,6 +35,9 @@ describe("dashboardStatsCalculator", () => {
       epic: 2,
       xbox: 0,
       gog: 0,
+      switch: 0,
+      playstation: 0,
+      other: 0,
     });
     expect(calculateEpicCounts(games)).toEqual({ total: 2, withAch: 1, noAch: 1 });
   });
