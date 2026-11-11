@@ -4,7 +4,7 @@ import type { GameStatus, OwnedGame } from "@/lib/types";
 import { GAME_STATUS_META, resolveGameStatus } from "@/lib/game-status/game-status.services";
 import { sortBacklogQueue } from "./backlog-order";
 
-/** Library sections: what to play now, then the pile left to sort, then the archive. */
+/** Library sections: what to play now, then the pile left to sort, then the archive, then what was set aside. */
 export const STATUS_SECTION_ORDER: readonly GameStatus[] = [
   "in-progress",
   "backlog",
@@ -12,6 +12,7 @@ export const STATUS_SECTION_ORDER: readonly GameStatus[] = [
   "unsorted",
   "completed",
   "abandoned",
+  "not-interested",
 ];
 
 const OPEN_BY_DEFAULT: ReadonlySet<GameStatus> = new Set(["in-progress", "backlog"]);

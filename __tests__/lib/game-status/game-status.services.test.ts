@@ -12,9 +12,9 @@ import {
 import { InvalidGameStatusError } from "@/lib/game-status/game-status.types";
 
 describe("game-status.services", () => {
-  it("exposes unsorted as default and defines the six tracking statuses in display order", () => {
+  it("exposes unsorted as default and defines the seven tracking statuses in display order", () => {
     expect(DEFAULT_GAME_STATUS).toBe("unsorted");
-    expect(VALID_GAME_STATUSES).toEqual(["unsorted", "backlog", "in-progress", "paused", "completed", "abandoned"]);
+    expect(VALID_GAME_STATUSES).toEqual(["unsorted", "backlog", "in-progress", "paused", "completed", "abandoned", "not-interested"]);
     expect(GAME_STATUS_OPTIONS.map((o) => o.value)).toEqual(VALID_GAME_STATUSES);
     expect(GAME_STATUS_META.unsorted.label).toBe("Non trié");
     expect(GAME_STATUS_META.backlog.label).toBe("Backlog");
@@ -22,6 +22,7 @@ describe("game-status.services", () => {
     expect(GAME_STATUS_META.paused.label).toBe("En pause");
     expect(GAME_STATUS_META.completed.label).toBe("Terminé");
     expect(GAME_STATUS_META.abandoned.label).toBe("Abandonné");
+    expect(GAME_STATUS_META["not-interested"].label).toBe("Pas intéressé");
   });
 
   it("gives every status a plural section title for the library", () => {
@@ -31,6 +32,7 @@ describe("game-status.services", () => {
     expect(GAME_STATUS_META.paused.sectionTitle).toBe("En pause");
     expect(GAME_STATUS_META.completed.sectionTitle).toBe("Terminés");
     expect(GAME_STATUS_META.abandoned.sectionTitle).toBe("Abandonnés");
+    expect(GAME_STATUS_META["not-interested"].sectionTitle).toBe("Pas intéressés");
   });
 
   it("validates game status values strictly including null, undefined and non-strings", () => {
@@ -40,6 +42,7 @@ describe("game-status.services", () => {
     expect(isValidGameStatus("completed")).toBe(true);
     expect(isValidGameStatus("paused")).toBe(true);
     expect(isValidGameStatus("abandoned")).toBe(true);
+    expect(isValidGameStatus("not-interested")).toBe(true);
 
     expect(isValidGameStatus(undefined)).toBe(false);
     expect(isValidGameStatus(null)).toBe(false);

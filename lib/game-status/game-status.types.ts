@@ -2,8 +2,17 @@
 
 /**
  * "unsorted" is where games land on import; "backlog" is only ever a deliberate choice.
+ * "not-interested" sets aside a game that will never be played (bundle filler), unlike
+ * "abandoned", which means it was started and dropped.
  */
-export type GameStatus = "unsorted" | "backlog" | "in-progress" | "paused" | "completed" | "abandoned";
+export type GameStatus =
+  | "unsorted"
+  | "backlog"
+  | "in-progress"
+  | "paused"
+  | "completed"
+  | "abandoned"
+  | "not-interested";
 
 export interface GameStatusOption {
   readonly value: GameStatus;

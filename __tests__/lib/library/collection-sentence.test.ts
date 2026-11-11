@@ -3,7 +3,7 @@ import { describeCollection } from "@/lib/library/collection-sentence";
 import type { TrackingSummary } from "@/lib/library/library-tracking";
 
 const summary = (overrides: Partial<TrackingSummary> = {}): TrackingSummary => ({
-  countByStatus: { unsorted: 0, backlog: 42, "in-progress": 3, paused: 0, completed: 5, abandoned: 1 },
+  countByStatus: { unsorted: 0, backlog: 42, "in-progress": 3, paused: 0, completed: 5, abandoned: 1, "not-interested": 0 },
   totalHours: 1382,
   unlockedAchievements: 0,
   perfectGames: 0,
@@ -30,14 +30,21 @@ describe("describeCollection", () => {
   });
 
   it("only mentions the non-empty parts of the queue", () => {
-    const none = { unsorted: 0, backlog: 0, "in-progress": 0, paused: 0, completed: 2, abandoned: 0 };
+    const none = { unsorted: 0, backlog: 0, "in-progress": 0, paused: 0, completed: 2, abandoned: 0, "not-interested": 0 };
     expect(describeCollection(2, summary({ countByStatus: none })).queue).toBeNull();
     expect(describeCollection(2, summary({ countByStatus: { ...none, backlog: 2 } })).queue).toBe("2 au backlog.");
     expect(describeCollection(2, summary({ countByStatus: { ...none, "in-progress": 1 } })).queue).toBe("1 en cours.");
   });
 
   it("reminds how many games still wait to be sorted", () => {
-    const counts = { unsorted: 120, backlog: 4, "in-progress": 1, paused: 0, completed: 0, abandoned: 0 };
+    const counts = { unsorted: 120, backlog: 4, "in-progress": 1, paused: 0, completed: 0, abandoned: 0, "not-interested": 0 };
     expect(describeCollection(125, summary({ countByStatus: counts })).queue).toBe("1 en cours, 4 au backlog, 120 à trier.");
+  });
+});
+
+describe("describeCollection with games set aside", () => {
+  it("does not count games marked not interested as left to sort", () => {
+    const counts = { unsorted: 3, backlog: 0, "in-progress": 0, paused: 0, completed: 0, abandoned: 0, "not-interested": 250 };
+    expect(describeCollection(253, summary({ countByStatus: counts })).queue).toBe("3 à trier.");
   });
 });

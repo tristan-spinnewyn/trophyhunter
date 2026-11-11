@@ -7,7 +7,7 @@ import type { TrackingSummary } from "@/lib/library/library-tracking";
 
 function makeSummary(overrides: Partial<TrackingSummary> = {}): TrackingSummary {
   return {
-    countByStatus: { unsorted: 7, backlog: 3, "in-progress": 2, paused: 0, completed: 5, abandoned: 1 },
+    countByStatus: { unsorted: 7, backlog: 3, "in-progress": 2, paused: 0, completed: 5, abandoned: 1, "not-interested": 0 },
     totalHours: 120,
     unlockedAchievements: 0,
     perfectGames: 0,

@@ -24,10 +24,19 @@ function game(status: GameStatus | undefined, extra: Partial<OwnedGame> = {}): O
 }
 
 describe("groupGamesByStatus", () => {
-  it("orders sections from what to play now, through the unsorted pile, to the archive", () => {
-    expect(STATUS_SECTION_ORDER).toEqual(["in-progress", "backlog", "paused", "unsorted", "completed", "abandoned"]);
+  it("orders sections from what to play now, through the unsorted pile, to the archive, games set aside last", () => {
+    expect(STATUS_SECTION_ORDER).toEqual([
+      "in-progress",
+      "backlog",
+      "paused",
+      "unsorted",
+      "completed",
+      "abandoned",
+      "not-interested",
+    ]);
 
     const sections = groupGamesByStatus([
+      game("not-interested"),
       game("abandoned"),
       game("completed"),
       game("unsorted"),
@@ -70,6 +79,7 @@ describe("groupGamesByStatus", () => {
       game("unsorted"),
       game("completed"),
       game("abandoned"),
+      game("not-interested"),
     ]);
 
     expect(Object.fromEntries(sections.map((s) => [s.status, s.isOpenByDefault]))).toEqual({
@@ -79,6 +89,7 @@ describe("groupGamesByStatus", () => {
       unsorted: false,
       completed: false,
       abandoned: false,
+      "not-interested": false,
     });
   });
 
@@ -108,6 +119,7 @@ describe("calculateTrackingSummary", () => {
       game(undefined),
       game("completed"),
       game("abandoned"),
+      game("not-interested"),
     ]);
 
     expect(summary.countByStatus).toEqual({
@@ -117,6 +129,7 @@ describe("calculateTrackingSummary", () => {
       paused: 0,
       completed: 1,
       abandoned: 1,
+      "not-interested": 1,
     });
   });
 
@@ -143,7 +156,7 @@ describe("calculateTrackingSummary", () => {
 
   it("returns zeros for an empty library", () => {
     expect(calculateTrackingSummary([])).toEqual({
-      countByStatus: { "in-progress": 0, backlog: 0, paused: 0, unsorted: 0, completed: 0, abandoned: 0 },
+      countByStatus: { "in-progress": 0, backlog: 0, paused: 0, unsorted: 0, completed: 0, abandoned: 0, "not-interested": 0 },
       totalHours: 0,
       unlockedAchievements: 0,
       perfectGames: 0,
