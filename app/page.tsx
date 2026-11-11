@@ -7,6 +7,8 @@ import FeedbackToasts from "@/components/ui/FeedbackToasts";
 import LibraryNavTabs from "@/components/library/LibraryNavTabs";
 import { LibraryHeaderBanner } from "@/components/library/LibraryHeaderBanner";
 import { FeaturedGamesSection } from "@/components/library/FeaturedGamesSection";
+import { YearGoalsSummary } from "@/components/goals/YearGoalsSummary";
+import { useYearGoals } from "@/components/goals/useYearGoals";
 import { RecentPlayPanel } from "@/components/library/RecentPlayPanel";
 import { PriceReachedNotice } from "@/components/library/wishlist/PriceReachedNotice";
 import { useRecentPlaySessions } from "@/components/library/hooks/useRecentPlaySessions";
@@ -26,6 +28,8 @@ function showsGameList(tab: LibraryTab): boolean {
 
 export default function HomePage() {
   const c = useHomePageController();
+  const currentYear = new Date().getUTCFullYear();
+  const { goals } = useYearGoals(currentYear, Boolean(c.currentUser));
   const router = useRouter();
   // Loaded once for the pace window; the weekly panel keeps the last seven days.
   const recentSessions = useRecentPlaySessions(Boolean(c.currentUser), { days: PACE_WINDOW_DAYS });
@@ -41,6 +45,8 @@ export default function HomePage() {
       />
 
       <PriceReachedNotice ownedGames={c.ownedGames} isSignedIn={Boolean(c.currentUser)} />
+
+      <YearGoalsSummary year={currentYear} goals={goals} onOpenYear={() => router.push("/annee")} />
 
       <RecentPlayPanel sessions={sessionsSince(recentSessions, recentWeekStart(new Date()))} onSelectGame={(appId) => router.push(`/game/${appId}`)} />
 
