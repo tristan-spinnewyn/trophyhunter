@@ -4,3 +4,7 @@ allowBuilds:
 # Refuse versions published less than 3 days ago (in minutes): Dependabot PRs
 # are auto-merged, so this gives the ecosystem time to catch compromised releases.
 minimumReleaseAge: 4320
+overrides:
+  # GHSA-g3hv-75wg-m249: minimatch before 11.0.1 can blow up on crafted glob patterns.
+  # @typescript-eslint/typescript-estree still asks for ^10; remove once it moves to 11.
+  "minimatch@^10": "^11.0.1"
