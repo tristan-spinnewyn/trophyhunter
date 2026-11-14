@@ -1,10 +1,8 @@
-// __tests__/api/user/wishlist_duplicates.test.ts
+// __tests__/api/user/wishlist.test.ts
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { initDatabase, setDbForTesting, createUser, createSession, saveUserOwnedGames } from "@/lib/db";
-import { GET as getDuplicates } from "@/app/api/user/duplicates/route";
 import { GET as getWishlist, POST as toggleWishlist } from "@/app/api/user/wishlist/route";
 import type { CookieRecord } from "../../helpers/cookies";
-import type { OwnedGame } from "@/lib/types";
 
 const { mockCookieStore } = vi.hoisted(() => ({
   mockCookieStore: new Map<string, CookieRecord>(),
@@ -22,7 +20,7 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
-describe("User Wishlist & Duplicates API", () => {
+describe("User Wishlist API", () => {
   beforeEach(() => {
     setDbForTesting(initDatabase(":memory:"));
     mockCookieStore.clear();
@@ -87,12 +85,5 @@ describe("User Wishlist & Duplicates API", () => {
         expect.objectContaining({ appId: 901, name: "Halo", headerImg: "" }),
       ])
     );
-  });
-
-  it("returns cross-platform duplicate games", async () => {
-    const dupData = await (await getDuplicates()).json();
-    expect(dupData.duplicates.length).toBe(1);
-    expect(dupData.duplicates[0].games.some((g: OwnedGame) => g.platform === "steam")).toBe(true);
-    expect(dupData.duplicates[0].games.some((g: OwnedGame) => g.platform === "xbox")).toBe(true);
   });
 });
